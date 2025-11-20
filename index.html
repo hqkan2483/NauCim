@@ -23,7 +23,7 @@
                 
                 <!-- Projects Tree -->
                 <div class="nav-tree-item">
-                    <button class="nav-tree-toggle" onclick="toggleProjectsTree()" aria-expanded="false" aria-label="Toggle projects list">
+                    <button class="nav-tree-toggle" onclick="handleProjectsClick()" aria-expanded="false" aria-label="Toggle projects list">
                         <span class="tree-icon">▶</span>
                         📁 Проекты
                     </button>
@@ -225,6 +225,14 @@
         }
 
         // Projects Tree Navigation
+        function handleProjectsClick() {
+            // Раскрыть/закрыть дерево
+            toggleProjectsTree();
+            
+            // Перейти на страницу проектов
+            window.location.href = 'projects.html';
+        }
+
         function toggleProjectsTree() {
             const container = document.getElementById('projects-tree-container');
             const button = document.querySelector('.nav-tree-toggle');
