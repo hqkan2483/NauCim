@@ -63,21 +63,73 @@ function renderProjectsTree() {
     const projectsList = document.getElementById('projects-list-tree');
     const projects = getAllProjects();
     const currentProjectId = getCurrentProjectId();
+    const expandedProjects = JSON.parse(localStorage.getItem('expandedProjects') || '{}');
     
     if (!projects || projects.length === 0) {
         projectsList.innerHTML = '<div class="nav-tree-item-link no-projects-tree">Нет проектов</div>';
         return;
     }
     
-    const html = projects.map(p => `
-        <div class="nav-tree-item-link ${currentProjectId === p.id ? 'active' : ''}" 
-             onclick="selectProject(${p.id}); event.stopPropagation();" 
-             title="${p.name}">
-            📦 ${p.name}
-        </div>
-    `).join('');
+    const html = projects.map(p => {
+        const isExpanded = expandedProjects[p.id];
+        const isCurrentProject = currentProjectId === p.id;
+        
+        return `
+            <div class="project-tree-item">
+                <div class="project-tree-header ${isCurrentProject ? 'active' : ''}">
+                    <button class="project-expand-btn" onclick="toggleProjectStructure(${p.id}); event.stopPropagation();" 
+                            aria-expanded="${isExpanded ? 'true' : 'false'}">
+                        <span class="expand-icon">${isExpanded ? '▼' : '▶'}</span>
+                    </button>
+                    <span class="project-name" onclick="selectProject(${p.id}); event.stopPropagation();" title="${p.name}">
+                        📦 ${p.name}
+                    </span>
+                </div>
+                ${isExpanded ? `
+                    <div class="project-structure">
+                        ${p.models && p.models.length > 0 ? `
+                            <div class="structure-section">
+                                <div class="structure-title">📋 Модели (${p.models.length})</div>
+                                <div class="structure-items">
+                                    ${p.models.map(m => `
+                                        <div class="structure-item">🔷 ${m.name || 'Модель без названия'}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${p.profiles && p.profiles.length > 0 ? `
+                            <div class="structure-section">
+                                <div class="structure-title">⚙️ Профили (${p.profiles.length})</div>
+                                <div class="structure-items">
+                                    ${p.profiles.map(pr => `
+                                        <div class="structure-item">⚡ ${pr.name || 'Профиль без названия'}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${(!p.models || p.models.length === 0) && (!p.profiles || p.profiles.length === 0) ? `
+                            <div class="structure-empty">Нет моделей и профилей</div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
     
     projectsList.innerHTML = html;
+}
+
+function toggleProjectStructure(projectId) {
+    const expandedProjects = JSON.parse(localStorage.getItem('expandedProjects') || '{}');
+    
+    if (expandedProjects[projectId]) {
+        delete expandedProjects[projectId];
+    } else {
+        expandedProjects[projectId] = true;
+    }
+    
+    localStorage.setItem('expandedProjects', JSON.stringify(expandedProjects));
+    renderProjectsTree();
 }
 
 // Restore projects tree state on page load
