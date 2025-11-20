@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nautilus.CIM - Редактор диаграмм</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .diagram-workspace {
+            display: flex;
+            height: calc(100vh - 60px);
+            gap: 0;
+        }
+        
+        .classes-panel {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .diagram-canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #fafafa;
+        }
+        
+        .diagram-canvas {
+            width: 3000px;
+            height: 3000px;
+            position: relative;
+            background-image: 
+                linear-gradient(rgba(0,0,0,.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .class-list-item {
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: grab;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .class-list-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .class-list-item:active {
+            cursor: grabbing;
+        }
+        
+        .diagram-class {
+            position: absolute;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 6px;
+            min-width: 200px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            cursor: move;
+            z-index: 10;
+        }
+        
+        .diagram-class.selected {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(33, 128, 133, 0.3);
+        }
+        
+        .diagram-class-header {
+            padding: 8px 10px;
+            background: #e8e8e8;
+            border-bottom: 2px solid #333;
+            font-weight: 600;
+            text-align: center;
+            font-size: 14px;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .diagram-class-stereotype {
+            font-size: 11px;
+            color: #666;
+            font-weight: normal;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .diagram-class-body {
+            padding: 8px 10px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        
+        .diagram-attribute {
+            padding: 2px 0;
+            color: #333;
+        }
+        
+        .connection-line {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .connection-arrow {
+            fill: none;
+            stroke: #333;
+            stroke-width: 2;
+        }
+        
+        .connection-inheritance {
+            stroke: #333;
+            stroke-width: 2;
+            fill: white;
+        }
+        
+        .toolbar-diagram {
+            padding: 10px 15px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .mode-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .mode-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .mode-btn:hover:not(.active) {
+            background: #f0f0f0;
+        }
+        
+        .connection-point {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-color);
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute;
+            cursor: crosshair;
+            display: none;
+        }
+        
+        .diagram-class:hover .connection-point {
+            display: block;
+        }
+        
+        .connection-point.top { top: -4px; left: 50%; transform: translateX(-50%); }
+        .connection-point.bottom { bottom: -4px; left: 50%; transform: translateX(-50%); }
+        .connection-point.left { left: -4px; top: 50%; transform: translateY(-50%); }
+        .connection-point.right { right: -4px; top: 50%; transform: translateY(-50%); }
+        
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+            display: none;
+        }
+        
+        .diagram-class:hover .delete-btn {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <strong>Nautilus.CIM</strong>
+            </div>
+            <div class="sidebar-nav">
+                <a href="index.html" class="nav-item">📊 Панель управления</a>
+                <a href="projects.html" class="nav-item">📁 Проекты</a>
+                <a href="models.html" class="nav-item">📋 Модели</a>
+                <a href="profiles.html" class="nav-item">⚙️ Профили</a>
+                
+                <div class="nav-section-title">Текущий проект</div>
+                <div id="current-project" style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                    Нет проекта
+                </div>
+
+                <div class="nav-section-title">Действия</div>
+                <a href="compare.html" class="nav-item">🔍 Сравнение</a>
+                <div class="nav-item" onclick="saveDiagram()">💾 Сохранить диаграмму</div>
+                <div class="nav-item" onclick="clearDiagram()">🗑️ Очистить холст</div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content" style="flex-direction: column;">
+            <div class="toolbar-diagram">
+                <button class="mode-btn active" id="select-mode" onclick="setMode('select')">
+                    ✋ Выбор
+                </button>
+                <button class="mode-btn" id="inheritance-mode" onclick="setMode('inheritance')">
+                    ◁ Наследование
+                </button>
+                <button class="mode-btn" id="association-mode" onclick="setMode('association')">
+                    → Ассоциация
+                </button>
+                <div style="margin-left: auto; display: flex; gap: 10px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">
+                        Модель: <strong id="current-model-name">-</strong>
+                    </span>
+                    <button class="btn btn-secondary btn-small" onclick="window.history.back()">← Назад</button>
+                </div>
+            </div>
+
+            <div class="diagram-workspace">
+                <div class="classes-panel">
+                    <h3 style="margin-bottom: 15px; font-size: 14px;">Классы модели</h3>
+                    <div class="search-box" style="margin-bottom: 10px;">
+                        <input type="text" class="search-input" id="search-classes" placeholder="Поиск..." 
+                               oninput="filterClasses()" style="padding: 6px 10px; font-size: 12px;">
+                    </div>
+                    <div id="classes-list"></div>
+                </div>
+
+                <div class="diagram-canvas-container" id="canvas-container">
+                    <div class="diagram-canvas" id="diagram-canvas">
+                        <svg id="connections-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        let currentMode = 'select';
+        let selectedClass = null;
+        let connectionStart = null;
+        let diagramClasses = [];
+        let connections = [];
+        let nextClassId = 1;
+        
+        // Sample classes data
+        const sampleClasses = [
+            {
+                name: 'IdentifiedObject',
+                package: 'Core',
+                stereotype: '',
+                attributes: ['mRID: String [1]', 'name: String [0..1]', 'description: String [0..1]']
+            },
+            {
+                name: 'PowerSystemResource',
+                package: 'Core',
+                stereotype: '',
+                parent: 'IdentifiedObject',
+                attributes: []
+            },
+            {
+                name: 'Equipment',
+                package: 'Core',
+                stereotype: '',
+                parent: 'PowerSystemResource',
+                attributes: ['normallyInService: Boolean']
+            },
+            {
+                name: 'ConductingEquipment',
+                package: 'Core',
+                stereotype: 'rfp',
+                parent: 'Equipment',
+                attributes: ['isThreePhaseEquipment: Boolean [0..1]']
+            },
+            {
+                name: 'FOConductingEquipment',
+                package: 'FiberOptics',
+                stereotype: '«rs_inv»',
+                parent: 'ConductingEquipment',
+                attributes: []
+            },
+            {
+                name: 'FOConductor',
+                package: 'FiberOptics',
+                stereotype: '«rs_inv»',
+                parent: 'FOConductingEquipment',
+                attributes: ['bundleColor: String [0..1]', 'bundleNumber: Integer [0..1]', 'fibreColor: String [0..1]', 'fibreNumber: Integer [0..1]']
+            },
+            {
+                name: 'AssetInfo',
+                package: 'Assets',
+                stereotype: '',
+                attributes: []
+            },
+            {
+                name: 'OpticWireInfo',
+                package: 'Assets',
+                stereotype: '«rs_inv»',
+                parent: 'AssetInfo',
+                attributes: ['attenuationCoefficient: Float [0..1]', 'fiberOpticKind: String [0..1]', 'isMultiMode: Boolean [0..1]', 'refractiveIndex: Float [0..1]']
+            },
+            {
+                name: 'OpticCableInfo',
+                package: 'Assets',
+                stereotype: '«rs_inv»',
+                parent: 'OpticWireInfo',
+                attributes: ['bendingInstallationRadius: String [0..1]', 'bendingRadius: String [0..1]', 'diameterCable: Float [0..1]', 'fiberCount: Integer [0..1]', 'fiberCountPerModule: Integer [0..1]', 'maxTemperature: Float [0..1]', 'maxTensileLoad: Float [0..1]', 'minTemperature: Float', 'modulesCount: Integer [0..1]', 'pressResistance: Float [0..1]', 'weight: Float [0..1]']
+            },
+            {
+                name: 'ProductAssetModel',
+                package: 'Assets',
+                stereotype: 'IdentifiedObject',
+                attributes: ['corporateStandardKind: CorporateStandardKind [0..1]', 'modelNumber: String [0..1]', 'modelVersion: String [0..1]', 'usageKind: AssetModelUsageKind [0..1]']
+            },
+            {
+                name: 'Manufacturer',
+                package: 'Assets',
+                stereotype: 'OrganisationRole',
+                attributes: []
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSampleData();
+            updateCurrentProject();
+            initDiagram();
+            renderClassesList();
+            setupCanvasPanning();
+        });
+
+        function initDiagram() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const modelName = urlParams.get('model') || 'TC57CIM';
+            document.getElementById('current-model-name').textContent = modelName;
+        }
+
+        function renderClassesList() {
+            const html = sampleClasses.map((cls, index) => `
+                <div class="class-list-item" draggable="true" 
+                     ondragstart="startDragClass(event, ${index})"
+                     data-index="${index}">
+                    📄 ${cls.name}
+                    ${cls.stereotype ? '<br><span style="font-size:11px; color:#666;">' + cls.stereotype + '</span>' : ''}
+                </div>
+            `).join('');
+            document.getElementById('classes-list').innerHTML = html;
+        }
+
+        function filterClasses() {
+            const query = document.getElementById('search-classes').value.toLowerCase();
+            const items = document.querySelectorAll('.class-list-item');
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? 'block' : 'none';
+            });
+        }
+
+        function startDragClass(event, index) {
+            event.dataTransfer.setData('classIndex', index);
+        }
+
+        function setupCanvasPanning() {
+            const container = document.getElementById('canvas-container');
+            const canvas = document.getElementById('diagram-canvas');
+            
+            canvas.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+            
+            canvas.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const classIndex = e.dataTransfer.getData('classIndex');
+                if (classIndex !== '') {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left + container.scrollLeft;
+                    const y = e.clientY - rect.top + container.scrollTop;
+                    addClassToCanvas(parseInt(classIndex), x, y);
+                }
+            });
+            
+            let isPanning = false;
+            let startX, startY, scrollLeft, scrollTop;
+            
+            container.addEventListener('mousedown', (e) => {
+                if (e.button === 1 || (e.button === 0 && e.target === canvas)) {
+                    isPanning = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    scrollLeft = container.scrollLeft;
+                    scrollTop = container.scrollTop;
+                    container.style.cursor = 'grabbing';
+                    e.preventDefault();
+                }
+            });
+            
+            container.addEventListener('mousemove', (e) => {
+                if (!isPanning) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                container.scrollLeft = scrollLeft - dx;
+                container.scrollTop = scrollTop - dy;
+            });
+            
+            container.addEventListener('mouseup', () => {
+                isPanning = false;
+                container.style.cursor = 'default';
+            });
+        }
+
+        function addClassToCanvas(classIndex, x, y) {
+            const classData = sampleClasses[classIndex];
+            const classId = nextClassId++;
+            
+            const classElement = document.createElement('div');
+            classElement.className = 'diagram-class';
+            classElement.id = 'class-' + classId;
+            classElement.style.left = x + 'px';
+            classElement.style.top = y + 'px';
+            
+            let attributesHtml = '';
+            if (classData.attributes && classData.attributes.length > 0) {
+                attributesHtml = classData.attributes.map(attr => 
+                    '<div class="diagram-attribute">+ ' + attr + '</div>'
+                ).join('');
+            }
+            
+            classElement.innerHTML = `
+                <button class="delete-btn" onclick="deleteClass(${classId})">×</button>
+                <div class="diagram-class-header">
+                    ${classData.stereotype ? '<span class="diagram-class-stereotype">' + classData.stereotype + '</span>' : ''}
+                    ${classData.name}
+                </div>
+                <div class="diagram-class-body">
+                    ${attributesHtml}
+                </div>
+                <div class="connection-point top" data-position="top" onclick="startConnection(event, ${classId}, 'top')"></div>
+                <div class="connection-point bottom" data-position="bottom" onclick="startConnection(event, ${classId}, 'bottom')"></div>
+                <div class="connection-point left" data-position="left" onclick="startConnection(event, ${classId}, 'left')"></div>
+                <div class="connection-point right" data-position="right" onclick="startConnection(event, ${classId}, 'right')"></div>
+            `;
+            
+            document.getElementById('diagram-canvas').appendChild(classElement);
+            
+            diagramClasses.push({
+                id: classId,
+                data: classData,
+                x: x,
+                y: y
+            });
+            
+            makeDraggable(classElement);
+        }
+
+        function makeDraggable(element) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            const header = element.querySelector('.diagram-class-header');
+            header.onmousedown = dragMouseDown;
+            
+            function dragMouseDown(e) {
+                if (currentMode !== 'select') return;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+                
+                document.querySelectorAll('.diagram-class').forEach(c => c.classList.remove('selected'));
+                element.classList.add('selected');
+                selectedClass = element;
+            }
+            
+            function elementDrag(e) {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                element.style.left = (element.offsetLeft - pos1) + 'px';
+                element.style.top = (element.offsetTop - pos2) + 'px';
+                
+                updateConnections();
+            }
+            
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(mode + '-mode').classList.add('active');
+            
+            if (mode === 'select') {
+                connectionStart = null;
+            }
+        }
+
+        function startConnection(event, classId, position) {
+            event.stopPropagation();
+            
+            if (currentMode === 'select') return;
+            
+            if (!connectionStart) {
+                connectionStart = { classId, position };
+            } else {
+                createConnection(connectionStart.classId, classId, currentMode);
+                connectionStart = null;
+            }
+        }
+
+        function createConnection(fromId, toId, type) {
+            if (fromId === toId) return;
+            
+            connections.push({
+                from: fromId,
+                to: toId,
+                type: type
+            });
+            
+            drawConnections();
+        }
+
+        function drawConnections() {
+            const svg = document.getElementById('connections-svg');
+            svg.innerHTML = '';
+            
+            connections.forEach((conn, index) => {
+                const fromEl = document.getElementById('class-' + conn.from);
+                const toEl = document.getElementById('class-' + conn.to);
+                
+                if (!fromEl || !toEl) return;
+                
+                const fromRect = fromEl.getBoundingClientRect();
+                const toRect = toEl.getBoundingClientRect();
+                const canvasRect = document.getElementById('diagram-canvas').getBoundingClientRect();
+                
+                const x1 = fromRect.left + fromRect.width / 2 - canvasRect.left;
+                const y1 = fromRect.top + fromRect.height / 2 - canvasRect.top;
+                const x2 = toRect.left + toRect.width / 2 - canvasRect.left;
+                const y2 = toRect.top + toRect.height / 2 - canvasRect.top;
+                
+                if (conn.type === 'inheritance') {
+                    const angle = Math.atan2(y2 - y1, x2 - x1);
+                    const arrowSize = 15;
+                    
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', `M ${x1} ${y1} L ${x2} ${y2}`);
+                    path.setAttribute('class', 'connection-arrow');
+                    svg.appendChild(path);
+                    
+                    const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    const p1x = x2 - arrowSize * Math.cos(angle - Math.PI / 6);
+                    const p1y = y2 - arrowSize * Math.sin(angle - Math.PI / 6);
+                    const p2x = x2 - arrowSize * Math.cos(angle + Math.PI / 6);
+                    const p2y = y2 - arrowSize * Math.sin(angle + Math.PI / 6);
+                    
+                    polygon.setAttribute('points', `${x2},${y2} ${p1x},${p1y} ${p2x},${p2y}`);
+                    polygon.setAttribute('class', 'connection-inheritance');
+                    svg.appendChild(polygon);
+                    
+                } else {
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', `M ${x1} ${y1} L ${x2} ${y2}`);
+                    path.setAttribute('class', 'connection-arrow');
+                    path.setAttribute('marker-end', 'url(#arrowhead)');
+                    svg.appendChild(path);
+                }
+            });
+            
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            defs.innerHTML = `
+                <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#333" />
+                </marker>
+            `;
+            svg.insertBefore(defs, svg.firstChild);
+        }
+
+        function updateConnections() {
+            drawConnections();
+        }
+
+        function deleteClass(classId) {
+            const element = document.getElementById('class-' + classId);
+            if (element) element.remove();
+            
+            diagramClasses = diagramClasses.filter(c => c.id !== classId);
+            connections = connections.filter(c => c.from !== classId && c.to !== classId);
+            
+            drawConnections();
+        }
+
+        function saveDiagram() {
+            const data = {
+                classes: diagramClasses,
+                connections: connections
+            };
+            
+            localStorage.setItem('nautilus-diagram-' + Date.now(), JSON.stringify(data));
+            alert('Диаграмма сохранена!');
+        }
+
+        function clearDiagram() {
+            if (confirm('Очистить холст? Все классы и связи будут удалены.')) {
+                document.getElementById('diagram-canvas').innerHTML = '<svg id="connections-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></svg>';
+                diagramClasses = [];
+                connections = [];
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nautilus.CIM - Сравнение профилей</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <strong>Nautilus.CIM</strong>
+            </div>
+            <div class="sidebar-nav">
+                <a href="index.html" class="nav-item">📊 Панель управления</a>
+                <a href="projects.html" class="nav-item">📁 Проекты</a>
+                <a href="models.html" class="nav-item">📋 Модели</a>
+                <a href="profiles.html" class="nav-item">⚙️ Профили</a>
+
+                <div class="nav-section-title">Текущий проект</div>
+                <div id="current-project" style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                    Нет проекта
+                </div>
+
+                <div class="nav-section-title">Действия</div>
+                <div class="nav-item" onclick="openModal('new-project-modal')">+ Новый проект</div>
+                <div class="nav-item" onclick="openModal('new-model-modal')">⬆️ Импорт модели</div>
+                <a href="compare.html" class="nav-item active">🔍 Сравнение</a>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="toolbar">
+                <div class="toolbar-title">Сравнение профилей</div>
+                <div class="toolbar-actions">
+                    <button class="btn btn-primary" onclick="compareProfiles()">🔍 Сравнить</button>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div id="no-project-warning" style="display:none; padding:40px; text-align:center; color:var(--text-secondary);">
+                    <div style="font-size:48px; margin-bottom:15px;">📁</div>
+                    <h3>Проект не выбран</h3>
+                    <p>Выберите проект для сравнения профилей</p>
+                    <button class="btn btn-primary" onclick="window.location.href='projects.html'" style="margin-top:15px;">Перейти к проектам</button>
+                </div>
+
+                <div id="compare-container" style="display:none;">
+                    <!-- Selection Area -->
+                    <div class="card" style="margin-bottom:20px;">
+                        <h3 style="margin-bottom:15px;">Выбор профилей для сравнения</h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                            <div class="form-group">
+                                <label class="form-label">Профиль 1</label>
+                                <select id="profile1" class="form-select">
+                                    <option value="">-- Выберите профиль --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Профиль 2</label>
+                                <select id="profile2" class="form-select">
+                                    <option value="">-- Выберите профиль --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Results -->
+                    <div id="comparison-results" style="display:none;">
+                        <h3 style="margin-bottom:15px;">Результаты сравнения</h3>
+
+                        <!-- Summary Stats -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:20px;">
+                            <div class="stat-box">
+                                <div class="stat-value" id="stat-common">0</div>
+                                <div class="stat-label">Общих классов</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="stat-unique1">0</div>
+                                <div class="stat-label">Только в профиле 1</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="stat-unique2">0</div>
+                                <div class="stat-label">Только в профиле 2</div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Comparison -->
+                        <div class="diff-container">
+                            <div class="diff-panel">
+                                <div class="diff-header" id="profile1-name">Профиль 1</div>
+                                <div class="diff-content" id="profile1-details"></div>
+                            </div>
+                            <div class="diff-panel">
+                                <div class="diff-header" id="profile2-name">Профиль 2</div>
+                                <div class="diff-content" id="profile2-details"></div>
+                            </div>
+                        </div>
+
+                        <!-- Differences List -->
+                        <div style="margin-top:20px;">
+                            <h4 style="margin-bottom:15px;">Детальные различия</h4>
+                            <div id="differences-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Создать новый проект</div>
+            <p style="color:var(--text-secondary); margin-bottom:15px;">Создайте проект в разделе "Проекты"</p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="window.location.href='projects.html'">Перейти к проектам</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-model-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Добавить модель</div>
+            <p style="color:var(--text-secondary); margin-bottom:15px;">Добавьте модель в разделе "Модели"</p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="window.location.href='models.html'">Перейти к моделям</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSampleData();
+            updateCurrentProject();
+            checkProject();
+        });
+
+        function checkProject() {
+            const projectId = getCurrentProjectId();
+            if (!projectId) {
+                document.getElementById('no-project-warning').style.display = 'block';
+                document.getElementById('compare-container').style.display = 'none';
+            } else {
+                document.getElementById('no-project-warning').style.display = 'none';
+                document.getElementById('compare-container').style.display = 'block';
+                loadProfileOptions();
+            }
+        }
+
+        function loadProfileOptions() {
+            const projectId = getCurrentProjectId();
+            const profiles = getProfiles(projectId);
+
+            const options = '<option value="">-- Выберите профиль --</option>' + 
+                profiles.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
+
+            document.getElementById('profile1').innerHTML = options;
+            document.getElementById('profile2').innerHTML = options;
+        }
+
+        function compareProfiles() {
+            const projectId = getCurrentProjectId();
+            const profile1Id = parseInt(document.getElementById('profile1').value);
+            const profile2Id = parseInt(document.getElementById('profile2').value);
+
+            if (!profile1Id || !profile2Id) {
+                alert('Выберите оба профиля для сравнения');
+                return;
+            }
+
+            if (profile1Id === profile2Id) {
+                alert('Выберите разные профили');
+                return;
+            }
+
+            const profile1 = getProfile(projectId, profile1Id);
+            const profile2 = getProfile(projectId, profile2Id);
+
+            renderComparison(profile1, profile2);
+        }
+
+        function renderComparison(p1, p2) {
+            document.getElementById('comparison-results').style.display = 'block';
+
+            // Mock statistics
+            const common = Math.min(p1.classes, p2.classes) - Math.floor(Math.random() * 10);
+            const unique1 = p1.classes - common;
+            const unique2 = p2.classes - common;
+
+            document.getElementById('stat-common').textContent = common;
+            document.getElementById('stat-unique1').textContent = unique1;
+            document.getElementById('stat-unique2').textContent = unique2;
+
+            // Profile names
+            document.getElementById('profile1-name').textContent = p1.name;
+            document.getElementById('profile2-name').textContent = p2.name;
+
+            // Profile details
+            document.getElementById('profile1-details').innerHTML = '<table class="table">' +
+                '<tr><td style="font-weight:600;">Базовая модель</td><td>' + p1.baseModel + '</td></tr>' +
+                '<tr><td style="font-weight:600;">Версия</td><td>' + p1.version + '</td></tr>' +
+                '<tr><td style="font-weight:600;">Классов</td><td>' + p1.classes + '</td></tr>' +
+                '<tr><td style="font-weight:600;">Атрибутов</td><td>' + p1.attributes + '</td></tr>' +
+                '</table>';
+
+            document.getElementById('profile2-details').innerHTML = '<table class="table">' +
+                '<tr><td style="font-weight:600;">Базовая модель</td><td>' + p2.baseModel + '</td></tr>' +
+                '<tr><td style="font-weight:600;">Версия</td><td>' + p2.version + '</td></tr>' +
+                '<tr><td style="font-weight:600;">Классов</td><td>' + p2.classes + '</td></tr>' +
+                '<tr><td style="font-weight:600;">Атрибутов</td><td>' + p2.attributes + '</td></tr>' +
+                '</table>';
+
+            // Differences list
+            const differences = [
+                { type: 'added', text: 'Класс <strong>RotatingMachineInfo</strong> присутствует только в профиле 2' },
+                { type: 'removed', text: 'Класс <strong>TransformerInfo</strong> присутствует только в профиле 1' },
+                { type: 'modified', text: 'Атрибут <strong>rotorGD2</strong> имеет разную множественность: [0..1] в профиле 1, [1] в профиле 2' },
+                { type: 'added', text: 'Атрибут <strong>ratedVoltage</strong> добавлен в профиле 2' }
+            ];
+
+            const diffHtml = differences.map(d => {
+                const cls = d.type === 'added' ? 'diff-added' : (d.type === 'removed' ? 'diff-removed' : 'badge');
+                const icon = d.type === 'added' ? '➕' : (d.type === 'removed' ? '➖' : '🔄');
+                return '<div class="card">' +
+                    '<span class="' + cls + '" style="margin-right:10px;">' + icon + '</span>' +
+                    d.text +
+                    '</div>';
+            }).join('');
+
+            document.getElementById('differences-list').innerHTML = diffHtml;
+        }
+    </script>
+</body>
+</html>

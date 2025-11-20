@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nautilus.CIM - Профили</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .sidebar-toggle {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 60px;
+            background: var(--primary-color, #218085);
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--primary-hover, #1a6669);
+            width: 45px;
+        }
+
+        .sidebar-toggle.sidebar-open {
+            left: 280px;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-toggle.sidebar-open .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR TOGGLE BUTTON -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+        <span class="toggle-icon">☰</span>
+    </button>
+
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <strong>Nautilus.CIM</strong>
+            </div>
+            <div class="sidebar-nav">
+                <a href="index.html" class="nav-item">📊 Панель управления</a>
+                <a href="projects.html" class="nav-item">📁 Проекты</a>
+                <a href="models.html" class="nav-item">📋 Модели</a>
+                <a href="profiles.html" class="nav-item active">⚙️ Профили</a>
+                
+                <div class="nav-section-title">Текущий проект</div>
+                <div id="current-project" style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                    Нет проекта
+                </div>
+
+                <div class="nav-section-title">Действия</div>
+                <div class="nav-item" onclick="openModal('new-project-modal')">+ Новый проект</div>
+                <div class="nav-item" onclick="openModal('new-model-modal')">⬆️ Импорт модели</div>
+                <a href="compare.html" class="nav-item">🔍 Сравнение</a>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="toolbar">
+                <div class="toolbar-title">Профили</div>
+                <div class="toolbar-actions">
+                    <button class="btn btn-secondary" onclick="openDiagram()" id="diagram-btn" style="display:none;">
+                        📐 Диаграмма классов
+                    </button>
+                    <button class="btn btn-primary" onclick="openModal('new-profile-modal')">+ Создать профиль</button>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div id="no-project-warning" style="display:none; padding:40px; text-align:center; color:var(--text-secondary);">
+                    <div style="font-size:48px; margin-bottom:15px;">📁</div>
+                    <h3>Проект не выбран</h3>
+                    <p>Выберите проект для работы с профилями</p>
+                    <button class="btn btn-primary" onclick="window.location.href='projects.html'" style="margin-top:15px;">Перейти к проектам</button>
+                </div>
+
+                <div id="profiles-container" style="display:none;">
+                    <div class="split-view">
+                        <div class="split-left">
+                            <h3 style="margin-bottom:15px; font-size:16px;">Список профилей</h3>
+                            <div id="profiles-list"></div>
+                        </div>
+                        <div class="split-right">
+                            <div id="profile-details">
+                                <div style="text-align:center; color:var(--text-secondary); padding:40px;">
+                                    Выберите профиль для просмотра деталей
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: New Profile -->
+    <div id="new-profile-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Создать новый профиль</div>
+            <div class="form-group">
+                <label class="form-label">Название профиля *</label>
+                <input type="text" id="profile-name" class="form-input" placeholder="Например: GOST-58651.2">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Базовая модель *</label>
+                <select id="profile-base-model" class="form-select">
+                    <option value="">-- Выберите модель --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Описание</label>
+                <textarea id="profile-desc" class="form-textarea" placeholder="Описание профиля"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Версия</label>
+                <input type="text" id="profile-version" class="form-input" value="1.0">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal('new-profile-modal')">Отмена</button>
+                <button class="btn btn-primary" onclick="createProfile()">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Создать новый проект</div>
+            <p style="color:var(--text-secondary); margin-bottom:15px;">Создайте проект в разделе "Проекты"</p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="window.location.href='projects.html'">Перейти к проектам</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-model-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Добавить модель</div>
+            <p style="color:var(--text-secondary); margin-bottom:15px;">Добавьте модель в разделе "Модели"</p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="window.location.href='models.html'">Перейти к моделям</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        let selectedProfileId = null;
+        let selectedProfileName = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSampleData();
+            updateCurrentProject();
+            checkProject();
+        });
+
+        function checkProject() {
+            const projectId = getCurrentProjectId();
+            if (!projectId) {
+                document.getElementById('no-project-warning').style.display = 'block';
+                document.getElementById('profiles-container').style.display = 'none';
+            } else {
+                document.getElementById('no-project-warning').style.display = 'none';
+                document.getElementById('profiles-container').style.display = 'block';
+                renderProfiles();
+                loadModelOptions();
+            }
+        }
+
+        function loadModelOptions() {
+            const projectId = getCurrentProjectId();
+            const models = getModels(projectId);
+            const select = document.getElementById('profile-base-model');
+            
+            select.innerHTML = '<option value="">-- Выберите модель --</option>' + 
+                models.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+        }
+
+        function renderProfiles() {
+            const projectId = getCurrentProjectId();
+            const profiles = getProfiles(projectId);
+            
+            const html = profiles.map(p => `
+                <div class="tree-item ${selectedProfileId === p.id ? 'selected' : ''}" onclick="selectProfile(${p.id}, '${p.name}')">
+                    ⚙️ ${p.name}
+                </div>
+            `).join('');
+            
+            document.getElementById('profiles-list').innerHTML = html || '<div style="padding:10px; color:var(--text-secondary);">Нет профилей</div>';
+        }
+
+        function selectProfile(profileId, profileName) {
+            selectedProfileId = profileId;
+            selectedProfileName = profileName;
+            renderProfiles();
+            renderProfileDetails();
+            document.getElementById('diagram-btn').style.display = 'inline-flex';
+        }
+
+        function openDiagram() {
+            if (!selectedProfileName) {
+                alert('Выберите профиль');
+                return;
+            }
+            window.location.href = 'diagram.html?profile=' + encodeURIComponent(selectedProfileName);
+        }
+
+        function renderProfileDetails() {
+            const projectId = getCurrentProjectId();
+            const profile = getProfile(projectId, selectedProfileId);
+            
+            if (!profile) return;
+            
+            const xsdCode = profile.xsd || `<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- Профиль ${profile.name} -->
+  <xs:element name="Profile" type="ProfileType"/>
+  <xs:complexType name="ProfileType">
+    <xs:sequence>
+      <xs:element name="id" type="xs:string"/>
+      <xs:element name="name" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>`;
+            
+            const html = `
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('properties')">Свойства</div>
+                    <div class="tab" onclick="switchTab('structure')">Структура классов</div>
+                    <div class="tab" onclick="switchTab('xsd')">XSD код</div>
+                </div>
+                
+                <div id="tab-properties" class="tab-content active">
+                    <div class="flex-between mb-15">
+                        <h3 style="margin:0;">${profile.name}</h3>
+                        <button class="btn btn-primary btn-small" onclick="openDiagram()">📐 Диаграмма классов</button>
+                    </div>
+                    <table class="table">
+                        <tr>
+                            <td style="font-weight:600; width:200px;">Базовая модель</td>
+                            <td><span class="badge">${profile.baseModel}</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;">Версия</td>
+                            <td>${profile.version}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;">Описание</td>
+                            <td>${profile.description}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;">Классов в профиле</td>
+                            <td>${profile.classes}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;">Атрибутов</td>
+                            <td>${profile.attributes}</td>
+                        </tr>
+                    </table>
+                    
+                    <div style="margin-top:20px;">
+                        <button class="btn btn-primary" onclick="alert('Функция экспорта в разработке')">📥 Экспорт XSD</button>
+                        <button class="btn btn-secondary" onclick="alert('Функция валидации в разработке')">✓ Валидировать</button>
+                    </div>
+                </div>
+                
+                <div id="tab-structure" class="tab-content">
+                    <h3 style="margin-bottom:15px;">Классы профиля</h3>
+                    <div class="tree">
+                        <div class="tree-item">📦 ${profile.baseModel}</div>
+                        <div class="tree-children">
+                            <div class="tree-item">📁 AssetInfo</div>
+                            <div class="tree-children">
+                                <div class="tree-item">📄 RotatingMachineInfo <span class="badge-secondary">rf</span></div>
+                                <div class="tree-children">
+                                    <div class="tree-item">• rotorGD2: Torque [0..1]</div>
+                                    <div class="tree-item">• ratedVoltage: Voltage [1]</div>
+                                </div>
+                                <div class="tree-item">📄 SynchronousMachineInfo</div>
+                                <div class="tree-item">📄 AsynchronousMachineInfo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tab-xsd" class="tab-content">
+                    <h3 style="margin-bottom:15px;">XSD Schema</h3>
+                    <div class="code-block">${escapeHtml(xsdCode)}</div>
+                    <div style="margin-top:15px;">
+                        <button class="btn btn-secondary" onclick="copyCode()">📋 Копировать</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('profile-details').innerHTML = html;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        function createProfile() {
+            const projectId = getCurrentProjectId();
+            if (!projectId) {
+                alert('Выберите проект');
+                return;
+            }
+            
+            const name = document.getElementById('profile-name').value.trim();
+            const baseModel = document.getElementById('profile-base-model').value;
+            
+            if (!name) {
+                alert('Введите название профиля');
+                return;
+            }
+            
+            if (!baseModel) {
+                alert('Выберите базовую модель');
+                return;
+            }
+            
+            const newProfile = {
+                name: name,
+                baseModel: baseModel,
+                description: document.getElementById('profile-desc').value,
+                version: document.getElementById('profile-version').value,
+                classes: Math.floor(Math.random() * 50) + 20,
+                attributes: Math.floor(Math.random() * 200) + 100
+            };
+            
+            addProfile(projectId, newProfile);
+            closeModal('new-profile-modal');
+            
+            // Clear form
+            document.getElementById('profile-name').value = '';
+            document.getElementById('profile-desc').value = '';
+            document.getElementById('profile-version').value = '1.0';
+            document.getElementById('profile-base-model').value = '';
+            
+            renderProfiles();
+            alert('Профиль успешно создан!');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function copyCode() {
+            const code = document.querySelector('.code-block').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Код скопирован в буфер обмена');
+            });
+        }
+
+        // Sidebar toggle functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.querySelector('.sidebar-toggle');
+            
+            sidebar.classList.toggle('collapsed');
+            toggleBtn.classList.toggle('sidebar-open');
+            
+            // Save state to localStorage
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        }
+
+        // Restore sidebar state on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.querySelector('.sidebar-toggle').classList.remove('sidebar-open');
+            }
+        });
+    </script>
+</body>
+</html>
