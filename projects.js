@@ -133,7 +133,7 @@ function saveProjectEdit() {
 
 function openProject(projectId) {
     setCurrentProject(projectId);
-    window.location.href = 'models.html';
+    window.location.href = 'project-details.html';
 }
 
 // Sidebar toggle functionality

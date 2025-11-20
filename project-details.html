@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nautilus.CIM - Модели</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <strong>Nautilus.CIM</strong>
+            </div>
+            <div class="sidebar-nav">
+                <a href="index.html" class="nav-item">📊 Панель управления</a>
+                <a href="projects.html" class="nav-item">📁 Проекты</a>
+                <a href="models.html" class="nav-item active">📋 Модели</a>
+                <a href="profiles.html" class="nav-item">⚙️ Профили</a>
+                
+                <div class="nav-section-title">Текущий проект</div>
+                <div id="current-project" style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                    Нет проекта
+                </div>
+
+                <div class="nav-section-title">Действия</div>
+                <div class="nav-item" onclick="openModal('new-project-modal')">+ Новый проект</div>
+                <div class="nav-item" onclick="openModal('new-model-modal')">⬆️ Импорт модели</div>
+                <a href="compare.html" class="nav-item">🔍 Сравнение</a>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="toolbar">
+                <div class="toolbar-title">Модели</div>
+                <div class="toolbar-actions">
+                    <button class="btn btn-secondary" onclick="openDiagram()" id="diagram-btn" style="display:none;">
+                        📐 Диаграмма классов
+                    </button>
+                    <button class="btn btn-primary" onclick="openModal('new-model-modal')">+ Добавить модель</button>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div id="no-project-warning" style="display:none; padding:40px; text-align:center; color:var(--text-secondary);">
+                    <div style="font-size:48px; margin-bottom:15px;">📁</div>
+                    <h3>Проект не выбран</h3>
+                    <p>Выберите проект для просмотра моделей</p>
+                    <button class="btn btn-primary" onclick="window.location.href='projects.html'" style="margin-top:15px;">Перейти к проектам</button>
+                </div>
+
+                <div id="models-container" style="display:none;">
+                    <div class="split-view">
+                        <div class="split-left">
+                            <h3 style="margin-bottom:15px; font-size:16px;">Список моделей</h3>
+                            <div id="models-list"></div>
+                        </div>
+                        <div class="split-right">
+                            <div id="model-details">
+                                <div style="text-align:center; color:var(--text-secondary); padding:40px;">
+                                    Выберите модель для просмотра деталей
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: New Model -->
+    <div id="new-model-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Добавить модель в проект</div>
+            <div class="form-group">
+                <label class="form-label">Название модели *</label>
+                <input type="text" id="model-name" class="form-input" placeholder="Например: TC57CIM, IEC61970">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Тип модели</label>
+                <select id="model-type" class="form-select">
+                    <option>Каноническая модель</option>
+                    <option>Расширение модели</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Описание</label>
+                <textarea id="model-desc" class="form-textarea" placeholder="Описание модели"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Количество классов (примерно)</label>
+                <input type="number" id="model-classes" class="form-input" value="100">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Количество атрибутов (примерно)</label>
+                <input type="number" id="model-attributes" class="form-input" value="500">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal('new-model-modal')">Отмена</button>
+                <button class="btn btn-primary" onclick="createModel()">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Создать новый проект</div>
+            <div class="form-group">
+                <label class="form-label">Название проекта *</label>
+                <input type="text" id="project-name" class="form-input" placeholder="Введите название">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Описание</label>
+                <textarea id="project-desc" class="form-textarea" placeholder="Описание проекта"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Версия</label>
+                <input type="text" id="project-version" class="form-input" value="1.0">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal('new-project-modal')">Отмена</button>
+                <button class="btn btn-primary" onclick="alert('Создайте проект в разделе Проекты')">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        let selectedModelId = null;
+        let selectedModelName = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSampleData();
+            updateCurrentProject();
+            checkProject();
+        });
+
+        function checkProject() {
+            const projectId = getCurrentProjectId();
+            if (!projectId) {
+                document.getElementById('no-project-warning').style.display = 'block';
+                document.getElementById('models-container').style.display = 'none';
+            } else {
+                document.getElementById('no-project-warning').style.display = 'none';
+                document.getElementById('models-container').style.display = 'block';
+                renderModels();
+            }
+        }
+
+        function renderModels() {
+            const projectId = getCurrentProjectId();
+            const models = getModels(projectId);
+            
+            const html = models.map(m => `
+                <div class="tree-item ${selectedModelId === m.id ? 'selected' : ''}" onclick="selectModel(${m.id}, '${m.name}')">
+                    📦 ${m.name}
+                </div>
+            `).join('');
+            
+            document.getElementById('models-list').innerHTML = html || '<div style="padding:10px; color:var(--text-secondary);">Нет моделей</div>';
+        }
+
+        function selectModel(modelId, modelName) {
+            selectedModelId = modelId;
+            selectedModelName = modelName;
+            renderModels();
+            renderModelDetails();
+            document.getElementById('diagram-btn').style.display = 'inline-flex';
+        }
+
+        function openDiagram() {
+            if (!selectedModelName) {
+                alert('Выберите модель');
+                return;
+            }
+            window.location.href = 'diagram.html?model=' + encodeURIComponent(selectedModelName);
+        }
+
+        function renderModelDetails() {
+            const projectId = getCurrentProjectId();
+            const model = getModel(projectId, selectedModelId);
+            
+            if (!model) return;
+            
+            const structure = getSampleClassStructure();
+            const treeHtml = renderTree(structure[model.name] || []);
+            
+            const html = `
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('properties')">Свойства</div>
+                    <div class="tab" onclick="switchTab('structure')">Структура</div>
+                    <div class="tab" onclick="switchTab('stats')">Статистика</div>
+                </div>
+                
+                <div id="tab-properties" class="tab-content active">
+                    <div class="flex-between mb-15">
+                        <h3 style="margin:0;">${model.name}</h3>
+                        <button class="btn btn-primary btn-small" onclick="openDiagram()">📐 Диаграмма классов</button>
+                    </div>
+                    <table class="table">
+                        <tr>
+                            <td style="font-weight:600; width:200px;">Тип модели</td>
+                            <td><span class="badge">${model.type}</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;">Описание</td>
+                            <td>${model.description}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;">Классов</td>
+                            <td>${model.classes}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;">Атрибутов</td>
+                            <td>${model.attributes}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div id="tab-structure" class="tab-content">
+                    <h3 style="margin-bottom:15px;">Структура пакетов и классов</h3>
+                    <div class="tree">${treeHtml}</div>
+                </div>
+                
+                <div id="tab-stats" class="tab-content">
+                    <h3 style="margin-bottom:15px;">Статистика модели</h3>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px;">
+                        <div class="stat-box">
+                            <div class="stat-value">${model.classes}</div>
+                            <div class="stat-label">Всего классов</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${model.attributes}</div>
+                            <div class="stat-label">Всего атрибутов</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${model.packages ? model.packages.length : 'N/A'}</div>
+                            <div class="stat-label">Пакетов</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('model-details').innerHTML = html;
+        }
+
+        function renderTree(items, level = 0) {
+            return items.map(item => {
+                const icon = item.type === 'package' ? '📁' : (item.type === 'class' ? '📄' : '•');
+                const children = item.children ? `<div class="tree-children">${renderTree(item.children, level + 1)}</div>` : '';
+                return `
+                    <div>
+                        <div class="tree-item" style="padding-left:${level * 20 + 10}px;">
+                            ${icon} ${item.name}
+                            ${item.stereotype ? `<span class="badge-secondary">${item.stereotype}</span>` : ''}
+                        </div>
+                        ${children}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        function createModel() {
+            const projectId = getCurrentProjectId();
+            if (!projectId) {
+                alert('Выберите проект');
+                return;
+            }
+            
+            const name = document.getElementById('model-name').value.trim();
+            if (!name) {
+                alert('Введите название модели');
+                return;
+            }
+            
+            const newModel = {
+                name: name,
+                type: document.getElementById('model-type').value,
+                description: document.getElementById('model-desc').value,
+                classes: parseInt(document.getElementById('model-classes').value) || 100,
+                attributes: parseInt(document.getElementById('model-attributes').value) || 500,
+                packages: []
+            };
+            
+            addModel(projectId, newModel);
+            closeModal('new-model-modal');
+            
+            // Clear form
+            document.getElementById('model-name').value = '';
+            document.getElementById('model-desc').value = '';
+            document.getElementById('model-classes').value = '100';
+            document.getElementById('model-attributes').value = '500';
+            
+            renderModels();
+            alert('Модель успешно добавлена!');
+        }
+    </script>
+</body>
+</html>
