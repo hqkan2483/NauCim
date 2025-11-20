@@ -14,7 +14,7 @@
                 <span class="toggle-icon">☰</span>
             </button> -->
             <div class="sidebar-header">
-                <strong>Nautilus.CIM</strong>
+                <strong id="sidebar-project-title">Nautilus.CIM</strong>
             </div>
             <div class="sidebar-nav">
                 <!-- <a href="index.html" class="nav-item">📊 Главная</a> -->
@@ -142,9 +142,27 @@
             updateCurrentProject();
             checkProject();
             renderCurrentProjectStructure();
+            updateSidebarTitle();
             restoreSidebarState();
             restoreProjectsTreeState();
         });
+
+        function updateSidebarTitle() {
+            const projectId = getCurrentProjectId();
+            const titleElement = document.getElementById('sidebar-project-title');
+            
+            if (!projectId) {
+                titleElement.textContent = 'Nautilus.CIM';
+                return;
+            }
+            
+            const project = getProject(projectId);
+            if (project) {
+                titleElement.textContent = project.name;
+            } else {
+                titleElement.textContent = 'Nautilus.CIM';
+            }
+        }
 
         function checkProject() {
             const projectId = getCurrentProjectId();
@@ -156,6 +174,7 @@
                 document.getElementById('models-container').style.display = 'block';
                 renderModels();
             }
+            updateSidebarTitle();
         }
 
         function renderCurrentProjectStructure() {
