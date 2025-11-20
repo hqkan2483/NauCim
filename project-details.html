@@ -22,7 +22,7 @@
                 
                 <div class="nav-section-title">Структура проекта</div>
                 <div id="current-project-structure" class="project-structure-nav">
-                    <div style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                    <div class="no-items text-muted">
                         Нет проекта
                     </div>
                 </div>
@@ -39,7 +39,7 @@
             <div class="toolbar">
                 <div class="toolbar-title">Модели</div>
                 <div class="toolbar-actions">
-                    <button class="btn btn-secondary" onclick="openDiagram()" id="diagram-btn" style="display:none;">
+                    <button class="btn btn-secondary" onclick="openDiagram()" id="diagram-btn" class="hidden">
                         📐 Диаграмма классов
                     </button>
                     <button class="btn btn-primary" onclick="openModal('new-model-modal')">+ Добавить модель</button>
@@ -47,22 +47,24 @@
             </div>
 
             <div class="content-area">
-                <div id="no-project-warning" style="display:none; padding:40px; text-align:center; color:var(--text-secondary);">
-                    <div style="font-size:48px; margin-bottom:15px;">📁</div>
-                    <h3>Проект не выбран</h3>
-                    <p>Выберите проект для просмотра моделей</p>
-                    <button class="btn btn-primary" onclick="window.location.href='projects.html'" style="margin-top:15px;">Перейти к проектам</button>
+                <div id="no-project-warning" class="hidden">
+                    <div class="warning-title">
+                        <div class="model-icon-large">📁</div>
+                        <h3>Проект не выбран</h3>
+                        <p>Выберите проект для просмотра моделей</p>
+                        <button class="btn btn-primary mt-15" onclick="window.location.href='projects.html'">Перейти к проектам</button>
+                    </div>
                 </div>
 
-                <div id="models-container" style="display:none;">
+                <div id="models-container" class="hidden">
                     <div class="split-view">
                         <div class="split-left">
-                            <h3 style="margin-bottom:15px; font-size:16px;">Список моделей</h3>
+                            <h3 class="mb-15">Список моделей</h3>
                             <div id="models-list"></div>
                         </div>
                         <div class="split-right">
                             <div id="model-details">
-                                <div style="text-align:center; color:var(--text-secondary); padding:40px;">
+                                <div class="text-center">
                                     Выберите модель для просмотра деталей
                                 </div>
                             </div>
@@ -161,13 +163,13 @@
             const structureNav = document.getElementById('current-project-structure');
             
             if (!projectId) {
-                structureNav.innerHTML = '<div style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">Нет проекта</div>';
+                structureNav.innerHTML = '<div class="no-items text-muted">Нет проекта</div>';
                 return;
             }
             
             const project = getProject(projectId);
             if (!project) {
-                structureNav.innerHTML = '<div style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">Проект не найден</div>';
+                structureNav.innerHTML = '<div class="no-items text-muted">Проект не найден</div>';
                 return;
             }
             
@@ -244,7 +246,7 @@
                 </div>
             `).join('');
             
-            document.getElementById('models-list').innerHTML = html || '<div style="padding:10px; color:var(--text-secondary);">Нет моделей</div>';
+            document.getElementById('models-list').innerHTML = html || '<div class="no-items text-muted">Нет моделей</div>';
         }
 
         function selectModel(modelId, modelName) {
@@ -281,37 +283,37 @@
                 
                 <div id="tab-properties" class="tab-content active">
                     <div class="flex-between mb-15">
-                        <h3 style="margin:0;">${model.name}</h3>
+                        <h3 class="no-margin">${model.name}</h3>
                         <button class="btn btn-primary btn-small" onclick="openDiagram()">📐 Диаграмма классов</button>
                     </div>
-                    <table class="table">
+                    <table class="table model-details-table">
                         <tr>
-                            <td style="font-weight:600; width:200px;">Тип модели</td>
+                            <td>Тип модели</td>
                             <td><span class="badge">${model.type}</span></td>
                         </tr>
                         <tr>
-                            <td style="font-weight:600;">Описание</td>
+                            <td>Описание</td>
                             <td>${model.description}</td>
                         </tr>
                         <tr>
-                            <td style="font-weight:600;">Классов</td>
+                            <td>Классов</td>
                             <td>${model.classes}</td>
                         </tr>
                         <tr>
-                            <td style="font-weight:600;">Атрибутов</td>
+                            <td>Атрибутов</td>
                             <td>${model.attributes}</td>
                         </tr>
                     </table>
                 </div>
                 
                 <div id="tab-structure" class="tab-content">
-                    <h3 style="margin-bottom:15px;">Структура пакетов и классов</h3>
+                    <h3 class="mb-15">Структура пакетов и классов</h3>
                     <div class="tree">${treeHtml}</div>
                 </div>
                 
                 <div id="tab-stats" class="tab-content">
-                    <h3 style="margin-bottom:15px;">Статистика модели</h3>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px;">
+                    <h3 class="mb-15">Статистика модели</h3>
+                    <div class="stats-grid">
                         <div class="stat-box">
                             <div class="stat-value">${model.classes}</div>
                             <div class="stat-label">Всего классов</div>
@@ -337,7 +339,7 @@
                 const children = item.children ? `<div class="tree-children">${renderTree(item.children, level + 1)}</div>` : '';
                 return `
                     <div>
-                        <div class="tree-item" style="padding-left:${level * 20 + 10}px;">
+                        <div class="tree-item tree-item-dynamic" style="padding-left:${level * 20 + 10}px;">
                             ${icon} ${item.name}
                             ${item.stereotype ? `<span class="badge-secondary">${item.stereotype}</span>` : ''}
                         </div>

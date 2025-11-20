@@ -954,6 +954,93 @@ body {
     text-align: center;
 }
 
+/* Utility Classes */
+.mt-15 {
+    margin-top: 15px;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+.gap-15 {
+    gap: 15px;
+}
+
+.text-center {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 40px;
+}
+
+.text-muted {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Project Structure Navigation */
+.project-structure-nav {
+    padding: 10px 0;
+}
+
+.project-structure-nav .no-items {
+    padding: 10px 15px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+}
+
+/* Model Details */
+.model-icon-large {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.warning-title {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 40px;
+}
+
+.warning-title h3 {
+    margin: 0 0 10px 0;
+}
+
+.warning-title p {
+    margin: 0;
+}
+
+.split-left h3,
+.split-right h3 {
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.model-details-table td {
+    font-weight: 600;
+}
+
+.model-details-table td:first-child {
+    width: 200px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.tree-item-dynamic {
+    padding-left: 10px;
+}
+
 /* Project Card Details */
 .project-card-header {
     display: flex;
