@@ -9,27 +9,30 @@
 <body>
     <div class="app-container">
         <!-- SIDEBAR -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
+            <!-- <button class="sidebar-toggle sidebar-open" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                <span class="toggle-icon">☰</span>
+            </button> -->
             <div class="sidebar-header">
                 <strong>Nautilus.CIM</strong>
             </div>
             <div class="sidebar-nav">
-                <a href="index.html" class="nav-item">📊 Панель управления</a>
-                <a href="projects.html" class="nav-item">📁 Проекты</a>
-                <a href="models.html" class="nav-item active">📋 Модели</a>
-                <a href="profiles.html" class="nav-item">⚙️ Профили</a>
+                <!-- <a href="index.html" class="nav-item">📊 Главная</a> -->
+                <!-- <a href="projects.html" class="nav-item">📁 Проекты</a> -->
                 
-                <div class="nav-section-title">Текущий проект</div>
-                <div id="current-project" style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">
-                    Нет проекта
+                <div class="nav-section-title">Структура проекта</div>
+                <div id="current-project-structure" class="project-structure-nav">
+                    <div style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                        Нет проекта
+                    </div>
                 </div>
-
+                
                 <div class="nav-section-title">Действия</div>
-                <div class="nav-item" onclick="openModal('new-project-modal')">+ Новый проект</div>
                 <div class="nav-item" onclick="openModal('new-model-modal')">⬆️ Импорт модели</div>
                 <a href="compare.html" class="nav-item">🔍 Сравнение</a>
             </div>
         </div>
+        <div class="sidebar-resize-handle" id="sidebar-resize-handle"></div>
 
         <!-- MAIN CONTENT -->
         <div class="main-content">
@@ -127,6 +130,7 @@
     </div>
 
     <script src="data.js"></script>
+    <script src="sidebar.js"></script>
     <script>
         let selectedModelId = null;
         let selectedModelName = null;
@@ -135,6 +139,9 @@
             loadSampleData();
             updateCurrentProject();
             checkProject();
+            renderCurrentProjectStructure();
+            restoreSidebarState();
+            restoreProjectsTreeState();
         });
 
         function checkProject() {
@@ -147,6 +154,84 @@
                 document.getElementById('models-container').style.display = 'block';
                 renderModels();
             }
+        }
+
+        function renderCurrentProjectStructure() {
+            const projectId = getCurrentProjectId();
+            const structureNav = document.getElementById('current-project-structure');
+            
+            if (!projectId) {
+                structureNav.innerHTML = '<div style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">Нет проекта</div>';
+                return;
+            }
+            
+            const project = getProject(projectId);
+            if (!project) {
+                structureNav.innerHTML = '<div style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">Проект не найден</div>';
+                return;
+            }
+            
+            const expandedProjects = JSON.parse(localStorage.getItem('expandedProjects') || '{}');
+            const isExpanded = expandedProjects[projectId];
+            
+            let html = `
+                <div class="project-tree-item">
+                    <div class="project-tree-header active">
+                        <button class="project-expand-btn" onclick="toggleCurrentProjectStructure(${projectId}); event.stopPropagation();" 
+                                aria-expanded="${isExpanded ? 'true' : 'false'}">
+                            <span class="expand-icon">${isExpanded ? '▼' : '▶'}</span>
+                        </button>
+                        <span class="project-name" title="${project.name}">
+                            📦 ${project.name}
+                        </span>
+                    </div>
+            `;
+            
+            if (isExpanded) {
+                html += `
+                    <div class="project-structure">
+                        ${project.models && project.models.length > 0 ? `
+                            <div class="structure-section">
+                                <div class="structure-title">📋 Модели (${project.models.length})</div>
+                                <div class="structure-items">
+                                    ${project.models.map(m => `
+                                        <div class="structure-item">🔷 ${m.name || 'Модель без названия'}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${project.profiles && project.profiles.length > 0 ? `
+                            <div class="structure-section">
+                                <div class="structure-title">⚙️ Профили (${project.profiles.length})</div>
+                                <div class="structure-items">
+                                    ${project.profiles.map(pr => `
+                                        <div class="structure-item">⚡ ${pr.name || 'Профиль без названия'}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${(!project.models || project.models.length === 0) && (!project.profiles || project.profiles.length === 0) ? `
+                            <div class="structure-empty">Нет моделей и профилей</div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+            structureNav.innerHTML = html;
+        }
+        
+        function toggleCurrentProjectStructure(projectId) {
+            const expandedProjects = JSON.parse(localStorage.getItem('expandedProjects') || '{}');
+            
+            if (expandedProjects[projectId]) {
+                delete expandedProjects[projectId];
+            } else {
+                expandedProjects[projectId] = true;
+            }
+            
+            localStorage.setItem('expandedProjects', JSON.stringify(expandedProjects));
+            renderCurrentProjectStructure();
         }
 
         function renderModels() {
