@@ -7,15 +7,31 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+     <!-- SIDEBAR TOGGLE BUTTON -->
+    <button class="sidebar-toggle sidebar-open" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+        <span class="toggle-icon">☰</span>
+    </button>
     <div class="app-container">
         <!-- SIDEBAR -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <strong>Nautilus.CIM</strong>
             </div>
             <div class="sidebar-nav">
-                <a href="index.html" class="nav-item">📊 Панель управления</a>
-                <a href="projects.html" class="nav-item active">📁 Проекты</a>
+                <a href="index.html" class="nav-item">📊 Главная</a>
+                <!-- <a href="projects.html" class="nav-item active">📁 Проекты</a> -->
+                <!-- Projects Tree -->
+                <div class="nav-tree-item">
+                    <button class="nav-tree-toggle" onclick="handleProjectsClick()" aria-expanded="true" aria-label="Toggle projects list">
+                        <span class="tree-icon">▶</span>
+                        📁 Проекты
+                    </button>
+                    <div id="projects-tree-container" class="nav-tree-children nav-tree-collapsed">
+                        <div id="projects-list-tree"></div>
+                        <a href="projects.html" class="nav-tree-link">→ Все проекты</a>
+                    </div>
+                </div>
+
                 <a href="models.html" class="nav-item">📋 Модели</a>
                 <a href="profiles.html" class="nav-item">⚙️ Профили</a>
 
@@ -124,137 +140,6 @@
     </div>
 
     <script src="data.js"></script>
-    <script>
-        let currentEditProjectId = null;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSampleData();
-            updateCurrentProject();
-            renderProjects();
-        });
-
-        function renderProjects() {
-            const projects = getProjects();
-            const html = projects.map(p => `
-                <div class="card">
-                    <div class="flex-between mb-10">
-                        <div>
-                            <div style="font-weight:600; font-size:16px; margin-bottom:5px;">${p.name}</div>
-                            <div style="font-size:13px; color:var(--text-secondary);">Версия ${p.version} • Создан: ${p.createdAt || 'N/A'}</div>
-                        </div>
-                        <div class="flex gap-10">
-                            <button class="btn btn-secondary btn-small" onclick="editProject(${p.id})">✏️ Изменить</button>
-                            <button class="btn btn-primary btn-small" onclick="openProject(${p.id})">Открыть →</button>
-                        </div>
-                    </div>
-                    <div style="margin-top:10px; color:var(--text-secondary); font-size:14px;">
-                        ${p.description || 'Нет описания'}
-                    </div>
-                    <div style="margin-top:15px; display:flex; gap:15px; font-size:13px;">
-                        <span>📋 Модели: <strong>${p.models.length}</strong></span>
-                        <span>⚙️ Профили: <strong>${p.profiles.length}</strong></span>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('projects-list').innerHTML = html || '<div style="text-align:center; color:var(--text-secondary); padding:40px;">Нет проектов</div>';
-        }
-
-        function filterProjects() {
-            const query = document.getElementById('search-projects').value.toLowerCase();
-            const projects = getProjects();
-            const filtered = projects.filter(p => 
-                p.name.toLowerCase().includes(query) || 
-                (p.description && p.description.toLowerCase().includes(query))
-            );
-
-            const html = filtered.map(p => `
-                <div class="card">
-                    <div class="flex-between mb-10">
-                        <div>
-                            <div style="font-weight:600; font-size:16px; margin-bottom:5px;">${p.name}</div>
-                            <div style="font-size:13px; color:var(--text-secondary);">Версия ${p.version} • Создан: ${p.createdAt || 'N/A'}</div>
-                        </div>
-                        <div class="flex gap-10">
-                            <button class="btn btn-secondary btn-small" onclick="editProject(${p.id})">✏️ Изменить</button>
-                            <button class="btn btn-primary btn-small" onclick="openProject(${p.id})">Открыть →</button>
-                        </div>
-                    </div>
-                    <div style="margin-top:10px; color:var(--text-secondary); font-size:14px;">
-                        ${p.description || 'Нет описания'}
-                    </div>
-                    <div style="margin-top:15px; display:flex; gap:15px; font-size:13px;">
-                        <span>📋 Модели: <strong>${p.models.length}</strong></span>
-                        <span>⚙️ Профили: <strong>${p.profiles.length}</strong></span>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('projects-list').innerHTML = html || '<div style="text-align:center; color:var(--text-secondary); padding:40px;">Проекты не найдены</div>';
-        }
-
-        function createProject() {
-            const name = document.getElementById('project-name').value.trim();
-            if (!name) {
-                alert('Введите название проекта');
-                return;
-            }
-
-            const projects = getProjects();
-            const newProject = {
-                id: Math.max(...projects.map(p => p.id), 0) + 1,
-                name: name,
-                description: document.getElementById('project-desc').value,
-                version: document.getElementById('project-version').value,
-                createdAt: new Date().toISOString().split('T')[0],
-                models: [],
-                profiles: []
-            };
-
-            projects.push(newProject);
-            saveProjects(projects);
-            closeModal('new-project-modal');
-
-            // Clear form
-            document.getElementById('project-name').value = '';
-            document.getElementById('project-desc').value = '';
-            document.getElementById('project-version').value = '1.0';
-
-            renderProjects();
-            alert('Проект успешно создан!');
-        }
-
-        function editProject(projectId) {
-            currentEditProjectId = projectId;
-            const project = getProject(projectId);
-
-            document.getElementById('edit-project-name').value = project.name;
-            document.getElementById('edit-project-desc').value = project.description || '';
-            document.getElementById('edit-project-version').value = project.version;
-
-            openModal('edit-project-modal');
-        }
-
-        function saveProjectEdit() {
-            if (!currentEditProjectId) return;
-
-            const projects = getProjects();
-            const project = projects.find(p => p.id === currentEditProjectId);
-
-            project.name = document.getElementById('edit-project-name').value;
-            project.description = document.getElementById('edit-project-desc').value;
-            project.version = document.getElementById('edit-project-version').value;
-
-            saveProjects(projects);
-            closeModal('edit-project-modal');
-            renderProjects();
-            alert('Проект успешно обновлён!');
-        }
-
-        function openProject(projectId) {
-            setCurrentProject(projectId);
-            window.location.href = 'models.html';
-        }
-    </script>
+    <script src="projects.js"></script>
 </body>
 </html>
