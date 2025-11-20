@@ -10,9 +10,9 @@
     <div class="app-container">
         <!-- SIDEBAR -->
         <div class="sidebar" id="sidebar">
-            <!-- <button class="sidebar-toggle sidebar-open" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+            <button class="sidebar-toggle sidebar-open" onclick="toggleSidebar()" aria-label="Toggle sidebar">
                 <span class="toggle-icon">☰</span>
-            </button> -->
+            </button>
             <div class="sidebar-header">
                 <strong id="sidebar-project-title">Nautilus.CIM</strong>
             </div>
@@ -198,7 +198,7 @@
             let html = `
                 <div class="project-tree-item">
                     <div class="project-tree-header active">
-                        <button class="project-expand-btn" onclick="toggleCurrentProjectStructure(${projectId}); event.stopPropagation();" 
+                        <button class="project-expand-btn" data-project-id="${projectId}" 
                                 aria-expanded="${isExpanded ? 'true' : 'false'}">
                             <span class="expand-icon">${isExpanded ? '▼' : '▶'}</span>
                         </button>
@@ -209,37 +209,232 @@
             `;
             
             if (isExpanded) {
-                html += `
-                    <div class="project-structure">
-                        ${project.models && project.models.length > 0 ? `
-                            <div class="structure-section">
-                                <div class="structure-title">📋 Модели (${project.models.length})</div>
-                                <div class="structure-items">
-                                    ${project.models.map(m => `
-                                        <div class="structure-item">🔷 ${m.name || 'Модель без названия'}</div>
-                                    `).join('')}
-                                </div>
+                html += `<div class="project-structure">`;
+                
+                // Render Models with full tree structure
+                if (project.models && project.models.length > 0) {
+                    html += `
+                        <div class="structure-section">
+                            <div class="structure-title">📋 Модели (${project.models.length})</div>
+                            <div class="structure-items">
+                    `;
+                    
+                    project.models.forEach((m, idx) => {
+                        html += renderModelTree(m, 0, `model-${projectId}-${idx}`);
+                    });
+                    
+                    html += `
                             </div>
-                        ` : ''}
-                        ${project.profiles && project.profiles.length > 0 ? `
-                            <div class="structure-section">
-                                <div class="structure-title">⚙️ Профили (${project.profiles.length})</div>
-                                <div class="structure-items">
-                                    ${project.profiles.map(pr => `
-                                        <div class="structure-item">⚡ ${pr.name || 'Профиль без названия'}</div>
-                                    `).join('')}
-                                </div>
+                        </div>
+                    `;
+                }
+                
+                // Render Profiles with full tree structure
+                if (project.profiles && project.profiles.length > 0) {
+                    html += `
+                        <div class="structure-section">
+                            <div class="structure-title">⚙️ Профили (${project.profiles.length})</div>
+                            <div class="structure-items">
+                    `;
+                    
+                    project.profiles.forEach((p, idx) => {
+                        html += renderProfileTree(p, 0, `profile-${projectId}-${idx}`);
+                    });
+                    
+                    html += `
                             </div>
-                        ` : ''}
-                        ${(!project.models || project.models.length === 0) && (!project.profiles || project.profiles.length === 0) ? `
-                            <div class="structure-empty">Нет моделей и профилей</div>
-                        ` : ''}
-                    </div>
-                `;
+                        </div>
+                    `;
+                }
+                
+                // No items message
+                if ((!project.models || project.models.length === 0) && (!project.profiles || project.profiles.length === 0)) {
+                    html += `<div class="structure-empty">Нет моделей и профилей</div>`;
+                }
+                
+                html += `</div>`;
             }
             
             html += `</div>`;
             structureNav.innerHTML = html;
+            
+            // Initialize tree expand/collapse functionality
+            initializeTreeExpanders();
+        }
+        
+        function renderModelTree(model, level = 0, baseId = '') {
+            const expandedItems = JSON.parse(localStorage.getItem('expandedTreeItems') || '{}');
+            const itemId = baseId;
+            const isExpanded = expandedItems[itemId];
+            const hasChildren = model.packages && model.packages.length > 0;
+            
+            let html = `
+                <div class="tree-structure-item" style="margin-left: ${level * 20}px;">
+                    <div class="tree-structure-header">
+            `;
+            
+            if (hasChildren) {
+                html += `
+                    <button class="tree-expand-btn" data-item-id="${itemId}" data-type="model">
+                        <span class="tree-expand-icon">${isExpanded ? '▼' : '▶'}</span>
+                    </button>
+                `;
+            } else {
+                html += `<span class="tree-expand-btn-empty"></span>`;
+            }
+            
+            html += `
+                        <span class="tree-structure-name">🔷 ${model.name || 'Модель без названия'}</span>
+                    </div>
+            `;
+            
+            if (hasChildren && isExpanded) {
+                html += `<div class="tree-structure-children">`;
+                model.packages.forEach((pkg, idx) => {
+                    html += renderPackageTree(pkg, level + 1, `${baseId}-pkg-${idx}`);
+                });
+                html += `</div>`;
+            }
+            
+            html += `</div>`;
+            return html;
+        }
+        
+        function renderProfileTree(profile, level = 0, baseId = '') {
+            const expandedItems = JSON.parse(localStorage.getItem('expandedTreeItems') || '{}');
+            const itemId = baseId;
+            const isExpanded = expandedItems[itemId];
+            const hasChildren = profile.attributes && profile.attributes.length > 0;
+            
+            let html = `
+                <div class="tree-structure-item" style="margin-left: ${level * 20}px;">
+                    <div class="tree-structure-header">
+            `;
+            
+            if (hasChildren) {
+                html += `
+                    <button class="tree-expand-btn" data-item-id="${itemId}" data-type="profile">
+                        <span class="tree-expand-icon">${isExpanded ? '▼' : '▶'}</span>
+                    </button>
+                `;
+            } else {
+                html += `<span class="tree-expand-btn-empty"></span>`;
+            }
+            
+            html += `
+                        <span class="tree-structure-name">⚡ ${profile.name || 'Профиль без названия'}</span>
+                    </div>
+            `;
+            
+            if (hasChildren && isExpanded) {
+                html += `<div class="tree-structure-children">`;
+                profile.attributes.forEach((attr, idx) => {
+                    html += `
+                        <div class="tree-structure-item" style="margin-left: ${(level + 1) * 20}px;">
+                            <span class="tree-expand-btn-empty"></span>
+                            <span class="tree-structure-name">• ${attr.name || 'Атрибут'}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            
+            html += `</div>`;
+            return html;
+        }
+        
+        function renderPackageTree(pkg, level = 0, baseId = '') {
+            const expandedItems = JSON.parse(localStorage.getItem('expandedTreeItems') || '{}');
+            const itemId = baseId;
+            const isExpanded = expandedItems[itemId];
+            const hasChildren = (pkg.packages && pkg.packages.length > 0) || (pkg.classes && pkg.classes.length > 0);
+            
+            let html = `
+                <div class="tree-structure-item" style="margin-left: ${level * 20}px;">
+                    <div class="tree-structure-header">
+            `;
+            
+            if (hasChildren) {
+                html += `
+                    <button class="tree-expand-btn" data-item-id="${itemId}" data-type="package">
+                        <span class="tree-expand-icon">${isExpanded ? '▼' : '▶'}</span>
+                    </button>
+                `;
+            } else {
+                html += `<span class="tree-expand-btn-empty"></span>`;
+            }
+            
+            html += `
+                        <span class="tree-structure-name">📁 ${pkg.name || 'Пакет'}</span>
+                    </div>
+            `;
+            
+            if (hasChildren && isExpanded) {
+                html += `<div class="tree-structure-children">`;
+                
+                if (pkg.packages) {
+                    pkg.packages.forEach((subPkg, idx) => {
+                        html += renderPackageTree(subPkg, level + 1, `${baseId}-pkg-${idx}`);
+                    });
+                }
+                
+                if (pkg.classes) {
+                    const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
+                    classes.forEach((cls, idx) => {
+                        const className = typeof cls === 'string' ? cls : cls.name;
+                        html += `
+                            <div class="tree-structure-item" style="margin-left: 20px;">
+                                <span class="tree-expand-btn-empty"></span>
+                                <span class="tree-structure-name">📄 ${className || 'Класс'}</span>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += `</div>`;
+            }
+            
+            html += `</div>`;
+            return html;
+        }
+        
+        function toggleTreeItem(itemId) {
+            console.log('toggleTreeItem called for:', itemId);
+            const expandedItems = JSON.parse(localStorage.getItem('expandedTreeItems') || '{}');
+            
+            if (expandedItems[itemId]) {
+                delete expandedItems[itemId];
+            } else {
+                expandedItems[itemId] = true;
+            }
+            
+            console.log('expandedItems after toggle:', expandedItems);
+            localStorage.setItem('expandedTreeItems', JSON.stringify(expandedItems));
+            renderCurrentProjectStructure();
+        }
+        
+        function initializeTreeExpanders() {
+            const buttons = document.querySelectorAll('.tree-expand-btn');
+            console.log('Found tree expand buttons:', buttons.length);
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const itemId = this.getAttribute('data-item-id');
+                    console.log('Tree button clicked, itemId:', itemId);
+                    toggleTreeItem(itemId);
+                });
+            });
+            
+            // Also add listener for project expand button
+            const projectBtn = document.querySelector('.project-expand-btn');
+            if (projectBtn) {
+                projectBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const projectId = parseInt(this.getAttribute('data-project-id'));
+                    console.log('Project button clicked, projectId:', projectId);
+                    toggleCurrentProjectStructure(projectId);
+                });
+            }
         }
         
         function toggleCurrentProjectStructure(projectId) {

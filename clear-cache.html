@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Cache</title>
+</head>
+<body>
+    <h1>Очищение кэша...</h1>
+    <script>
+        localStorage.clear();
+        console.log('localStorage очищен');
+        setTimeout(() => {
+            window.location.href = 'http://localhost:5500/project-details.html';
+        }, 1000);
+    </script>
+</body>
+</html>

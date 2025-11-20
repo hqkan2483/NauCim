@@ -22,11 +22,43 @@ function loadSampleData() {
                     packages: [
                         {
                             name: "IEC61970",
-                            classes: ["Asset", "PowerSystemResource", "Equipment", "ConductingEquipment"]
+                            packages: [
+                                {
+                                    name: "Core",
+                                    classes: ["Asset", "IdentifiedObject", "PowerSystemResource"]
+                                },
+                                {
+                                    name: "Equipment",
+                                    packages: [
+                                        {
+                                            name: "ConductingEquipment",
+                                            classes: ["ACLineSegment", "PowerTransformer", "Switch"]
+                                        },
+                                        {
+                                            name: "Generation",
+                                            classes: ["GeneratingUnit", "SynchronousMachine", "ThermalGeneratingUnit"]
+                                        }
+                                    ]
+                                }
+                            ]
                         },
                         {
                             name: "IEC61968", 
-                            classes: ["AssetInfo", "RotatingMachineInfo", "TransformerInfo"]
+                            packages: [
+                                {
+                                    name: "AssetInfo",
+                                    classes: ["AssetInfo", "RotatingMachineInfo", "TransformerInfo"]
+                                },
+                                {
+                                    name: "Metering",
+                                    packages: [
+                                        {
+                                            name: "MeterReading",
+                                            classes: ["MeterReading", "Reading", "IntervalReading"]
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 },
@@ -39,8 +71,22 @@ function loadSampleData() {
                     attributes: 345,
                     packages: [
                         {
-                            name: "AssetInfo",
-                            classes: ["RotatingMachineInfo", "SynchronousMachineInfo"]
+                            name: "RussianExtensions",
+                            packages: [
+                                {
+                                    name: "AssetInfo",
+                                    classes: ["RotatingMachineInfo", "SynchronousMachineInfo", "RotorInfo"]
+                                },
+                                {
+                                    name: "GovernanceExtensions",
+                                    packages: [
+                                        {
+                                            name: "Regulations",
+                                            classes: ["RegulatoryRequirement", "ComplianceRecord"]
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 }
