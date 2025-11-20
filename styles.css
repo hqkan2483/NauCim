@@ -79,6 +79,19 @@ body {
     letter-spacing: 0.5px;
 }
 
+/* SIDEBAR RESIZE HANDLE */
+.sidebar-resize-handle {
+    width: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: col-resize;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.sidebar-resize-handle:hover {
+    background: var(--primary-color);
+}
+
 /* MAIN CONTENT */
 .main-content {
     flex: 1;

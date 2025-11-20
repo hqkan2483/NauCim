@@ -1,5 +1,51 @@
 // Nautilus.CIM - Shared Sidebar Script
 
+// Sidebar resize functionality
+let isResizing = false;
+let startX = 0;
+let startWidth = 0;
+
+function initSidebarResize() {
+    const resizeHandle = document.getElementById('sidebar-resize-handle');
+    if (!resizeHandle) return;
+    
+    resizeHandle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        startX = e.clientX;
+        startWidth = document.getElementById('sidebar').offsetWidth;
+        document.body.style.userSelect = 'none';
+        resizeHandle.style.backgroundColor = 'var(--primary-color)';
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        
+        const diff = e.clientX - startX;
+        const newWidth = Math.max(150, Math.min(500, startWidth + diff)); // Min 150px, Max 500px
+        
+        document.getElementById('sidebar').style.width = newWidth + 'px';
+        localStorage.setItem('sidebarWidth', newWidth);
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.userSelect = '';
+            const resizeHandle = document.getElementById('sidebar-resize-handle');
+            if (resizeHandle) {
+                resizeHandle.style.backgroundColor = '';
+            }
+        }
+    });
+}
+
+function restoreSidebarWidth() {
+    const savedWidth = localStorage.getItem('sidebarWidth');
+    if (savedWidth) {
+        document.getElementById('sidebar').style.width = savedWidth + 'px';
+    }
+}
+
 // Sidebar toggle functionality
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -20,6 +66,12 @@ function restoreSidebarState() {
         document.getElementById('sidebar').classList.add('collapsed');
         document.querySelector('.sidebar-toggle').classList.remove('sidebar-open');
     }
+    
+    // Restore sidebar width
+    restoreSidebarWidth();
+    
+    // Initialize resize functionality
+    initSidebarResize();
 }
 
 // Projects Tree Navigation
