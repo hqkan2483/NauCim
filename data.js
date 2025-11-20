@@ -121,6 +121,10 @@ function getProjects() {
     return data ? JSON.parse(data) : [];
 }
 
+function getAllProjects() {
+    return getProjects();
+}
+
 function saveProjects(projects) {
     localStorage.setItem('nautilus-projects', JSON.stringify(projects));
 }
