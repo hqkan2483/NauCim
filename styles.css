@@ -515,13 +515,13 @@ body {
 .sidebar-toggle {
     position: fixed;
     left: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 0;
+    /* transform: translateY(-50%); */
     width: 40px;
     height: 60px;
     background: var(--primary-color, #218085);
     border: none;
-    border-radius: 0 8px 8px 0;
+    /* border-radius: 0 8px 8px 0; */
     cursor: pointer;
     z-index: 1001;
     display: flex;
@@ -535,11 +535,11 @@ body {
 
 .sidebar-toggle:hover {
     background: var(--primary-hover, #1a6669);
-    width: 45px;
+    /* width: 45px; */
 }
 
 .sidebar-toggle.sidebar-open {
-    left: 250px;
+    left: 210px;
 }
 
 .toggle-icon {
@@ -556,7 +556,8 @@ body {
 }
 
 .sidebar.collapsed {
-    width: 0;
+    width: 0px;
+    margin-right: 40px;
 }
 
 @media (max-width: 768px) {
