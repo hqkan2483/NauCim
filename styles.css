@@ -836,3 +836,35 @@ body {
     padding: 20px;
     text-align: center;
 }
+
+/* Project Card Details */
+.project-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.project-card-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: var(--text-primary);
+}
+
+.project-card-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.project-card-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.project-card-description {
+    margin-top: 10px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
