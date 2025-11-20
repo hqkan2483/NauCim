@@ -10,6 +10,11 @@ function initSidebarResize() {
     if (!resizeHandle) return;
     
     resizeHandle.addEventListener('mousedown', (e) => {
+        // Убедиться, что клик именно на handle элементе
+        if (e.target !== resizeHandle && !resizeHandle.contains(e.target)) {
+            return;
+        }
+        
         isResizing = true;
         startX = e.clientX;
         startWidth = document.getElementById('sidebar').offsetWidth;
@@ -47,12 +52,29 @@ function restoreSidebarWidth() {
 }
 
 // Sidebar toggle functionality
+let savedSidebarWidth = null;
+
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.querySelector('.sidebar-toggle');
     
-    sidebar.classList.toggle('collapsed');
-    toggleBtn.classList.toggle('sidebar-open');
+    const isCurrentlyCollapsed = sidebar.classList.contains('collapsed');
+    
+    if (isCurrentlyCollapsed) {
+        // Раскрываем сайдбар
+        const width = savedSidebarWidth || localStorage.getItem('sidebarWidth') || '250px';
+        sidebar.style.width = width + 'px';
+        sidebar.classList.remove('collapsed');
+        toggleBtn.classList.add('sidebar-open');
+    } else {
+        // Скрываем сайдбар
+        // Сохраняем текущую ширину перед скрытием
+        const currentWidth = sidebar.offsetWidth || localStorage.getItem('sidebarWidth') || '250px';
+        savedSidebarWidth = currentWidth;
+        sidebar.style.width = '0px';
+        sidebar.classList.add('collapsed');
+        toggleBtn.classList.remove('sidebar-open');
+    }
     
     // Save state to localStorage
     const isCollapsed = sidebar.classList.contains('collapsed');
@@ -61,14 +83,25 @@ function toggleSidebar() {
 
 // Restore sidebar state on page load
 function restoreSidebarState() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.querySelector('.sidebar-toggle');
     const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-    if (isCollapsed) {
-        document.getElementById('sidebar').classList.add('collapsed');
-        document.querySelector('.sidebar-toggle').classList.remove('sidebar-open');
-    }
+    const savedWidth = localStorage.getItem('sidebarWidth') || '250px';
     
-    // Restore sidebar width
-    restoreSidebarWidth();
+    // Сохранить ширину в переменную для toggleSidebar
+    savedSidebarWidth = savedWidth;
+    
+    if (isCollapsed) {
+        // Сайдбар должен быть скрыт
+        sidebar.classList.add('collapsed');
+        toggleBtn.classList.remove('sidebar-open');
+        sidebar.style.width = '0px';
+    } else {
+        // Сайдбар должен быть видим
+        sidebar.classList.remove('collapsed');
+        toggleBtn.classList.add('sidebar-open');
+        sidebar.style.width = savedWidth + 'px';
+    }
     
     // Initialize resize functionality
     initSidebarResize();

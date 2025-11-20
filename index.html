@@ -7,18 +7,17 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- SIDEBAR TOGGLE BUTTON -->
-    <button class="sidebar-toggle sidebar-open" onclick="toggleSidebar()" aria-label="Toggle sidebar">
-        <span class="toggle-icon">☰</span>
-    </button>
-
     <div class="app-container">
         <!-- SIDEBAR -->
         <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
+            <button class="sidebar-toggle sidebar-open" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                <span class="toggle-icon">☰</span>
+            </button>
+            
+            <div class="sidebar-nav">
+                <div class="sidebar-header">
                 <strong>Nautilus.CIM</strong>
             </div>
-            <div class="sidebar-nav">
                 <a href="index.html" class="nav-item">📊 Главная</a>
                 
                 <!-- Projects Tree -->
