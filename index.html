@@ -152,16 +152,12 @@
                             <div style="font-size:13px; color:var(--text-secondary);">Версия ${p.version} • Создан: ${p.createdAt || 'N/A'}</div>
                         </div>
                         <div class="flex gap-10">
-                            <button class="btn btn-secondary btn-small" onclick="editProject(${p.id})">✏️ Изменить</button>
+
                             <button class="btn btn-primary btn-small" onclick="openProject(${p.id})">Открыть →</button>
                         </div>
                     </div>
                     <div style="margin-top:10px; color:var(--text-secondary); font-size:14px;">
                         ${p.description || 'Нет описания'}
-                    </div>
-                    <div style="margin-top:15px; display:flex; gap:15px; font-size:13px;">
-                        <span>📋 Модели: <strong>${p.models.length}</strong></span>
-                        <span>⚙️ Профили: <strong>${p.profiles.length}</strong></span>
                     </div>
                     
                 </div>
@@ -170,34 +166,34 @@
             document.getElementById('recent-projects').innerHTML = html || '<div class="no-items-message">Нет проектов</div>';
         }
 
-        function renderAllProjects() {
-            const projects = getAllProjects();
-            const currentProjectId = getCurrentProjectId();
+//         function renderAllProjects() {
+//             const projects = getAllProjects();
+//             const currentProjectId = getCurrentProjectId();
             
-            const html = projects.map(p => `
-                <div class="project-card ${currentProjectId === p.id ? 'active' : ''}" onclick="selectProject(${p.id})">
-<div class="flex-between mb-10">
-                        <div>
-                            <div style="font-weight:600; font-size:16px; margin-bottom:5px;">${p.name}</div>
-                            <div style="font-size:13px; color:var(--text-secondary);">Версия ${p.version} • Создан: ${p.createdAt || 'N/A'}</div>
-                        </div>
-                        <div class="flex gap-10">
-                            <button class="btn btn-secondary btn-small" onclick="editProject(${p.id})">✏️ Изменить</button>
-                            <button class="btn btn-primary btn-small" onclick="openProject(${p.id})">Открыть →</button>
-                        </div>
-                    </div>
-                    <div style="margin-top:10px; color:var(--text-secondary); font-size:14px;">
-                        ${p.description || 'Нет описания'}
-                    </div>
-                    <div style="margin-top:15px; display:flex; gap:15px; font-size:13px;">
-                        <span>📋 Модели: <strong>${p.models.length}</strong></span>
-                        <span>⚙️ Профили: <strong>${p.profiles.length}</strong></span>
-                    </div>
-                </div>
-            `).join('');
+//             const html = projects.map(p => `
+//                 <div class="project-card ${currentProjectId === p.id ? 'active' : ''}" onclick="selectProject(${p.id})">
+// <div class="flex-between mb-10">
+//                         <div>
+//                             <div style="font-weight:600; font-size:16px; margin-bottom:5px;">${p.name}</div>
+//                             <div style="font-size:13px; color:var(--text-secondary);">Версия ${p.version} • Создан: ${p.createdAt || 'N/A'}</div>
+//                         </div>
+//                         <div class="flex gap-10">
+//                             <button class="btn btn-secondary btn-small" onclick="editProject(${p.id})">✏️ Изменить</button>
+//                             <button class="btn btn-primary btn-small" onclick="openProject(${p.id})">Открыть →</button>
+//                         </div>
+//                     </div>
+//                     <div style="margin-top:10px; color:var(--text-secondary); font-size:14px;">
+//                         ${p.description || 'Нет описания'}
+//                     </div>
+//                     <div style="margin-top:15px; display:flex; gap:15px; font-size:13px;">
+//                         <span>📋 Модели: <strong>${p.models.length}</strong></span>
+//                         <span>⚙️ Профили: <strong>${p.profiles.length}</strong></span>
+//                     </div>
+//                 </div>
+//             `).join('');
             
-            document.getElementById('all-projects').innerHTML = html || '<div class="no-items-message">Нет проектов</div>';
-        }
+//             document.getElementById('all-projects').innerHTML = html || '<div class="no-items-message">Нет проектов</div>';
+//         }
 
         function selectProject(projectId) {
             // Сохранить выбранный проект
