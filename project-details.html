@@ -268,7 +268,7 @@
             const expandedItems = JSON.parse(localStorage.getItem('expandedTreeItems') || '{}');
             const itemId = baseId;
             const isExpanded = expandedItems[itemId];
-            const hasChildren = model.packages && model.packages.length > 0;
+            const hasChildren = model.rootPackages && model.rootPackages.length > 0;
             
             let html = `
                 <div class="tree-structure-item" style="margin-left: 20px;">
@@ -292,9 +292,76 @@
             
             if (hasChildren && isExpanded) {
                 html += `<div class="tree-structure-children">`;
-                model.packages.forEach((pkg, idx) => {
-                    html += renderPackageTree(pkg, level + 1, `${baseId}-pkg-${idx}`);
+                model.rootPackages.forEach((rootPkg, idx) => {
+                    html += renderRootPackageTree(rootPkg, level + 1, `${baseId}-root-${idx}`);
                 });
+                html += `</div>`;
+            }
+            
+            html += `</div>`;
+            return html;
+        }
+        
+        function renderElementTree(elem, level = 0, baseId = '') {
+            const expandedItems = JSON.parse(localStorage.getItem('expandedTreeItems') || '{}');
+            const itemId = baseId;
+            const isExpanded = expandedItems[itemId];
+            const hasChildren = (elem.attributes && elem.attributes.length > 0) || (elem.links && elem.links.length > 0);
+            
+            const typeIcons = {
+                'Class': '📄',
+                'Interface': '⬟',
+                'Enumeration': '▣',
+                'Package': '📦'
+            };
+            const icon = typeIcons[elem.type] || '📄';
+            const abstractMarker = elem.isAbstract ? ' (abstract)' : '';
+            
+            let html = `
+                <div class="tree-structure-item" style="margin-left: 20px;">
+                    <div class="tree-structure-header">
+            `;
+            
+            if (hasChildren) {
+                html += `
+                    <button class="tree-expand-btn" data-item-id="${itemId}" data-type="element">
+                        <span class="tree-expand-icon">${isExpanded ? '▼' : '▶'}</span>
+                    </button>
+                `;
+            } else {
+                html += `<span class="tree-expand-btn-empty"></span>`;
+            }
+            
+            html += `
+                        <span class="tree-structure-name">${icon} ${elem.name || 'Элемент'}${abstractMarker}</span>
+                    </div>
+            `;
+            
+            if (hasChildren && isExpanded) {
+                html += `<div class="tree-structure-children">`;
+                
+                if (elem.attributes && elem.attributes.length > 0) {
+                    elem.attributes.forEach((attr, idx) => {
+                        html += `
+                            <div class="tree-structure-item" style="margin-left: 20px;">
+                                <span class="tree-expand-btn-empty"></span>
+                                <span class="tree-structure-name">🔹 ${attr.name}: ${attr.type}${attr.multiplicity ? ' [' + attr.multiplicity + ']' : ''}</span>
+                            </div>
+                        `;
+                    });
+                }
+                
+                if (elem.links && elem.links.length > 0) {
+                    elem.links.forEach((link, idx) => {
+                        html += `
+                            <div class="tree-structure-item" style="margin-left: 20px;">
+                                <span class="tree-expand-btn-empty"></span>
+                                <span class="tree-structure-name">🔗 ${link.relation_kind}: ${link.target_class_name}${link.multiplicity ? ' [' + link.multiplicity + ']' : ''}</span>
+                            </div>
+                        `;
+                    });
+                }
+                
                 html += `</div>`;
             }
             
@@ -338,6 +405,56 @@
                         </div>
                     `;
                 });
+                html += `</div>`;
+            }
+            
+            html += `</div>`;
+            return html;
+        }
+        
+        function renderRootPackageTree(rootPkg, level = 0, baseId = '') {
+            const expandedItems = JSON.parse(localStorage.getItem('expandedTreeItems') || '{}');
+            const itemId = baseId;
+            const isExpanded = expandedItems[itemId];
+            const hasChildren = (rootPkg.packages && rootPkg.packages.length > 0) || (rootPkg.elements && rootPkg.elements.length > 0);
+            
+            let html = `
+                <div class="tree-structure-item" style="margin-left: 20px;">
+                    <div class="tree-structure-header">
+            `;
+            
+            if (hasChildren) {
+                html += `
+                    <button class="tree-expand-btn" data-item-id="${itemId}" data-type="package">
+                        <span class="tree-expand-icon">${isExpanded ? '▼' : '▶'}</span>
+                    </button>
+                `;
+            } else {
+                html += `<span class="tree-expand-btn-empty"></span>`;
+            }
+            
+            html += `
+                        <span class="tree-structure-name">📦 ${rootPkg.name || 'Корневой пакет'}</span>
+                    </div>
+            `;
+            
+            if (hasChildren && isExpanded) {
+                html += `<div class="tree-structure-children">`;
+                
+                // Рендер элементов корневого пакета
+                if (rootPkg.elements && rootPkg.elements.length > 0) {
+                    rootPkg.elements.forEach((elem, idx) => {
+                        html += renderElementTree(elem, level + 1, `${baseId}-elem-${idx}`);
+                    });
+                }
+                
+                // Рендер вложенных пакетов
+                if (rootPkg.packages && rootPkg.packages.length > 0) {
+                    rootPkg.packages.forEach((pkg, idx) => {
+                        html += renderPackageTree(pkg, level + 1, `${baseId}-pkg-${idx}`);
+                    });
+                }
+                
                 html += `</div>`;
             }
             
@@ -543,8 +660,8 @@
                             <div class="stat-label">Всего атрибутов</div>
                         </div>
                         <div class="stat-box">
-                            <div class="stat-value">${model.packages ? model.packages.length : 'N/A'}</div>
-                            <div class="stat-label">Пакетов</div>
+                            <div class="stat-value">${model.rootPackages ? model.rootPackages.length : 'N/A'}</div>
+                            <div class="stat-label">Корневых пакетов</div>
                         </div>
                     </div>
                 </div>
