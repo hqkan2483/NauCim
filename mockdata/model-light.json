@@ -1,0 +1,1356 @@
+{ "rootPackages": [
+    {
+      "id": "EAPK_A395E6F1_5B32_439a_8A27_2670237584E0",
+      "name": "IEC61968",
+      "type": "Package",
+      "description": "Пакет верхнего уровня для IEC 61968.",
+      "elementCount": 1,
+      "elements": [
+        {
+          "id": "EAID_421FE0F5_637F_4d59_8483_619A82FA3FB6",
+          "name": "IEC61968CIMVersion",
+          "type": "Class",
+          "description": "Номер версии IEC 61968 CIM, присвоенный этой модели UML.",
+          "visibility": "public",
+          "isAbstract": false,
+          "attributeCount": 2,
+          "linkCount": 0,
+          "attributes": [
+            {
+              "name": "date",
+              "type": "Date",
+              "description": "Форма - ГГГГ-ММ-ДД, например, для 5 января 2009 года это 2009-01-05.",
+              "multiplicity": "1",
+              "visibility": "public"
+            },
+            {
+              "name": "version",
+              "type": "String",
+              "description": "Форма - IEC61968CIMXXvYY, где XX - основная версия пакета CIM, а YY - младшая версия. Например, IEC61968CIM10v17a.",
+              "multiplicity": "1",
+              "visibility": "public"
+            }
+          ],
+          "links": []
+        }
+      ],
+      "children": [
+        {
+          "id": "EAPK_B566F0C3_27CA_4e61_B16F_54AC3A86094A",
+          "name": "LoadControl",
+          "type": "Package",
+          "description": "Этот пакет содержит информационные классы, которые поддерживают специализированные приложения, такие как управление спросом с использованием оборудования для мониторинга нагрузки.",
+          "elementCount": 2,
+          "elements": [
+            {
+              "id": "EAID_60F6FA16_E95D_453f_B107_048EACEB8131",
+              "name": "ConnectDisconnectFunction",
+              "type": "Class",
+              "description": "Функция, которая отключает и повторно подключает нагрузку клиента при определенных условиях.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 8,
+              "linkCount": 1,
+              "attributes": [
+                {
+                  "name": "eventCount",
+                  "type": "Integer",
+                  "description": "Запуск кумулятивного подсчета событий подключения или отключения в течение всего срока службы функции или до тех пор, пока значение не будет очищено.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "isConnected",
+                  "type": "Boolean",
+                  "description": "TRUE, если функция, указанная в предыдущей позиции, находится в подключенном состоянии.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "isDelayedDiscon",
+                  "type": "Boolean",
+                  "description": "Если установлено значение TRUE, коммутатор может отключить службу в конце заданной временной задержки после подачи сигнала отключения. Если установлено значение FALSE, коммутатор может отключить службу сразу же после подачи сигнала об отключении.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "isLocalAutoDisconOp",
+                  "type": "Boolean",
+                  "description": "Если установлено значение TRUE и если отключение, указанное в предыдущей позиции, может осуществляться локально, то операция происходит автоматически. В противном случае это происходит вручную.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "isLocalAutoReconOp",
+                  "type": "Boolean",
+                  "description": "Если установлено значение TRUE и если повторное подключение после отключения, указанного в предыдущей позиции, может выполняться локально, то операция происходит автоматически. В противном случае это происходит вручную.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "isRemoteAutoDisconOp",
+                  "type": "Boolean",
+                  "description": "Если установлено значение TRUE и если отключение, указанное в предыдущей позиции, может управляться удаленно, то операция происходит автоматически. Если установлено значение FALSE и отключением можно управлять удаленно, то операция выполняется вручную.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "isRemoteAutoReconOp",
+                  "type": "Boolean",
+                  "description": "Если установлено значение TRUE и если повторное подключение после отключения, указанного в предыдущей позиции, может осуществляться удаленно, то операция происходит автоматически. Если установлено значение FALSE и если повторное подключение может осуществляться удаленно, то операция выполняется вручную.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "rcdInfo",
+                  "type": "RemoteConnectDisconnectInfo",
+                  "description": "Информация о реле включения/отключения.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_E5E04630_31A6_46ff_9B42_BA31D08C5377",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_47A8D588_D4EE_4452_A925_05BB7E7999C3",
+                  "target_class_name": "EndDeviceFunction",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                }
+              ]
+            },
+            {
+              "id": "EAID_43C2356B_8F95_4a41_80F7_8C03A3887983",
+              "name": "RemoteConnectDisconnectInfo",
+              "type": "Class",
+              "description": "Подробная информация о функции удаленного подключения и отключения.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 12,
+              "linkCount": 0,
+              "attributes": [
+                {
+                  "name": "armedTimeout",
+                  "type": "Seconds",
+                  "description": "Настройка тайм-аута истекшего времени.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "customerVoltageLimit",
+                  "type": "Voltage",
+                  "description": "Предел напряжения на стороне потребителя выключателя, выше которого подключение не должно выполняться.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "energyLimit",
+                  "type": "RealEnergy",
+                  "description": "Лимит энергии перед отключением.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "energyUsageStartDateTime",
+                  "type": "DateTime",
+                  "description": "Дата начала и время накопления энергии для ограничения энергопотребления.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "energyUsageWarning",
+                  "type": "RealEnergy",
+                  "description": "Предупреждение об ограничении энергии, используемое для запуска кода события, что потребление энергии приближается к пределу.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "isArmConnect",
+                  "type": "Boolean",
+                  "description": "TRUE, если переключатель должен быть включен до начала действия подключения.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "isArmDisconnect",
+                  "type": "Boolean",
+                  "description": "TRUE, если переключатель должен быть включен до начала действия отключения.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "isEnergyLimiting",
+                  "type": "Boolean",
+                  "description": "TRUE, если потребление энергии ограничено, и клиент будет отключен, если он превысит лимит.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "needsPowerLimitCheck",
+                  "type": "Boolean",
+                  "description": "TRUE, если необходимо проверить предел нагрузки для немедленного отключения (после подключения), если нагрузка превышает предел.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "needsVoltageLimitCheck",
+                  "type": "Boolean",
+                  "description": "TRUE, если предел напряжения должен быть проверен, чтобы предотвратить подключение, если напряжение превышает предел.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "powerLimit",
+                  "type": "ActivePower",
+                  "description": "Лимит мощности, выше которого подключение либо не должно происходить, либо должно привести к немедленному отключению.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "usePushbutton",
+                  "type": "Boolean",
+                  "description": "TRUE, если для подключения необходимо использовать кнопку.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": []
+            }
+          ],
+          "children": []
+        },
+        {
+          "id": "EAPK_E1CF8707_303E_43fd_9E2C_7BABF3B7D04A",
+          "name": "PaymentMetering",
+          "type": "Package",
+          "description": "Этот пакет содержит информационные классы, которые поддерживают специализированные приложения, такие как учет предварительной оплаты. Эти классы, как правило, связаны с мониторингом и анализом поступлений от клиента за предоставленную услугу.",
+          "elementCount": 2,
+          "elements": [
+            {
+              "id": "EAID_44A5D512_F2E6_40ab_8A83_2097FAD74BA9",
+              "name": "ServiceSupplier",
+              "type": "Class",
+              "description": "Роль организации — поставщик услуг по передаче электрической энергии.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 2,
+              "linkCount": 2,
+              "attributes": [
+                {
+                  "name": "issuerIdentificationNumber",
+                  "type": "String",
+                  "description": "Уникальный ссылочный префиксный номер транзакции, выдаваемый организации Международной организацией по стандартизации с целью добавления тегов к электронным финансовым транзакциям (см. [2] и [3]).",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "kind",
+                  "type": "SupplierKind",
+                  "description": "Вид поставщика.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_384D1942_CD8F_4a45_97CD_19723E0332E9",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_77284812_23D2_4ccb_8EEF_0E40C6E21A9D",
+                  "target_class_name": "OrganisationRole",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                },
+                {
+                  "assoc_id": "EAID_0124E781_CC2E_473d_A94C_FEA932D7925D",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_A25C3A3A_D0B4_478c_BE07_05A04C46863B",
+                  "target_class_name": "UsagePoint",
+                  "target_class_role_name": "UsagePoints",
+                  "src_class_role_name": "ServiceSupplier",
+                  "target_description": "Точки поставки, используемые поставщиком услуг.",
+                  "multiplicity": "0..*"
+                }
+              ]
+            },
+            {
+              "id": "EAID_AD36A8F1_566A_4adc_9461_E9FCC5311239",
+              "name": "SupplierKind",
+              "type": "Enumeration",
+              "description": "Вид поставщика услуг по передаче электрической энергии.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 0,
+              "linkCount": 0,
+              "attributes": [],
+              "links": []
+            }
+          ],
+          "children": []
+        },
+        {
+          "id": "EAPK_9B1FE3BD_046D_4260_82C3_EDBBA5920DFB",
+          "name": "Common",
+          "type": "Package",
+          "description": "Этот пакет содержит информационные классы, которые поддерживают управление распространением в целом.",
+          "elementCount": 17,
+          "elements": [
+            {
+              "id": "EAID_4EF90816_0389_4160_B8DE_57660EDF608F",
+              "name": "ActivityRecord",
+              "type": "Class",
+              "description": "Запись произошедшего или запланированного события.\n",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 5,
+              "linkCount": 2,
+              "attributes": [
+                {
+                  "name": "createdDateTime",
+                  "type": "DateTime",
+                  "description": "Дата и время создания записи активности [Дата и Время].",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "reason",
+                  "type": "String",
+                  "description": "Причина события, приводящего к записи активности.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "severity",
+                  "type": "String",
+                  "description": "Уровень серьезности события, приводящего к записи активности.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "status",
+                  "type": "Status",
+                  "description": "Информация о последствиях события, приведшего к записи активности.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "type",
+                  "type": "String",
+                  "description": "Тип события, приводящего к записи активности.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_F93F74AF_BC72_46c2_BE93_A1425676B664",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_name": "Unknown_EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                },
+                {
+                  "assoc_id": "EAID_1C309570_4598_45cb_BB9D_4E35CDD8F4AE",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_F9A5606C_0571_43e1_A21A_7691F2583BC6",
+                  "target_class_name": "Asset",
+                  "target_class_role_name": "Assets",
+                  "src_class_role_name": "ActivityRecords",
+                  "target_description": "Материальные объекты, для которых была создана запись активности.",
+                  "multiplicity": "0..*"
+                }
+              ]
+            },
+            {
+              "id": "EAID_DEDE7915_82E7_4421_9151_9786061572F9",
+              "name": "Agreement",
+              "type": "Class",
+              "description": "Официальное соглашение.",
+              "visibility": "public",
+              "isAbstract": true,
+              "attributeCount": 2,
+              "linkCount": 1,
+              "attributes": [
+                {
+                  "name": "signDate",
+                  "type": "Date",
+                  "description": "Дата заключения договора [Дата и Время].",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "validityInterval",
+                  "type": "DateTimeInterval",
+                  "description": "Период действия договора (с момента вступления в силу до прекращения действия) [Дата и Время].",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_CC9A5D87_ACB7_4f9b_9B68_17AB081F3867",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_1DA00E7A_6D65_4ffd_BA1F_E1D6C9E18345",
+                  "target_class_name": "Document",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                }
+              ]
+            },
+            {
+              "id": "EAID_B4DC42DF_5C14_4d68_AA09_BE7C5DDE713C",
+              "name": "ConfigurationEvent",
+              "type": "Class",
+              "description": "Используется для отчета о создании, изменении или удалении объекта или его конфигурирования.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 3,
+              "linkCount": 6,
+              "attributes": [
+                {
+                  "name": "effectiveDateTime",
+                  "type": "DateTime",
+                  "description": "Дата и время, когда событие вступило или вступит в силу [Дата и Время].",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "modifiedBy",
+                  "type": "String",
+                  "description": "Источник/инициатор модификации.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "remark",
+                  "type": "String",
+                  "description": "Замечания в виде произвольного текста.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_6142E8FD_4A94_4196_ACDC_760226E8DC13",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_4EF90816_0389_4160_B8DE_57660EDF608F",
+                  "target_class_name": "ActivityRecord",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                },
+                {
+                  "assoc_id": "EAID_D1DA19C5_D101_4c53_B218_DC07893139F6",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_77284812_23D2_4ccb_8EEF_0E40C6E21A9D",
+                  "target_class_name": "OrganisationRole",
+                  "target_class_role_name": "ChangedOrganisationRole",
+                  "src_class_role_name": "ConfigurationEvents",
+                  "target_description": "Роль организации, к котоой относится событие конфигурирования.",
+                  "multiplicity": "0..1"
+                },
+                {
+                  "assoc_id": "EAID_D71EF489_12AB_4063_80A0_FB8762B51B1F",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_A25C3A3A_D0B4_478c_BE07_05A04C46863B",
+                  "target_class_name": "UsagePoint",
+                  "target_class_role_name": "ChangedUsagePoint",
+                  "src_class_role_name": "ConfigurationEvents",
+                  "target_description": "Точка поставки, изменение которой привело к данному событию конфигурирования.",
+                  "multiplicity": "0..1"
+                },
+                {
+                  "assoc_id": "EAID_E16AA60B_42C8_4c1e_AD8B_FCB4F86D38DB",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_F9A5606C_0571_43e1_A21A_7691F2583BC6",
+                  "target_class_name": "Asset",
+                  "target_class_role_name": "ChangedAsset",
+                  "src_class_role_name": "ConfigurationEvents",
+                  "target_description": "Материальный объект, изменение которого привело к данному событию конфигурирования.",
+                  "multiplicity": "0..1"
+                },
+                {
+                  "assoc_id": "EAID_E76AACE2_070A_4931_8C25_AD366D0C61F9",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_2855D338_0ACD_4a6e_9B09_C2942CFD2FD5",
+                  "target_class_name": "Location",
+                  "target_class_role_name": "ChangedLocation",
+                  "src_class_role_name": "ConfigurationEvents",
+                  "target_description": "Расположение материальных объектов и энергообъектов, изменение которого привело к данному событию конфигурирования.",
+                  "multiplicity": "0..1"
+                },
+                {
+                  "assoc_id": "EAID_FADB31C5_BF63_412f_A5B1_E5C4BB7866CE",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_1DA00E7A_6D65_4ffd_BA1F_E1D6C9E18345",
+                  "target_class_name": "Document",
+                  "target_class_role_name": "ChangedDocument",
+                  "src_class_role_name": "ConfigurationEvents",
+                  "target_description": "Документ, изменение которого привело к данному событию конфигурирования.",
+                  "multiplicity": "0..1"
+                }
+              ]
+            },
+            {
+              "id": "EAID_EC283CCE_E4A9_401f_B9E8_E9842918C5B3",
+              "name": "CoordinateSystem",
+              "type": "Class",
+              "description": "Система географических координат.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 1,
+              "linkCount": 2,
+              "attributes": [
+                {
+                  "name": "crsUrn",
+                  "type": "String",
+                  "description": "Тип координатной системы в форме унифицированного имени ресурса - URN.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_321F9E45_D11F_4639_9D53_2ED3E59C31D8",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_name": "Unknown_EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                },
+                {
+                  "assoc_id": "EAID_CCB74667_C617_4fa7_8D4B_05AF97BB3159",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_2855D338_0ACD_4a6e_9B09_C2942CFD2FD5",
+                  "target_class_name": "Location",
+                  "target_class_role_name": "Locations",
+                  "src_class_role_name": "CoordinateSystem",
+                  "target_description": "Расположения объекта энергосистемы в данной системе координат.",
+                  "multiplicity": "0..*"
+                }
+              ]
+            },
+            {
+              "id": "EAID_1DA00E7A_6D65_4ffd_BA1F_E1D6C9E18345",
+              "name": "Document",
+              "type": "Class",
+              "description": "Документ.",
+              "visibility": "public",
+              "isAbstract": true,
+              "attributeCount": 3,
+              "linkCount": 2,
+              "attributes": [
+                {
+                  "name": "createdDateTime",
+                  "type": "DateTime",
+                  "description": "Дата и время создания документа.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "electronicAddress",
+                  "type": "ElectronicAddress",
+                  "description": "Электронный адрес документа.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "lastModifiedDateTime",
+                  "type": "DateTime",
+                  "description": "Дата и время последнего изменения документа.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_53FE50DB_5923_4a22_8E13_44B3F46A4DC1",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_name": "Unknown_EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                },
+                {
+                  "assoc_id": "EAID_FADB31C5_BF63_412f_A5B1_E5C4BB7866CE",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_B4DC42DF_5C14_4d68_AA09_BE7C5DDE713C",
+                  "target_class_name": "ConfigurationEvent",
+                  "target_class_role_name": "ConfigurationEvents",
+                  "src_class_role_name": "ChangedDocument",
+                  "target_description": "События конфигурирования документа.",
+                  "multiplicity": "0..*"
+                }
+              ]
+            },
+            {
+              "id": "EAID_8944C4B7_E959_4519_8DF5_2DA742A0FB89",
+              "name": "ElectronicAddress",
+              "type": "Class",
+              "description": "Электронный адрес.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 8,
+              "linkCount": 0,
+              "attributes": [
+                {
+                  "name": "email1",
+                  "type": "String",
+                  "description": "Почтовый адрес 1.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "email2",
+                  "type": "String",
+                  "description": "Почтовый адрес 2.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "lan",
+                  "type": "String",
+                  "description": "Адрес сети.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "mac",
+                  "type": "String",
+                  "description": "MAC (Media Access Control) адрес.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "password",
+                  "type": "String",
+                  "description": "Пароль.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "radio",
+                  "type": "String",
+                  "description": "Радио адрес.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "userID",
+                  "type": "String",
+                  "description": "Идентификатор.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "web",
+                  "type": "String",
+                  "description": "Интернет адрес.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": []
+            },
+            {
+              "id": "EAID_2855D338_0ACD_4a6e_9B09_C2942CFD2FD5",
+              "name": "Location",
+              "type": "Class",
+              "description": "Расположение материальных объектов и энергообъектов.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 9,
+              "linkCount": 6,
+              "attributes": [
+                {
+                  "name": "direction",
+                  "type": "String",
+                  "description": "Направление, позволяющее полевым бригадам быстро найти данный объект.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "electronicAddress",
+                  "type": "ElectronicAddress",
+                  "description": "Электронный адрес.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "geoInfoReference",
+                  "type": "String",
+                  "description": "Ссылка на географический источник информации, часто не относящийся к объекту.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "mainAddress",
+                  "type": "StreetAddress",
+                  "description": "Основной адрес.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "phone1",
+                  "type": "TelephoneNumber",
+                  "description": "Номер телефона.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "phone2",
+                  "type": "TelephoneNumber",
+                  "description": "Дополнительный номер телефона.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "secondaryAddress",
+                  "type": "StreetAddress",
+                  "description": "Дополнительный адрес.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "status",
+                  "type": "Status",
+                  "description": "Статус.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "type",
+                  "type": "String",
+                  "description": "Классификация по корпоративным стандартам и практикам предприятия.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_8C0EB6BD_7205_4a96_A76B_792D18B28AF8",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_name": "Unknown_EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                },
+                {
+                  "assoc_id": "EAID_E76AACE2_070A_4931_8C25_AD366D0C61F9",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_B4DC42DF_5C14_4d68_AA09_BE7C5DDE713C",
+                  "target_class_name": "ConfigurationEvent",
+                  "target_class_role_name": "ConfigurationEvents",
+                  "src_class_role_name": "ChangedLocation",
+                  "target_description": "События конфигурирования местоположения.",
+                  "multiplicity": "0..*"
+                },
+                {
+                  "assoc_id": "EAID_CCB74667_C617_4fa7_8D4B_05AF97BB3159",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_EC283CCE_E4A9_401f_B9E8_E9842918C5B3",
+                  "target_class_name": "CoordinateSystem",
+                  "target_class_role_name": "CoordinateSystem",
+                  "src_class_role_name": "Locations",
+                  "target_description": "Система координат, используемая для описания местоположения.",
+                  "multiplicity": "0..1"
+                },
+                {
+                  "assoc_id": "EAID_225423CB_CE47_4a28_9EE3_6D19E58F0B8B",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
+                  "target_class_name": "Unknown_EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
+                  "target_class_role_name": "PowerSystemResources",
+                  "src_class_role_name": "Location",
+                  "target_description": "Объекты энергосистемы в данном расположении.",
+                  "multiplicity": "0..*"
+                },
+                {
+                  "assoc_id": "EAID_E6F14244_4A6B_46f1_A905_93CD11342C6D",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_F8C5041F_A35E_4f32_8D88_699B780C1CA0",
+                  "target_class_name": "PositionPoint",
+                  "target_class_role_name": "PositionPoints",
+                  "src_class_role_name": "Location",
+                  "target_description": "Последовательность расположения координатных точек, описывающих это местоположение, выраженная в системе координат.",
+                  "multiplicity": "0..*"
+                },
+                {
+                  "assoc_id": "EAID_7C0D894E_CF0F_46ef_BF64_61C41055A68E",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_F9A5606C_0571_43e1_A21A_7691F2583BC6",
+                  "target_class_name": "Asset",
+                  "target_class_role_name": "Assets",
+                  "src_class_role_name": "Location",
+                  "target_description": "Материальные объекты в данном расположении.",
+                  "multiplicity": "0..*"
+                }
+              ]
+            },
+            {
+              "id": "EAID_37A2D189_0FE5_4ce6_9739_9FC17EBD176D",
+              "name": "Organisation",
+              "type": "Class",
+              "description": "Организация.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 5,
+              "linkCount": 6,
+              "attributes": [
+                {
+                  "name": "electronicAddress",
+                  "type": "ElectronicAddress",
+                  "description": "Электронный адрес.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "phone1",
+                  "type": "TelephoneNumber",
+                  "description": "Номер телефона.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "phone2",
+                  "type": "TelephoneNumber",
+                  "description": "Дополнительный номер телефона.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "postalAddress",
+                  "type": "StreetAddress",
+                  "description": "Почтовый адрес, потенциально отличный от streetAddress (например, другой город).",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "streetAddress",
+                  "type": "StreetAddress",
+                  "description": "Адрес улицы.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_0E2693A0_C8B5_45b0_93CE_487980883000",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_name": "Unknown_EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                },
+                {
+                  "assoc_id": "EAID_CD87874E_A817_4055_A97F_93B43D342ABA",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_37A2D189_0FE5_4ce6_9739_9FC17EBD176D",
+                  "target_class_name": "Organisation",
+                  "target_class_role_name": "ChildOrganisations",
+                  "src_class_role_name": "ParentOrganisation",
+                  "target_description": "Вышестоящая организация, филиал.",
+                  "multiplicity": "0..*"
+                },
+                {
+                  "assoc_id": "EAID_CD87874E_A817_4055_A97F_93B43D342ABA",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_37A2D189_0FE5_4ce6_9739_9FC17EBD176D",
+                  "target_class_name": "Organisation",
+                  "target_class_role_name": "ParentOrganisation",
+                  "src_class_role_name": "ChildOrganisations",
+                  "target_description": "Вышестоящая организация, филиал.",
+                  "multiplicity": "0..1"
+                },
+                {
+                  "assoc_id": "EAID_1D3E27DE_2975_49f4_BA7E_872ED8FD4030",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_77284812_23D2_4ccb_8EEF_0E40C6E21A9D",
+                  "target_class_name": "OrganisationRole",
+                  "target_class_role_name": "Roles",
+                  "src_class_role_name": "Organisation",
+                  "target_description": "Роли, выполняемые организацией.",
+                  "multiplicity": "0..*"
+                },
+                {
+                  "assoc_id": "EAID_2DACD868_A231_43c3_A533_CCBF2E526140",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_C3DE5C00_15CB_418a_9104_DE28F1F576F7",
+                  "target_class_name": "Unknown_EAID_C3DE5C00_15CB_418a_9104_DE28F1F576F7",
+                  "target_class_role_name": "Partner",
+                  "src_class_role_name": "Organisation",
+                  "target_description": null,
+                  "multiplicity": "1"
+                },
+                {
+                  "assoc_id": "EAID_F88B8717_15D5_4f6f_87C9_B6C381BD2989",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_8A26D9A4_CC96_4067_A02C_3503B222BC70",
+                  "target_class_name": "Unknown_EAID_8A26D9A4_CC96_4067_A02C_3503B222BC70",
+                  "target_class_role_name": "OrganisationUnits",
+                  "src_class_role_name": "Organisation",
+                  "target_description": null,
+                  "multiplicity": "0..*"
+                }
+              ]
+            },
+            {
+              "id": "EAID_77284812_23D2_4ccb_8EEF_0E40C6E21A9D",
+              "name": "OrganisationRole",
+              "type": "Class",
+              "description": "Типизированная роль организации по отношению к другим объектам информационной модели.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 0,
+              "linkCount": 4,
+              "attributes": [],
+              "links": [
+                {
+                  "assoc_id": "EAID_2DD77258_C00C_43ea_BAA8_F244E0EA5C74",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_name": "Unknown_EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                },
+                {
+                  "assoc_id": "EAID_D1DA19C5_D101_4c53_B218_DC07893139F6",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_B4DC42DF_5C14_4d68_AA09_BE7C5DDE713C",
+                  "target_class_name": "ConfigurationEvent",
+                  "target_class_role_name": "ConfigurationEvents",
+                  "src_class_role_name": "ChangedOrganisationRole",
+                  "target_description": "События конфигурирования роли организации.",
+                  "multiplicity": "0..*"
+                },
+                {
+                  "assoc_id": "EAID_1D3E27DE_2975_49f4_BA7E_872ED8FD4030",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_37A2D189_0FE5_4ce6_9739_9FC17EBD176D",
+                  "target_class_name": "Organisation",
+                  "target_class_role_name": "Organisation",
+                  "src_class_role_name": "Roles",
+                  "target_description": "Организации, имеющие заданную роль.",
+                  "multiplicity": "0..1"
+                },
+                {
+                  "assoc_id": "EAID_2AE06D57_793F_4ca4_A355_627DB89D3F98",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_name": "Unknown_EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_role_name": "Objects",
+                  "src_class_role_name": "OrganisationRoles",
+                  "target_description": "Объекты информационной модели, связанные с ролью организации.",
+                  "multiplicity": "0..*"
+                }
+              ]
+            },
+            {
+              "id": "EAID_F8C5041F_A35E_4f32_8D88_699B780C1CA0",
+              "name": "PositionPoint",
+              "type": "Class",
+              "description": "Координатная точка в системе географических координат.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 5,
+              "linkCount": 1,
+              "attributes": [
+                {
+                  "name": "groupNumber",
+                  "type": "Integer",
+                  "description": "Последовательный, начиная с нуля, номер группы.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "sequenceNumber",
+                  "type": "Integer",
+                  "description": "Последовательный, начиная с нуля, номер координаты в серии координат.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "xPosition",
+                  "type": "String",
+                  "description": "Расположение по координате x.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "yPosition",
+                  "type": "String",
+                  "description": "Расположение по координате y.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "zPosition",
+                  "type": "String",
+                  "description": "Расположение по координате z.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_E6F14244_4A6B_46f1_A905_93CD11342C6D",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_2855D338_0ACD_4a6e_9B09_C2942CFD2FD5",
+                  "target_class_name": "Location",
+                  "target_class_role_name": "Location",
+                  "src_class_role_name": "PositionPoints",
+                  "target_description": "Расположение объекта энергосистемы, соответствующее координатной точке.",
+                  "multiplicity": "1"
+                }
+              ]
+            },
+            {
+              "id": "EAID_827C0BA4_63F7_43da_B652_3732D13EA9B6",
+              "name": "Status",
+              "type": "Class",
+              "description": "Информация о текущем состоянии, имеющая отношение к сущности.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 4,
+              "linkCount": 0,
+              "attributes": [
+                {
+                  "name": "dateTime",
+                  "type": "DateTime",
+                  "description": "Дата и время, для которых применяется значение статуса.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "reason",
+                  "type": "String",
+                  "description": "Код причины или объяснение того, почему объект перешел в текущее значение состояния.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "remark",
+                  "type": "String",
+                  "description": "Соответствующая информация, касающаяся текущего значения, в виде текста свободной формы.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "value",
+                  "type": "String",
+                  "description": "Значение статуса.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": []
+            },
+            {
+              "id": "EAID_EEFB7DE9_976B_4836_9986_AF42F05F092C",
+              "name": "StreetAddress",
+              "type": "Class",
+              "description": "Почтовый адрес.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 3,
+              "linkCount": 0,
+              "attributes": [
+                {
+                  "name": "postalCode",
+                  "type": "String",
+                  "description": "Почтовый индекс.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "streetDetail",
+                  "type": "StreetDetail",
+                  "description": "Адрес в населенном пункте или городе.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "townDetail",
+                  "type": "TownDetail",
+                  "description": "Расположение города и район.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": []
+            },
+            {
+              "id": "EAID_CC5854A9_A3AF_4754_8391_87503B425866",
+              "name": "StreetDetail",
+              "type": "Class",
+              "description": "Адрес в населенном пункте или городе.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 6,
+              "linkCount": 0,
+              "attributes": [
+                {
+                  "name": "buildingName",
+                  "type": "String",
+                  "description": "Название строения.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "floorIdentification",
+                  "type": "String",
+                  "description": "Цифровое или символьное обозначение этажа.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "name",
+                  "type": "String",
+                  "description": "Название улицы.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "number",
+                  "type": "String",
+                  "description": "Номер строения или другое обозначение расположения, связанное с улицей.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "suiteNumber",
+                  "type": "String",
+                  "description": "Номер офиса.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "type",
+                  "type": "String",
+                  "description": "Тип улицы (бульвар, проспект и т.п.).",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": []
+            },
+            {
+              "id": "EAID_24A6F986_F544_4853_AF87_09C9010C2BA2",
+              "name": "TelephoneNumber",
+              "type": "Class",
+              "description": "Телефонный номер.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 4,
+              "linkCount": 0,
+              "attributes": [
+                {
+                  "name": "cityCode",
+                  "type": "String",
+                  "description": "Код города.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "countryCode",
+                  "type": "String",
+                  "description": "Код страны.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "extension",
+                  "type": "String",
+                  "description": "Дополнительный номер.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "localNumber",
+                  "type": "String",
+                  "description": "Основная часть телефонного номера.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": []
+            },
+            {
+              "id": "EAID_53A55537_1C97_4d21_A1BD_C4036B9E5742",
+              "name": "TimeSchedule",
+              "type": "Class",
+              "description": "Описание всего, что меняется с течением времени.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 1,
+              "linkCount": 1,
+              "attributes": [
+                {
+                  "name": "scheduleInterval",
+                  "type": "DateTimeInterval",
+                  "description": "Расписание.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_E4AC616B_6821_4321_8DAC_0992731DE502",
+                  "relation_kind": "Generalization",
+                  "role": "child",
+                  "target_class_id": "EAID_1DA00E7A_6D65_4ffd_BA1F_E1D6C9E18345",
+                  "target_class_name": "Document",
+                  "target_class_role_name": null,
+                  "src_class_role_name": null,
+                  "target_description": null,
+                  "multiplicity": "1"
+                }
+              ]
+            },
+            {
+              "id": "EAID_9484EE7B_B65C_49a5_87F9_46BC54CD418C",
+              "name": "TownDetail",
+              "type": "Class",
+              "description": "Расположение города и район.",
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 4,
+              "linkCount": 0,
+              "attributes": [
+                {
+                  "name": "country",
+                  "type": "String",
+                  "description": "Название страны.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "name",
+                  "type": "String",
+                  "description": "Название города.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "section",
+                  "type": "String",
+                  "description": "Район города.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "stateOrProvince",
+                  "type": "String",
+                  "description": "Регион страны.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": []
+            },
+            {
+              "id": "EAID_D5CD6178_2C8C_4551_BBA3_D1D2534ED8E3",
+              "name": "UserAttribute",
+              "type": "Class",
+              "description": null,
+              "visibility": "public",
+              "isAbstract": false,
+              "attributeCount": 3,
+              "linkCount": 1,
+              "attributes": [
+                {
+                  "name": "name",
+                  "type": "String",
+                  "description": "Наименование атрибута.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "sequenceNumber",
+                  "type": "Integer",
+                  "description": "Порядковый номер атрибута в списке атрибутов.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                },
+                {
+                  "name": "value",
+                  "type": "StringQuantity",
+                  "description": "Значение атрибута.",
+                  "multiplicity": "0..1",
+                  "visibility": "public"
+                }
+              ],
+              "links": [
+                {
+                  "assoc_id": "EAID_6A3E5CD2_F2C7_44a0_8BC0_D1DBE69E0AEB",
+                  "relation_kind": "Association",
+                  "role": "unspecified",
+                  "target_class_id": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_name": "Unknown_EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                  "target_class_role_name": "Object",
+                  "src_class_role_name": "CustomAttributes",
+                  "target_description": "Объект, использующий специализированный атрибут.",
+                  "multiplicity": "0..1"
+                }
+              ]
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
