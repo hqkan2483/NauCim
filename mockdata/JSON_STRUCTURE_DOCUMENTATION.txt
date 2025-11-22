@@ -1,0 +1,508 @@
+
+╔════════════════════════════════════════════════════════════════════╗
+║         JSON STRUCTURE DOCUMENTATION - XMI PARSER v3.7             ║
+╚════════════════════════════════════════════════════════════════════╝
+
+📅 DATE: 2025-11-22 10:55
+🔧 VERSION: 3.7
+
+═══════════════════════════════════════════════════════════════════════
+
+1. ROOT LEVEL (Top-Level Fields)
+═══════════════════════════════════════════════════════════════════════
+
+The JSON output has the following root-level structure:
+
+{
+  "totalPackages": number,
+  "totalElements": number,
+  "totalAttributes": number,
+  "totalLinks": number,
+  "rootPackages": [Package, ...]
+}
+
+FIELDS DESCRIPTION:
+───────────────────
+
+• totalPackages (int)
+  → Total number of packages parsed from the XMI file
+  → Example from export-61968.xml: 14
+
+• totalElements (int)
+  → Total number of UML elements
+  → Example from export-61968.xml: 123
+
+• totalAttributes (int)
+  → Total number of attributes across all elements
+  → Example from export-61968.xml: 342
+
+• totalLinks (int)
+  → Total number of links/relationships
+  → Example from export-61968.xml: 218 (73 Generalization + 145 Association)
+
+• rootPackages (array of Package objects)
+  → Top-level packages with no parent
+  → Can contain nested child packages and elements
+
+
+═══════════════════════════════════════════════════════════════════════
+
+2. PACKAGE OBJECT STRUCTURE
+═══════════════════════════════════════════════════════════════════════
+
+A Package represents a UML package container:
+
+{
+  "id": string,
+  "name": string,
+  "type": "Package",
+  "description": string | null,
+  "elementCount": number,
+  "elements": [UMLElement, ...],
+  "children": [Package, ...]
+}
+
+FIELDS:
+───────
+
+• id (string)
+  Format: "EAPK_XXXXXXXX_XXXX_XXXX_XXXX_XXXXXXXXXXXX" (UUID)
+  Example: "EAPK_A395E6F1_5B32_439a_8A27_2670237584E0"
+
+• name (string)
+  Human-readable package name
+  Example: "IEC61968", "LoadControl", "Common", "Assets"
+
+• type (string)
+ type of package
+  "Model" - root package of model
+  "Package" -   Indicates this is a package object
+
+• description (string | null)
+  Package documentation from Enterprise Architect Extension
+  null if no description available
+
+• elementCount (number)
+  Number of direct child elements in this package
+  Does not include elements in nested packages
+  Example: 17
+
+• elements (array)
+  Array of UML elements contained in this package
+  Empty array if package has no direct elements
+
+• children (array)
+  Array of child Package objects (nested packages)
+  Empty array if no nested packages
+  Represents package hierarchy
+
+
+═══════════════════════════════════════════════════════════════════════
+
+3. UML ELEMENT OBJECT STRUCTURE
+═══════════════════════════════════════════════════════════════════════
+
+An Element represents a UML Class, Interface, DataType, etc.:
+
+{
+  "id": string,
+  "name": string,
+  "type": string,
+  "description": string | null,
+  "visibility": string,
+  "isAbstract": boolean,
+  "attributeCount": number,
+  "linkCount": number,
+  "attributes": [Attribute, ...],
+  "links": [Link, ...]
+}
+
+FIELDS:
+───────
+
+• id (string)
+  XMI unique identifier (UUID format)
+  Example: "EAID_B4DC42DF_5C14_4d68_AA09_BE7C5DDE713C"
+
+• name (string)
+  Name of the element
+  Example: "ConfigurationEvent", "UsagePoint", "Asset"
+
+• type (string)
+  Type of element: "Class", "Interface", "DataType", "Enumeration", "PrimitiveType"
+  Example: "Class"
+
+• description (string | null)
+  Element documentation from Enterprise Architect Extension
+  null if no description available
+
+• visibility (string)
+  Access level: "public", "private", "protected", "package"
+  Default: "public"
+
+• isAbstract (boolean)
+  true if element is abstract (cannot instantiate)
+  false if concrete
+
+• attributeCount (number)
+  Number of attributes defined in this element
+  Example: 5
+
+• linkCount (number)
+  Number of links/relationships
+  Includes Generalization and Association
+  Example: 6
+
+• attributes (array)
+  Array of Attribute objects (properties/fields)
+  Empty array if no attributes
+
+• links (array)
+  Array of Link objects (relationships)
+  Empty array if no relationships
+
+
+═══════════════════════════════════════════════════════════════════════
+
+4. ATTRIBUTE OBJECT STRUCTURE
+═══════════════════════════════════════════════════════════════════════
+
+An Attribute represents a property/field of an element:
+
+{
+  "name": string,
+  "type": string | null,
+  "description": string | null,
+  "multiplicity": string,
+  "visibility": string
+}
+
+FIELDS:
+───────
+
+• name (string)
+  Attribute name
+  Example: "eventTime", "eventType", "Status"
+
+• type (string | null)
+  Data type (built-in or class reference)
+  Examples: "String", "Integer", "Date", "Boolean", "Document"
+  null if type cannot be resolved
+
+• description (string | null)
+  Attribute documentation
+  null if not available
+
+• multiplicity (string)
+  Cardinality: "1", "0..1", "0..*", "1..*"
+  Default: "1"
+
+• visibility (string)
+  Access level: "public", "private", "protected", "package"
+  Default: "public"
+
+
+═══════════════════════════════════════════════════════════════════════
+
+5. LINK OBJECT STRUCTURE (Relationships)
+═══════════════════════════════════════════════════════════════════════
+
+A Link represents a relationship between elements:
+
+{
+  "assoc_id": string | null,
+  "relation_kind": string,
+  "role": string,
+  "target_class_id": string | null,
+  "target_class_name": string | null,
+  "target_class_role_name": string | null,
+  "src_class_role_name": string | null,
+  "target_description": string | null,
+  "multiplicity": string
+}
+
+FIELDS:
+───────
+
+• assoc_id (string | null)
+  XMI identifier of the relationship
+  Format: "EAID_XXXXXXXX_XXXX_XXXX_XXXX_XXXXXXXXXXXX"
+  null if cannot be resolved
+
+• relation_kind (string)
+  Type: "Generalization" (inheritance) or "Association" (connection)
+
+• role (string)
+  Role of source element
+  For Generalization: "child"
+  For Association: "unspecified"
+
+• target_class_id (string | null)
+  XMI ID of the target element
+  null if cannot be resolved
+
+• target_class_name (string | null)
+  Name of the target element
+  Example: "UsagePoint", "ActivityRecord"
+  null if cannot be resolved
+
+• target_class_role_name (string | null)
+  Role name at target end (Association only)
+  null for Generalization
+  Example: "ChangedUsagePoint"
+
+• src_class_role_name (string | null)
+  Role name at source end (Association only)
+  null for Generalization
+  Example: "ConfigurationEvents"
+
+• target_description (string | null) [NEW IN v3.7]
+  Documentation of the target role (Association only)
+  Extracted from EA Extension connector
+  null for Generalization or if not available
+  Example: "Точка поставки, изменение которой привело..."
+
+• multiplicity (string)
+  Cardinality at target end
+  Formats: "1", "0..1", "0..*", "1..*"
+  Default: "1"
+
+
+═══════════════════════════════════════════════════════════════════════
+
+6. RELATIONSHIP TYPES EXPLAINED
+═══════════════════════════════════════════════════════════════════════
+
+GENERALIZATION (Inheritance):
+──────────────────────────────
+{
+  "assoc_id": "EAID_...",
+  "relation_kind": "Generalization",
+  "role": "child",
+  "target_class_id": "EAID_...",
+  "target_class_name": "ActivityRecord",
+  "target_class_role_name": null,
+  "src_class_role_name": null,
+  "target_description": null,
+  "multiplicity": "1"
+}
+→ Meaning: Source extends (inherits from) target
+→ Example: ConfigurationEvent extends ActivityRecord
+
+
+ASSOCIATION:
+──────────────
+{
+  "assoc_id": "EAID_D71EF489_12AB_4063_80A0_FB8762B51B1F",
+  "relation_kind": "Association",
+  "role": "unspecified",
+  "target_class_id": "EAID_A25C3A3A_D0B4_478c_BE07_05A04C46863B",
+  "target_class_name": "UsagePoint",
+  "target_class_role_name": "ChangedUsagePoint",
+  "src_class_role_name": "ConfigurationEvents",
+  "target_description": "Точка поставки, изменение которой привело...",
+  "multiplicity": "0..1"
+}
+→ Meaning: Source is connected to target
+→ Multiplicity: Source can reference 0 or 1 target
+→ Roles provide semantic names to the association
+
+
+═══════════════════════════════════════════════════════════════════════
+
+7. MULTIPLICITY VALUES
+═══════════════════════════════════════════════════════════════════════
+
+"1"       → Exactly 1 (required, single)
+"0..1"    → 0 or 1 (optional, single)
+"0..*"    → 0 or more (optional, collection)
+"1..*"    → 1 or more (required, collection)
+
+
+═══════════════════════════════════════════════════════════════════════
+
+8. VISIBILITY VALUES
+═══════════════════════════════════════════════════════════════════════
+
+"public"    → Accessible from anywhere
+"private"   → Only within the same class
+"protected" → Within class and subclasses
+"package"   → Only within the same package
+
+
+═══════════════════════════════════════════════════════════════════════
+
+9. COMPLETE EXAMPLE
+═══════════════════════════════════════════════════════════════════════
+
+{
+  "totalPackages": 2,
+  "totalElements": 3,
+  "totalAttributes": 5,
+  "totalLinks": 2,
+  "rootPackages": [
+    {
+      "id": "EAPK_A395E6F1_5B32_439a_8A27_2670237584E0",
+      "name": "IEC61968",
+      "type": "Package",
+      "description": "Пакет IEC 61968.",
+      "elementCount": 1,
+      "elements": [
+        {
+          "id": "EAID_B4DC42DF_5C14_4d68_AA09_BE7C5DDE713C",
+          "name": "ConfigurationEvent",
+          "type": "Class",
+          "description": "События конфигурирования.",
+          "visibility": "public",
+          "isAbstract": false,
+          "attributeCount": 2,
+          "linkCount": 2,
+          "attributes": [
+            {
+              "name": "eventTime",
+              "type": "Date",
+              "description": "Время события.",
+              "multiplicity": "1",
+              "visibility": "public"
+            },
+            {
+              "name": "eventType",
+              "type": null,
+              "description": null,
+              "multiplicity": "0..1",
+              "visibility": "public"
+            }
+          ],
+          "links": [
+            {
+              "assoc_id": "EAID_D71EF489_12AB_4063_80A0_FB8762B51B1F",
+              "relation_kind": "Association",
+              "role": "unspecified",
+              "target_class_id": "EAID_A25C3A3A_D0B4_478c_BE07_05A04C46863B",
+              "target_class_name": "UsagePoint",
+              "target_class_role_name": "ChangedUsagePoint",
+              "src_class_role_name": "ConfigurationEvents",
+              "target_description": "Точка поставки, изменение...",
+              "multiplicity": "0..1"
+            },
+            {
+              "assoc_id": "EAID_GENERALIZATION_ID",
+              "relation_kind": "Generalization",
+              "role": "child",
+              "target_class_id": "EAID_77284812_23D2_4ccb_8EEF_0E40C6E21A9D",
+              "target_class_name": "ActivityRecord",
+              "target_class_role_name": null,
+              "src_class_role_name": null,
+              "target_description": null,
+              "multiplicity": "1"
+            }
+          ]
+        }
+      ],
+      "children": [
+        {
+          "id": "EAPK_B566F0C3_27CA_4e61_B16F_54AC3A86094A",
+          "name": "LoadControl",
+          "type": "Package",
+          "description": "Управление нагрузкой.",
+          "elementCount": 0,
+          "elements": [],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
+
+
+═══════════════════════════════════════════════════════════════════════
+
+10. STATISTICS FROM export-61968.xml
+═══════════════════════════════════════════════════════════════════════
+
+Root Level:
+  totalPackages: 14
+  totalElements: 123
+  totalAttributes: 342
+  totalLinks: 218
+  rootPackages: 1 (single root "IEC61968")
+
+Link Distribution:
+  Generalization: 73
+  Association: 145
+
+Largest Packages:
+  Assets: 22 elements
+  Common: 17 elements
+  Metering: 14 elements
+
+
+═══════════════════════════════════════════════════════════════════════
+
+11. PYTHON CODE EXAMPLES
+═══════════════════════════════════════════════════════════════════════
+
+# Load JSON
+import json
+with open('model.json', 'r', encoding='utf-8') as f:
+    data = json.load(f)
+
+# Get statistics
+total_packages = data['totalPackages']
+total_elements = data['totalElements']
+
+# Get all root packages
+packages = data['rootPackages']
+
+# Get first element
+first_element = data['rootPackages'][0]['elements'][0]
+
+# Find element by name
+def find_element(packages, target_name):
+    for pkg in packages:
+        for elem in pkg['elements']:
+            if elem['name'] == target_name:
+                return elem
+        if pkg['children']:
+            result = find_element(pkg['children'], target_name)
+            if result:
+                return result
+    return None
+
+config_event = find_element(data['rootPackages'], 'ConfigurationEvent')
+
+# Get associations
+associations = [
+    link for link in config_event['links']
+    if link['relation_kind'] == 'Association'
+]
+
+# Get attributes with multiple values
+multiple = [
+    attr for attr in config_event['attributes']
+    if attr['multiplicity'] in ['0..*', '1..*']
+]
+
+
+═══════════════════════════════════════════════════════════════════════
+
+12. ELEMENT TYPE VALUES
+═══════════════════════════════════════════════════════════════════════
+
+Possible values for UMLElement.type:
+
+"Class"         → Ordinary UML class
+"Interface"     → Interface definition
+"DataType"      → Composite or user-defined data type
+"Enumeration"   → Enumerated type with fixed values
+"PrimitiveType" → Built-in primitive type
+
+
+═══════════════════════════════════════════════════════════════════════
+
+END OF DOCUMENTATION
+
+This document provides comprehensive reference for understanding the
+JSON structure output from XMI Parser v3.7.
+
+═══════════════════════════════════════════════════════════════════════
