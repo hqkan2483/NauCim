@@ -165,7 +165,8 @@ function loadSampleData() {
               id: "EAPK_A395E6F1_5B32_439a_8A27_2670237584E0",
               name: "TC57CIM",
               type: "Package",
-              description: "Пакет верхнего уровня для CIM 100. Корневой элемент модели.",
+              description:
+                "Пакет верхнего уровня для CIM 100. Корневой элемент модели.",
               elementCount: 1,
 
               elements: [
@@ -201,12 +202,23 @@ function loadSampleData() {
                 },
               ],
 
-              packages: [
+              children: [
                 {
-                  name: "IEC61970",
-                  packages: [
+                  id: "EAPK_F4A98993_8222_43a4_8E1E_B9BDC365F1F9",
+                  name: "Base",
+                  type: "Package",
+                  description:
+                    "Содержание базового CIM, опубликованное как IEC 61970-301.",
+                  elementCount: 0,
+                  elements: [],
+                  children: [
                     {
-                      name: "Core",
+                      id: "EAPK_206781BC_D83E_42bf_8043_1814D42B842D",
+                      name: "Domain",
+                      type: "Package",
+                      description:
+                        "Пакет домена определяет примитивные типы данных, которые используются классами в других пакетах. Стереотипы используются для описания типов данных. Определены следующие стереотипы:\n&lt;&lt;enumeration&gt;&gt; Список допустимых постоянных значений.\n&lt;&lt;Primitive&gt;&gt; Самые основные типы данных, используемые для составления всех других типов данных.\n&lt;&lt;CIMDatatype&gt;&gt; Тип данных, содержащий атрибут value, необязательную единицу измерения и множитель единицы измерения. Единица измерения и множитель могут быть указаны как статическая переменная, инициализированная допустимым значением.\n&lt;&lt;Compound&gt;&gt; Составная часть примитива, перечисления, CIMDatatype или других составных классов, при условии, что составные классы не повторяются.\nДля всех типов данных допускаются как положительные, так и отрицательные значения, если для конкретного типа данных не указано иное.",
+                      elementCount: 45,
                       classes: [
                         "Asset",
                         "IdentifiedObject",
@@ -214,23 +226,40 @@ function loadSampleData() {
                       ],
                     },
                     {
-                      name: "Equipment",
-                      packages: [
+                      id: "EAPK_CE9851B0_8E38_4b48_8F62_E78E9C31767A",
+                      name: "Core",
+                      type: "Package",
+                      description:
+                        "Содержит основные объекты PowerSystemResource и ConductingEquipment, общие для всех приложений, а также общие коллекции этих объектов. Не для всех приложений требуются все основные объекты.  Этот пакет не зависит ни от какого другого пакета, кроме пакета домена, но большинство других пакетов имеют ассоциации и обобщения, которые зависят от него.",
+                      elementCount: 24,
+                      children: [
                         {
-                          name: "ConductingEquipment",
+                          id: "EAPK_38D068F1_7EB3_431f_AC75_50C618E48644",
+                          name: "Wires",
+                          type: "Package",
+                          description:
+                            "Расширение к пакету Core и Topology, которое моделирует информацию об электрических характеристиках сетей передачи и распределения.",
+                          elementCount: 70,
                           classes: [
                             "ACLineSegment",
                             "PowerTransformer",
                             "Switch",
                           ],
+                          children: [],
                         },
+
                         {
+                          id: "EAPK_8659D928_50B5_43b5_B1EB_DABFA4899FC4",
                           name: "Generation",
+                          type: "Package",
+                          description:
+                            "Этот пакет содержит пакеты, содержащие информацию для ввода в эксплуатацию энергоблоков и экономичной диспетчеризации гидроэлектростанций и тепловых электростанций, Прогнозирования нагрузки, автоматического управления генерацией и моделирования энергоблоков для обучающего моделирования.",
                           classes: [
                             "GeneratingUnit",
                             "SynchronousMachine",
                             "ThermalGeneratingUnit",
                           ],
+                          children: [],
                         },
                       ],
                     },
@@ -240,18 +269,32 @@ function loadSampleData() {
                   name: "IEC61968",
                   packages: [
                     {
-                      name: "AssetInfo",
+                      id: "EAPK_94FB7462_43A1_4334_B899_194EBCADF5E9",
+                      name: "InfAssetInfo",
+                      type: "Package",
+                      description:
+                        "Общие дополнительные технические параметры коммутационных аппаратов.",
                       classes: [
                         "AssetInfo",
                         "RotatingMachineInfo",
                         "TransformerInfo",
                       ],
+                      children: [],
                     },
                     {
-                      name: "Metering",
+                      id: "EAPK_E1CF8707_303E_43fd_9E2C_7BABF3B7D04A",
+                      name: "PaymentMetering",
+                      type: "Package",
+                      description:
+                        "Этот пакет содержит информационные классы, которые поддерживают специализированные приложения, такие как учет предварительной оплаты. Эти классы, как правило, связаны с мониторингом и анализом поступлений от клиента за предоставленную услугу.",
+                      elementCount: 2,
                       packages: [
                         {
-                          name: "MeterReading",
+                          id: "EAPK_00CC6185_D562_4605_942E_EF2FA3BB8E54",
+                          name: "Metering",
+                          type: "Package",
+                          description:
+                            "Этот пакет содержит основные информационные классы, которые поддерживают приложения для конечных устройств со специализированными классами для устройств измерения и локальной сети, а также функции удаленного считывания. Эти классы обычно связаны с точкой, в которой услуга предоставляется клиенту.",
                           classes: [
                             "MeterReading",
                             "Reading",
@@ -259,6 +302,7 @@ function loadSampleData() {
                           ],
                         },
                       ],
+                      children: [],
                     },
                   ],
                 },
@@ -331,7 +375,7 @@ function loadSampleData() {
           attributes: 178,
         },
       ],
-    }    ,
+    },
     // {
     //   id: 2,
     //   name: "Профили электросчётчиков",

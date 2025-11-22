@@ -416,7 +416,7 @@
             const expandedItems = JSON.parse(localStorage.getItem('expandedTreeItems') || '{}');
             const itemId = baseId;
             const isExpanded = expandedItems[itemId];
-            const hasChildren = (rootPkg.packages && rootPkg.packages.length > 0) || (rootPkg.elements && rootPkg.elements.length > 0);
+            const hasChildren = (rootPkg.children && rootPkg.children.length > 0) || (rootPkg.elements && rootPkg.elements.length > 0);
             
             let html = `
                 <div class="tree-structure-item" style="margin-left: 20px;">
@@ -449,8 +449,8 @@
                 }
                 
                 // Рендер вложенных пакетов
-                if (rootPkg.packages && rootPkg.packages.length > 0) {
-                    rootPkg.packages.forEach((pkg, idx) => {
+                if (rootPkg.children && rootPkg.children.length > 0) {
+                    rootPkg.children.forEach((pkg, idx) => {
                         html += renderPackageTree(pkg, level + 1, `${baseId}-pkg-${idx}`);
                     });
                 }
@@ -466,7 +466,7 @@
             const expandedItems = JSON.parse(localStorage.getItem('expandedTreeItems') || '{}');
             const itemId = baseId;
             const isExpanded = expandedItems[itemId];
-            const hasChildren = (pkg.packages && pkg.packages.length > 0) || (pkg.classes && pkg.classes.length > 0);
+            const hasChildren = (pkg.children && pkg.children.length > 0) || (pkg.elements && pkg.elements.length > 0);
             
             let html = `
                 <div class="tree-structure-item" style="margin-left: 20px;">
@@ -491,26 +491,17 @@
             if (hasChildren && isExpanded) {
                 html += `<div class="tree-structure-children">`;
                 
-                if (pkg.packages) {
-                    pkg.packages.forEach((subPkg, idx) => {
-                        html += renderPackageTree(subPkg, level + 1, `${baseId}-pkg-${idx}`);
+                // Рендер элементов пакета
+                if (pkg.elements && pkg.elements.length > 0) {
+                    pkg.elements.forEach((elem, idx) => {
+                        html += renderElementTree(elem, level + 1, `${baseId}-elem-${idx}`);
                     });
                 }
                 
-                if (pkg.classes) {
-                    const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
-                    classes.forEach((cls, idx) => {
-                        const className = typeof cls === 'string' ? cls : cls.name;
-                        const isAbstract = typeof cls === 'object' && cls.isAbstract ? ' (abstract)' : '';
-                        const classType = typeof cls === 'object' ? cls.type : 'Class';
-                        const icon = classType === 'Interface' ? '⬟' : classType === 'Enumeration' ? '▣' : '📄';
-                        
-                        html += `
-                            <div class="tree-structure-item" style="margin-left: 20}px;">
-                                <span class="tree-expand-btn-empty"></span>
-                                <span class="tree-structure-name">${icon} ${className}${isAbstract}</span>
-                            </div>
-                        `;
+                // Рендер вложенных пакетов
+                if (pkg.children && pkg.children.length > 0) {
+                    pkg.children.forEach((subPkg, idx) => {
+                        html += renderPackageTree(subPkg, level + 1, `${baseId}-pkg-${idx}`);
                     });
                 }
                 
