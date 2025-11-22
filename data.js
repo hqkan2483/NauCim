@@ -1,5 +1,70 @@
 // Nautilus.CIM Data Management Library
 
+// ============================================================
+// MEMORY STORE - Global In-Memory Data Storage
+// ============================================================
+const MemoryStore = {
+    // In-memory storage for all data
+    store: {
+        projects: [],
+        currentProjectId: null
+    },
+
+    // Initialize store with sample data
+    initialize(data) {
+        this.store.projects = data.projects || [];
+        this.store.currentProjectId = data.currentProjectId || null;
+        console.log('✅ MemoryStore initialized with', this.store.projects.length, 'projects');
+    },
+
+    // Get all projects
+    getProjects() {
+        return this.store.projects || [];
+    },
+
+    // Get single project by ID
+    getProject(id) {
+        return this.store.projects.find(p => p.id === id) || null;
+    },
+
+    // Add project
+    addProject(project) {
+        this.store.projects.push(project);
+        return project;
+    },
+
+    // Update project
+    updateProject(id, updates) {
+        const project = this.getProject(id);
+        if (project) {
+            Object.assign(project, updates);
+        }
+        return project;
+    },
+
+    // Delete project
+    deleteProject(id) {
+        this.store.projects = this.store.projects.filter(p => p.id !== id);
+    },
+
+    // Get current project ID
+    getCurrentProjectId() {
+        return this.store.currentProjectId;
+    },
+
+    // Set current project ID
+    setCurrentProjectId(id) {
+        this.store.currentProjectId = id;
+    },
+
+    // Get current project
+    getCurrentProject() {
+        const id = this.getCurrentProjectId();
+        return id ? this.getProject(id) : null;
+    }
+};
+
+// ============================================================
 // Load focl.json model data
 let foclData = null;
 
@@ -76,11 +141,11 @@ function loadSampleData() {
             models: [
                 {
                     id: 1,
-                    name: "TC57CIM",
+                    name: "TC57CIM - CIM100",
                     type: "Каноническая модель",
-                    description: "CIM версия IEC 61970/61968",
-                    classes: 523,
-                    attributes: 2847,
+                    description: "CIM 100 версия IEC 61970/61968, редакция 2025 года",
+                    classes: 2225,
+                    attributes: 6328,
                     packages: [
                         {
                             name: "IEC61970",
@@ -219,8 +284,11 @@ function loadSampleData() {
         }
     ];
 
-    localStorage.setItem('nautilus-projects', JSON.stringify(sampleProjects));
-    localStorage.setItem('nautilus-current-project', '1');
+    // Initialize MemoryStore instead of localStorage
+    MemoryStore.initialize({
+        projects: sampleProjects,
+        currentProjectId: 1
+    });
 }
 
 // Initialize FOCL project with data from focl.json
@@ -249,15 +317,13 @@ async function initializeFoclProject() {
         foclProject.models.push(model);
     });
 
-    // Add to projects if not already there
-    let projects = getProjects();
-    const existingIndex = projects.findIndex(p => p.id === 999);
-    if (existingIndex >= 0) {
-        projects[existingIndex] = foclProject;
+    // Add to projects using MemoryStore
+    const existingProject = MemoryStore.getProject(999);
+    if (existingProject) {
+        MemoryStore.updateProject(999, foclProject);
     } else {
-        projects.push(foclProject);
+        MemoryStore.addProject(foclProject);
     }
-    saveProjects(projects);
     console.log('✅ FOCL project initialized');
 }
 
@@ -268,34 +334,32 @@ function getFoclData() {
 
 // Project Management
 function getProjects() {
-    const data = localStorage.getItem('nautilus-projects');
-    return data ? JSON.parse(data) : [];
+    return MemoryStore.getProjects();
 }
 
 function getAllProjects() {
-    return getProjects();
+    return MemoryStore.getProjects();
 }
 
 function saveProjects(projects) {
-    localStorage.setItem('nautilus-projects', JSON.stringify(projects));
+    // Projects are automatically saved in MemoryStore
+    // This function is kept for compatibility
 }
 
 function getProject(id) {
-    const projects = getProjects();
-    return projects.find(p => p.id === id);
+    return MemoryStore.getProject(id);
 }
 
 function getCurrentProjectId() {
-    return parseInt(localStorage.getItem('nautilus-current-project'));
+    return MemoryStore.getCurrentProjectId();
 }
 
 function setCurrentProject(projectId) {
-    localStorage.setItem('nautilus-current-project', projectId.toString());
+    MemoryStore.setCurrentProjectId(projectId);
 }
 
 function getCurrentProject() {
-    const id = getCurrentProjectId();
-    return id ? getProject(id) : null;
+    return MemoryStore.getCurrentProject();
 }
 
 // Model Management
@@ -305,12 +369,10 @@ function getModels(projectId) {
 }
 
 function addModel(projectId, model) {
-    const projects = getProjects();
-    const project = projects.find(p => p.id === projectId);
+    const project = MemoryStore.getProject(projectId);
     if (project) {
         model.id = Math.max(...project.models.map(m => m.id), 0) + 1;
         project.models.push(model);
-        saveProjects(projects);
         return model;
     }
     return null;
@@ -328,12 +390,10 @@ function getProfiles(projectId) {
 }
 
 function addProfile(projectId, profile) {
-    const projects = getProjects();
-    const project = projects.find(p => p.id === projectId);
+    const project = MemoryStore.getProject(projectId);
     if (project) {
         profile.id = Math.max(...project.profiles.map(p => p.id), 0) + 1;
         project.profiles.push(profile);
-        saveProjects(projects);
         return profile;
     }
     return null;
@@ -418,6 +478,18 @@ function getSampleClassStructure() {
             }
         ]
     };
+}
+
+// ============================================================
+// DEBUG UTILITIES
+// ============================================================
+function debugStore() {
+    console.group('MemoryStore Debug Info');
+    console.log('Projects count:', MemoryStore.getProjects().length);
+    console.log('Current project ID:', MemoryStore.getCurrentProjectId());
+    console.log('All projects:', MemoryStore.getProjects());
+    console.log('Current project:', MemoryStore.getCurrentProject());
+    console.groupEnd();
 }
 
 console.log('✅ Nautilus.CIM Data Library loaded');
