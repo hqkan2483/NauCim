@@ -129,7 +129,11 @@ function convertFoclPackage(pkg) {
 
 // Initialize sample data on first load
 function loadSampleData() {
-    if (localStorage.getItem('nautilus-projects')) return;
+    // Check if already initialized in memory
+    if (MemoryStore.getProjects().length > 0) {
+        console.log('✅ Sample data already loaded in memory');
+        return;
+    }
 
     const sampleProjects = [
         {
