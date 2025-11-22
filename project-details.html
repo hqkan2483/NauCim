@@ -302,6 +302,32 @@
             return html;
         }
         
+        function renderLinkItem(link) {
+            let icon = '🔗';
+            let linkLabel = '';
+            
+            if (link.relation_kind === 'Generalization') {
+                icon = '🔼';
+                if (link.role === 'child') {
+                    linkLabel = `наследуется от ${link.target_class_name || 'Unknown'}`;
+                } else {
+                    linkLabel = link.target_class_name || 'Unknown';
+                }
+            } else if (link.relation_kind === 'Association') {
+                icon = '→';
+                linkLabel = link.target_class_role_name || link.target_class_name || 'Unknown';
+            }
+            
+            const multiplicity = link.multiplicity ? ` [${link.multiplicity}]` : '';
+            
+            return `
+                <div class="tree-structure-item" style="margin-left: 20px;">
+                    <span class="tree-expand-btn-empty"></span>
+                    <span class="tree-structure-name">${icon} ${linkLabel}${multiplicity}</span>
+                </div>
+            `;
+        }
+        
         function renderElementTree(elem, level = 0, baseId = '') {
             const expandedItems = JSON.parse(localStorage.getItem('expandedTreeItems') || '{}');
             const itemId = baseId;
@@ -353,12 +379,7 @@
                 
                 if (elem.links && elem.links.length > 0) {
                     elem.links.forEach((link, idx) => {
-                        html += `
-                            <div class="tree-structure-item" style="margin-left: 20px;">
-                                <span class="tree-expand-btn-empty"></span>
-                                <span class="tree-structure-name">🔗 ${link.relation_kind}: ${link.target_class_name}${link.multiplicity ? ' [' + link.multiplicity + ']' : ''}</span>
-                            </div>
-                        `;
+                        html += renderLinkItem(link);
                     });
                 }
                 
