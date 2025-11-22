@@ -137,8 +137,10 @@
         let selectedModelId = null;
         let selectedModelName = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             loadSampleData();
+            await loadFoclData();
+            await initializeFoclProject();
             updateCurrentProject();
             checkProject();
             renderCurrentProjectStructure();
@@ -382,10 +384,14 @@
                     const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
                     classes.forEach((cls, idx) => {
                         const className = typeof cls === 'string' ? cls : cls.name;
+                        const isAbstract = typeof cls === 'object' && cls.isAbstract ? ' (abstract)' : '';
+                        const classType = typeof cls === 'object' ? cls.type : 'Class';
+                        const icon = classType === 'Interface' ? '⬟' : classType === 'Enumeration' ? '▣' : '📄';
+                        
                         html += `
-                            <div class="tree-structure-item" style="margin-left: 20px;">
+                            <div class="tree-structure-item" style="margin-left: ${(level + 1) * 20}px;">
                                 <span class="tree-expand-btn-empty"></span>
-                                <span class="tree-structure-name">📄 ${className || 'Класс'}</span>
+                                <span class="tree-structure-name">${icon} ${className}${isAbstract}</span>
                             </div>
                         `;
                     });

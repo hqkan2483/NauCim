@@ -1,7 +1,9 @@
 // Nautilus.CIM - Index Page Script
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     loadSampleData();
+    await loadFoclData();
+    await initializeFoclProject();
     updateCurrentProject();
     renderDashboard();
     renderProjectsTree();

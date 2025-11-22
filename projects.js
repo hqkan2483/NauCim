@@ -2,8 +2,10 @@
 
 let currentEditProjectId = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     loadSampleData();
+    await loadFoclData();
+    await initializeFoclProject();
     updateCurrentProject();
     renderProjects();
     renderProjectsTree();
