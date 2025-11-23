@@ -166,7 +166,7 @@ function renderProjectsTree() {
                             aria-expanded="${isExpanded ? 'true' : 'false'}">
                         <span class="expand-icon">${isExpanded ? '▼' : '▶'}</span>
                     </button>
-                    <span class="project-name" onclick="selectProject(${p.id}); event.stopPropagation();" title="${p.name}">
+                    <span class="project-name" data-id="${p.id}" onclick="selectProject(${p.id}); event.stopPropagation();" title="${p.name}">
                         📦 ${p.name}
                     </span>
                 </div>
@@ -177,7 +177,7 @@ function renderProjectsTree() {
                                 <div class="structure-title">📋 Модели (${p.models.length})</div>
                                 <div class="structure-items">
                                     ${p.models.map(m => `
-                                        <div class="structure-item">🔷 ${m.name || 'Модель без названия'}</div>
+                                        <div class="structure-item" data-id="${m.id || ''}">🔷 ${m.name || 'Модель без названия'}</div>
                                     `).join('')}
                                 </div>
                             </div>
@@ -187,7 +187,7 @@ function renderProjectsTree() {
                                 <div class="structure-title">⚙️ Профили (${p.profiles.length})</div>
                                 <div class="structure-items">
                                     ${p.profiles.map(pr => `
-                                        <div class="structure-item">⚡ ${pr.name || 'Профиль без названия'}</div>
+                                        <div class="structure-item" data-id="${pr.id || ''}">⚡ ${pr.name || 'Профиль без названия'}</div>
                                     `).join('')}
                                 </div>
                             </div>

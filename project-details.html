@@ -284,7 +284,7 @@
             }
             
             html += `
-                        <span class="tree-structure-name">🔷 ${model.name || 'Модель без названия'}</span>
+                        <span class="tree-structure-name" data-id="${model.id || ''}">🔷 ${model.name || 'Модель без названия'}</span>
                     </div>
             `;
             
@@ -321,7 +321,7 @@
             return `
                 <div class="tree-structure-item" style="margin-left: 20px;">
                     <span class="tree-expand-btn-empty"></span>
-                    <span class="tree-structure-name">${icon} ${linkLabel}${multiplicity}</span>
+                    <span class="tree-structure-name" data-id="${link.id || ''}">${icon} ${linkLabel}${multiplicity}</span>
                 </div>
             `;
         }
@@ -357,7 +357,7 @@
             }
             
             html += `
-                        <span class="tree-structure-name">${icon} ${elem.name || 'Элемент'}${abstractMarker}</span>
+                        <span class="tree-structure-name" data-id="${elem.id || ''}">${icon} ${elem.name || 'Элемент'}${abstractMarker}</span>
                     </div>
             `;
             
@@ -369,7 +369,7 @@
                         html += `
                             <div class="tree-structure-item" style="margin-left: 20px;">
                                 <span class="tree-expand-btn-empty"></span>
-                                <span class="tree-structure-name">🔹 ${attr.name}: ${attr.type}${attr.multiplicity ? ' [' + attr.multiplicity + ']' : ''}</span>
+                                <span class="tree-structure-name" data-id="${attr.id || ''}">🔹 ${attr.name}: ${attr.type}${attr.multiplicity ? ' [' + attr.multiplicity + ']' : ''}</span>
                             </div>
                         `;
                     });
@@ -410,7 +410,7 @@
             }
             
             html += `
-                        <span class="tree-structure-name">⚡ ${profile.name || 'Профиль без названия'}</span>
+                        <span class="tree-structure-name" data-id="${profile.id || ''}">⚡ ${profile.name || 'Профиль без названия'}</span>
                     </div>
             `;
             
@@ -420,7 +420,7 @@
                     html += `
                         <div class="tree-structure-item" style="margin-left: 20px;">
                             <span class="tree-expand-btn-empty"></span>
-                            <span class="tree-structure-name">• ${attr.name || 'Атрибут'}</span>
+                            <span class="tree-structure-name" data-id="${attr.id || ''}">• ${attr.name || 'Атрибут'}</span>
                         </div>
                     `;
                 });
@@ -453,7 +453,7 @@
             }
             
             html += `
-                        <span class="tree-structure-name">📦 ${rootPkg.name || 'Корневой пакет'}</span>
+                        <span class="tree-structure-name" data-id="${rootPkg.id || ''}">📦 ${rootPkg.name || 'Корневой пакет'}</span>
                     </div>
             `;
             
@@ -503,7 +503,7 @@
             }
             
             html += `
-                        <span class="tree-structure-name">📁 ${pkg.name || 'Пакет'}</span>
+                        <span class="tree-structure-name" data-id="${pkg.id || ''}">📁 ${pkg.name || 'Пакет'}</span>
                     </div>
             `;
             
