@@ -20,7 +20,7 @@
                 <a href="profiles.html" class="nav-item active">⚙️ Профили</a>
                 
                 <div class="nav-section-title">Текущий проект</div>
-                <div id="current-project" style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                <div id="current-project" class="current-project-info">
                     Нет проекта
                 </div>
 
@@ -36,7 +36,7 @@
             <div class="toolbar">
                 <div class="toolbar-title">Профили</div>
                 <div class="toolbar-actions">
-                    <button class="btn btn-secondary" onclick="openDiagram()" id="diagram-btn" style="display:none;">
+                    <button class="btn btn-secondary" onclick="openDiagram()" id="diagram-btn" class="hidden">
                         📐 Диаграмма классов
                     </button>
                     <button class="btn btn-primary" onclick="openModal('new-profile-modal')">+ Создать профиль</button>
@@ -44,22 +44,24 @@
             </div>
 
             <div class="content-area">
-                <div id="no-project-warning" style="display:none; padding:40px; text-align:center; color:var(--text-secondary);">
-                    <div style="font-size:48px; margin-bottom:15px;">📁</div>
-                    <h3>Проект не выбран</h3>
-                    <p>Выберите проект для работы с профилями</p>
-                    <button class="btn btn-primary" onclick="window.location.href='projects.html'" style="margin-top:15px;">Перейти к проектам</button>
+                <div id="no-project-warning" class="hidden">
+                    <div class="warning-title">
+                        <div class="model-icon-large">📁</div>
+                        <h3>Проект не выбран</h3>
+                        <p>Выберите проект для работы с профилями</p>
+                        <button class="btn btn-primary mt-15" onclick="window.location.href='projects.html'">Перейти к проектам</button>
+                    </div>
                 </div>
 
-                <div id="profiles-container" style="display:none;">
+                <div id="profiles-container" class="hidden">
                     <div class="split-view">
                         <div class="split-left">
-                            <h3 style="margin-bottom:15px; font-size:16px;">Список профилей</h3>
+                            <h3 class="mb-15">Список профилей</h3>
                             <div id="profiles-list"></div>
                         </div>
                         <div class="split-right">
                             <div id="profile-details">
-                                <div style="text-align:center; color:var(--text-secondary); padding:40px;">
+                                <div class="text-center">
                                     Выберите профиль для просмотра деталей
                                 </div>
                             </div>
@@ -102,7 +104,7 @@
     <div id="new-project-modal" class="modal">
         <div class="modal-content">
             <div class="modal-title">Создать новый проект</div>
-            <p style="color:var(--text-secondary); margin-bottom:15px;">Создайте проект в разделе "Проекты"</p>
+            <p class="modal-info-text">Создайте проект в разделе "Проекты"</p>
             <div class="modal-buttons">
                 <button class="btn btn-primary" onclick="window.location.href='projects.html'">Перейти к проектам</button>
             </div>
@@ -112,7 +114,7 @@
     <div id="new-model-modal" class="modal">
         <div class="modal-content">
             <div class="modal-title">Добавить модель</div>
-            <p style="color:var(--text-secondary); margin-bottom:15px;">Добавьте модель в разделе "Модели"</p>
+            <p class="modal-info-text">Добавьте модель в разделе "Модели"</p>
             <div class="modal-buttons">
                 <button class="btn btn-primary" onclick="window.location.href='models.html'">Перейти к моделям</button>
             </div>
@@ -162,7 +164,7 @@
                 </div>
             `).join('');
             
-            document.getElementById('profiles-list').innerHTML = html || '<div style="padding:10px; color:var(--text-secondary);">Нет профилей</div>';
+            document.getElementById('profiles-list').innerHTML = html || '<div class="no-items text-muted">Нет профилей</div>';
         }
 
         function selectProfile(profileId, profileName) {
@@ -208,40 +210,40 @@
                 
                 <div id="tab-properties" class="tab-content active">
                     <div class="flex-between mb-15">
-                        <h3 style="margin:0;">${profile.name}</h3>
+                        <h3 class="no-margin">${profile.name}</h3>
                         <button class="btn btn-primary btn-small" onclick="openDiagram()">📐 Диаграмма классов</button>
                     </div>
                     <table class="table">
                         <tr>
-                            <td style="font-weight:600; width:200px;">Базовая модель</td>
+                            <td class="table-label">Базовая модель</td>
                             <td><span class="badge">${profile.baseModel}</span></td>
                         </tr>
                         <tr>
-                            <td style="font-weight:600;">Версия</td>
+                            <td class="table-label">Версия</td>
                             <td>${profile.version}</td>
                         </tr>
                         <tr>
-                            <td style="font-weight:600;">Описание</td>
+                            <td class="table-label">Описание</td>
                             <td>${profile.description}</td>
                         </tr>
                         <tr>
-                            <td style="font-weight:600;">Классов в профиле</td>
+                            <td class="table-label">Классов в профиле</td>
                             <td>${profile.classes}</td>
                         </tr>
                         <tr>
-                            <td style="font-weight:600;">Атрибутов</td>
+                            <td class="table-label">Атрибутов</td>
                             <td>${profile.attributes}</td>
                         </tr>
                     </table>
                     
-                    <div style="margin-top:20px;">
+                    <div class="mt-20">
                         <button class="btn btn-primary" onclick="alert('Функция экспорта в разработке')">📥 Экспорт XSD</button>
                         <button class="btn btn-secondary" onclick="alert('Функция валидации в разработке')">✓ Валидировать</button>
                     </div>
                 </div>
                 
                 <div id="tab-structure" class="tab-content">
-                    <h3 style="margin-bottom:15px;">Классы профиля</h3>
+                    <h3 class="mb-15">Классы профиля</h3>
                     <div class="tree">
                         <div class="tree-item">📦 ${profile.baseModel}</div>
                         <div class="tree-children">
@@ -260,9 +262,9 @@
                 </div>
                 
                 <div id="tab-xsd" class="tab-content">
-                    <h3 style="margin-bottom:15px;">XSD Schema</h3>
+                    <h3 class="mb-15">XSD Schema</h3>
                     <div class="code-block">${escapeHtml(xsdCode)}</div>
-                    <div style="margin-top:15px;">
+                    <div class="mt-15">
                         <button class="btn btn-secondary" onclick="copyCode()">📋 Копировать</button>
                     </div>
                 </div>

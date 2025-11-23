@@ -1134,3 +1134,24 @@ body {
 .tree-structure-children {
     margin-top: 2px;
 }
+
+/* Profile list styles */
+.no-items {
+    padding: 10px;
+    color: var(--text-secondary);
+}
+
+/* Table cell styles */
+.table-label {
+    font-weight: 600;
+    width: 200px;
+}
+
+/* Action buttons container */
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mt-15 {
+    margin-top: 15px;
+}
