@@ -3,7 +3,7 @@
 let currentEditProjectId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    loadSampleData();
+    await loadSampleData();
     await loadFoclData();
     await initializeFoclProject();
     updateCurrentProject();
