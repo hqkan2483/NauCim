@@ -18,7 +18,7 @@
           <span class="toggle-icon">☰</span>
         </button>
         <div class="sidebar-header">
-          <strong id="sidebar-project-title">Nautilus.CIM</strong>
+          <span id="sidebar-project-title">Nautilus.CIM</span>
         </div>
         <div class="sidebar-nav">
           <!-- <a href="index.html" class="nav-item">📊 Главная</a> -->
@@ -41,7 +41,9 @@
       <!-- MAIN CONTENT -->
       <div class="main-content">
         <div class="toolbar">
-          <div class="toolbar-title">Модели</div>
+          <div class="toolbar-title">
+            <span id="project-title">Nautilus.CIM</span>
+          </div>
           <div class="toolbar-actions">
             <button
               class="btn btn-secondary"
@@ -97,7 +99,21 @@
             </div>
           </div>
 
-          
+          <div id="profiles-container" class="mt-30" class="hidden">
+            <div class="split-view">
+              <div class="split-left">
+                <h3 class="mb-15">Список профилей</h3>
+                <div id="profiles-list"></div>
+              </div>
+              <div class="split-right">
+                <div id="profile-details">
+                  <div class="text-center">
+                    Выберите профиль для просмотра деталей
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -213,6 +229,8 @@
     <script>
       let selectedModelId = null;
       let selectedModelName = null;
+      let selectedProfileId = null;
+      let selectedProfileName = null;
 
       document.addEventListener("DOMContentLoaded", async () => {
         await loadSampleData();
@@ -220,6 +238,7 @@
         checkProject();
         renderCurrentProjectStructure();
         updateSidebarTitle();
+        updatePageTitle();
         restoreSidebarState();
         restoreProjectsTreeState();
       });
@@ -241,16 +260,40 @@
         }
       }
 
+      function updatePageTitle() {
+        const projectId = getCurrentProjectId();
+        const titleElement = document.getElementById("project-title");
+
+        if (!projectId) {
+          titleElement.textContent = "Nautilus.CIM";
+          return;
+        }
+
+        const project = getProject(projectId);
+        if (project) {
+          titleElement.textContent = project.name;
+        } else {
+          titleElement.textContent = "Nautilus.CIM";
+        }
+      }
+
       function checkProject() {
         const projectId = getCurrentProjectId();
         if (!projectId) {
           document.getElementById("no-project-warning").style.display = "block";
           document.getElementById("models-container").style.display = "none";
+          document.getElementById("no-project-warning").style.display = "block";
+          document.getElementById("profiles-container").style.display = "none";
         } else {
           document.getElementById("no-project-warning").style.display = "none";
           document.getElementById("models-container").style.display = "block";
           renderModels();
+
+          document.getElementById("no-project-warning").style.display = "none";
+          document.getElementById("profiles-container").style.display = "block";
+          renderProfiles();
         }
+
         updateSidebarTitle();
       }
 
@@ -774,6 +817,37 @@
         document.getElementById("diagram-btn").style.display = "inline-flex";
       }
 
+      function renderProfiles() {
+        const projectId = getCurrentProjectId();
+        const profiles = getProfiles(projectId);
+        console.log("Rendering profiles:", profiles);
+
+        const html = profiles
+          .map(
+            (p) => `
+                <div class="tree-item ${
+                  selectedProfileId === p.id ? "selected" : ""
+                }" onclick="selectProfile(${p.id}, '${p.name}')">
+                    ⚙️ ${p.name}
+                </div>
+            `
+          )
+          .join("");
+
+        console.log("Profiles HTML:", html);
+
+        document.getElementById("profiles-list").innerHTML =
+          html || '<div class="no-items text-muted">Нет профилей</div>';
+      }
+
+      function selectProfile(profileId, profileName) {
+        selectedProfileId = profileId;
+        selectedProfileName = profileName;
+        renderProfiles();
+        renderProfileDetails();
+        // document.getElementById('diagram-btn').style.display = 'inline-flex';
+      }
+
       function openDiagram() {
         if (!selectedModelName) {
           alert("Выберите модель");
@@ -853,6 +927,106 @@
             `;
 
         document.getElementById("model-details").innerHTML = html;
+      }
+
+      function renderProfileDetails() {
+        const projectId = getCurrentProjectId();
+        const profile = getProfile(projectId, selectedProfileId);
+
+        if (!profile) return;
+
+        const xsdCode =
+          profile.xsd ||
+          `<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- Профиль ${profile.name} -->
+  <xs:element name="Profile" type="ProfileType"/>
+  <xs:complexType name="ProfileType">
+    <xs:sequence>
+      <xs:element name="id" type="xs:string"/>
+      <xs:element name="name" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>`;
+
+        const html = `
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('properties')">Свойства</div>
+                    <div class="tab" onclick="switchTab('structure')">Структура классов</div>
+                    <div class="tab" onclick="switchTab('xsd')">XSD код</div>
+                </div>
+                
+                <div id="tab-properties" class="tab-content active">
+                    <div class="flex-between mb-15">
+                        <h3 class="no-margin">${profile.name}</h3>
+                        <button class="btn btn-primary btn-small" onclick="openDiagram()">📐 Диаграмма классов</button>
+                    </div>
+                    <table class="table">
+                        <tr>
+                            <td class="table-label">Базовая модель</td>
+                            <td><span class="badge">${
+                              profile.baseModel
+                            }</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-label">Версия</td>
+                            <td>${profile.version}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-label">Описание</td>
+                            <td>${profile.description}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-label">Классов в профиле</td>
+                            <td>${profile.classes}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-label">Атрибутов</td>
+                            <td>${profile.attributes}</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="alert('Функция экспорта в разработке')">📥 Экспорт XSD</button>
+                        <button class="btn btn-secondary" onclick="alert('Функция валидации в разработке')">✓ Валидировать</button>
+                    </div>
+                </div>
+                
+                <div id="tab-structure" class="tab-content">
+                    <h3 class="mb-15">Классы профиля</h3>
+                    <div class="tree">
+                        <div class="tree-item">📦 ${profile.baseModel}</div>
+                        <div class="tree-children">
+                            <div class="tree-item">📁 AssetInfo</div>
+                            <div class="tree-children">
+                                <div class="tree-item">📄 RotatingMachineInfo <span class="badge-secondary">rf</span></div>
+                                <div class="tree-children">
+                                    <div class="tree-item">• rotorGD2: Torque [0..1]</div>
+                                    <div class="tree-item">• ratedVoltage: Voltage [1]</div>
+                                </div>
+                                <div class="tree-item">📄 SynchronousMachineInfo</div>
+                                <div class="tree-item">📄 AsynchronousMachineInfo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tab-xsd" class="tab-content">
+                    <h3 class="mb-15">XSD Schema</h3>
+                    <div class="code-block">${escapeHtml(xsdCode)}</div>
+                    <div class="mt-15">
+                        <button class="btn btn-secondary" onclick="copyCode()">📋 Копировать</button>
+                    </div>
+                </div>
+            `;
+
+        document.getElementById("profile-details").innerHTML = html;
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
       }
 
       function renderTree(items, level = 0) {
