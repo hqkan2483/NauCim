@@ -68,73 +68,6 @@ const MemoryStore = {
   },
 };
 
-// ============================================================
-// Load focl.json model data
-let foclData = null;
-
-async function loadFoclData() {
-  try {
-    const response = await fetch("./mockdata/focl.json");
-    foclData = await response.json();
-    console.log("✅ focl.json loaded successfully");
-    return foclData;
-  } catch (error) {
-    console.error("❌ Error loading focl.json:", error);
-    return null;
-  }
-}
-
-// Convert focl.json package structure to model format
-function convertFoclPackageToModel(rootPackage) {
-  const model = {
-    id: rootPackage.id,
-    name: rootPackage.name,
-    type: "Каноническая модель",
-    description: rootPackage.description || "Модель из FOCL",
-    classes: rootPackage.elementCount || 0,
-    attributes: foclData?.totalAttributes || 0,
-    packages: [],
-  };
-
-  if (rootPackage.children && rootPackage.children.length > 0) {
-    model.packages = rootPackage.children.map((child) =>
-      convertFoclPackage(child)
-    );
-  }
-
-  return model;
-}
-
-// Recursively convert focl package structure
-function convertFoclPackage(pkg) {
-  const convertedPkg = {
-    name: pkg.name,
-    description: pkg.description,
-    classes: [],
-    packages: [],
-  };
-
-  // Add elements as classes
-  if (pkg.elements && pkg.elements.length > 0) {
-    convertedPkg.classes = pkg.elements.map((elem) => ({
-      name: elem.name,
-      type: elem.type,
-      description: elem.description,
-      isAbstract: elem.isAbstract,
-      attributeCount: elem.attributeCount,
-    }));
-  }
-
-  // Add child packages recursively
-  if (pkg.children && pkg.children.length > 0) {
-    convertedPkg.packages = pkg.children.map((child) =>
-      convertFoclPackage(child)
-    );
-  }
-
-  return convertedPkg;
-}
-
 // Initialize sample data on first load
 async function loadSampleData() {
   // Check if already initialized in memory
@@ -174,7 +107,7 @@ async function loadSampleData() {
   let foclRootPackages = [];
 
   try {
-    const response = await fetch("./mockdata/focl.json");
+    const response = await fetch("./models-data/focl.json");
     foclRootPackages = await response.json();
     console.log("✅ focl.json loaded successfully");
   } catch (error) {
@@ -307,47 +240,6 @@ async function loadSampleData() {
     projects: sampleProjects,
     currentProjectId: 1,
   });
-}
-
-// Initialize FOCL project with data from focl.json
-async function initializeFoclProject() {
-  const data = await loadFoclData();
-  if (!data || !data.rootPackages || data.rootPackages.length === 0) {
-    console.warn("No FOCL data available");
-    return;
-  }
-
-  // Create a project with FOCL data
-  const foclProject = {
-    id: 999,
-    name: "FOCL - Волоконно-оптические линии",
-    description: "Проект с данными из FOCL.json",
-    version: "1.0",
-    createdAt: new Date().toISOString().split("T")[0],
-    models: [],
-    profiles: [],
-  };
-
-  // Convert each root package to a model
-  data.rootPackages.forEach((rootPkg, idx) => {
-    const model = convertFoclPackageToModel(rootPkg);
-    model.id = 999 + idx;
-    foclProject.models.push(model);
-  });
-
-  // Add to projects using MemoryStore
-  const existingProject = MemoryStore.getProject(999);
-  if (existingProject) {
-    MemoryStore.updateProject(999, foclProject);
-  } else {
-    MemoryStore.addProject(foclProject);
-  }
-  console.log("✅ FOCL project initialized");
-}
-
-// Get FOCL data
-function getFoclData() {
-  return foclData;
 }
 
 // Project Management

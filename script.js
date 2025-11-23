@@ -2,8 +2,6 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadSampleData();
-    await loadFoclData();
-    await initializeFoclProject();
     updateCurrentProject();
     renderDashboard();
     renderProjectsTree();
