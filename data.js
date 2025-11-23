@@ -124,7 +124,7 @@ async function loadSampleData() {
       createdAt: "2024-09-15",
       models: [
         {
-          id: 1,
+          id: 2,
           name: "TC57CIM - CIM100",
           type: "Каноническая модель",
           description: "CIM 100 версия IEC 61970/61968, редакция 2025 года",
@@ -135,7 +135,7 @@ async function loadSampleData() {
         },
         //вторая  модель
         {
-          id: 2,
+          id: 3,
           name: "GOSTExtension",
           type: "Расширение модели RU",
           description: "Расширения для российских ГОСТов",
@@ -147,7 +147,7 @@ async function loadSampleData() {
       ],
       profiles: [
         {
-          id: 1,
+          id: 4,
           name: "GOST-58651.2",
           description: "Профиль обмена данными об электрооборудовании",
           baseModel: "TC57CIM",
@@ -165,7 +165,7 @@ async function loadSampleData() {
 </xs:schema>`,
         },
         {
-          id: 2,
+          id: 5,
           name: "GOST-58651.3",
           description: "Профиль передачи телеметрии",
           baseModel: "TC57CIM",
@@ -176,14 +176,14 @@ async function loadSampleData() {
       ],
     },
     {
-      id: 2,
+      id: 6,
       name: "Профили электросчётчиков",
       description: "Профили для систем АИИС КУЭ",
       version: "1.5",
       createdAt: "2024-10-01",
       models: [
         {
-          id: 3,
+          id: 7,
           name: "CIM16",
           type: "Каноническая модель. Расширение Системного оператора",
           description: "Модель для учета электроэнергии",
@@ -194,7 +194,7 @@ async function loadSampleData() {
           ],
       profiles: [
         {
-          id: 3,
+          id: 8,
           name: "MeterProfile",
           description: "Профиль обмена данными электросчётчиков",
           baseModel: "IEC61968",
@@ -205,25 +205,25 @@ async function loadSampleData() {
       ],
     },
     {
-      id: 4,
+      id: 9,
       name: "Волоконно-оптические линии",
       description: "Проект расширения CIM для волоконно-оптических линий связи",
       version: "1.0",
       createdAt: "2025-10-01",
       models: [
         {
-          id: 5,
+          id: 10,
           name: "CIM-FiberOptic",
           type: "Расширение для волоконно-оптических линий связи",
           description: "Проект модели для волоконно-оптических линий связи, включая оконечное оборудование",
           classes: 267,
           attributes: 1523,
-          rootPackages: CIM16RootPackages,
+          rootPackages: foclRootPackages,
         },    
           ],
       profiles: [
         {
-          id: 6,
+          id: 11,
           name: "FOProfile",
           description: "Профиль для волоконно-оптических линий связи",
           baseModel: "CIM-FiberOptic",
@@ -236,9 +236,13 @@ async function loadSampleData() {
   ];
 
   // Initialize MemoryStore instead of localStorage
+  // Try to restore currentProjectId from localStorage
+  const savedProjectId = localStorage.getItem('currentProjectId');
+  const initialProjectId = savedProjectId ? parseInt(savedProjectId) : 1;
+  
   MemoryStore.initialize({
     projects: sampleProjects,
-    currentProjectId: 1,
+    currentProjectId: initialProjectId,
   });
 }
 
@@ -261,11 +265,26 @@ function getProject(id) {
 }
 
 function getCurrentProjectId() {
-  return MemoryStore.getCurrentProjectId();
+  let id = MemoryStore.getCurrentProjectId();
+  // If not in memory, try to restore from localStorage
+  if (!id) {
+    const savedId = localStorage.getItem('currentProjectId');
+    if (savedId) {
+      id = parseInt(savedId);
+      MemoryStore.setCurrentProjectId(id);
+    }
+  }
+  return id;
 }
 
 function setCurrentProject(projectId) {
   MemoryStore.setCurrentProjectId(projectId);
+  // Also save to localStorage for persistence across page loads
+  if (projectId) {
+    localStorage.setItem('currentProjectId', projectId);
+  } else {
+    localStorage.removeItem('currentProjectId');
+  }
 }
 
 function getCurrentProject() {
