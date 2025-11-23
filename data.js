@@ -146,20 +146,39 @@ async function loadSampleData() {
   // Load rootPackages from external JSON file
   let tc57cimRootPackages = [];
   try {
-    const response = await fetch('./models-data/tc57cim-cim100.json');
+    const response = await fetch('./models-data/cim100.json');
     tc57cimRootPackages = await response.json();
-    console.log("✅ tc57cim-cim100.json loaded successfully");
+    console.log("✅ cim100.json loaded successfully");
   } catch (error) {
-    console.error("❌ Error loading tc57cim-cim100.json:", error);
+    console.error("❌ Error loading cim100.json:", error);
   }
 
     let gostExtRootPackages = [];
   try {
-    const response = await fetch('./models-data/gost-extension.json');
+    const response = await fetch('./models-data/GOSTRExtension.json');
     gostExtRootPackages = await response.json();
-    console.log("✅ gost-extension.json loaded successfully");
+    console.log("✅ GOSTRExtension.json loaded successfully");
   } catch (error) {
-    console.error("❌ Error loading gost-extension.json:", error);
+    console.error("❌ Error loading GOSTRExtension.json:", error);
+  }
+
+      let CIM16RootPackages = [];
+  try {
+    const response = await fetch('./models-data/CIM16.json');
+    CIM16RootPackages = await response.json();
+    console.log("✅ CIM16.json loaded successfully");
+  } catch (error) {
+    console.error("❌ Error loading CIM16.json:", error);
+  }
+
+  let foclRootPackages = [];
+
+  try {
+    const response = await fetch("./mockdata/focl.json");
+    foclRootPackages = await response.json();
+    console.log("✅ focl.json loaded successfully");
+  } catch (error) {
+    console.error("❌ Error loading focl.json:", error);
   }
 
   const sampleProjects = [
@@ -178,20 +197,18 @@ async function loadSampleData() {
           description: "CIM 100 версия IEC 61970/61968, редакция 2025 года",
           classes: 2225,
           attributes: 6328,
-
           rootPackages: tc57cimRootPackages,
-
 
         },
         //вторая  модель
         {
           id: 2,
           name: "GOSTExtension",
-          type: "Расширение модели",
+          type: "Расширение модели RU",
           description: "Расширения для российских ГОСТов",
           classes: 87,
           attributes: 345,
-        rootPackages: gostExtRootPackages,
+          rootPackages: gostExtRootPackages,
 
         },
       ],
@@ -225,40 +242,64 @@ async function loadSampleData() {
         },
       ],
     },
-    // {
-    //   id: 2,
-    //   name: "Профили электросчётчиков",
-    //   description: "Профили для систем АИИС КУЭ",
-    //   version: "1.5",
-    //   createdAt: "2024-10-01",
-    //   models: [
-    //     {
-    //       id: 3,
-    //       name: "IEC61968",
-    //       type: "Каноническая модель",
-    //       description: "Модель для учета электроэнергии",
-    //       classes: 267,
-    //       attributes: 1523,
-    //       packages: [
-    //         {
-    //           name: "Metering",
-    //           classes: ["Meter", "EndDevice", "Reading", "MeterReading"],
-    //         },
-    //       ],
-    //     },
-    //   ],
-    //   profiles: [
-    //     {
-    //       id: 3,
-    //       name: "MeterProfile",
-    //       description: "Профиль обмена данными электросчётчиков",
-    //       baseModel: "IEC61968",
-    //       version: "2.0",
-    //       classes: 28,
-    //       attributes: 156,
-    //     },
-    //   ],
-    // },
+    {
+      id: 2,
+      name: "Профили электросчётчиков",
+      description: "Профили для систем АИИС КУЭ",
+      version: "1.5",
+      createdAt: "2024-10-01",
+      models: [
+        {
+          id: 3,
+          name: "CIM16",
+          type: "Каноническая модель. Расширение Системного оператора",
+          description: "Модель для учета электроэнергии",
+          classes: 267,
+          attributes: 1523,
+          rootPackages: CIM16RootPackages,
+        },    
+          ],
+      profiles: [
+        {
+          id: 3,
+          name: "MeterProfile",
+          description: "Профиль обмена данными электросчётчиков",
+          baseModel: "IEC61968",
+          version: "2.0",
+          classes: 28,
+          attributes: 156,
+        },
+      ],
+    },
+    {
+      id: 4,
+      name: "Волоконно-оптические линии",
+      description: "Проект расширения CIM для волоконно-оптических линий связи",
+      version: "1.0",
+      createdAt: "2025-10-01",
+      models: [
+        {
+          id: 5,
+          name: "CIM-FiberOptic",
+          type: "Расширение для волоконно-оптических линий связи",
+          description: "Проект модели для волоконно-оптических линий связи, включая оконечное оборудование",
+          classes: 267,
+          attributes: 1523,
+          rootPackages: CIM16RootPackages,
+        },    
+          ],
+      profiles: [
+        {
+          id: 6,
+          name: "FOProfile",
+          description: "Профиль для волоконно-оптических линий связи",
+          baseModel: "CIM-FiberOptic",
+          version: "1.0",
+          classes: 28,
+          attributes: 156,
+        },
+      ],
+    },
   ];
 
   // Initialize MemoryStore instead of localStorage
