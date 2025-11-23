@@ -426,7 +426,7 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           model.id || ""
-                        }">🔷 ${model.name || "Модель без названия"}</span>
+                        }" data-type="model" data-model-id="${model.id || ""}" onclick="selectTreeItem(event)">🔷 ${model.name || "Модель без названия"}</span>
                     </div>
             `;
 
@@ -436,7 +436,8 @@
             html += renderRootPackageTree(
               rootPkg,
               level + 1,
-              `${baseId}-root-${idx}`
+              `${baseId}-root-${idx}`,
+              model.id
             );
           });
           html += `</div>`;
@@ -470,12 +471,12 @@
                     <span class="tree-expand-btn-empty"></span>
                     <span class="tree-structure-name" data-id="${
                       link.id || ""
-                    }">${icon} ${linkLabel}${multiplicity}</span>
+                    }" data-type="link" onclick="selectTreeItem(event)">${icon} ${linkLabel}${multiplicity}</span>
                 </div>
             `;
       }
 
-      function renderElementTree(elem, level = 0, baseId = "") {
+      function renderElementTree(elem, level = 0, baseId = "", modelId = null) {
         const expandedItems = JSON.parse(
           localStorage.getItem("expandedTreeItems") || "{}"
         );
@@ -514,7 +515,7 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           elem.id || ""
-                        }">${icon} ${
+                        }" data-type="element" onclick="selectTreeItem(event)">${icon} ${
           elem.name || "Элемент"
         }${abstractMarker}</span>
                     </div>
@@ -530,7 +531,7 @@
                                 <span class="tree-expand-btn-empty"></span>
                                 <span class="tree-structure-name" data-id="${
                                   attr.id || ""
-                                }">🔹 ${attr.name}: ${attr.type}${
+                                }" data-type="attribute" onclick="selectTreeItem(event)">🔹 ${attr.name}: ${attr.type}${
                 attr.multiplicity ? " [" + attr.multiplicity + "]" : ""
               }</span>
                             </div>
@@ -579,7 +580,7 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           profile.id || ""
-                        }">⚡ ${profile.name || "Профиль без названия"}</span>
+                        }" data-type="profile" onclick="selectTreeItem(event)">⚡ ${profile.name || "Профиль без названия"}</span>
                     </div>
             `;
 
@@ -591,7 +592,7 @@
                             <span class="tree-expand-btn-empty"></span>
                             <span class="tree-structure-name" data-id="${
                               attr.id || ""
-                            }">• ${attr.name || "Атрибут"}</span>
+                            }" data-type="profile-attribute" onclick="selectTreeItem(event)">• ${attr.name || "Атрибут"}</span>
                         </div>
                     `;
           });
@@ -602,7 +603,7 @@
         return html;
       }
 
-      function renderRootPackageTree(rootPkg, level = 0, baseId = "") {
+      function renderRootPackageTree(rootPkg, level = 0, baseId = "", modelId = null) {
         const expandedItems = JSON.parse(
           localStorage.getItem("expandedTreeItems") || "{}"
         );
@@ -632,7 +633,7 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           rootPkg.id || ""
-                        }">📦 ${rootPkg.name || "Корневой пакет"}</span>
+                        }" data-type="package" data-model-id="${modelId || ""}" onclick="selectTreeItem(event)">📦 ${rootPkg.name || "Корневой пакет"}</span>
                     </div>
             `;
 
@@ -645,7 +646,8 @@
               html += renderElementTree(
                 elem,
                 level + 1,
-                `${baseId}-elem-${idx}`
+                `${baseId}-elem-${idx}`,
+                modelId
               );
             });
           }
@@ -653,7 +655,7 @@
           // Рендер вложенных пакетов
           if (rootPkg.children && rootPkg.children.length > 0) {
             rootPkg.children.forEach((pkg, idx) => {
-              html += renderPackageTree(pkg, level + 1, `${baseId}-pkg-${idx}`);
+              html += renderPackageTree(pkg, level + 1, `${baseId}-pkg-${idx}`, modelId);
             });
           }
 
@@ -664,7 +666,7 @@
         return html;
       }
 
-      function renderPackageTree(pkg, level = 0, baseId = "") {
+      function renderPackageTree(pkg, level = 0, baseId = "", modelId = null) {
         const expandedItems = JSON.parse(
           localStorage.getItem("expandedTreeItems") || "{}"
         );
@@ -694,7 +696,7 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           pkg.id || ""
-                        }">📁 ${pkg.name || "Пакет"}</span>
+                        }" data-type="package" onclick="selectTreeItem(event)">📁 ${pkg.name || "Пакет"}</span>
                     </div>
             `;
 
@@ -707,7 +709,8 @@
               html += renderElementTree(
                 elem,
                 level + 1,
-                `${baseId}-elem-${idx}`
+                `${baseId}-elem-${idx}`,
+                modelId
               );
             });
           }
@@ -718,7 +721,8 @@
               html += renderPackageTree(
                 subPkg,
                 level + 1,
-                `${baseId}-pkg-${idx}`
+                `${baseId}-pkg-${idx}`,
+                modelId
               );
             });
           }
@@ -1076,6 +1080,173 @@
 
         event.target.classList.add("active");
         document.getElementById("tab-" + tabName).classList.add("active");
+      }
+
+      function selectTreeItem(event) {
+        event.stopPropagation();
+        const target = event.target;
+        const itemId = target.getAttribute('data-id');
+        const itemType = target.getAttribute('data-type');
+        
+        // Remove previous selection
+        document.querySelectorAll('.tree-structure-name').forEach(el => {
+          el.classList.remove('selected');
+        });
+        
+        // Add selection to clicked item
+        target.classList.add('selected');
+        
+        // Hide models and profiles containers
+        document.getElementById('models-container').style.display = 'none';
+        document.getElementById('profiles-container').style.display = 'none';
+        
+        // Show item container
+        const itemContainer = document.getElementById('item-container');
+        itemContainer.style.display = 'block';
+        itemContainer.classList.remove('hidden');
+        
+        // Find and render item details
+        renderItemDetails(itemId, itemType);
+      }
+      
+      function renderItemDetails(itemId, itemType) {
+        const projectId = getCurrentProjectId();
+        const project = getProject(projectId);
+        
+        if (!project) return;
+        
+        let itemData = null;
+        let modelContext = null;
+        
+        // Search through all models
+        for (const model of project.models) {
+          const result = findItemInModel(model, itemId, itemType);
+          if (result) {
+            itemData = result;
+            modelContext = model;
+            break;
+          }
+        }
+        
+        // Search through profiles if not found in models
+        if (!itemData && itemType === 'profile') {
+          itemData = project.profiles.find(p => p.id == itemId);
+        }
+        
+        if (!itemData) {
+          document.getElementById('item-container').innerHTML = `
+            <div class="text-center">Элемент не найден</div>
+          `;
+          return;
+        }
+        
+        // Render item details
+        const html = `
+          <div class="item-details">
+            <h2 class="mb-15">${itemData.name || 'Без названия'}</h2>
+            <table class="table">
+              <tr>
+                <td class="table-label">ID</td>
+                <td>${itemData.id || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td class="table-label">Тип</td>
+                <td><span class="badge">${itemType}</span></td>
+              </tr>
+              ${modelContext ? `
+              <tr>
+                <td class="table-label">Модель</td>
+                <td>${modelContext.name}</td>
+              </tr>
+              ` : ''}
+              <tr>
+                <td class="table-label">Описание</td>
+                <td>${itemData.description || 'Нет описания'}</td>
+              </tr>
+              ${itemData.type ? `
+              <tr>
+                <td class="table-label">Тип элемента</td>
+                <td>${itemData.type}</td>
+              </tr>
+              ` : ''}
+              ${itemData.isAbstract !== undefined ? `
+              <tr>
+                <td class="table-label">Абстрактный</td>
+                <td>${itemData.isAbstract ? 'Да' : 'Нет'}</td>
+              </tr>
+              ` : ''}
+              ${itemData.multiplicity ? `
+              <tr>
+                <td class="table-label">Множественность</td>
+                <td>${itemData.multiplicity}</td>
+              </tr>
+              ` : ''}
+              ${itemData.baseModel ? `
+              <tr>
+                <td class="table-label">Базовая модель</td>
+                <td>${itemData.baseModel}</td>
+              </tr>
+              ` : ''}
+            </table>
+          </div>
+        `;
+        
+        document.getElementById('item-container').innerHTML = html;
+      }
+      
+      function findItemInModel(model, itemId, itemType) {
+        // Check if it's the model itself
+        if (itemType === 'model' && model.id == itemId) {
+          return model;
+        }
+        
+        // Search in rootPackages
+        if (model.rootPackages) {
+          for (const rootPkg of model.rootPackages) {
+            const result = findItemInPackage(rootPkg, itemId, itemType);
+            if (result) return result;
+          }
+        }
+        
+        return null;
+      }
+      
+      function findItemInPackage(pkg, itemId, itemType) {
+        // Check if it's the package itself
+        if (itemType === 'package' && pkg.id == itemId) {
+          return pkg;
+        }
+        
+        // Search in elements
+        if (pkg.elements) {
+          for (const elem of pkg.elements) {
+            if (itemType === 'element' && elem.id == itemId) {
+              return elem;
+            }
+            
+            // Search in attributes
+            if (elem.attributes) {
+              const attr = elem.attributes.find(a => a.id == itemId && itemType === 'attribute');
+              if (attr) return attr;
+            }
+            
+            // Search in links
+            if (elem.links) {
+              const link = elem.links.find(l => l.id == itemId && itemType === 'link');
+              if (link) return link;
+            }
+          }
+        }
+        
+        // Search in child packages
+        if (pkg.children) {
+          for (const child of pkg.children) {
+            const result = findItemInPackage(child, itemId, itemType);
+            if (result) return result;
+          }
+        }
+        
+        return null;
       }
 
       function createModel() {

@@ -1155,3 +1155,36 @@ body {
 .mt-15 {
     margin-top: 15px;
 }
+
+.mt-30 {
+    margin-top: 30px;
+}
+
+/* Tree item selection */
+.tree-structure-name.selected {
+    background: var(--primary-color);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.tree-structure-name {
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: background 0.2s;
+}
+
+.tree-structure-name:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Item details container */
+.item-details {
+    padding: 20px;
+}
+
+.item-details h2 {
+    font-size: 24px;
+    color: var(--text-primary);
+}
