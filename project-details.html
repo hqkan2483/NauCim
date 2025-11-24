@@ -1232,13 +1232,19 @@
         if (!project) return;
 
         let itemData = null;
+        let parentElement = null;
         let modelContext = null;
 
         // Search through all models
         for (const model of project.models) {
           const result = findItemInModel(model, itemId, itemType);
           if (result) {
-            itemData = result;
+            if (result.item) {
+              itemData = result.item;
+              parentElement = result.parent;
+            } else {
+              itemData = result;
+            }
             modelContext = model;
             break;
           }
@@ -1256,145 +1262,191 @@
           return;
         }
 
-        // Render item details
-        const html = `
-          <div class="item-details">
-            <div class="item-details-grid mb-10">
-              <div class="form-group form-group-flex form-group-flex-start">
-                <label class="form-label">Название</label>
-                <input type="text" value="${
-                  itemData.name || ""
-                }" class="form-input " disabled>
+        // For attribute or link, render the parent element details
+        if ((itemType === "attribute" || itemType === "link") && parentElement) {
+          itemData = parentElement;
+          itemType = "element";
+        }
+
+        let html = "";
+
+        // Render based on item type
+        if (itemType === "package") {
+          // For package - render only basic info without attributes and links
+          html = `
+            <div class="item-details">
+              <div class="item-details-grid mb-10">
+                <div class="form-group form-group-flex form-group-flex-start">
+                  <label class="form-label">Название</label>
+                  <input type="text" value="${
+                    itemData.name || ""
+                  }" class="form-input" disabled>
+                </div>
               </div>
               
-              <div class="item-details-right">
-                <div class="form-group-flex form-group-flex-center" >
-                  <label class="form-label" >Абстрактный класс</label>
-                  <input type="checkbox" ${
-                    itemData.isAbstract ? "checked" : ""
-                  } class="form-checkbox">
+              <div class="item-details-grid mb-10">
+                <div class="form-group">
+                  <label class="form-label">Описание (модель)</label>
+                  <textarea class="form-textarea">${
+                    itemData.description_en || itemData.description || ""
+                  }</textarea>
                 </div>
                 
-                <div class="form-group form-group-flex" >
-                  <label class="form-label">Стереотип</label>
-                  <input type="text" value="${
-                    itemData.stereotype || ""
-                  }" class="form-input">
+                <div class="form-group">
+                  <label class="form-label">Описание (доп., рус.)</label>
+                  <textarea class="form-textarea">${
+                    itemData.description_ru || ""
+                  }</textarea>
                 </div>
               </div>
-            </div>
-            
-            <div class="item-details-grid mb-10">
-              <div class="form-group">
-                <label class="form-label">Описание (модель)</label>
+              
+              <div class="form-group mb-20">
+                <label class="form-label">Дополнительная информация (рус)</label>
                 <textarea class="form-textarea">${
-                  itemData.description_en || itemData.description || ""
+                  itemData.additionalInfo || ""
+                }</textarea>
+              </div>
+            </div>
+          `;
+        } else if (itemType === "element") {
+          // For element - render full details with attributes and links
+          html = `
+            <div class="item-details">
+              <div class="item-details-grid mb-10">
+                <div class="form-group form-group-flex form-group-flex-start">
+                  <label class="form-label">Название</label>
+                  <input type="text" value="${
+                    itemData.name || ""
+                  }" class="form-input" disabled>
+                </div>
+                
+                <div class="item-details-right">
+                  <div class="form-group-flex form-group-flex-center">
+                    <label class="form-label">Абстрактный класс</label>
+                    <input type="checkbox" ${
+                      itemData.isAbstract ? "checked" : ""
+                    } class="form-checkbox">
+                  </div>
+                  
+                  <div class="form-group form-group-flex">
+                    <label class="form-label">Стереотип</label>
+                    <input type="text" value="${
+                      itemData.stereotype || ""
+                    }" class="form-input">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="item-details-grid mb-10">
+                <div class="form-group">
+                  <label class="form-label">Описание (модель)</label>
+                  <textarea class="form-textarea">${
+                    itemData.description_en || itemData.description || ""
+                  }</textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Описание (доп., рус.)</label>
+                  <textarea class="form-textarea">${
+                    itemData.description_ru || ""
+                  }</textarea>
+                </div>
+              </div>
+              
+              <div class="form-group mb-20">
+                <label class="form-label">Дополнительная информация (рус)</label>
+                <textarea class="form-textarea">${
+                  itemData.additionalInfo || ""
                 }</textarea>
               </div>
               
-              <div class="form-group">
-                <label class="form-label">Описание (доп., рус.)</label>
-                <textarea class="form-textarea">${
-                  itemData.description_ru || ""
-                }</textarea>
+              <div class="item-section">
+                <h3 class="mb-15">Атрибуты</h3>
+                <table class="table table-bordered">
+                  <colgroup>
+                    <col style="width: 15%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="width: 10%;"/>
+                    <col style="min-width: 50%;"/>
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="sortable">Имя ▲</th>
+                      <th class="sortable">Тип ⇅</th>
+                      <th class="sortable">Мн ⇅</th>
+                      <th class="sortable">Описание</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${
+                      itemData.attributes && itemData.attributes.length > 0
+                        ? itemData.attributes
+                            .map(
+                              (attr) => `
+                        <tr>
+                          <td><a href="#" class="table-link">${
+                            attr.name || ""
+                          }</a></td>
+                          <td>${attr.type || ""}</td>
+                          <td>${attr.multiplicity || ""}</td>
+                          <td>${attr.description || ""}</td>
+                        </tr>
+                      `
+                            )
+                            .join("")
+                        : '<tr><td colspan="4" class="text-center text-muted">Нет атрибутов</td></tr>'
+                    }
+                  </tbody>
+                </table>
+              </div>
+              
+              <div class="item-section">
+                <h3 class="mb-15">Связи</h3>
+                <table class="table table-bordered">
+                  <colgroup>
+                    <col style="width: 15%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="min-width: 20%;"/>
+                    <col style="width: 5%;"/>
+                    <col style="max-width: 50%;"/>
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="sortable">Имя связи ⇅</th>
+                      <th class="sortable">Тип связи ⇅</th>
+                      <th class="sortable">Класс назначения ⇅</th>
+                      <th class="sortable">Мн</th>
+                      <th>Описание</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${
+                      itemData.links && itemData.links.length > 0
+                        ? itemData.links
+                            .map(
+                              (link) => `
+                        <tr>
+                          <td>${link.target_class_role_name || ""}</td>
+                          <td>${link.relation_kind || ""} (${
+                                link.role || ""
+                              })</td>
+                          <td><a href="#" class="table-link">${
+                            link.target_class_name || ""
+                          }</a></td>
+                          <td>${link.multiplicity || ""}</td>
+                          <td>${link.description || ""}</td>
+                        </tr>
+                      `
+                            )
+                            .join("")
+                        : '<tr><td colspan="5" class="text-center text-muted">Нет связей</td></tr>'
+                    }
+                  </tbody>
+                </table>
               </div>
             </div>
-            
-            <div class="form-group mb-20">
-              <label class="form-label">Дополнительная информация (рус)</label>
-              <textarea class="form-textarea" >${
-                itemData.additionalInfo || ""
-              }</textarea>
-            </div>
-            
-            <div class="item-section">
-              <h3 class="mb-15">Атрибуты</h3>
-              <table class="table table-bordered">
-                <colgroup>
-								<col style="width: 15%;"/>
-								<col style="width: 15%;"/>
-								<col style="width: 10%;"/>
-								<col style="min-width: 50%;"/>
-
-							</colgroup>
-                <thead>
-                  <tr>
-                    <th class="sortable">Имя ▲</th>
-                    <th class="sortable">Тип ⇅</th>
-                    <th class="sortable">Мн ⇅</th>
-                    <th class="sortable">Описание</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${
-                    itemData.attributes && itemData.attributes.length > 0
-                      ? itemData.attributes
-                          .map(
-                            (attr) => `
-                      <tr>
-                        <td><a href="#" class="table-link">${
-                          attr.name || ""
-                        }</a></td>
-                        <td>${attr.type || ""}</td>
-                        <td>${attr.multiplicity || ""}</td>
-                        <td>${attr.description || ""}</td>
-                      </tr>
-                    `
-                          )
-                          .join("")
-                      : '<tr><td colspan="4" class="text-center text-muted">Нет атрибутов</td></tr>'
-                  }
-                </tbody>
-              </table>
-            </div>
-            
-            <div class="item-section">
-              <h3 class="mb-15">Связи</h3>
-              <table class="table table-bordered">
-              <colgroup>
-								<col style="width: 15%;"/>
-								<col style="width: 15%;"/>
-								<col style="min-width: 20%;"/>
-								<col style="width: 5%;"/>
-								<col style="max-width: 50%;"/>
-
-							</colgroup>
-                <thead>
-                  <tr>
-                    <th class="sortable">Имя связи ⇅</th>
-                    <th class="sortable">Тип связи ⇅</th>
-                    <th class="sortable">Класс назначения ⇅</th>
-                    <th class="sortable">Мн</th>
-                    <th>Описание</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${
-                    itemData.links && itemData.links.length > 0
-                      ? itemData.links
-                          .map(
-                            (link) => `
-                      <tr>
-                        <td>${link.target_class_role_name || ""}</td>
-                        <td>${link.relation_kind || ""} (${
-                              link.role || ""
-                            })</td>
-                        <td><a href="#" class="table-link">${
-                          link.target_class_name || ""
-                        }</a></td>
-                        <td>${link.multiplicity || ""}</td>
-                        <td>${link.description || ""}</td>
-                      </tr>
-                    `
-                          )
-                          .join("")
-                      : '<tr><td colspan="5" class="text-center text-muted">Нет связей</td></tr>'
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
+          `;
+        }
 
         document.getElementById("item-container").innerHTML = html;
       }
@@ -1429,20 +1481,26 @@
               return elem;
             }
 
-            // Search in attributes
-            if (elem.attributes) {
-              const attr = elem.attributes.find(
-                (a) => a.id == itemId && itemType === "attribute"
-              );
-              if (attr) return attr;
+            // Search in attributes - return parent element
+            if (elem.attributes && itemType === "attribute") {
+              const attr = elem.attributes.find((a) => a.id == itemId);
+              if (attr) {
+                return {
+                  item: attr,
+                  parent: elem
+                };
+              }
             }
 
-            // Search in links
-            if (elem.links) {
-              const link = elem.links.find(
-                (l) => l.id == itemId && itemType === "link"
-              );
-              if (link) return link;
+            // Search in links - return parent element
+            if (elem.links && itemType === "link") {
+              const link = elem.links.find((l) => l.id == itemId);
+              if (link) {
+                return {
+                  item: link,
+                  parent: elem
+                };
+              }
             }
           }
         }
