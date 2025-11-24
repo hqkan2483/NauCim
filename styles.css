@@ -832,6 +832,12 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 0.95rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.project-name:hover {
+    color: var(--sidebar-bg);
 }
 
 .project-structure {
@@ -1187,4 +1193,63 @@ body {
 .item-details h2 {
     font-size: 24px;
     color: var(--text-primary);
+}
+
+.item-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.item-details-right {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+}
+
+.form-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.item-section {
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+    margin-bottom: 20px;
+}
+
+.table-bordered {
+    border: 1px solid var(--border-color);
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid var(--border-color);
+}
+
+.table-bordered thead tr {
+    background-color: var(--bg-secondary);
+}
+
+.table th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.table th.sortable:hover {
+    background-color: rgba(33, 128, 133, 0.05);
+}
+
+.table-link {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.table-link:hover {
+    text-decoration: underline;
+}
+
+.text-muted {
+    color: var(--text-secondary);
 }
