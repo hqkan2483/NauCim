@@ -408,7 +408,7 @@
         const hasChildren = model.rootPackages && model.rootPackages.length > 0;
 
         let html = `
-                <div class="tree-structure-item" style="margin-left: 20px;">
+                <div class="tree-structure-item" style="margin-left: 10px;">
                     <div class="tree-structure-header">
             `;
 
@@ -474,11 +474,13 @@
         const multiplicity = link.multiplicity ? ` [${link.multiplicity}]` : "";
 
         return `
-                <div class="tree-structure-item" style="margin-left: 20px;">
+                <div class="tree-structure-item" style="margin-left: 10px;">
+                  <div class="flex">
                     <span class="tree-expand-btn-empty"></span>
                     <span class="tree-structure-name" data-id="${
                       link.assoc_id || link.id || ""
                     }" data-type="link" onclick="selectTreeItem(event)">${icon} ${linkLabel}${multiplicity}</span>
+                    </div>
                 </div>
             `;
       }
@@ -503,7 +505,7 @@
         const abstractMarker = elem.isAbstract ? " (abstract)" : "";
 
         let html = `
-                <div class="tree-structure-item" style="margin-left: 20px;">
+                <div class="tree-structure-item" style="margin-left: 10px;">
                     <div class="tree-structure-header">
             `;
 
@@ -534,7 +536,8 @@
           if (elem.attributes && elem.attributes.length > 0) {
             elem.attributes.forEach((attr, idx) => {
               html += `
-                            <div class="tree-structure-item" style="margin-left: 20px;">
+                            <div class="tree-structure-item" style="margin-left: 10px;">
+                              <div class="flex">
                                 <span class="tree-expand-btn-empty"></span>
                                 <span class="tree-structure-name" data-id="${
                                   attr.id || ""
@@ -543,6 +546,7 @@
               }: ${attr.type}${
                 attr.multiplicity ? " [" + attr.multiplicity + "]" : ""
               }</span>
+              </div>
                             </div>
                         `;
             });
@@ -570,7 +574,7 @@
         const hasChildren = profile.attributes && profile.attributes.length > 0;
 
         let html = `
-                <div class="tree-structure-item" style="margin-left: 20px;">
+                <div class="tree-structure-item" style="margin-left: 10px;">
                     <div class="tree-structure-header">
             `;
 
@@ -604,13 +608,15 @@
           html += `<div class="tree-structure-children">`;
           profile.attributes.forEach((attr, idx) => {
             html += `
-                        <div class="tree-structure-item" style="margin-left: 20px;">
+                        <div class="tree-structure-item" style="margin-left: 10px;">
+                          <div class="flex">
                             <span class="tree-expand-btn-empty"></span>
                             <span class="tree-structure-name" data-id="${
                               attr.id || ""
                             }" data-type="profile-attribute" onclick="selectTreeItem(event)">• ${
               attr.name || "Атрибут"
             }</span>
+            </div>
                         </div>
                     `;
           });
@@ -637,7 +643,7 @@
           (rootPkg.elements && rootPkg.elements.length > 0);
 
         let html = `
-                <div class="tree-structure-item" style="margin-left: 20px;">
+                <div class="tree-structure-item" style="margin-left: 10px;">
                     <div class="tree-structure-header">
             `;
 
@@ -709,7 +715,7 @@
           (pkg.elements && pkg.elements.length > 0);
 
         let html = `
-                <div class="tree-structure-item" style="margin-left: 20px;">
+                <div class="tree-structure-item" style="margin-left: 10px;">
                     <div class="tree-structure-header">
             `;
 
