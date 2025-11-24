@@ -579,10 +579,11 @@
           html += `<span class="tree-expand-btn-empty"></span>`;
         }
 
+        const profileNameEscaped = (profile.name || "Профиль без названия").replace(/'/g, "\\'");
         html += `
                         <span class="tree-structure-name" data-id="${
                           profile.id || ""
-                        }" data-type="profile" onclick="selectTreeItem(event)">⚡ ${profile.name || "Профиль без названия"}</span>
+                        }" data-type="profile" onclick="selectProfileFromTree(event, ${profile.id || ""}, '${profileNameEscaped}')">⚡ ${profile.name || "Профиль без названия"}</span>
                     </div>
             `;
 
@@ -1101,6 +1102,7 @@
         document.getElementById('models-container').classList.remove('hidden');
         document.getElementById('profiles-container').style.display = 'block';
         document.getElementById('profiles-container').classList.remove('hidden');
+
       }
       
       function selectModelFromTree(event, modelId, modelName) {
