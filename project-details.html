@@ -477,7 +477,7 @@
                 <div class="tree-structure-item" style="margin-left: 20px;">
                     <span class="tree-expand-btn-empty"></span>
                     <span class="tree-structure-name" data-id="${
-                      link.id || ""
+                      link.assoc_id || link.id || ""
                     }" data-type="link" onclick="selectTreeItem(event)">${icon} ${linkLabel}${multiplicity}</span>
                 </div>
             `;
@@ -1494,7 +1494,7 @@
 
             // Search in links - return parent element
             if (elem.links && itemType === "link") {
-              const link = elem.links.find((l) => l.id == itemId);
+              const link = elem.links.find((l) => (l.assoc_id || l.id) == itemId);
               if (link) {
                 return {
                   item: link,
