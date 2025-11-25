@@ -435,7 +435,7 @@
         return html;
       }
 
-      function renderLinkItem(link) {
+      function renderLinkItemContent(link) {
         let icon = "🔗";
         let linkLabel = "";
 
@@ -455,14 +455,17 @@
         }
 
         const multiplicity = link.multiplicity ? ` [${link.multiplicity}]` : "";
+        return `${icon} ${linkLabel}${multiplicity}`;
+      }
 
+      function renderLinkItem(link) {
         return `
                 <div class="tree-structure-item" style="margin-left: 10px;">
                   <div class="flex">
                     <span class="tree-expand-btn-empty"></span>
                     <span class="tree-structure-name" data-id="${
                       link.assoc_id || link.id || ""
-                    }" data-type="link" onclick="selectTreeItem(event)">${icon} ${linkLabel}${multiplicity}</span>
+                    }" data-type="link" onclick="selectTreeItem(event)">${renderLinkItemContent(link)}</span>
                     </div>
                 </div>
             `;
@@ -843,7 +846,9 @@
                                 <span class="tree-expand-btn-empty"></span>
                                 <span class="tree-structure-name" data-id="${
                                   attr.id || ""
-                                }" data-type="attribute" onclick="selectTreeItem(event)">🔹 ${
+                                }" data-type="attribute" data-profile-id="${
+                                  profileId || ""
+                                }" onclick="selectTreeItem(event)">🔹 ${
                 attr.name
               }: ${attr.type}${
                 attr.multiplicity ? " [" + attr.multiplicity + "]" : ""
@@ -855,7 +860,18 @@
 
           if (elem.links && elem.links.length > 0) {
             elem.links.forEach((link, idx) => {
-              html += renderLinkItem(link);
+              html += `
+                            <div class="tree-structure-item" style="margin-left: 20px;">
+                              <div class="flex">
+                                <span class="tree-expand-btn-empty"></span>
+                                <span class="tree-structure-name" data-id="${
+                                  link.assoc_id || link.id || ""
+                                }" data-type="link" data-profile-id="${
+                                  profileId || ""
+                                }" onclick="selectTreeItem(event)">${renderLinkItemContent(link)}</span>
+                                </div>
+                            </div>
+                        `;
             });
           }
 
