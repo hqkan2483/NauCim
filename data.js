@@ -121,7 +121,7 @@ async function loadSampleData() {
     profile58651_2RootPackages = await response.json();
     console.log("✅ profile-test.json loaded successfully");
   } catch (error) {
-    console.error("❌ Error loading focl.json:", error);
+    console.error("❌ Error loading profile-test.json:", error);
   }
 
 

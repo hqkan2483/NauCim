@@ -571,7 +571,11 @@
         );
         const itemId = baseId;
         const isExpanded = expandedItems[itemId];
-        const hasChildren = profile.attributes && profile.attributes.length > 0;
+        
+        // Check for both attributes and rootPackages as children
+        const hasAttributes = profile.attributes && profile.attributes.length > 0;
+        const hasRootPackages = profile.rootPackages && profile.rootPackages.length > 0;
+        const hasChildren = hasAttributes || hasRootPackages;
 
         let html = `
                 <div class="tree-structure-item" style="margin-left: 10px;">
@@ -606,20 +610,262 @@
 
         if (hasChildren && isExpanded) {
           html += `<div class="tree-structure-children">`;
-          profile.attributes.forEach((attr, idx) => {
-            html += `
+          
+          // Render root packages if they exist
+          if (hasRootPackages) {
+            profile.rootPackages.forEach((rootPkg, idx) => {
+              html += renderProfileRootPackageTree(
+                rootPkg,
+                0,
+                `${baseId}-root-${idx}`,
+                profile.id
+              );
+            });
+          }
+          
+          // Render attributes if they exist
+          if (hasAttributes) {
+            profile.attributes.forEach((attr, idx) => {
+              html += `
                         <div class="tree-structure-item" style="margin-left: 10px;">
                           <div class="flex">
                             <span class="tree-expand-btn-empty"></span>
                             <span class="tree-structure-name" data-id="${
                               attr.id || ""
                             }" data-type="profile-attribute" onclick="selectTreeItem(event)">• ${
-              attr.name || "Атрибут"
-            }</span>
+                attr.name || "Атрибут"
+              }</span>
             </div>
                         </div>
                     `;
-          });
+            });
+          }
+          
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+        return html;
+      }
+
+      function renderProfileRootPackageTree(
+        rootPkg,
+        level = 0,
+        baseId = "",
+        profileId = null
+      ) {
+        const expandedItems = JSON.parse(
+          localStorage.getItem("expandedTreeItems") || "{}"
+        );
+        const itemId = baseId;
+        const isExpanded = expandedItems[itemId];
+        const hasChildren =
+          (rootPkg.children && rootPkg.children.length > 0) ||
+          (rootPkg.elements && rootPkg.elements.length > 0);
+
+        let html = `
+                <div class="tree-structure-item" style="margin-left: 20px;">
+                    <div class="tree-structure-header">
+            `;
+
+        if (hasChildren) {
+          html += `
+                    <button class="tree-expand-btn" data-item-id="${itemId}" data-type="package">
+                        <span class="tree-expand-icon">${
+                          isExpanded ? "▼" : "▶"
+                        }</span>
+                    </button>
+                `;
+        } else {
+          html += `<span class="tree-expand-btn-empty"></span>`;
+        }
+
+        const typeLabel = rootPkg.type === 'Model' ? '🗂️' : '📦';
+        html += `
+                        <span class="tree-structure-name" data-id="${
+                          rootPkg.id || ""
+                        }" data-type="package" onclick="selectTreeItem(event)">${typeLabel} ${
+          rootPkg.name || "Корневой пакет"
+        }</span>
+                    </div>
+            `;
+
+        if (hasChildren && isExpanded) {
+          html += `<div class="tree-structure-children">`;
+
+          // Render child packages first
+          if (rootPkg.children && rootPkg.children.length > 0) {
+            rootPkg.children.forEach((pkg, idx) => {
+              html += renderProfilePackageTree(
+                pkg,
+                level + 1,
+                `${baseId}-pkg-${idx}`,
+                profileId
+              );
+            });
+          }
+
+          // Render elements
+          if (rootPkg.elements && rootPkg.elements.length > 0) {
+            rootPkg.elements.forEach((elem, idx) => {
+              html += renderProfileElementTree(
+                elem,
+                level + 1,
+                `${baseId}-elem-${idx}`,
+                profileId
+              );
+            });
+          }
+
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+        return html;
+      }
+
+      function renderProfilePackageTree(pkg, level = 0, baseId = "", profileId = null) {
+        const expandedItems = JSON.parse(
+          localStorage.getItem("expandedTreeItems") || "{}"
+        );
+        const itemId = baseId;
+        const isExpanded = expandedItems[itemId];
+        const hasChildren =
+          (pkg.children && pkg.children.length > 0) ||
+          (pkg.elements && pkg.elements.length > 0);
+
+        let html = `
+                <div class="tree-structure-item" style="margin-left: 20px;">
+                    <div class="tree-structure-header">
+            `;
+
+        if (hasChildren) {
+          html += `
+                    <button class="tree-expand-btn" data-item-id="${itemId}" data-type="package">
+                        <span class="tree-expand-icon">${
+                          isExpanded ? "▼" : "▶"
+                        }</span>
+                    </button>
+                `;
+        } else {
+          html += `<span class="tree-expand-btn-empty"></span>`;
+        }
+
+        html += `
+                        <span class="tree-structure-name" data-id="${
+                          pkg.id || ""
+                        }" data-type="package" onclick="selectTreeItem(event)">📁 ${
+          pkg.name || "Пакет"
+        }</span>
+                    </div>
+            `;
+
+        if (hasChildren && isExpanded) {
+          html += `<div class="tree-structure-children">`;
+
+          // Render child packages first
+          if (pkg.children && pkg.children.length > 0) {
+            pkg.children.forEach((subPkg, idx) => {
+              html += renderProfilePackageTree(
+                subPkg,
+                level + 1,
+                `${baseId}-pkg-${idx}`,
+                profileId
+              );
+            });
+          }
+
+          // Render elements
+          if (pkg.elements && pkg.elements.length > 0) {
+            pkg.elements.forEach((elem, idx) => {
+              html += renderProfileElementTree(
+                elem,
+                level + 1,
+                `${baseId}-elem-${idx}`,
+                profileId
+              );
+            });
+          }
+
+          html += `</div>`;
+        }
+
+        html += `</div>`;
+        return html;
+      }
+
+      function renderProfileElementTree(elem, level = 0, baseId = "", profileId = null) {
+        const expandedItems = JSON.parse(
+          localStorage.getItem("expandedTreeItems") || "{}"
+        );
+        const itemId = baseId;
+        const isExpanded = expandedItems[itemId];
+        const hasChildren =
+          (elem.attributes && elem.attributes.length > 0) ||
+          (elem.links && elem.links.length > 0);
+
+        const typeIcons = {
+          Class: "📄",
+          Interface: "⬟",
+          Enumeration: "▣",
+          Package: "📦",
+        };
+        const icon = typeIcons[elem.type] || "📄";
+        const abstractMarker = elem.isAbstract ? " (abstract)" : "";
+
+        let html = `
+                <div class="tree-structure-item" style="margin-left: 20px;">
+                    <div class="tree-structure-header">
+            `;
+
+        if (hasChildren) {
+          html += `
+                    <button class="tree-expand-btn" data-item-id="${itemId}" data-type="element">
+                        <span class="tree-expand-icon">${
+                          isExpanded ? "▼" : "▶"
+                        }</span>
+                    </button>
+                `;
+        } else {
+          html += `<span class="tree-expand-btn-empty"></span>`;
+        }
+
+        html += `
+                        <span class="tree-structure-name" data-id="${
+                          elem.id || ""
+                        }" data-type="element" onclick="selectTreeItem(event)">${icon} ${
+          elem.name || "Элемент"
+        }${abstractMarker}</span>
+                    </div>
+            `;
+
+        if (hasChildren && isExpanded) {
+          html += `<div class="tree-structure-children">`;
+
+          if (elem.attributes && elem.attributes.length > 0) {
+            elem.attributes.forEach((attr, idx) => {
+              const defaultValue = attr.default ? ` = ${attr.default}` : "";
+              html += `
+                            <div class="tree-structure-item" style="margin-left: 20px;">
+                                <span class="tree-expand-btn-empty"></span>
+                                <span class="tree-structure-name" data-id="${
+                                  attr.id || ""
+                                }" data-type="attribute" onclick="selectTreeItem(event)">🔹 ${
+                attr.name
+              }: ${attr.type}${
+                attr.multiplicity ? " [" + attr.multiplicity + "]" : ""
+              }${defaultValue}</span>
+                            </div>
+                        `;
+            });
+          }
+
+          if (elem.links && elem.links.length > 0) {
+            elem.links.forEach((link, idx) => {
+              html += renderLinkItem(link);
+            });
+          }
+
           html += `</div>`;
         }
 
