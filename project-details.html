@@ -583,7 +583,9 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           profile.id || ""
-                        }" data-type="profile" onclick="selectProfileFromTree(event, ${
+                        }" data-type="profile" data-profile-id="${
+          profile.id || ""
+        }" onclick="selectProfileFromTree(event, ${
           profile.id || ""
         }, '${profileNameEscaped}')">⚡ ${
           profile.name || "Профиль без названия"
@@ -615,7 +617,9 @@
                             <span class="tree-expand-btn-empty"></span>
                             <span class="tree-structure-name" data-id="${
                               attr.id || ""
-                            }" data-type="profile-attribute" onclick="selectTreeItem(event)">• ${
+                            }" data-type="profile-attribute" data-profile-id="${
+                              profile.id || ""
+                            }" onclick="selectTreeItem(event)">• ${
                 attr.name || "Атрибут"
               }</span>
             </div>
@@ -667,7 +671,9 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           rootPkg.id || ""
-                        }" data-type="package" onclick="selectTreeItem(event)">${typeLabel} ${
+                        }" data-type="package" data-profile-id="${
+          profileId || ""
+        }" onclick="selectTreeItem(event)">${typeLabel} ${
           rootPkg.name || "Корневой пакет"
         }</span>
                     </div>
@@ -737,7 +743,9 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           pkg.id || ""
-                        }" data-type="package" onclick="selectTreeItem(event)">📁 ${
+                        }" data-type="package" data-profile-id="${
+          profileId || ""
+        }" onclick="selectTreeItem(event)">📁 ${
           pkg.name || "Пакет"
         }</span>
                     </div>
@@ -816,7 +824,9 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           elem.id || ""
-                        }" data-type="element" onclick="selectTreeItem(event)">${icon} ${
+                        }" data-type="element" data-profile-id="${
+          profileId || ""
+        }" onclick="selectTreeItem(event)">${icon} ${
           elem.name || "Элемент"
         }${abstractMarker}</span>
                     </div>
@@ -874,7 +884,7 @@
        
 
         let html = `
-                <div class="tree-structure-item" style="margin-left: ${level === 1 ? '30px' : '10px'};">
+                <div class="tree-structure-item" style="margin-left: ${level === 1 ? '40px' : '10px'};">
                     <div class="tree-structure-header">
             `;
 
@@ -1759,6 +1769,13 @@
         const name = document.getElementById("model-name").value.trim();
         if (!name) {
           alert("Введите название модели");
+          return;
+        }
+
+        // Check if model with this name already exists
+        const existingModels = getModels(projectId);
+        if (existingModels.some((m) => m.name.toLowerCase() === name.toLowerCase())) {
+          alert("Модель с названием \"" + name + "\" уже существует в проекте");
           return;
         }
 
