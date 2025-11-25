@@ -86,6 +86,35 @@
             width: 20px;
         }
         
+        .tree-toggle {
+            display: inline-block;
+            width: 16px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 12px;
+            margin-right: 4px;
+        }
+        
+        .tree-children {
+            display: block;
+        }
+        
+        .tree-children.collapsed {
+            display: none;
+        }
+        
+        .tree-item-with-checkbox.tree-item-selected {
+            background-color: #e3f2fd;
+        }
+        
+        .tree-item-with-checkbox:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .tree-item-with-checkbox.tree-item-selected:hover {
+            background-color: #d1e7fd;
+        }
+        
         .search-box {
             margin-bottom: 15px;
         }
@@ -228,6 +257,10 @@
         let availableData = [];
         let selectedLeftItems = new Set();
         let selectedRightItems = new Set();
+        let expandedLeftItems = new Set();
+        let expandedRightItems = new Set();
+        let activeLeftItem = null;
+        let activeRightItem = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             await loadSampleData();
@@ -301,26 +334,36 @@
             availableData.forEach((item, index) => {
                 const itemKey = `left-${item.type}-${item.id}`;
                 const isChecked = selectedLeftItems.has(itemKey);
+                const isExpanded = expandedLeftItems.has(itemKey);
                 const icon = item.type === 'model' ? '📋' : '⚙️';
+                const hasChildren = item.children && item.children.length > 0;
 
+                const isActive = activeLeftItem === itemKey;
+                
                 html += `
-                    <div class="tree-item-with-checkbox">
+                    <div class="tree-item-with-checkbox ${isActive ? 'tree-item-selected' : ''}" onclick="setActiveLeftItem('${itemKey}', event)">
+                        <span class="tree-toggle" onclick="toggleLeftExpand('${itemKey}'); event.stopPropagation();">
+                            ${hasChildren ? (isExpanded ? '▼' : '▶') : ' '}
+                        </span>
                         <input 
                             type="checkbox" 
                             class="tree-item-checkbox" 
                             id="${itemKey}"
                             ${isChecked ? 'checked' : ''}
-                            onchange="toggleLeftItem('${itemKey}')"
+                            onchange="toggleLeftItem('${itemKey}'); event.stopPropagation();"
+                            onclick="event.stopPropagation();"
                         >
-                        <label class="tree-item-label" for="${itemKey}">
+                        <span class="tree-item-label">
                             ${icon} ${item.name} (${item.type === 'model' ? 'Model' : 'Profile'})
-                        </label>
+                        </span>
                     </div>
                 `;
 
                 // Render children (packages)
-                if (item.children && item.children.length > 0) {
+                if (hasChildren) {
+                    html += `<div class="tree-children ${isExpanded ? '' : 'collapsed'}" id="children-${itemKey}">`;
                     html += renderTreeChildren(item.children, 1, 'left', itemKey);
+                    html += `</div>`;
                 }
             });
 
@@ -335,53 +378,79 @@
                 const isChecked = side === 'left' ? 
                     selectedLeftItems.has(itemKey) : 
                     selectedRightItems.has(itemKey);
+                const isExpanded = side === 'left' ? 
+                    expandedLeftItems.has(itemKey) : 
+                    expandedRightItems.has(itemKey);
+                
+                const hasChildren = (item.elements && item.elements.length > 0) || 
+                                    (item.children && item.children.length > 0);
+                
+                const isActive = side === 'left' ? 
+                    activeLeftItem === itemKey : 
+                    activeRightItem === itemKey;
                 
                 const indent = '<span class="tree-indent"></span>'.repeat(level);
                 
                 html += `
-                    <div class="tree-item-with-checkbox">
+                    <div class="tree-item-with-checkbox ${isActive ? 'tree-item-selected' : ''}" onclick="${side === 'left' ? 'setActiveLeftItem' : 'setActiveRightItem'}('${itemKey}', event)">
+                        <span class="tree-toggle" onclick="${side === 'left' ? 'toggleLeftExpand' : 'toggleRightExpand'}('${itemKey}'); event.stopPropagation();">
+                            ${hasChildren ? (isExpanded ? '▼' : '▶') : ' '}
+                        </span>
                         <input 
                             type="checkbox" 
                             class="tree-item-checkbox" 
                             id="${itemKey}"
                             ${isChecked ? 'checked' : ''}
-                            onchange="${side === 'left' ? 'toggleLeftItem' : 'toggleRightItem'}('${itemKey}')"
+                            onchange="${side === 'left' ? 'toggleLeftItem' : 'toggleRightItem'}('${itemKey}'); event.stopPropagation();"
+                            onclick="event.stopPropagation();"
                         >
-                        <label class="tree-item-label" for="${itemKey}">
+                        <span class="tree-item-label">
                             ${indent}📦 ${item.name || 'Package'}
-                        </label>
+                        </span>
                     </div>
                 `;
 
-                // Render elements
-                if (item.elements && item.elements.length > 0) {
-                    item.elements.forEach((elem, elemIndex) => {
-                        const elemKey = `${itemKey}-elem-${elemIndex}`;
-                        const elemChecked = side === 'left' ? 
-                            selectedLeftItems.has(elemKey) : 
-                            selectedRightItems.has(elemKey);
-                        const elemIndent = '<span class="tree-indent"></span>'.repeat(level + 1);
-                        
-                        html += `
-                            <div class="tree-item-with-checkbox">
-                                <input 
-                                    type="checkbox" 
-                                    class="tree-item-checkbox" 
-                                    id="${elemKey}"
-                                    ${elemChecked ? 'checked' : ''}
-                                    onchange="${side === 'left' ? 'toggleLeftItem' : 'toggleRightItem'}('${elemKey}')"
-                                >
-                                <label class="tree-item-label" for="${elemKey}">
-                                    ${elemIndent}📄 ${elem.name || 'Class'}
-                                </label>
-                            </div>
-                        `;
-                    });
-                }
+                // Render children container
+                if (hasChildren) {
+                    html += `<div class="tree-children ${isExpanded ? '' : 'collapsed'}" id="children-${itemKey}">`;
+                    
+                    // Render elements
+                    if (item.elements && item.elements.length > 0) {
+                        item.elements.forEach((elem, elemIndex) => {
+                            const elemKey = `${itemKey}-elem-${elemIndex}`;
+                            const elemChecked = side === 'left' ? 
+                                selectedLeftItems.has(elemKey) : 
+                                selectedRightItems.has(elemKey);
+                            const elemActive = side === 'left' ? 
+                                activeLeftItem === elemKey : 
+                                activeRightItem === elemKey;
+                            const elemIndent = '<span class="tree-indent"></span>'.repeat(level + 1);
+                            
+                            html += `
+                                <div class="tree-item-with-checkbox ${elemActive ? 'tree-item-selected' : ''}" onclick="${side === 'left' ? 'setActiveLeftItem' : 'setActiveRightItem'}('${elemKey}', event)">
+                                    <span class="tree-toggle"> </span>
+                                    <input 
+                                        type="checkbox" 
+                                        class="tree-item-checkbox" 
+                                        id="${elemKey}"
+                                        ${elemChecked ? 'checked' : ''}
+                                        onchange="${side === 'left' ? 'toggleLeftItem' : 'toggleRightItem'}('${elemKey}'); event.stopPropagation();"
+                                        onclick="event.stopPropagation();"
+                                    >
+                                    <span class="tree-item-label">
+                                        ${elemIndent}📄 ${elem.name || 'Class'}
+                                    </span>
+                                </div>
+                            `;
+                        });
+                    }
 
-                // Render child packages
-                if (item.children && item.children.length > 0) {
-                    html += renderTreeChildren(item.children, level + 1, side, itemKey);
+                    // Render child packages
+                    if (item.children && item.children.length > 0) {
+                        html += renderTreeChildren(item.children, level + 1, side, itemKey);
+                    }
+                    
+                    html += `</div>`;
                 }
             });
 
@@ -420,6 +489,36 @@
             } else {
                 selectedRightItems.delete(itemKey);
             }
+        }
+
+        function toggleLeftExpand(itemKey) {
+            if (expandedLeftItems.has(itemKey)) {
+                expandedLeftItems.delete(itemKey);
+            } else {
+                expandedLeftItems.add(itemKey);
+            }
+            renderAvailableTree();
+        }
+
+        function toggleRightExpand(itemKey) {
+            if (expandedRightItems.has(itemKey)) {
+                expandedRightItems.delete(itemKey);
+            } else {
+                expandedRightItems.add(itemKey);
+            }
+            renderProfileTree();
+        }
+
+        function setActiveLeftItem(itemKey, event) {
+            if (event) event.stopPropagation();
+            activeLeftItem = itemKey;
+            renderAvailableTree();
+        }
+
+        function setActiveRightItem(itemKey, event) {
+            if (event) event.stopPropagation();
+            activeRightItem = itemKey;
+            renderProfileTree();
         }
 
         function transferToProfile() {
