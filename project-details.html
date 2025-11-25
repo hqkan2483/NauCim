@@ -1418,6 +1418,7 @@
         const target = event.target;
         const itemId = target.getAttribute("data-id");
         const itemType = target.getAttribute("data-type");
+        const modelId = target.getAttribute("data-model-id");
 
         // Remove previous selection
         document.querySelectorAll(".tree-structure-name").forEach((el) => {
@@ -1437,10 +1438,10 @@
         itemContainer.classList.remove("hidden");
 
         // Find and render item details
-        renderItemDetails(itemId, itemType);
+        renderItemDetails(itemId, itemType, modelId);
       }
 
-      function renderItemDetails(itemId, itemType) {
+      function renderItemDetails(itemId, itemType, modelId) {
         const projectId = getCurrentProjectId();
         const project = getProject(projectId);
 
@@ -1450,18 +1451,35 @@
         let parentElement = null;
         let modelContext = null;
 
-        // Search through all models
-        for (const model of project.models) {
-          const result = findItemInModel(model, itemId, itemType);
-          if (result) {
-            if (result.item) {
-              itemData = result.item;
-              parentElement = result.parent;
-            } else {
-              itemData = result;
+        // If modelId is provided, search only in that specific model
+        if (modelId) {
+          const model = project.models.find((m) => m.id == modelId);
+          if (model) {
+            const result = findItemInModel(model, itemId, itemType);
+            if (result) {
+              if (result.item) {
+                itemData = result.item;
+                parentElement = result.parent;
+              } else {
+                itemData = result;
+              }
+              modelContext = model;
             }
-            modelContext = model;
-            break;
+          }
+        } else {
+          // Fallback: search through all models if modelId is not provided
+          for (const model of project.models) {
+            const result = findItemInModel(model, itemId, itemType);
+            if (result) {
+              if (result.item) {
+                itemData = result.item;
+                parentElement = result.parent;
+              } else {
+                itemData = result;
+              }
+              modelContext = model;
+              break;
+            }
           }
         }
 
@@ -1748,10 +1766,10 @@
           name: name,
           type: document.getElementById("model-type").value,
           description: document.getElementById("model-desc").value,
-          classes:
-            parseInt(document.getElementById("model-classes").value) || 100,
-          attributes:
-            parseInt(document.getElementById("model-attributes").value) || 500,
+          // classes:
+          //   parseInt(document.getElementById("model-classes").value) || 100,
+          // attributes:
+          //   parseInt(document.getElementById("model-attributes").value) || 500,
           packages: [],
         };
 
@@ -1761,8 +1779,8 @@
         // Clear form
         document.getElementById("model-name").value = "";
         document.getElementById("model-desc").value = "";
-        document.getElementById("model-classes").value = "100";
-        document.getElementById("model-attributes").value = "500";
+        // document.getElementById("model-classes").value = "100";
+        // document.getElementById("model-attributes").value = "500";
 
         renderModels();
         alert("Модель успешно добавлена!");
