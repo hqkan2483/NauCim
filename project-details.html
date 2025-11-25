@@ -98,7 +98,7 @@
               </div>
             </div>
           </div>
-
+<div class="divider mt-15"></div>
           <div id="profiles-container" class="mt-30" class="hidden">
             <div class="split-view">
               <div class="split-left">
@@ -148,24 +148,7 @@
             placeholder="Описание модели"
           ></textarea>
         </div>
-        <div class="form-group">
-          <label class="form-label">Количество классов (примерно)</label>
-          <input
-            type="number"
-            id="model-classes"
-            class="form-input"
-            value="100"
-          />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Количество атрибутов (примерно)</label>
-          <input
-            type="number"
-            id="model-attributes"
-            class="form-input"
-            value="500"
-          />
-        </div>
+        
         <div class="modal-buttons">
           <button
             class="btn btn-secondary"
@@ -888,8 +871,10 @@
           (rootPkg.children && rootPkg.children.length > 0) ||
           (rootPkg.elements && rootPkg.elements.length > 0);
 
+       
+
         let html = `
-                <div class="tree-structure-item" style="margin-left: 10px;">
+                <div class="tree-structure-item" style="margin-left: ${level === 1 ? '30px' : '10px'};">
                     <div class="tree-structure-header">
             `;
 
@@ -1162,8 +1147,7 @@
         const html = `
                 <div class="tabs">
                     <div class="tab active" onclick="switchTab('properties')">Свойства</div>
-                    <div class="tab" onclick="switchTab('structure')">Структура</div>
-                    <div class="tab" onclick="switchTab('stats')">Статистика</div>
+
                 </div>
                 
                 <div id="tab-properties" class="tab-content active">
@@ -1172,51 +1156,30 @@
                         <button class="btn btn-primary btn-small" onclick="openDiagram()">📐 Диаграмма классов</button>
                     </div>
                     <table class="table model-details-table">
+                    <colgroup>
+                    <col style="width: 15%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="min-width: 50%;"/>
+                  </colgroup>
                         <tr>
-                            <td>Тип модели</td>
-                            <td><span class="badge">${model.type}</span></td>
+                            <td colspan="2">Описание</td>
+                            <td colspan="2">${model.description}</td>
                         </tr>
                         <tr>
-                            <td>Описание</td>
-                            <td>${model.description}</td>
+                            <td>Дата создания/загрузки: </td>
+                            <td><span> ${model.createDate !== null && model.createDate !== undefined ? model.createDate : "---"}</span></td>
+                            <td>Дата изменения: </td>
+                            <td><span> ${model.modifyDate !== null && model.modifyDate !== undefined ? model.modifyDate : "---"}</span></td>
                         </tr>
                         <tr>
-                            <td>Классов</td>
-                            <td>${model.classes}</td>
+                            <td colspan="2">Используется в профилях</td>
+                            <td colspan="2">${model.relatedProfiles && model.relatedProfiles.length > 0 ? model.relatedProfiles.map(p => p.name).join(", ") : "---"}</td>
                         </tr>
-                        <tr>
-                            <td>Атрибутов</td>
-                            <td>${model.attributes}</td>
-                        </tr>
+                       
                     </table>
                 </div>
                 
-                <div id="tab-structure" class="tab-content">
-                    <h3 class="mb-15">Структура пакетов и классов</h3>
-                    <div class="tree">${treeHtml}</div>
-                </div>
-                
-                <div id="tab-stats" class="tab-content">
-                    <h3 class="mb-15">Статистика модели</h3>
-                    <div class="stats-grid">
-                        <div class="stat-box">
-                            <div class="stat-value">${model.classes}</div>
-                            <div class="stat-label">Всего классов</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">${model.attributes}</div>
-                            <div class="stat-label">Всего атрибутов</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">${
-                              model.rootPackages
-                                ? model.rootPackages.length
-                                : "N/A"
-                            }</div>
-                            <div class="stat-label">Корневых пакетов</div>
-                        </div>
-                    </div>
-                </div>
             `;
 
         document.getElementById("model-details").innerHTML = html;

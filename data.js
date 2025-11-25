@@ -139,6 +139,9 @@ async function loadSampleData() {
           name: "TC57CIM - CIM100",
           type: "Каноническая модель",
           description: "CIM 100 версия IEC 61970/61968, редакция 2025 года",
+          relatedProfiles: [],
+          createDate : "2024-11-20",
+          modifyDate: null,
           classes: 2225,
           attributes: 6328,
           rootPackages: tc57cimRootPackages,
@@ -150,6 +153,12 @@ async function loadSampleData() {
           name: "GOSTExtension",
           type: "Расширение модели RU",
           description: "Расширения для российских ГОСТов",
+          relatedProfiles: [
+            { id: 4, name: "GOST-58651.2" }, 
+            { id: 5, name: "GOST-58651.3" }
+          ],
+          createDate: "2024-11-20",
+          modifyDate: "2025-10-10",
           classes: 87,
           attributes: 345,
           rootPackages: gostExtRootPackages,

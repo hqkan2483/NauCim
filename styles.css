@@ -102,6 +102,11 @@ body {
     overflow: hidden;
 }
 
+.divider {
+    height: 1px;
+    background: var(--border-color);
+}
+
 .toolbar {
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
@@ -1061,6 +1066,11 @@ body {
 
 .model-details-table td {
     font-weight: 600;
+}
+
+.model-details-table tr:last-child td {
+    border-bottom: none;
+
 }
 
 .model-details-table td:first-child {
