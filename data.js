@@ -114,6 +114,17 @@ async function loadSampleData() {
     console.error("❌ Error loading focl.json:", error);
   }
 
+  let profile58651_2RootPackages = [];
+
+  try {
+    const response = await fetch("./models-data/profile-test.json");
+    profile58651_2RootPackages = await response.json();
+    console.log("✅ profile-test.json loaded successfully");
+  } catch (error) {
+    console.error("❌ Error loading focl.json:", error);
+  }
+
+
   const sampleProjects = [
     {
       id: 1,
@@ -149,11 +160,13 @@ async function loadSampleData() {
         {
           id: 4,
           name: "GOST-58651.2",
-          description: "Профиль обмена данными об электрооборудовании",
-          baseModel: "TC57CIM",
+          description: "Базисный профиль информационной модели",
+          baseModel: "GOSTExtension",
+          baseModelId: 3,
           version: "1.0",
           classes: 45,
           attributes: 234,
+         rootPackages: profile58651_2RootPackages,
           xsd: `<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="AssetInfo" type="AssetInfoType"/>
@@ -167,11 +180,13 @@ async function loadSampleData() {
         {
           id: 5,
           name: "GOST-58651.3",
-          description: "Профиль передачи телеметрии",
-          baseModel: "TC57CIM",
+          description: "Профиль модели ЛЭП 110-750 кВ",
+          baseModel: "GOSTExtension",
+          baseModelId: 3,
           version: "1.1",
           classes: 32,
           attributes: 178,
+          rootPackages: []
         },
       ],
     },
