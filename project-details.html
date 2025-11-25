@@ -164,6 +164,50 @@
       </div>
     </div>
 
+    <!-- MODAL: New Profile -->
+    <div id="new-profile-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-title">Создать новый профиль</div>
+        <div class="form-group">
+          <label class="form-label">Название профиля *</label>
+          <input
+            type="text"
+            id="profile-name"
+            class="form-input"
+            placeholder="Например: GOST-58651.2"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Описание</label>
+          <textarea
+            id="profile-desc"
+            class="form-textarea"
+            placeholder="Описание профиля"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Версия</label>
+          <input
+            type="text"
+            id="profile-version"
+            class="form-input"
+            value="1.0"
+          />
+        </div>
+        <div class="modal-buttons">
+          <button
+            class="btn btn-secondary"
+            onclick="closeModal('new-profile-modal')"
+          >
+            Отмена
+          </button>
+          <button class="btn btn-primary" onclick="createProfile()">
+            Создать
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div id="new-project-modal" class="modal">
       <div class="modal-content">
         <div class="modal-title">Создать новый проект</div>
@@ -2066,6 +2110,45 @@
 
         renderModels();
         alert("Модель успешно добавлена!");
+      }
+
+      function createProfile() {
+        const projectId = getCurrentProjectId();
+        if (!projectId) {
+          alert("Выберите проект");
+          return;
+        }
+
+        const name = document.getElementById("profile-name").value.trim();
+        if (!name) {
+          alert("Введите название профиля");
+          return;
+        }
+
+        // Check if profile with this name already exists
+        const existingProfiles = getProfiles(projectId);
+        if (existingProfiles.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
+          alert("Профиль с названием \"" + name + "\" уже существует в проекте");
+          return;
+        }
+
+        const newProfile = {
+          name: name,
+          description: document.getElementById("profile-desc").value,
+          version: document.getElementById("profile-version").value,
+        };
+
+        addProfile(projectId, newProfile);
+        closeModal("new-profile-modal");
+
+        // Clear form
+        document.getElementById("profile-name").value = "";
+        document.getElementById("profile-desc").value = "";
+        document.getElementById("profile-version").value = "1.0";
+
+        renderProfiles();
+        renderCurrentProjectStructure();
+        alert("Профиль успешно создан!");
       }
     </script>
   </body>
