@@ -117,28 +117,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- SIDEBAR -->
-        <div class="sidebar" id="sidebar">
-            <button
-                class="sidebar-toggle sidebar-open"
-                onclick="toggleSidebar()"
-                aria-label="Toggle sidebar"
-            >
-                <span class="toggle-icon">☰</span>
-            </button>
-            <div class="sidebar-header">
-                <span id="sidebar-project-title">Nautilus.CIM</span>
-            </div>
-            <div class="sidebar-nav">
-                <a href="projects.html" class="nav-item">📁 Проекты</a>
-                <a href="project-details.html" class="nav-item">📋 Структура проекта</a>
-
-                <div class="nav-section-title">Действия</div>
-                <a href="compare.html" class="nav-item">🔍 Сравнение</a>
-            </div>
-        </div>
-        <div class="sidebar-resize-handle" id="sidebar-resize-handle"></div>
-
         <!-- MAIN CONTENT -->
         <div class="main-content">
             <div class="toolbar">
@@ -147,7 +125,7 @@
                     <div class="profile-name-display" id="profile-name-display">Новый профиль</div>
                 </div>
                 <div class="toolbar-actions">
-                    <button class="btn btn-secondary" onclick="window.history.back()">
+                    <button class="btn btn-secondary" onclick="window.location.href='project-details.html'">
                         ← Назад
                     </button>
                     <button class="btn btn-primary" onclick="saveProfile()">
@@ -240,7 +218,6 @@
     </div>
 
     <script src="data.js"></script>
-    <script src="sidebar.js"></script>
     <script>
         let profileData = {
             id: null,
@@ -258,7 +235,6 @@
             loadAvailableData();
             renderAvailableTree();
             renderProfileTree();
-            restoreSidebarState();
         });
 
         function loadProfileFromUrl() {
