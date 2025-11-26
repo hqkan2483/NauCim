@@ -11,13 +11,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     restoreProjectsTreeState();
 });
 
+let selectedProjectId = null;
+let selectedModelId = null;
+let selectedProfileId = null;
+
 function renderProjects() {
+    // Don't re-render if we're viewing project details
+    if (selectedProjectId !== null) {
+        return;
+    }
+    
     const projects = getProjects();
     const html = projects.map(p => `
         <div class="card">
             <div class="flex-between mb-10">
                 <div>
-                    <div style="font-weight:600; font-size:16px; margin-bottom:5px;">${p.name}</div>
+                    <div style="font-weight:600; font-size:16px; margin-bottom:5px; cursor:pointer;" onclick="viewProjectDetails(${p.id})">${p.name}</div>
                     <div style="font-size:13px; color:var(--text-secondary);">Версия ${p.version} • Создан: ${p.createdAt || 'N/A'}</div>
                 </div>
                 <div class="flex gap-10">
@@ -36,6 +45,144 @@ function renderProjects() {
     `).join('');
 
     document.getElementById('projects-list').innerHTML = html || '<div style="text-align:center; color:var(--text-secondary); padding:40px;">Нет проектов</div>';
+}
+
+function viewProjectDetails(projectId) {
+    selectedProjectId = projectId;
+    
+    // Hide search and projects list
+    document.getElementById('search-box').classList.add('hidden');
+    document.getElementById('projects-list').classList.add('hidden');
+    
+    // Show models and profiles containers
+    document.getElementById('models-container').classList.remove('hidden');
+    document.getElementById('profiles-container').classList.remove('hidden');
+    
+    // Render project details
+    renderModels(projectId);
+    renderProfiles(projectId);
+}
+
+function showProjectsList() {
+    // Hide models and profiles containers
+    document.getElementById('models-container').classList.add('hidden');
+    document.getElementById('profiles-container').classList.add('hidden');
+    
+    // Show search and projects list
+    document.getElementById('search-box').classList.remove('hidden');
+    document.getElementById('projects-list').classList.remove('hidden');
+    
+    selectedProjectId = null;
+    selectedModelId = null;
+    selectedProfileId = null;
+}
+
+function renderModels(projectId) {
+    const models = getModels(projectId);
+    const html = models.map(m => `
+        <div class="tree-item ${selectedModelId === m.id ? 'selected' : ''}" onclick="selectModel(${m.id}, '${m.name}')">
+            📦 ${m.name}
+        </div>
+    `).join('');
+    
+    document.getElementById('models-list').innerHTML = html || '<div class="no-items text-muted">Нет моделей</div>';
+}
+
+function renderProfiles(projectId) {
+    const profiles = getProfiles(projectId);
+    const html = profiles.map(p => `
+        <div class="tree-item ${selectedProfileId === p.id ? 'selected' : ''}" onclick="selectProfile(${p.id}, '${p.name}')">
+            ⚙️ ${p.name}
+        </div>
+    `).join('');
+    
+    document.getElementById('profiles-list').innerHTML = html || '<div class="no-items text-muted">Нет профилей</div>';
+}
+
+function selectModel(modelId, modelName) {
+    selectedModelId = modelId;
+    renderModels(selectedProjectId);
+    renderModelDetails();
+}
+
+function selectProfile(profileId, profileName) {
+    selectedProfileId = profileId;
+    renderProfiles(selectedProjectId);
+    renderProfileDetails();
+}
+
+function renderModelDetails() {
+    const model = getModel(selectedProjectId, selectedModelId);
+    if (!model) return;
+    
+    const html = `
+        <div class="tabs">
+            <div class="tab active">Свойства</div>
+        </div>
+        <div class="tab-content active">
+            <div class="flex-between mb-15">
+                <h3 class="no-margin">${model.name}</h3>
+            </div>
+            <table class="table model-details-table">
+                <tr>
+                    <td colspan="2">Описание</td>
+                    <td colspan="2">${model.description}</td>
+                </tr>
+                <tr>
+                    <td>Дата создания/загрузки: </td>
+                    <td><span>${model.createDate || '---'}</span></td>
+                    <td>Дата изменения: </td>
+                    <td><span>${model.modifyDate || '---'}</span></td>
+                </tr>
+                <tr>
+                    <td colspan="2">Используется в профилях</td>
+                    <td colspan="2">${model.relatedProfiles && model.relatedProfiles.length > 0 ? model.relatedProfiles.map(p => p.name).join(", ") : "---"}</td>
+                </tr>
+            </table>
+        </div>
+    `;
+    
+    document.getElementById('model-details').innerHTML = html;
+}
+
+function renderProfileDetails() {
+    const profile = getProfile(selectedProjectId, selectedProfileId);
+    if (!profile) return;
+    
+    const html = `
+        <div class="tabs">
+            <div class="tab active">Свойства</div>
+        </div>
+        <div class="tab-content active">
+            <div class="flex-between mb-15">
+                <h3 class="no-margin">${profile.name}</h3>
+            </div>
+            <table class="table">
+                <tr>
+                    <td class="table-label">Базовая модель</td>
+                    <td><span class="badge">${profile.baseModel}</span></td>
+                </tr>
+                <tr>
+                    <td class="table-label">Версия</td>
+                    <td>${profile.version}</td>
+                </tr>
+                <tr>
+                    <td class="table-label">Описание</td>
+                    <td>${profile.description}</td>
+                </tr>
+                <tr>
+                    <td class="table-label">Классов в профиле</td>
+                    <td>${profile.classes || 0}</td>
+                </tr>
+                <tr>
+                    <td class="table-label">Атрибутов</td>
+                    <td>${profile.attributes || 0}</td>
+                </tr>
+            </table>
+        </div>
+    `;
+    
+    document.getElementById('profile-details').innerHTML = html;
 }
 
 function filterProjects() {
@@ -140,6 +287,12 @@ function openProject(projectId) {
 // Функции переведены в sidebar.js
 
 function selectProject(projectId) {
+    // Если мы на странице projects.html, показать детали проекта
+    if (window.location.pathname.includes('projects.html')) {
+        viewProjectDetails(projectId);
+        return;
+    }
+    
     // Сохранить выбранный проект
     setCurrentProject(projectId);
     

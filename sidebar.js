@@ -115,6 +115,7 @@ function handleProjectsClick() {
     const timeSinceLastClick = now - lastProjectsClickTime;
     lastProjectsClickTime = now;
     
+    // это нужно было для главной, я от этого отказался
     // Если двойной клик (менее 300ms между кликами)
     if (timeSinceLastClick < 300) {
         window.location.href = 'projects.html';
@@ -131,6 +132,21 @@ function toggleProjectsTree() {
     const isExpanded = button.getAttribute('aria-expanded') === 'true';
     
     if (isExpanded) {
+        // If on projects.html page, check if we're viewing project details
+        if (window.location.pathname.includes('projects.html')) {
+            const modelsContainer = document.getElementById('models-container');
+            const profilesContainer = document.getElementById('profiles-container');
+            
+            // If viewing project details, just show projects list (keep tree expanded)
+            if (modelsContainer && !modelsContainer.classList.contains('hidden')) {
+                if (typeof showProjectsList === 'function') {
+                    showProjectsList();
+                }
+                return; // Don't collapse the tree
+            }
+        }
+        
+        // Otherwise, collapse the tree normally
         container.classList.add('nav-tree-collapsed');
         button.setAttribute('aria-expanded', 'false');
         // Сохранить состояние дерева в localStorage
