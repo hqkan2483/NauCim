@@ -53,5 +53,12 @@ function selectProject(projectId) {
     renderProjectsTree();
 }
 
+// Открыть проект из карточки: сделать текущим и перейти к деталям
+function openProject(projectId) {
+    setCurrentProject(projectId);
+    // Переход на страницу деталей проекта
+    window.location.href = 'project-details.html';
+}
+
 // Sidebar toggle functionality
 // Функции переведены в sidebar.js

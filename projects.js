@@ -62,9 +62,12 @@ function viewProjectDetails(projectId) {
     document.getElementById('models-container').classList.remove('hidden');
     document.getElementById('profiles-container').classList.remove('hidden');
     
+    // Show open project button
+    document.getElementById('open-project-action').classList.remove('hidden');
+    
     // Clear details panels
-    document.getElementById('model-details').innerHTML = '';
-    document.getElementById('profile-details').innerHTML = '';
+    document.getElementById('model-details').innerHTML = '<div class="text-center">Выберите модель для просмотра деталей</div>';
+    document.getElementById('profile-details').innerHTML = '<div class="text-center">Выберите профиль для просмотра деталей</div>';
     
     // Render project details
     renderModels(projectId);
@@ -75,6 +78,9 @@ function showProjectsList() {
     // Hide models and profiles containers
     document.getElementById('models-container').classList.add('hidden');
     document.getElementById('profiles-container').classList.add('hidden');
+    
+    // Hide open project button
+    document.getElementById('open-project-action').classList.add('hidden');
     
     // Show search and projects list
     document.getElementById('search-box').classList.remove('hidden');
@@ -289,6 +295,13 @@ function saveProjectEdit() {
 function openProject(projectId) {
     setCurrentProject(projectId);
     window.location.href = 'project-details.html';
+}
+
+function openCurrentProject() {
+    if (selectedProjectId) {
+        setCurrentProject(selectedProjectId);
+        window.location.href = 'project-details.html';
+    }
 }
 
 // Sidebar toggle functionality
