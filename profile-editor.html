@@ -895,31 +895,19 @@
         `;
 
         if (info.kind === 'model' || info.kind === 'profile') {
-          const rootPkgs = (d.rootPackages || []).length;
-          const counts = countDeep(d.rootPackages || []);
           const metaRows = [
-            ['ID', d.id],
             ['Название', d.name],
             ['Описание', d.description || d.description_ru || ''],
-            ['Версия', d.version || ''],
-            ['Корневые пакеты', rootPkgs],
-            ['Всего пакетов', counts.packages],
-            ['Всего элементов', counts.elements]
+            ['Версия', d.version || '']
           ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null);
           return header + table(metaRows);
         }
 
         if (info.kind === 'package') {
-          const pkgCounts = countDeep([{ children: d.children || [], elements: d.elements || [] }]);
           const rows = [
-            ['ID', d.id],
             ['Название', d.name],
             ['Тип', d.type || 'Package'],
-            ['Описание', d.description || d.description_ru || ''],
-            ['Пакеты внутри', (d.children || []).length],
-            ['Элементы внутри', (d.elements || []).length],
-            ['Итого (включая вложенные) пакетов', pkgCounts.packages],
-            ['Итого (включая вложенные) элементов', pkgCounts.elements]
+            ['Описание', d.description || d.description_ru || '']
           ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null);
           return header + table(rows);
         }
@@ -928,7 +916,6 @@
           const attrs = Array.isArray(d.attributes) ? d.attributes : [];
           const links = Array.isArray(d.links) ? d.links : [];
           const basicRows = [
-            ['ID', d.id],
             ['Название', d.name],
             ['Тип', d.type || 'Class'],
             ['Абстрактный', d.isAbstract ? 'Да' : 'Нет'],
@@ -983,18 +970,7 @@
         return `<table class="table" style="margin-top:6px; border-collapse:collapse; width:100%;">${thead}${tbody}</table>`;
       }
 
-      function countDeep(rootPkgs) {
-        let packages = 0;
-        let elements = 0;
-        function walkPkg(p) {
-          if (!p) return;
-          packages += 1;
-          if (Array.isArray(p.elements)) elements += p.elements.length;
-          if (Array.isArray(p.children)) p.children.forEach(walkPkg);
-        }
-        (rootPkgs || []).forEach(walkPkg);
-        return { packages, elements };
-      }
+      
     </script>
   </body>
 </html>
