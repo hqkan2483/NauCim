@@ -719,18 +719,166 @@
           return;
         }
 
-        // Placeholder for transfer logic
-        alert(
-          `Выбрано элементов для переноса: ${selectedLeftItems.size}\n\nФункциональность переноса будет реализована позже.`
-        );
+        let transferredCount = 0;
 
-        // TODO: Implement actual transfer logic
-        // This would involve:
-        // 1. Finding selected items in availableData
-        // 2. Deep copying them
-        // 3. Adding to profileData.items
-        // 4. Clearing selectedLeftItems
-        // 5. Re-rendering both trees
+        selectedLeftItems.forEach(itemKey => {
+          const info = resolveLeftKey(itemKey);
+          if (!info || !info.data) return;
+
+          // Parse the path to understand package hierarchy
+          const pathInfo = parseItemPath(itemKey, info);
+          
+          // Transfer the item
+          if (transferItem(pathInfo, info)) {
+            transferredCount++;
+          }
+        });
+
+        if (transferredCount > 0) {
+          // Save to MemoryStore
+          saveProfileToMemoryStore();
+          
+          // Clear selections
+          selectedLeftItems.clear();
+          
+          // Re-render both trees
+          renderAvailableTree();
+          renderProfileTree();
+          
+          alert(`Успешно перенесено элементов: ${transferredCount}`);
+        } else {
+          alert("Не удалось перенести элементы");
+        }
+      }
+
+      function parseItemPath(itemKey, info) {
+        // Extract package path from itemKey
+        // itemKey format: left-{type}-{id}[-pkg-{idx}]*[-elem-{idx}]
+        const baseEntry = availableData.find(e => itemKey.startsWith(`left-${e.type}-${e.id}`));
+        if (!baseEntry) return null;
+
+        const baseKey = `left-${baseEntry.type}-${baseEntry.id}`;
+        const tail = itemKey.slice(baseKey.length);
+        
+        const packagePath = [];
+        let currentPackages = baseEntry.children || [];
+        
+        if (tail) {
+          const tokens = tail.split('-').filter(Boolean);
+          for (let i = 0; i < tokens.length; i += 2) {
+            const t = tokens[i];
+            const idx = parseInt(tokens[i + 1], 10);
+            
+            if (t === 'pkg') {
+              const pkg = currentPackages[idx];
+              if (pkg) {
+                packagePath.push({ name: pkg.name, type: pkg.type, originalData: pkg });
+                currentPackages = pkg.children || [];
+              }
+            } else if (t === 'elem') {
+              // Element is inside the last package
+              break;
+            }
+          }
+        }
+
+        return {
+          packagePath,
+          itemKind: info.kind,
+          itemData: info.data
+        };
+      }
+
+      function transferItem(pathInfo, info) {
+        if (!pathInfo) return false;
+
+        // Deep copy the item data
+        const copiedData = deepCopy(info.data);
+
+        // Navigate/create package structure in profile
+        let targetPackages = profileData.items;
+        
+        for (const pkgInfo of pathInfo.packagePath) {
+          // Find or create package at this level
+          let existingPkg = targetPackages.find(p => p.name === pkgInfo.name && p.type === pkgInfo.type);
+          
+          if (!existingPkg) {
+            // Create new package
+            existingPkg = {
+              id: generateId(),
+              name: pkgInfo.name,
+              type: pkgInfo.type,
+              description: pkgInfo.originalData.description || '',
+              description_ru: pkgInfo.originalData.description_ru || '',
+              children: [],
+              elements: []
+            };
+            targetPackages.push(existingPkg);
+          }
+          
+          // Navigate deeper
+          if (info.kind === 'element') {
+            // If transferring an element, it goes into elements array
+            targetPackages = existingPkg.elements;
+          } else {
+            // If transferring a package, it goes into children
+            targetPackages = existingPkg.children;
+          }
+        }
+
+        // Add the copied item to target location
+        if (info.kind === 'package') {
+          // Check if package already exists
+          const exists = targetPackages.some(p => p.name === copiedData.name && p.type === copiedData.type);
+          if (!exists) {
+            copiedData.id = generateId();
+            targetPackages.push(copiedData);
+            return true;
+          }
+        } else if (info.kind === 'element') {
+          // Check if element already exists
+          const exists = targetPackages.some(e => e.name === copiedData.name && e.type === copiedData.type);
+          if (!exists) {
+            copiedData.id = generateId();
+            targetPackages.push(copiedData);
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      function deepCopy(obj) {
+        if (obj === null || typeof obj !== 'object') return obj;
+        if (Array.isArray(obj)) return obj.map(item => deepCopy(item));
+        
+        const copy = {};
+        for (const key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            copy[key] = deepCopy(obj[key]);
+          }
+        }
+        return copy;
+      }
+
+      function generateId() {
+        return Date.now() + Math.floor(Math.random() * 10000);
+      }
+
+      function saveProfileToMemoryStore() {
+        const projectId = getCurrentProjectId();
+        if (!projectId) return;
+
+        const project = getProject(projectId);
+        if (!project) return;
+
+        // Find the profile in the project
+        const profile = project.profiles.find(p => p.id === profileData.id);
+        if (profile) {
+          // Update rootPackages with current profileData.items
+          profile.rootPackages = profileData.items;
+          console.log('✅ Profile saved to MemoryStore:', profile.name);
+        }
       }
 
       function removeFromProfile() {
@@ -739,17 +887,94 @@
           return;
         }
 
-        // Placeholder for removal logic
-        alert(
-          `Выбрано элементов для удаления: ${selectedRightItems.size}\n\nФункциональность удаления будет реализована позже.`
-        );
+        let removedCount = 0;
 
-        // TODO: Implement actual removal logic
-        // This would involve:
-        // 1. Finding selected items in profileData.items
-        // 2. Removing them
-        // 3. Clearing selectedRightItems
-        // 4. Re-rendering profile tree
+        // Convert Set to Array and sort by depth (deepest first) to avoid index issues
+        const sortedItems = Array.from(selectedRightItems).sort((a, b) => {
+          const depthA = (a.match(/-/g) || []).length;
+          const depthB = (b.match(/-/g) || []).length;
+          return depthB - depthA; // Sort descending by depth
+        });
+
+        sortedItems.forEach(itemKey => {
+          if (removeItemFromProfile(itemKey)) {
+            removedCount++;
+          }
+        });
+
+        if (removedCount > 0) {
+          // Save to MemoryStore
+          saveProfileToMemoryStore();
+          
+          // Clear selections
+          selectedRightItems.clear();
+          activeRightItem = null;
+          
+          // Re-render profile tree
+          renderProfileTree();
+          
+          // Clear details panel
+          const profileContainer = document.querySelector('.details-panel [data-tab-content="profile"]');
+          if (profileContainer) {
+            profileContainer.innerHTML = '<div class="text-muted" style="padding: 10px 0;">Здесь будет отображаться информация из выбранного профиля.</div>';
+          }
+          
+          alert(`Успешно удалено элементов: ${removedCount}`);
+        } else {
+          alert("Не удалось удалить элементы");
+        }
+      }
+
+      function removeItemFromProfile(itemKey) {
+        // Parse itemKey to find the item location
+        // itemKey format: profile[-pkg-{idx}]*[-elem-{idx}]
+        const prefix = 'profile';
+        if (!itemKey.startsWith(prefix)) return false;
+
+        const tail = itemKey.slice(prefix.length);
+        if (!tail) return false; // Cannot remove root
+
+        const tokens = tail.split('-').filter(Boolean);
+        
+        // Navigate to parent and get index to remove
+        let currentContainer = profileData.items;
+        let parentContainer = null;
+        let indexToRemove = -1;
+        let isElement = false;
+
+        for (let i = 0; i < tokens.length; i += 2) {
+          const t = tokens[i];
+          const idx = parseInt(tokens[i + 1], 10);
+          
+          if (i === tokens.length - 2) {
+            // Last token - this is what we want to remove
+            indexToRemove = idx;
+            parentContainer = currentContainer;
+            isElement = (t === 'elem');
+            break;
+          } else {
+            // Navigate deeper
+            if (t === 'pkg') {
+              const pkg = currentContainer[idx];
+              if (!pkg) return false;
+              
+              // Check if next token is 'elem' to switch to elements array
+              if (i + 2 < tokens.length && tokens[i + 2] === 'elem') {
+                currentContainer = pkg.elements || [];
+              } else {
+                currentContainer = pkg.children || [];
+              }
+            }
+          }
+        }
+
+        // Remove the item
+        if (parentContainer && indexToRemove >= 0 && indexToRemove < parentContainer.length) {
+          parentContainer.splice(indexToRemove, 1);
+          return true;
+        }
+
+        return false;
       }
 
       function saveProfile() {
