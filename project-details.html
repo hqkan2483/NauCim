@@ -440,17 +440,14 @@
                     <div class="tree-structure-header">
             `;
 
-        if (hasChildren) {
-          html += `
+        // Always show expand button for models
+        html += `
                     <button class="tree-expand-btn" data-item-id="${itemId}" data-type="model">
                         <span class="tree-expand-icon">${
                           isExpanded ? "▼" : "▶"
                         }</span>
                     </button>
                 `;
-        } else {
-          html += `<span class="tree-expand-btn-empty"></span>`;
-        }
 
         html += `
                         <span class="tree-structure-name" data-id="${
@@ -540,17 +537,14 @@
                     <div class="tree-structure-header">
             `;
 
-        if (hasChildren) {
-          html += `
+        // Always show expand button for elements
+        html += `
                     <button class="tree-expand-btn" data-item-id="${itemId}" data-type="element">
                         <span class="tree-expand-icon">${
                           isExpanded ? "▼" : "▶"
                         }</span>
                     </button>
                 `;
-        } else {
-          html += `<span class="tree-expand-btn-empty"></span>`;
-        }
 
         html += `
                         <span class="tree-structure-name" data-id="${
@@ -613,17 +607,14 @@
                     <div class="tree-structure-header">
             `;
 
-        if (hasChildren) {
-          html += `
+        // Always show expand button for profiles
+        html += `
                     <button class="tree-expand-btn" data-item-id="${itemId}" data-type="profile">
                         <span class="tree-expand-icon">${
                           isExpanded ? "▼" : "▶"
                         }</span>
                     </button>
                 `;
-        } else {
-          html += `<span class="tree-expand-btn-empty"></span>`;
-        }
 
         const profileNameEscaped = (
           profile.name || "Профиль без названия"
@@ -703,17 +694,14 @@
                     <div class="tree-structure-header">
             `;
 
-        if (hasChildren) {
-          html += `
+        // Always show expand button for packages
+        html += `
                     <button class="tree-expand-btn" data-item-id="${itemId}" data-type="package">
                         <span class="tree-expand-icon">${
                           isExpanded ? "▼" : "▶"
                         }</span>
                     </button>
                 `;
-        } else {
-          html += `<span class="tree-expand-btn-empty"></span>`;
-        }
 
         const typeLabel = rootPkg.type === 'Model' ? '🗂️' : '📦';
         html += `
@@ -776,17 +764,14 @@
                     <div class="tree-structure-header">
             `;
 
-        if (hasChildren) {
-          html += `
+        // Always show expand button for packages
+        html += `
                     <button class="tree-expand-btn" data-item-id="${itemId}" data-type="package">
                         <span class="tree-expand-icon">${
                           isExpanded ? "▼" : "▶"
                         }</span>
                     </button>
                 `;
-        } else {
-          html += `<span class="tree-expand-btn-empty"></span>`;
-        }
 
         html += `
                         <span class="tree-structure-name" data-id="${
@@ -857,17 +842,14 @@
                     <div class="tree-structure-header">
             `;
 
-        if (hasChildren) {
-          html += `
+        // Always show expand button for elements
+        html += `
                     <button class="tree-expand-btn" data-item-id="${itemId}" data-type="element">
                         <span class="tree-expand-icon">${
                           isExpanded ? "▼" : "▶"
                         }</span>
                     </button>
                 `;
-        } else {
-          html += `<span class="tree-expand-btn-empty"></span>`;
-        }
 
         html += `
                         <span class="tree-structure-name" data-id="${
@@ -945,21 +927,18 @@
        
 
         let html = `
-                <div class="tree-structure-item" style="margin-left: ${level === 1 ? '40px' : '10px'};">
+                <div class="tree-structure-item" style="margin-left: 10px;">
                     <div class="tree-structure-header">
             `;
 
-        if (hasChildren) {
-          html += `
+        // Always show expand button for packages
+        html += `
                     <button class="tree-expand-btn" data-item-id="${itemId}" data-type="package">
                         <span class="tree-expand-icon">${
                           isExpanded ? "▼" : "▶"
                         }</span>
                     </button>
                 `;
-        } else {
-          html += `<span class="tree-expand-btn-empty"></span>`;
-        }
 
         html += `
                         <span class="tree-structure-name" data-id="${
@@ -1021,17 +1000,14 @@
                     <div class="tree-structure-header">
             `;
 
-        if (hasChildren) {
-          html += `
+        // Always show expand button for packages
+        html += `
                     <button class="tree-expand-btn" data-item-id="${itemId}" data-type="package">
                         <span class="tree-expand-icon">${
                           isExpanded ? "▼" : "▶"
                         }</span>
                     </button>
                 `;
-        } else {
-          html += `<span class="tree-expand-btn-empty"></span>`;
-        }
 
         html += `
                         <span class="tree-structure-name" data-id="${
