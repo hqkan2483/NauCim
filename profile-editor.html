@@ -1,237 +1,284 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nautilus.CIM - Редактор профиля</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
     <style>
-        body, html {
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            line-height: 1.5;
-        }
+      body,
+      html {
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+        line-height: 1.5;
+      }
 
-        .app-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+      .app-container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-        .toolbar {
-            flex-shrink: 0;
-        }
+      .toolbar {
+        flex-shrink: 0;
+      }
 
-        .editor-content-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 5px 20px;
-            overflow: hidden;
-        }
+      .editor-content-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 5px 20px;
+        overflow: hidden;
+      }
 
-        .editor-container {
-            flex: 1;
-            display: flex;
-            gap: 10px;
-            overflow: hidden;
-        }
-        
-        .editor-panel {
-            /* flex: 1; */
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
-            width: 350px;
-        }
-        
-        .editor-panel-header {
-            padding: 5px 15px;
-            background: #f5f5f5;
-            border-bottom: 1px solid #ddd;
-            font-weight: 600;
-        }
-        
-        .editor-panel-content {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: auto;
-            padding: 5px 15px;
-        }
-        
-        #available-tree,
-        #profile-tree {
-            min-width: min-content;
-        }
-        
-        .editor-panel-actions {
-            padding: 5px 15px;
-            border-top: 1px solid #ddd;
-            background: #f9f9f9;
-        }
-        
-        .transfer-options {
-            margin-bottom: 15px;
-        }
-        
-        .transfer-options h4 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-        }
-        
-        .option-checkbox {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .option-checkbox input[type="checkbox"] {
-            margin-right: 8px;
-        }
-        
-        .option-checkbox label {
-            font-size: 13px;
-            cursor: pointer;
-        }
-        
-        .tree-item-with-checkbox {
-            display: flex;
-            align-items: center;
-            padding: 3px 0;
-            white-space: nowrap;
-        }
-        
-        .tree-item-checkbox {
-            margin-right: 8px;
-            cursor: pointer;
-        }
-        
-        .tree-item-label {
-            cursor: pointer;
-            user-select: none;
-            font-size: 13px;
-            white-space: nowrap;
-        }
-        
-        .tree-indent {
-            display: inline-block;
-            width: 20px;
-        }
-        
-        .tree-toggle {
-            display: inline-block;
-            width: 16px;
-            cursor: pointer;
-            user-select: none;
-            font-size: 12px;
-            margin-right: 4px;
-        }
-        
-        .tree-children {
-            display: block;
-        }
-        
-        .tree-children.collapsed {
-            display: none;
-        }
-        
-        .tree-item-with-checkbox.tree-item-selected {
-            background-color: #e3f2fd;
-        }
-        
-        .tree-item-with-checkbox:hover {
-            background-color: #f5f5f5;
-        }
-        
-        .tree-item-with-checkbox.tree-item-selected:hover {
-            background-color: #d1e7fd;
-        }
-        
-        .search-box {
-            margin-bottom: 10px;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: #4a90e2;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .profile-name-display {
-            font-size: 18px;
-            font-weight: 600;
-            color: #666;
-            padding-left: 20px;
+      .editor-container {
+        flex: 1;
+        display: flex;
+        gap: 10px;
+        overflow: hidden;
+      }
 
-            /* margin-top: 5px; */
-        }
+      .editor-panel {
+        /* flex: 1; */
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        width: 350px;
+      }
+
+      .editor-panel-header {
+        padding: 5px 15px;
+        background: #f5f5f5;
+        border-bottom: 1px solid #ddd;
+        font-weight: 600;
+      }
+
+      .editor-panel-content {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: auto;
+        padding: 5px 15px;
+      }
+
+      #available-tree,
+      #profile-tree {
+        min-width: min-content;
+      }
+
+      .editor-panel-actions {
+        padding: 5px 15px;
+        border-top: 1px solid #ddd;
+        background: #f9f9f9;
+      }
+
+      /* Details panel */
+      .details-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #fff;
+        min-width: 0; /* allow flex container to shrink properly */
+      }
+      .details-panel-content {
+        flex: 1;
+        padding: 5px 15px;
+        overflow-y: auto;
+        overflow-x: auto;
+      }
+
+      /* Tabs styling */
+      .tabs {
+        display: flex;
+        gap: 8px;
+        border-bottom: 1px solid #e5e5e5;
+        margin-bottom: 8px;
+      }
+      .tab {
+        padding: 6px 10px;
+        font-size: 13px;
+        color: #444;
+        cursor: pointer;
+        border: 1px solid transparent;
+        border-bottom: none;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+      }
+      .tab.active {
+        background: #f5f5f5;
+        border-color: #e5e5e5;
+        color: #000;
+        font-weight: 600;
+      }
+      .tab-content { display: none; }
+      .tab-content.active { display: block; }
+
+      .transfer-options {
+        margin-bottom: 15px;
+      }
+
+      .transfer-options h4 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+      }
+
+      .option-checkbox {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .option-checkbox input[type="checkbox"] {
+        margin-right: 8px;
+      }
+
+      .option-checkbox label {
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .tree-item-with-checkbox {
+        display: flex;
+        align-items: center;
+        padding: 3px 0;
+        white-space: nowrap;
+      }
+
+      .tree-item-checkbox {
+        margin-right: 8px;
+        cursor: pointer;
+      }
+
+      .tree-item-label {
+        cursor: pointer;
+        user-select: none;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .tree-indent {
+        display: inline-block;
+        width: 20px;
+      }
+
+      .tree-toggle {
+        display: inline-block;
+        width: 16px;
+        cursor: pointer;
+        user-select: none;
+        font-size: 12px;
+        margin-right: 4px;
+      }
+
+      .tree-children {
+        display: block;
+      }
+
+      .tree-children.collapsed {
+        display: none;
+      }
+
+      .tree-item-with-checkbox.tree-item-selected {
+        background-color: #e3f2fd;
+      }
+
+      .tree-item-with-checkbox:hover {
+        background-color: #f5f5f5;
+      }
+
+      .tree-item-with-checkbox.tree-item-selected:hover {
+        background-color: #d1e7fd;
+      }
+
+      .search-box {
+        margin-bottom: 10px;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: #4a90e2;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      .profile-name-display {
+        font-size: 18px;
+        font-weight: 600;
+        color: #666;
+        padding-left: 20px;
+
+        /* margin-top: 5px; */
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="app-container">
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-            <div class="toolbar">
-                <div class="toolbar-title">
-                    <span id="page-title">Редактор профиля</span>
-                    <span class="profile-name-display" id="profile-name-display">Новый профиль</span>
-                </div>
-                <div class="toolbar-actions">
-                    <button class="btn btn-secondary" onclick="window.location.href='project-details.html'">
-                        ← Назад
-                    </button>
-                    <button class="btn btn-primary" onclick="saveProfile()">
-                        💾 Сохранить профиль
-                    </button>
-                </div>
-            </div>
+      <!-- MAIN CONTENT -->
+      <div class="main-content">
+        <div class="toolbar">
+          <div class="toolbar-title">
+            <span id="page-title">Редактор профиля</span>
+            <span class="profile-name-display" id="profile-name-display"
+              >Новый профиль</span
+            >
+          </div>
+          <div class="toolbar-actions">
+            <button
+              class="btn btn-secondary"
+              onclick="window.location.href='project-details.html'"
+            >
+              ← Назад
+            </button>
+            <button class="btn btn-primary" onclick="saveProfile()">
+              💾 Сохранить профиль
+            </button>
+          </div>
+        </div>
 
-            <div class="editor-content-area">
-                <div class="editor-container">
-                    <!-- LEFT PANEL: Available Models and Profiles -->
-                    <div class="editor-panel">
-                        <div class="editor-panel-header">
-                            Модели и профили проекта
-                        </div>
-                        <div class="editor-panel-content">
-                            <div class="search-box">
-                                <input 
-                                    type="text" 
-                                    class="search-input" 
-                                    placeholder="Поиск..."
-                                    id="left-search"
-                                    oninput="filterLeftTree()"
-                                >
-                            </div>
-                            <div id="available-tree">
-                                <!-- Tree will be rendered here -->
-                            </div>
-                        </div>
-                        <div class="editor-panel-actions">
-                            <!-- <div class="transfer-options">
+        <div class="editor-content-area">
+          <div class="editor-container">
+            <!-- LEFT PANEL: Available Models and Profiles -->
+            <div class="editor-panel">
+              <div class="editor-panel-header">Модели и профили проекта</div>
+              <div class="editor-panel-content">
+                <div class="search-box">
+                  <input
+                    type="text"
+                    class="search-input"
+                    placeholder="Поиск..."
+                    id="left-search"
+                    oninput="filterLeftTree()"
+                  />
+                </div>
+                <div id="available-tree">
+                  <!-- Tree will be rendered here -->
+                </div>
+              </div>
+              <div class="editor-panel-actions">
+                <!-- <div class="transfer-options">
                                 <h4>Опции переноса</h4>
                                 <div class="option-checkbox">
                                     <input type="checkbox" id="option-selected-only" checked>
@@ -254,380 +301,700 @@
                                     <label for="option-include-associations">Включить классы, связанные через ассоциацию</label>
                                 </div>
                             </div> -->
-                            <button class="btn btn-primary" onclick="transferToProfile()" style="width: 100%;">
-                                → Перенести в профиль
-                            </button>
-                        </div>
-                    </div>
+                <button
+                  class="btn btn-primary"
+                  onclick="transferToProfile()"
+                  style="width: 100%"
+                >
+                  → Перенести в профиль
+                </button>
 
-                    <!-- RIGHT PANEL: Profile Being Edited -->
-                    <div class="editor-panel">
-                        <div class="editor-panel-header">
-                            <span id="profile-header-name">Новый профиль</span>
-                        </div>
-                        <div class="editor-panel-content">
-                            <div class="search-box">
-                                <input 
-                                    type="text" 
-                                    class="search-input" 
-                                    placeholder="Поиск..."
-                                    id="right-search"
-                                    oninput="filterRightTree()"
-                                >
-                            </div>
-                            <div id="profile-tree">
-                                <div class="text-center text-muted" style="padding: 40px 20px;">
-                                    Профиль пуст. Выберите элементы слева и перенесите их в профиль.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="editor-panel-actions">
-                            <button class="btn btn-secondary" onclick="removeFromProfile()" style="width: 100%;">
-                                ✕ Исключить выделенное
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <button
+                  class="btn btn-primary"
+                  onclick="transferToProfile()"
+                  style="width: 100%"
+                >
+                  ✕ Снять выделение
+                </button>
+              </div>
             </div>
+
+            <!-- RIGHT PANEL: Profile Being Edited -->
+            <div class="editor-panel">
+              <div class="editor-panel-header">
+                <span id="profile-header-name">Новый профиль</span>
+              </div>
+              <div class="editor-panel-content">
+                <div class="search-box">
+                  <input
+                    type="text"
+                    class="search-input"
+                    placeholder="Поиск..."
+                    id="right-search"
+                    oninput="filterRightTree()"
+                  />
+                </div>
+                <div id="profile-tree">
+                  <div
+                    class="text-center text-muted"
+                    style="padding: 40px 20px"
+                  >
+                    Профиль пуст. Выберите элементы слева и перенесите их в
+                    профиль.
+                  </div>
+                </div>
+              </div>
+              <div class="editor-panel-actions">
+                <button
+                  class="btn btn-secondary"
+                  onclick="removeFromProfile()"
+                  style="width: 100%"
+                >
+                  ✕ Исключить выделенное
+                </button>
+
+                <button
+                  class="btn btn-primary"
+                  onclick="transferToProfile()"
+                  style="width: 100%"
+                >
+                  ✕ Снять выделение
+                </button>
+              </div>
+            </div>
+            <div class="details-panel">
+              <div class="details-panel-content">
+                <div class="tabs" id="details-tabs">
+                  <div class="tab active" data-tab="model" onclick="switchDetailsTab('model')">информация из модели</div>
+                  <div class="tab" data-tab="profile" onclick="switchDetailsTab('profile')">информация из профиля</div>
+                  <div class="tab" data-tab="misc" onclick="switchDetailsTab('misc')">разное</div>
+                </div>
+
+                <div class="tab-content active" data-tab-content="model">
+                  <div class="text-muted" style="padding: 10px 0;">
+                    Здесь будет отображаться информация из выбранной модели.
+                  </div>
+                </div>
+
+                <div class="tab-content" data-tab-content="profile">
+                  <div class="text-muted" style="padding: 10px 0;">
+                    Здесь будет отображаться информация из выбранного профиля.
+                  </div>
+                </div>
+
+                <div class="tab-content" data-tab-content="misc">
+                  <div class="text-muted" style="padding: 10px 0;">
+                    Прочие сведения и служебная информация.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <script src="data.js"></script>
     <script>
-        let profileData = {
-            id: null,
-            name: "Новый профиль",
-            items: []
-        };
+      let profileData = {
+        id: null,
+        name: "Новый профиль",
+        items: [],
+      };
 
-        let availableData = [];
-        let selectedLeftItems = new Set();
-        let selectedRightItems = new Set();
-        let expandedLeftItems = new Set();
-        let expandedRightItems = new Set();
-        let activeLeftItem = null;
-        let activeRightItem = null;
+      let availableData = [];
+      let selectedLeftItems = new Set();
+      let selectedRightItems = new Set();
+      let expandedLeftItems = new Set();
+      let expandedRightItems = new Set();
+      let activeLeftItem = null;
+      let activeRightItem = null;
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadSampleData();
-            loadProfileFromUrl();
-            loadAvailableData();
-            renderAvailableTree();
-            renderProfileTree();
-        });
+      document.addEventListener("DOMContentLoaded", async () => {
+        await loadSampleData();
+        loadProfileFromUrl();
+        loadAvailableData();
+        renderAvailableTree();
+        renderProfileTree();
+      });
 
-        function loadProfileFromUrl() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const profileId = urlParams.get('profileId');
-            const projectId = getCurrentProjectId();
+      function loadProfileFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const profileId = urlParams.get("profileId");
+        const projectId = getCurrentProjectId();
 
-            if (profileId && projectId) {
-                const profile = getProfile(projectId, parseInt(profileId));
-                if (profile) {
-                    profileData.id = profile.id;
-                    profileData.name = profile.name;
-                    profileData.items = profile.rootPackages || [];
-                    
-                    document.getElementById('profile-name-display').textContent = profile.name;
-                    document.getElementById('profile-header-name').textContent = profile.name;
-                }
-            }
+        if (profileId && projectId) {
+          const profile = getProfile(projectId, parseInt(profileId));
+          if (profile) {
+            profileData.id = profile.id;
+            profileData.name = profile.name;
+            profileData.items = profile.rootPackages || [];
+
+            document.getElementById("profile-name-display").textContent =
+              profile.name;
+            document.getElementById("profile-header-name").textContent =
+              profile.name;
+          }
+        }
+      }
+
+      function loadAvailableData() {
+        const projectId = getCurrentProjectId();
+        if (!projectId) return;
+
+        const project = getProject(projectId);
+        if (!project) return;
+
+        availableData = [];
+
+        // Add models
+        if (project.models) {
+          project.models.forEach((model) => {
+            availableData.push({
+              type: "model",
+              id: model.id,
+              name: model.name,
+              data: model,
+              children: model.rootPackages || [],
+            });
+          });
         }
 
-        function loadAvailableData() {
-            const projectId = getCurrentProjectId();
-            if (!projectId) return;
-
-            const project = getProject(projectId);
-            if (!project) return;
-
-            availableData = [];
-
-            // Add models
-            if (project.models) {
-                project.models.forEach(model => {
-                    availableData.push({
-                        type: 'model',
-                        id: model.id,
-                        name: model.name,
-                        data: model,
-                        children: model.rootPackages || []
-                    });
-                });
+        // Add profiles
+        if (project.profiles) {
+          project.profiles.forEach((profile) => {
+            // Don't include the profile being edited
+            if (profile.id !== profileData.id) {
+              availableData.push({
+                type: "profile",
+                id: profile.id,
+                name: profile.name,
+                data: profile,
+                children: profile.rootPackages || [],
+              });
             }
-
-            // Add profiles
-            if (project.profiles) {
-                project.profiles.forEach(profile => {
-                    // Don't include the profile being edited
-                    if (profile.id !== profileData.id) {
-                        availableData.push({
-                            type: 'profile',
-                            id: profile.id,
-                            name: profile.name,
-                            data: profile,
-                            children: profile.rootPackages || []
-                        });
-                    }
-                });
-            }
+          });
         }
+      }
 
-        function renderAvailableTree() {
-            const container = document.getElementById('available-tree');
-            let html = '';
+      function renderAvailableTree() {
+        const container = document.getElementById("available-tree");
+        let html = "";
 
-            availableData.forEach((item, index) => {
-                const itemKey = `left-${item.type}-${item.id}`;
-                const isChecked = selectedLeftItems.has(itemKey);
-                const isExpanded = expandedLeftItems.has(itemKey);
-                const icon = item.type === 'model' ? '📋' : '⚙️';
-                const hasChildren = item.children && item.children.length > 0;
+        availableData.forEach((item, index) => {
+          const itemKey = `left-${item.type}-${item.id}`;
+          const isChecked = selectedLeftItems.has(itemKey);
+          const isExpanded = expandedLeftItems.has(itemKey);
+          const icon = item.type === "model" ? "📋" : "⚙️";
+          const hasChildren = item.children && item.children.length > 0;
 
-                const isActive = activeLeftItem === itemKey;
-                
-                html += `
-                    <div class="tree-item-with-checkbox ${isActive ? 'tree-item-selected' : ''}" onclick="setActiveLeftItem('${itemKey}', event)">
+          const isActive = activeLeftItem === itemKey;
+
+          html += `
+                    <div class="tree-item-with-checkbox ${
+                      isActive ? "tree-item-selected" : ""
+                    }" onclick="setActiveLeftItem('${itemKey}', event)">
                         <span class="tree-toggle" onclick="toggleLeftExpand('${itemKey}'); event.stopPropagation();">
-                            ${hasChildren ? (isExpanded ? '▼' : '▶') : ' '}
+                            ${hasChildren ? (isExpanded ? "▼" : "▶") : " "}
                         </span>
                         <input 
                             type="checkbox" 
                             class="tree-item-checkbox" 
                             id="${itemKey}"
-                            ${isChecked ? 'checked' : ''}
+                            ${isChecked ? "checked" : ""}
                             onchange="toggleLeftItem('${itemKey}'); event.stopPropagation();"
                             onclick="event.stopPropagation();"
                         >
                         <span class="tree-item-label">
-                            ${icon} ${item.name} (${item.type === 'model' ? 'Model' : 'Profile'})
+                            ${icon} ${item.name} (${
+            item.type === "model" ? "Model" : "Profile"
+          })
                         </span>
                     </div>
                 `;
 
-                // Render children (packages)
-                if (hasChildren) {
-                    html += `<div class="tree-children ${isExpanded ? '' : 'collapsed'}" id="children-${itemKey}">`;
-                    html += renderTreeChildren(item.children, 1, 'left', itemKey);
-                    html += `</div>`;
-                }
-            });
+          // Render children (packages)
+          if (hasChildren) {
+            html += `<div class="tree-children ${
+              isExpanded ? "" : "collapsed"
+            }" id="children-${itemKey}">`;
+            html += renderTreeChildren(item.children, 1, "left", itemKey);
+            html += `</div>`;
+          }
+        });
 
-            container.innerHTML = html || '<div class="text-center text-muted">Нет данных</div>';
-        }
+        container.innerHTML =
+          html || '<div class="text-center text-muted">Нет данных</div>';
+      }
 
-        function renderTreeChildren(items, level, side, parentKey) {
-            let html = '';
-            
-            items.forEach((item, index) => {
-                const itemKey = `${parentKey}-pkg-${index}`;
-                const isChecked = side === 'left' ? 
-                    selectedLeftItems.has(itemKey) : 
-                    selectedRightItems.has(itemKey);
-                const isExpanded = side === 'left' ? 
-                    expandedLeftItems.has(itemKey) : 
-                    expandedRightItems.has(itemKey);
-                
-                const hasChildren = (item.elements && item.elements.length > 0) || 
-                                    (item.children && item.children.length > 0);
-                
-                const isActive = side === 'left' ? 
-                    activeLeftItem === itemKey : 
-                    activeRightItem === itemKey;
-                
-                // const indent = '<span class="tree-indent"></span>'.repeat(level);
-                
-                html += `
-                    <div class="tree-item-with-checkbox ${isActive ? 'tree-item-selected' : ''}" onclick="${side === 'left' ? 'setActiveLeftItem' : 'setActiveRightItem'}('${itemKey}', event)">
-                        <span class="tree-toggle" onclick="${side === 'left' ? 'toggleLeftExpand' : 'toggleRightExpand'}('${itemKey}'); event.stopPropagation();">
-                            ${hasChildren ? (isExpanded ? '▼' : '▶') : ' '}
+      function renderTreeChildren(items, level, side, parentKey) {
+        let html = "";
+
+        items.forEach((item, index) => {
+          const itemKey = `${parentKey}-pkg-${index}`;
+          const isChecked =
+            side === "left"
+              ? selectedLeftItems.has(itemKey)
+              : selectedRightItems.has(itemKey);
+          const isExpanded =
+            side === "left"
+              ? expandedLeftItems.has(itemKey)
+              : expandedRightItems.has(itemKey);
+
+          const hasChildren =
+            (item.elements && item.elements.length > 0) ||
+            (item.children && item.children.length > 0);
+
+          const isActive =
+            side === "left"
+              ? activeLeftItem === itemKey
+              : activeRightItem === itemKey;
+
+          // const indent = '<span class="tree-indent"></span>'.repeat(level);
+
+          html += `
+                    <div class="tree-item-with-checkbox ${
+                      isActive ? "tree-item-selected" : ""
+                    }" onclick="${
+            side === "left" ? "setActiveLeftItem" : "setActiveRightItem"
+          }('${itemKey}', event)">
+                        <span class="tree-toggle" onclick="${
+                          side === "left"
+                            ? "toggleLeftExpand"
+                            : "toggleRightExpand"
+                        }('${itemKey}'); event.stopPropagation();">
+                            ${hasChildren ? (isExpanded ? "▼" : "▶") : " "}
                         </span>
                         <input 
                             type="checkbox" 
                             class="tree-item-checkbox" 
                             id="${itemKey}"
-                            ${isChecked ? 'checked' : ''}
-                            onchange="${side === 'left' ? 'toggleLeftItem' : 'toggleRightItem'}('${itemKey}'); event.stopPropagation();"
+                            ${isChecked ? "checked" : ""}
+                            onchange="${
+                              side === "left"
+                                ? "toggleLeftItem"
+                                : "toggleRightItem"
+                            }('${itemKey}'); event.stopPropagation();"
                             onclick="event.stopPropagation();"
                         >
                         <span class="tree-item-label">
-                            📦 ${item.name || 'Package'}
+                            📦 ${item.name || "Package"}
                         </span>
                     </div>
                 `;
 
-                // Render children container
-                if (hasChildren) {
-                    html += `<div class="tree-children ${isExpanded ? '' : 'collapsed'}" id="children-${itemKey}">`;
-                    
-                    // Render elements
-                    if (item.elements && item.elements.length > 0) {
-                        item.elements.forEach((elem, elemIndex) => {
-                            const elemKey = `${itemKey}-elem-${elemIndex}`;
-                            const elemChecked = side === 'left' ? 
-                                selectedLeftItems.has(elemKey) : 
-                                selectedRightItems.has(elemKey);
-                            const elemActive = side === 'left' ? 
-                                activeLeftItem === elemKey : 
-                                activeRightItem === elemKey;
-                            // const elemIndent = '<span class="tree-indent"></span>'.repeat(level + 1);
-                            
-                            html += `
-                                <div class="tree-item-with-checkbox ${elemActive ? 'tree-item-selected' : ''}" onclick="${side === 'left' ? 'setActiveLeftItem' : 'setActiveRightItem'}('${elemKey}', event)">
+          // Render children container
+          if (hasChildren) {
+            html += `<div class="tree-children ${
+              isExpanded ? "" : "collapsed"
+            }" id="children-${itemKey}">`;
+
+            // Render elements
+            if (item.elements && item.elements.length > 0) {
+              item.elements.forEach((elem, elemIndex) => {
+                const elemKey = `${itemKey}-elem-${elemIndex}`;
+                const elemChecked =
+                  side === "left"
+                    ? selectedLeftItems.has(elemKey)
+                    : selectedRightItems.has(elemKey);
+                const elemActive =
+                  side === "left"
+                    ? activeLeftItem === elemKey
+                    : activeRightItem === elemKey;
+                // const elemIndent = '<span class="tree-indent"></span>'.repeat(level + 1);
+
+                html += `
+                                <div class="tree-item-with-checkbox ${
+                                  elemActive ? "tree-item-selected" : ""
+                                }" onclick="${
+                  side === "left" ? "setActiveLeftItem" : "setActiveRightItem"
+                }('${elemKey}', event)">
                                     <span class="tree-toggle"> </span>
                                     <input 
                                         type="checkbox" 
                                         class="tree-item-checkbox" 
                                         id="${elemKey}"
-                                        ${elemChecked ? 'checked' : ''}
-                                        onchange="${side === 'left' ? 'toggleLeftItem' : 'toggleRightItem'}('${elemKey}'); event.stopPropagation();"
+                                        ${elemChecked ? "checked" : ""}
+                                        onchange="${
+                                          side === "left"
+                                            ? "toggleLeftItem"
+                                            : "toggleRightItem"
+                                        }('${elemKey}'); event.stopPropagation();"
                                         onclick="event.stopPropagation();"
                                     >
                                     <span class="tree-item-label">
-                                        📄 ${elem.name || 'Class'}
+                                        📄 ${elem.name || "Class"}
                                     </span>
                                 </div>
                             `;
-                        });
-                    }
+              });
+            }
 
-                    // Render child packages
-                    if (item.children && item.children.length > 0) {
-                        html += renderTreeChildren(item.children, level + 1, side, itemKey);
-                    }
-                    
-                    html += `</div>`;
-                }
-            });
+            // Render child packages
+            if (item.children && item.children.length > 0) {
+              html += renderTreeChildren(
+                item.children,
+                level + 1,
+                side,
+                itemKey
+              );
+            }
 
-            return html;
-        }
+            html += `</div>`;
+          }
+        });
 
-        function renderProfileTree() {
-            const container = document.getElementById('profile-tree');
-            
-            if (!profileData.items || profileData.items.length === 0) {
-                container.innerHTML = `
+        return html;
+      }
+
+      function renderProfileTree() {
+        const container = document.getElementById("profile-tree");
+
+        if (!profileData.items || profileData.items.length === 0) {
+          container.innerHTML = `
                     <div class="text-center text-muted" style="padding: 40px 20px;">
                         Профиль пуст. Выберите элементы слева и перенесите их в профиль.
                     </div>
                 `;
-                return;
-            }
-
-            let html = renderTreeChildren(profileData.items, 0, 'right', 'profile');
-            container.innerHTML = html;
+          return;
         }
 
-        function toggleLeftItem(itemKey) {
-            const checkbox = document.getElementById(itemKey);
-            if (checkbox.checked) {
-                selectedLeftItems.add(itemKey);
-            } else {
-                selectedLeftItems.delete(itemKey);
-            }
+        let html = renderTreeChildren(profileData.items, 0, "right", "profile");
+        container.innerHTML = html;
+      }
+
+      function toggleLeftItem(itemKey) {
+        const checkbox = document.getElementById(itemKey);
+        if (checkbox.checked) {
+          selectedLeftItems.add(itemKey);
+        } else {
+          selectedLeftItems.delete(itemKey);
+        }
+      }
+
+      function toggleRightItem(itemKey) {
+        const checkbox = document.getElementById(itemKey);
+        if (checkbox.checked) {
+          selectedRightItems.add(itemKey);
+        } else {
+          selectedRightItems.delete(itemKey);
+        }
+      }
+
+      function toggleLeftExpand(itemKey) {
+        if (expandedLeftItems.has(itemKey)) {
+          expandedLeftItems.delete(itemKey);
+        } else {
+          expandedLeftItems.add(itemKey);
+        }
+        renderAvailableTree();
+      }
+
+      function toggleRightExpand(itemKey) {
+        if (expandedRightItems.has(itemKey)) {
+          expandedRightItems.delete(itemKey);
+        } else {
+          expandedRightItems.add(itemKey);
+        }
+        renderProfileTree();
+      }
+
+      function setActiveLeftItem(itemKey, event) {
+        if (event) event.stopPropagation();
+        activeLeftItem = itemKey;
+        renderAvailableTree();
+        updateDetailsPanel('left');
+      }
+
+      function setActiveRightItem(itemKey, event) {
+        if (event) event.stopPropagation();
+        activeRightItem = itemKey;
+        renderProfileTree();
+        updateDetailsPanel('right');
+      }
+
+      function transferToProfile() {
+        if (selectedLeftItems.size === 0) {
+          alert("Выберите элементы для переноса");
+          return;
         }
 
-        function toggleRightItem(itemKey) {
-            const checkbox = document.getElementById(itemKey);
-            if (checkbox.checked) {
-                selectedRightItems.add(itemKey);
-            } else {
-                selectedRightItems.delete(itemKey);
-            }
+        // Placeholder for transfer logic
+        alert(
+          `Выбрано элементов для переноса: ${selectedLeftItems.size}\n\nФункциональность переноса будет реализована позже.`
+        );
+
+        // TODO: Implement actual transfer logic
+        // This would involve:
+        // 1. Finding selected items in availableData
+        // 2. Deep copying them
+        // 3. Adding to profileData.items
+        // 4. Clearing selectedLeftItems
+        // 5. Re-rendering both trees
+      }
+
+      function removeFromProfile() {
+        if (selectedRightItems.size === 0) {
+          alert("Выберите элементы для удаления");
+          return;
         }
 
-        function toggleLeftExpand(itemKey) {
-            if (expandedLeftItems.has(itemKey)) {
-                expandedLeftItems.delete(itemKey);
-            } else {
-                expandedLeftItems.add(itemKey);
-            }
-            renderAvailableTree();
+        // Placeholder for removal logic
+        alert(
+          `Выбрано элементов для удаления: ${selectedRightItems.size}\n\nФункциональность удаления будет реализована позже.`
+        );
+
+        // TODO: Implement actual removal logic
+        // This would involve:
+        // 1. Finding selected items in profileData.items
+        // 2. Removing them
+        // 3. Clearing selectedRightItems
+        // 4. Re-rendering profile tree
+      }
+
+      function saveProfile() {
+        const projectId = getCurrentProjectId();
+        if (!projectId) {
+          alert("Проект не выбран");
+          return;
         }
 
-        function toggleRightExpand(itemKey) {
-            if (expandedRightItems.has(itemKey)) {
-                expandedRightItems.delete(itemKey);
-            } else {
-                expandedRightItems.add(itemKey);
-            }
-            renderProfileTree();
+        // Placeholder for save logic
+        alert(
+          `Сохранение профиля "${profileData.name}"...\n\nФункциональность сохранения будет реализована позже.`
+        );
+
+        // TODO: Implement actual save logic
+        // This would involve:
+        // 1. Validating profile data
+        // 2. Saving to data structure
+        // 3. Redirecting back to project-details.html
+      }
+
+      function filterLeftTree() {
+        // Placeholder for filter logic
+        console.log("Filter left tree");
+      }
+
+      function filterRightTree() {
+        // Placeholder for filter logic
+        console.log("Filter right tree");
+      }
+
+      // Переключение вкладок в панели деталей
+      function switchDetailsTab(tabKey) {
+        const tabsContainer = document.getElementById('details-tabs');
+        if (!tabsContainer) return;
+
+        const tabs = tabsContainer.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.details-panel .tab-content');
+
+        tabs.forEach(t => {
+          if (t.getAttribute('data-tab') === tabKey) t.classList.add('active');
+          else t.classList.remove('active');
+        });
+
+        contents.forEach(c => {
+          if (c.getAttribute('data-tab-content') === tabKey) c.classList.add('active');
+          else c.classList.remove('active');
+        });
+      }
+
+      function updateDetailsPanel(side) {
+        if (side === 'left' && activeLeftItem) {
+          const info = resolveLeftKey(activeLeftItem);
+          const html = renderDetailsHtml(info);
+          const container = document.querySelector('.details-panel [data-tab-content="model"]');
+          if (container) container.innerHTML = html;
+          switchDetailsTab('model');
+        } else if (side === 'right' && activeRightItem) {
+          const info = resolveRightKey(activeRightItem);
+          const html = renderDetailsHtml(info);
+          const container = document.querySelector('.details-panel [data-tab-content="profile"]');
+          if (container) container.innerHTML = html;
+          switchDetailsTab('profile');
+        }
+      }
+
+      function resolveLeftKey(itemKey) {
+        let baseEntry = null;
+        for (const entry of availableData) {
+          const baseKey = `left-${entry.type}-${entry.id}`;
+          if (itemKey.startsWith(baseKey)) { baseEntry = { entry, baseKey }; break; }
+        }
+        if (!baseEntry) return { kind: 'unknown', data: null, source: 'left', name: '' };
+
+        const { entry, baseKey } = baseEntry;
+        const tail = itemKey.slice(baseKey.length);
+        if (!tail) {
+          return { kind: entry.type, data: entry.data, source: 'left', name: entry.name };
+        }
+        const tokens = tail.split('-').filter(Boolean);
+        let packages = entry.children || [];
+        let elements = null;
+        let current = null;
+        let kind = null;
+        for (let i = 0; i < tokens.length; i += 2) {
+          const t = tokens[i];
+          const idx = parseInt(tokens[i + 1], 10);
+          if (t === 'pkg') {
+            current = packages && packages[idx];
+            kind = 'package';
+            packages = (current && current.children) || [];
+            elements = (current && current.elements) || [];
+          } else if (t === 'elem') {
+            current = elements && elements[idx];
+            kind = 'element';
+            elements = null;
+          }
+        }
+        return { kind, data: current, source: 'left', name: entry.name };
+      }
+
+      function resolveRightKey(itemKey) {
+        const prefix = 'profile';
+        if (!itemKey.startsWith(prefix)) return { kind: 'unknown', data: null, source: 'right', name: profileData.name };
+        const tail = itemKey.slice(prefix.length);
+        const tokens = tail.split('-').filter(Boolean);
+        let packages = profileData.items || [];
+        let elements = null;
+        let current = null;
+        let kind = null;
+        for (let i = 0; i < tokens.length; i += 2) {
+          const t = tokens[i];
+          const idx = parseInt(tokens[i + 1], 10);
+          if (t === 'pkg') {
+            current = packages && packages[idx];
+            kind = 'package';
+            packages = (current && current.children) || [];
+            elements = (current && current.elements) || [];
+          } else if (t === 'elem') {
+            current = elements && elements[idx];
+            kind = 'element';
+            elements = null;
+          }
+        }
+        return { kind, data: current, source: 'right', name: profileData.name };
+      }
+
+      function esc(v) {
+        if (v === undefined || v === null) return '';
+        const d = document.createElement('div');
+        d.textContent = String(v);
+        return d.innerHTML;
+      }
+
+      function renderDetailsHtml(info) {
+        if (!info || !info.data) {
+          return '<div class="text-muted" style="padding:10px 0;">Нет данных для отображения.</div>';
+        }
+        const d = info.data;
+        const typeLabel = info.kind === 'element' ? 'Класс' : (info.kind === 'package' ? 'Пакет' : (info.kind === 'model' ? 'Модель' : (info.kind === 'profile' ? 'Профиль' : 'Объект')));
+        const header = `
+          <div class="mb-10" style="font-weight:600;">${esc(typeLabel)}: ${esc(d.name || info.name || '')}</div>
+        `;
+
+        if (info.kind === 'model' || info.kind === 'profile') {
+          const rootPkgs = (d.rootPackages || []).length;
+          const counts = countDeep(d.rootPackages || []);
+          const metaRows = [
+            ['ID', d.id],
+            ['Название', d.name],
+            ['Описание', d.description || d.description_ru || ''],
+            ['Версия', d.version || ''],
+            ['Корневые пакеты', rootPkgs],
+            ['Всего пакетов', counts.packages],
+            ['Всего элементов', counts.elements]
+          ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null);
+          return header + table(metaRows);
         }
 
-        function setActiveLeftItem(itemKey, event) {
-            if (event) event.stopPropagation();
-            activeLeftItem = itemKey;
-            renderAvailableTree();
+        if (info.kind === 'package') {
+          const pkgCounts = countDeep([{ children: d.children || [], elements: d.elements || [] }]);
+          const rows = [
+            ['ID', d.id],
+            ['Название', d.name],
+            ['Тип', d.type || 'Package'],
+            ['Описание', d.description || d.description_ru || ''],
+            ['Пакеты внутри', (d.children || []).length],
+            ['Элементы внутри', (d.elements || []).length],
+            ['Итого (включая вложенные) пакетов', pkgCounts.packages],
+            ['Итого (включая вложенные) элементов', pkgCounts.elements]
+          ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null);
+          return header + table(rows);
         }
 
-        function setActiveRightItem(itemKey, event) {
-            if (event) event.stopPropagation();
-            activeRightItem = itemKey;
-            renderProfileTree();
+        if (info.kind === 'element') {
+          const attrs = Array.isArray(d.attributes) ? d.attributes : [];
+          const links = Array.isArray(d.links) ? d.links : [];
+          const basicRows = [
+            ['ID', d.id],
+            ['Название', d.name],
+            ['Тип', d.type || 'Class'],
+            ['Абстрактный', d.isAbstract ? 'Да' : 'Нет'],
+            ['Описание', d.description || d.description_ru || '']
+          ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null);
+
+          let html = header + table(basicRows);
+
+          if (attrs.length) {
+            const rows = attrs.map(a => [
+              a.name || '-',
+              a.type || a.dataType || '-',
+              a.multiplicity || '',
+              a.description || a.details || ''
+            ]);
+            html += sectionTitle('Атрибуты') + tableWithHead(['Имя','Тип','Кратность','Описание'], rows);
+          } else {
+            html += sectionTitle('Атрибуты') + '<div class="text-muted">Нет атрибутов</div>';
+          }
+
+          if (links.length) {
+            const rows = links.map(l => [
+              l.name || '-',
+              l.relation_kind || '-',
+              l.multiplicity || '',
+              l.description || l.details || ''
+            ]);
+            html += sectionTitle('Связи') + tableWithHead(['Имя','Вид связи','Кратность','Описание'], rows);
+          } else {
+            html += sectionTitle('Связи') + '<div class="text-muted">Нет связей</div>';
+          }
+
+          return html;
         }
 
-        function transferToProfile() {
-            if (selectedLeftItems.size === 0) {
-                alert('Выберите элементы для переноса');
-                return;
-            }
+        return header + '<div class="text-muted">Неизвестный тип объекта</div>';
+      }
 
-            // Placeholder for transfer logic
-            alert(`Выбрано элементов для переноса: ${selectedLeftItems.size}\n\nФункциональность переноса будет реализована позже.`);
-            
-            // TODO: Implement actual transfer logic
-            // This would involve:
-            // 1. Finding selected items in availableData
-            // 2. Deep copying them
-            // 3. Adding to profileData.items
-            // 4. Clearing selectedLeftItems
-            // 5. Re-rendering both trees
+      function sectionTitle(t) {
+        return `<h4 style="margin:12px 0 6px 0;">${esc(t)}</h4>`;
+      }
+
+      function table(rows) {
+        if (!rows || !rows.length) return '';
+        const trs = rows.map(r => `<tr><td style="font-weight:600; width:180px;">${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('');
+        return `<table class="table" style="margin-top:6px;">${trs}</table>`;
+      }
+
+      function tableWithHead(head, rows) {
+        const thead = `<tr>${head.map(h => `<th style="text-align:left; padding:4px 6px;">${esc(h)}</th>`).join('')}</tr>`;
+        const tbody = rows.map(r => `<tr>${r.map(c => `<td style="padding:4px 6px;">${esc(c)}</td>`).join('')}</tr>`).join('');
+        return `<table class="table" style="margin-top:6px; border-collapse:collapse; width:100%;">${thead}${tbody}</table>`;
+      }
+
+      function countDeep(rootPkgs) {
+        let packages = 0;
+        let elements = 0;
+        function walkPkg(p) {
+          if (!p) return;
+          packages += 1;
+          if (Array.isArray(p.elements)) elements += p.elements.length;
+          if (Array.isArray(p.children)) p.children.forEach(walkPkg);
         }
-
-        function removeFromProfile() {
-            if (selectedRightItems.size === 0) {
-                alert('Выберите элементы для удаления');
-                return;
-            }
-
-            // Placeholder for removal logic
-            alert(`Выбрано элементов для удаления: ${selectedRightItems.size}\n\nФункциональность удаления будет реализована позже.`);
-            
-            // TODO: Implement actual removal logic
-            // This would involve:
-            // 1. Finding selected items in profileData.items
-            // 2. Removing them
-            // 3. Clearing selectedRightItems
-            // 4. Re-rendering profile tree
-        }
-
-        function saveProfile() {
-            const projectId = getCurrentProjectId();
-            if (!projectId) {
-                alert('Проект не выбран');
-                return;
-            }
-
-            // Placeholder for save logic
-            alert(`Сохранение профиля "${profileData.name}"...\n\nФункциональность сохранения будет реализована позже.`);
-            
-            // TODO: Implement actual save logic
-            // This would involve:
-            // 1. Validating profile data
-            // 2. Saving to data structure
-            // 3. Redirecting back to project-details.html
-        }
-
-        function filterLeftTree() {
-            // Placeholder for filter logic
-            console.log('Filter left tree');
-        }
-
-        function filterRightTree() {
-            // Placeholder for filter logic
-            console.log('Filter right tree');
-        }
+        (rootPkgs || []).forEach(walkPkg);
+        return { packages, elements };
+      }
     </script>
-</body>
+  </body>
 </html>
