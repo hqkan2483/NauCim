@@ -50,6 +50,10 @@ function renderProjects() {
 function viewProjectDetails(projectId) {
     selectedProjectId = projectId;
     
+    // Reset selection when switching projects
+    selectedModelId = null;
+    selectedProfileId = null;
+    
     // Hide search and projects list
     document.getElementById('search-box').classList.add('hidden');
     document.getElementById('projects-list').classList.add('hidden');
@@ -57,6 +61,10 @@ function viewProjectDetails(projectId) {
     // Show models and profiles containers
     document.getElementById('models-container').classList.remove('hidden');
     document.getElementById('profiles-container').classList.remove('hidden');
+    
+    // Clear details panels
+    document.getElementById('model-details').innerHTML = '';
+    document.getElementById('profile-details').innerHTML = '';
     
     // Render project details
     renderModels(projectId);
