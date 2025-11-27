@@ -79,7 +79,7 @@ async function loadSampleData() {
   // Load rootPackages from external JSON file
   let tc57cimRootPackages = [];
   try {
-    const response = await fetch('./models-data/cim100.json');
+    const response = await fetch('./models-data/CIM100.json');
     tc57cimRootPackages = await response.json();
     console.log("✅ cim100.json loaded successfully");
   } catch (error) {
