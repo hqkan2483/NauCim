@@ -52,23 +52,7 @@
         </div>
 
         <div class="content-area">
-          <!-- Это не надо.  мы сравниваем любой с любым -->
-          <div
-            id="no-project-warning"
-            class="no-project-warning"
-            style="display: none"
-          >
-            <div style="font-size: 48px; margin-bottom: 15px">📁</div>
-            <h3>Проект не выбран</h3>
-            <p>Выберите модель или профиль для сравнения</p>
-            <!-- <button class="btn btn-primary" onclick="window.location.href='projects.html'" style="margin-top:15px;">Перейти к проектам</button> -->
-          </div>
-
-          <div
-            id="compare-container"
-            class="compare-container"
-            style="display: none"
-          >
+          <div id="compare-container" class="compare-container">
             <!-- Selection Area -->
             <div class="card" style="margin-bottom: 20px">
               <h3 style="margin-bottom: 15px">Выбор объектов для сравнения</h3>
@@ -157,108 +141,149 @@
 
     <script src="data.js"></script>
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        loadSampleData();
+      document.addEventListener("DOMContentLoaded", async () => {
+        await loadSampleData();
         updateCurrentProject();
-        checkProject();
+        loadAllObjectOptions();
       });
 
-      function checkProject() {
-        const projectId = getCurrentProjectId();
-        if (!projectId) {
-          document.getElementById("no-project-warning").style.display = "block";
-          document.getElementById("compare-container").style.display = "none";
-        } else {
-          document.getElementById("no-project-warning").style.display = "none";
-          document.getElementById("compare-container").style.display = "block";
-          loadProfileOptions();
-        }
-      }
-
-      function loadProfileOptions() {
-        const projectId = getCurrentProjectId();
-        const profiles = getProfiles(projectId);
-
-        const options =
-          '<option value="">-- Выберите объект --</option>' +
-          profiles
-            .map((p) => '<option value="' + p.id + '">' + p.name + "</option>")
-            .join("");
+      function loadAllObjectOptions() {
+        // Получаем все проекты
+        const projects = MemoryStore.getProjects();
+        
+        let options = '<option value="">-- Выберите объект --</option>';
+        
+        // Перебираем все проекты и собираем все модели и профили
+        projects.forEach(project => {
+          // Добавляем модели проекта
+          if (project.models && project.models.length > 0) {
+            options += `<optgroup label="${project.name} - Модели">`;
+            project.models.forEach(model => {
+              options += `<option value="model-${project.id}-${model.id}">${model.name} (${model.type})</option>`;
+            });
+            options += '</optgroup>';
+          }
+          
+          // Добавляем профили проекта
+          if (project.profiles && project.profiles.length > 0) {
+            options += `<optgroup label="${project.name} - Профили">`;
+            project.profiles.forEach(profile => {
+              options += `<option value="profile-${project.id}-${profile.id}">${profile.name} v${profile.version}</option>`;
+            });
+            options += '</optgroup>';
+          }
+        });
 
         document.getElementById("profile1").innerHTML = options;
         document.getElementById("profile2").innerHTML = options;
       }
 
       function compareProfiles() {
-        const projectId = getCurrentProjectId();
-        const profile1Id = parseInt(document.getElementById("profile1").value);
-        const profile2Id = parseInt(document.getElementById("profile2").value);
+        const object1Value = document.getElementById("profile1").value;
+        const object2Value = document.getElementById("profile2").value;
 
-        if (!profile1Id || !profile2Id) {
+        if (!object1Value || !object2Value) {
           alert("Выберите два объекта для сравнения");
           return;
         }
 
-        if (profile1Id === profile2Id) {
+        if (object1Value === object2Value) {
           alert("Выберите разные объекты");
           return;
         }
 
-        const profile1 = getProfile(projectId, profile1Id);
-        const profile2 = getProfile(projectId, profile2Id);
+        // Парсим выбранные значения
+        const object1 = parseObjectValue(object1Value);
+        const object2 = parseObjectValue(object2Value);
 
-        renderComparison(profile1, profile2);
+        if (!object1 || !object2) {
+          alert("Ошибка получения данных объектов");
+          return;
+        }
+
+        renderComparison(object1, object2);
       }
 
-      function renderComparison(p1, p2) {
+      function parseObjectValue(value) {
+        // Формат: "model-{projectId}-{objectId}" или "profile-{projectId}-{objectId}"
+        const parts = value.split('-');
+        if (parts.length !== 3) return null;
+
+        const type = parts[0]; // 'model' или 'profile'
+        const projectId = parseInt(parts[1]);
+        const objectId = parseInt(parts[2]);
+
+        const project = MemoryStore.getProject(projectId);
+        if (!project) return null;
+
+        if (type === 'model') {
+          const model = project.models?.find(m => m.id === objectId);
+          if (model) {
+            return {
+              ...model,
+              objectType: 'model',
+              projectName: project.name
+            };
+          }
+        } else if (type === 'profile') {
+          const profile = project.profiles?.find(p => p.id === objectId);
+          if (profile) {
+            return {
+              ...profile,
+              objectType: 'profile',
+              projectName: project.name
+            };
+          }
+        }
+
+        return null;
+      }
+
+      function renderComparison(obj1, obj2) {
         document.getElementById("comparison-results").style.display = "block";
 
         // Mock statistics
         const common =
-          Math.min(p1.classes, p2.classes) - Math.floor(Math.random() * 10);
-        const unique1 = p1.classes - common;
-        const unique2 = p2.classes - common;
+          Math.min(obj1.classes || 0, obj2.classes || 0) - Math.floor(Math.random() * 10);
+        const unique1 = (obj1.classes || 0) - common;
+        const unique2 = (obj2.classes || 0) - common;
 
         document.getElementById("stat-common").textContent = common;
         document.getElementById("stat-unique1").textContent = unique1;
         document.getElementById("stat-unique2").textContent = unique2;
 
-        // Profile names
-        document.getElementById("profile1-name").textContent = p1.name;
-        document.getElementById("profile2-name").textContent = p2.name;
+        // Object names with type indicator
+        document.getElementById("profile1-name").textContent = 
+          `${obj1.name} (${obj1.objectType === 'model' ? 'Модель' : 'Профиль'})`;
+        document.getElementById("profile2-name").textContent = 
+          `${obj2.name} (${obj2.objectType === 'model' ? 'Модель' : 'Профиль'})`;
 
-        // Profile details
-        document.getElementById("profile1-details").innerHTML =
+        // Object details - different fields for models and profiles
+        document.getElementById("profile1-details").innerHTML = 
           '<table class="table">' +
-          '<tr><td style="font-weight:600;">Базовая модель</td><td>' +
-          p1.baseModel +
-          "</td></tr>" +
-          '<tr><td style="font-weight:600;">Версия</td><td>' +
-          p1.version +
-          "</td></tr>" +
-          '<tr><td style="font-weight:600;">Классов</td><td>' +
-          p1.classes +
-          "</td></tr>" +
-          '<tr><td style="font-weight:600;">Атрибутов</td><td>' +
-          p1.attributes +
-          "</td></tr>" +
-          "</table>";
+          '<tr><td style="font-weight:600;">Проект</td><td>' + obj1.projectName + '</td></tr>' +
+          '<tr><td style="font-weight:600;">Тип</td><td>' + 
+          (obj1.objectType === 'model' ? obj1.type : 'Профиль') + '</td></tr>' +
+          (obj1.objectType === 'profile' && obj1.baseModel ? 
+            '<tr><td style="font-weight:600;">Базовая модель</td><td>' + obj1.baseModel + '</td></tr>' : '') +
+          (obj1.version ? '<tr><td style="font-weight:600;">Версия</td><td>' + obj1.version + '</td></tr>' : '') +
+          '<tr><td style="font-weight:600;">Классов</td><td>' + (obj1.classes || 0) + '</td></tr>' +
+          '<tr><td style="font-weight:600;">Атрибутов</td><td>' + (obj1.attributes || 0) + '</td></tr>' +
+          (obj1.description ? '<tr><td style="font-weight:600;">Описание</td><td>' + obj1.description + '</td></tr>' : '') +
+          '</table>';
 
         document.getElementById("profile2-details").innerHTML =
           '<table class="table">' +
-          '<tr><td style="font-weight:600;">Базовая модель</td><td>' +
-          p2.baseModel +
-          "</td></tr>" +
-          '<tr><td style="font-weight:600;">Версия</td><td>' +
-          p2.version +
-          "</td></tr>" +
-          '<tr><td style="font-weight:600;">Классов</td><td>' +
-          p2.classes +
-          "</td></tr>" +
-          '<tr><td style="font-weight:600;">Атрибутов</td><td>' +
-          p2.attributes +
-          "</td></tr>" +
-          "</table>";
+          '<tr><td style="font-weight:600;">Проект</td><td>' + obj2.projectName + '</td></tr>' +
+          '<tr><td style="font-weight:600;">Тип</td><td>' + 
+          (obj2.objectType === 'model' ? obj2.type : 'Профиль') + '</td></tr>' +
+          (obj2.objectType === 'profile' && obj2.baseModel ? 
+            '<tr><td style="font-weight:600;">Базовая модель</td><td>' + obj2.baseModel + '</td></tr>' : '') +
+          (obj2.version ? '<tr><td style="font-weight:600;">Версия</td><td>' + obj2.version + '</td></tr>' : '') +
+          '<tr><td style="font-weight:600;">Классов</td><td>' + (obj2.classes || 0) + '</td></tr>' +
+          '<tr><td style="font-weight:600;">Атрибутов</td><td>' + (obj2.attributes || 0) + '</td></tr>' +
+          (obj2.description ? '<tr><td style="font-weight:600;">Описание</td><td>' + obj2.description + '</td></tr>' : '') +
+          '</table>';
 
         // Differences list
         const differences = [
