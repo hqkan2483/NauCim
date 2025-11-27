@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nautilus.CIM - Сравнение профилей</title>
+    <title>Nautilus.CIM - Сравнение</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,10 +14,10 @@
                 <strong>Nautilus.CIM</strong>
             </div>
             <div class="sidebar-nav">
-                <a href="index.html" class="nav-item">📊 Панель управления</a>
+                <a href="index.html" class="nav-item">📊 Главная</a>
                 <a href="projects.html" class="nav-item">📁 Проекты</a>
-                <a href="models.html" class="nav-item">📋 Модели</a>
-                <a href="profiles.html" class="nav-item">⚙️ Профили</a>
+                <!-- <a href="models.html" class="nav-item">📋 Модели</a>
+                <a href="profiles.html" class="nav-item">⚙️ Профили</a> -->
 
                 <div class="nav-section-title">Текущий проект</div>
                 <div id="current-project" style="padding: 10px 15px; font-size: 12px; color: rgba(255,255,255,0.7);">
@@ -26,54 +26,55 @@
 
                 <div class="nav-section-title">Действия</div>
                 <div class="nav-item" onclick="openModal('new-project-modal')">+ Новый проект</div>
-                <div class="nav-item" onclick="openModal('new-model-modal')">⬆️ Импорт модели</div>
-                <a href="compare.html" class="nav-item active">🔍 Сравнение</a>
+                <!-- <div class="nav-item" onclick="openModal('new-model-modal')">⬆️ Импорт модели</div>
+                <a href="compare.html" class="nav-item active">🔍 Сравнение</a> -->
             </div>
         </div>
 
         <!-- MAIN CONTENT -->
         <div class="main-content">
             <div class="toolbar">
-                <div class="toolbar-title">Сравнение профилей</div>
+                <div class="toolbar-title">Сравнение</div>
                 <div class="toolbar-actions">
                     <button class="btn btn-primary" onclick="compareProfiles()">🔍 Сравнить</button>
                 </div>
             </div>
 
             <div class="content-area">
-                <div id="no-project-warning" style="display:none; padding:40px; text-align:center; color:var(--text-secondary);">
+                <!-- Это не надо.  мы сравниваем любой с любым -->
+                <div id="no-project-warning" class="no-project-warning" style="display:none;">
                     <div style="font-size:48px; margin-bottom:15px;">📁</div>
                     <h3>Проект не выбран</h3>
-                    <p>Выберите проект для сравнения профилей</p>
-                    <button class="btn btn-primary" onclick="window.location.href='projects.html'" style="margin-top:15px;">Перейти к проектам</button>
+                    <p>Выберите модель или профиль для сравнения</p>
+                    <!-- <button class="btn btn-primary" onclick="window.location.href='projects.html'" style="margin-top:15px;">Перейти к проектам</button> -->
                 </div>
 
-                <div id="compare-container" style="display:none;">
+                <div id="compare-container" class="compare-container" style="display:none;">
                     <!-- Selection Area -->
                     <div class="card" style="margin-bottom:20px;">
-                        <h3 style="margin-bottom:15px;">Выбор профилей для сравнения</h3>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                        <h3 style="margin-bottom:15px;">Выбор объектов для сравнения</h3>
+                        <div class="compare-selection-grid">
                             <div class="form-group">
-                                <label class="form-label">Профиль 1</label>
+                                <label class="form-label">Объект 1</label>
                                 <select id="profile1" class="form-select">
-                                    <option value="">-- Выберите профиль --</option>
+                                    <option value="">-- Выберите --</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Профиль 2</label>
+                                <label class="form-label">Объект 2</label>
                                 <select id="profile2" class="form-select">
-                                    <option value="">-- Выберите профиль --</option>
+                                    <option value="">-- Выберите --</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <!-- Comparison Results -->
-                    <div id="comparison-results" style="display:none;">
-                        <h3 style="margin-bottom:15px;">Результаты сравнения</h3>
+                    <div id="comparison-results" class="comparison-results" style="display:none;">
+                        <h3>Результаты сравнения</h3>
 
                         <!-- Summary Stats -->
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:20px;">
+                        <div class="comparison-stats">
                             <div class="stat-box">
                                 <div class="stat-value" id="stat-common">0</div>
                                 <div class="stat-label">Общих классов</div>
@@ -101,8 +102,8 @@
                         </div>
 
                         <!-- Differences List -->
-                        <div style="margin-top:20px;">
-                            <h4 style="margin-bottom:15px;">Детальные различия</h4>
+                        <div class="differences-section">
+                            <h4>Детальные различия</h4>
                             <div id="differences-list"></div>
                         </div>
                     </div>
@@ -111,7 +112,7 @@
         </div>
     </div>
 
-    <div id="new-project-modal" class="modal">
+    <!-- <div id="new-project-modal" class="modal">
         <div class="modal-content">
             <div class="modal-title">Создать новый проект</div>
             <p style="color:var(--text-secondary); margin-bottom:15px;">Создайте проект в разделе "Проекты"</p>
@@ -119,9 +120,9 @@
                 <button class="btn btn-primary" onclick="window.location.href='projects.html'">Перейти к проектам</button>
             </div>
         </div>
-    </div>
+    </div> -->
 
-    <div id="new-model-modal" class="modal">
+    <!-- <div id="new-model-modal" class="modal">
         <div class="modal-content">
             <div class="modal-title">Добавить модель</div>
             <p style="color:var(--text-secondary); margin-bottom:15px;">Добавьте модель в разделе "Модели"</p>
@@ -129,7 +130,7 @@
                 <button class="btn btn-primary" onclick="window.location.href='models.html'">Перейти к моделям</button>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <script src="data.js"></script>
     <script>
@@ -155,7 +156,7 @@
             const projectId = getCurrentProjectId();
             const profiles = getProfiles(projectId);
 
-            const options = '<option value="">-- Выберите профиль --</option>' + 
+            const options = '<option value="">-- Выберите объект --</option>' + 
                 profiles.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
 
             document.getElementById('profile1').innerHTML = options;
@@ -168,12 +169,12 @@
             const profile2Id = parseInt(document.getElementById('profile2').value);
 
             if (!profile1Id || !profile2Id) {
-                alert('Выберите оба профиля для сравнения');
+                alert('Выберите два объекта для сравнения');
                 return;
             }
 
             if (profile1Id === profile2Id) {
-                alert('Выберите разные профили');
+                alert('Выберите разные объекты');
                 return;
             }
 
@@ -225,8 +226,8 @@
             const diffHtml = differences.map(d => {
                 const cls = d.type === 'added' ? 'diff-added' : (d.type === 'removed' ? 'diff-removed' : 'badge');
                 const icon = d.type === 'added' ? '➕' : (d.type === 'removed' ? '➖' : '🔄');
-                return '<div class="card">' +
-                    '<span class="' + cls + '" style="margin-right:10px;">' + icon + '</span>' +
+                return '<div class="card difference-item">' +
+                    '<span class="' + cls + ' difference-icon">' + icon + '</span>' +
                     d.text +
                     '</div>';
             }).join('');
