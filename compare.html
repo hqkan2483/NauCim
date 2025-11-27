@@ -5,6 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nautilus.CIM - Сравнение</title>
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      .editor-panel-content {
+        padding: 10px;
+        overflow-y: auto;
+        max-height: 400px;
+      }
+      .tree-item-with-checkbox {
+        display: flex;
+        align-items: center;
+        padding: 3px 0;
+        white-space: nowrap;
+      }
+      .tree-item-checkbox {
+        margin-right: 8px;
+        cursor: pointer;
+      }
+      .tree-item-label {
+        cursor: pointer;
+        user-select: none;
+        font-size: 15px;
+        white-space: nowrap;
+      }
+      .tree-toggle {
+        display: inline-block;
+        width: 20px;
+        cursor: pointer;
+        user-select: none;
+        font-size: 18px;
+        margin-right: 4px;
+        text-align: center;
+      }
+      .tree-children {
+        display: block;
+        margin-left: 20px;
+      }
+      .tree-children.collapsed {
+        display: none;
+      }
+      .tree-item-with-checkbox:hover {
+        background-color: #f5f5f5;
+      }
+    </style>
   </head>
   <body>
     <div class="app-container">
@@ -194,11 +236,212 @@
 
     <script src="data.js"></script>
     <script>
+      // Helper function for HTML escaping
+      function esc(v) {
+        if (v === undefined || v === null) return '';
+        const d = document.createElement('div');
+        d.textContent = String(v);
+        return d.innerHTML;
+      }
+
       document.addEventListener("DOMContentLoaded", async () => {
         await loadSampleData();
         updateCurrentProject();
         loadAllObjectOptions();
+        initCompareSettingsLogic();
       });
+
+      function initCompareSettingsLogic() {
+        const radios = document.querySelectorAll('input[name="compareMode"]');
+        const objOneContent = document.getElementById('compare-object-one-content');
+        const objTwoContent = document.getElementById('compare-object-two-content');
+        const profile1Select = document.getElementById('profile1');
+        const profile2Select = document.getElementById('profile2');
+
+        function applyMode(mode) {
+          if (mode === 'full') {
+            objOneContent.classList.add('hidden');
+            objOneContent.innerHTML = '';
+            objTwoContent.classList.add('hidden');
+            objTwoContent.innerHTML = '';
+          } else if (mode === 'selective') {
+            // Require an object selected in profile1
+            const val = profile1Select.value;
+            if (!val) {
+              alert('Выберите объект 1 для выборочного сравнения');
+              objOneContent.classList.add('hidden');
+              objOneContent.innerHTML = '';
+              objTwoContent.classList.add('hidden');
+              objTwoContent.innerHTML = '';
+              return;
+            }
+            const obj = parseObjectValue(val);
+            if (!obj) {
+              alert('Не удалось получить данные выбранного объекта');
+              objOneContent.classList.add('hidden');
+              objOneContent.innerHTML = '';
+              objTwoContent.classList.add('hidden');
+              objTwoContent.innerHTML = '';
+              return;
+            }
+            // Render tree for selected object
+            currentSelectiveObject = obj; // Save for re-rendering
+            objOneContent.classList.remove('hidden');
+            objOneContent.innerHTML = renderObjectTreePanel(obj);
+            objTwoContent.classList.add('hidden');
+            objTwoContent.innerHTML = '';
+          } else if (mode === 'analysis') {
+            // Require both objects selected
+            const val1 = profile1Select.value;
+            const val2 = profile2Select.value;
+            if (!val1 || !val2) {
+              alert('Выберите оба объекта для режима анализа');
+              objOneContent.classList.add('hidden');
+              objOneContent.innerHTML = '';
+              objTwoContent.classList.add('hidden');
+              objTwoContent.innerHTML = '';
+              return;
+            }
+            const obj1 = parseObjectValue(val1);
+            const obj2 = parseObjectValue(val2);
+            if (!obj1 || !obj2) {
+              alert('Не удалось получить данные выбранных объектов');
+              objOneContent.classList.add('hidden');
+              objOneContent.innerHTML = '';
+              objTwoContent.classList.add('hidden');
+              objTwoContent.innerHTML = '';
+              return;
+            }
+            // Render trees for both objects
+            currentSelectiveObject = obj1;
+            currentSelectiveObject2 = obj2;
+            objOneContent.classList.remove('hidden');
+            objOneContent.innerHTML = renderObjectTreePanel(obj1);
+            objTwoContent.classList.remove('hidden');
+            objTwoContent.innerHTML = renderObjectTreePanel(obj2);
+          }
+        }
+
+        // Initial apply based on default checked
+        const checked = document.querySelector('input[name="compareMode"]:checked');
+        applyMode(checked ? checked.value : 'full');
+
+        // Listen for mode changes
+        radios.forEach(r => {
+          r.addEventListener('change', e => applyMode(e.target.value));
+        });
+
+        // If selection changes while in selective or analysis mode, re-render
+        profile1Select.addEventListener('change', () => {
+          const current = document.querySelector('input[name="compareMode"]:checked');
+          if (current && (current.value === 'selective' || current.value === 'analysis')) {
+            applyMode(current.value);
+          }
+        });
+
+        profile2Select.addEventListener('change', () => {
+          const current = document.querySelector('input[name="compareMode"]:checked');
+          if (current && current.value === 'analysis') {
+            applyMode('analysis');
+          }
+        });
+      }
+
+      function renderObjectTreePanel(obj) {
+        // Panel header mimicking editor-panel-content style
+        const title = `${obj.name} — ${obj.objectType === 'model' ? 'Модель' : 'Профиль'}`;
+        const treeHtml = renderSelectiveTree(obj);
+        return `
+          <div class="card">
+
+            <div class="editor-panel-content">${treeHtml}</div>
+          </div>
+        `;
+      }
+
+      // State for selective tree
+      let selectiveExpanded = new Set();
+      let selectiveSelected = new Set();
+      let currentSelectiveObject = null; // Store current object for re-rendering
+      let currentSelectiveObject2 = null; // Store second object for analysis mode
+
+      function renderSelectiveTree(obj) {
+        const root = obj.rootPackages || [];
+        const baseKey = `sel-${obj.objectType}-${obj.id}`;
+        let html = '';
+        root.forEach((pkg, idx) => {
+          const itemKey = `${baseKey}-pkg-${idx}`;
+          html += renderSelectiveNode(pkg, itemKey, 0);
+        });
+        if (!html) {
+          html = '<div class="text-center text-muted" style="padding: 10px;">Нет данных для отображения</div>';
+        }
+        return html;
+      }
+
+      function renderSelectiveNode(node, itemKey, level) {
+        const name = esc(node?.name || node?.className || 'Без имени');
+        const childrenPkgs = Array.isArray(node.children) ? node.children : Array.isArray(node.packages) ? node.packages : [];
+        const elements = Array.isArray(node.elements) ? node.elements : [];
+        const hasChildren = (childrenPkgs && childrenPkgs.length) || (elements && elements.length);
+        const isExpanded = selectiveExpanded.has(itemKey);
+        const isChecked = selectiveSelected.has(itemKey);
+
+        let html = `
+          <div class="tree-item-with-checkbox" onclick="toggleSelectiveActive('${itemKey}', event)">
+            <span class="tree-toggle" onclick="toggleSelectiveExpand('${itemKey}'); event.stopPropagation();">${hasChildren ? (isExpanded ? '▾' : '▸') : ''}</span>
+            <input type="checkbox" id="${itemKey}" class="tree-item-checkbox" ${isChecked ? 'checked' : ''} onclick="toggleSelectiveCheck('${itemKey}', event)">
+            <span class="tree-item-label">📦 ${name}</span>
+          </div>
+        `;
+
+        if (hasChildren) {
+          html += `<div class="tree-children ${isExpanded ? '' : 'collapsed'}" id="children-${itemKey}">`;
+          // elements first
+          elements.forEach((el, eidx) => {
+            const eKey = `${itemKey}-elem-${eidx}`;
+            const eName = esc(el?.name || el);
+            const eChecked = selectiveSelected.has(eKey);
+            html += `
+              <div class="tree-item-with-checkbox" onclick="toggleSelectiveActive('${eKey}', event)">
+                <span class="tree-toggle"></span>
+                <input type="checkbox" id="${eKey}" class="tree-item-checkbox" ${eChecked ? 'checked' : ''} onclick="toggleSelectiveCheck('${eKey}', event)">
+                <span class="tree-item-label">📄 ${eName}</span>
+              </div>
+            `;
+          });
+          // child packages
+          childrenPkgs.forEach((pkg, pidx) => {
+            const cKey = `${itemKey}-pkg-${pidx}`;
+            html += renderSelectiveNode(pkg, cKey, level + 1);
+          });
+          html += `</div>`;
+        }
+
+        return html;
+      }
+
+      // Selective tree interactions
+      function toggleSelectiveExpand(itemKey) {
+        if (selectiveExpanded.has(itemKey)) selectiveExpanded.delete(itemKey);
+        else selectiveExpanded.add(itemKey);
+        // re-render current selective panel using saved object
+        if (currentSelectiveObject) {
+          document.getElementById('compare-object-one-content').innerHTML = renderObjectTreePanel(currentSelectiveObject);
+        }
+      }
+
+      function toggleSelectiveCheck(itemKey, evt) {
+        if (evt) evt.stopPropagation();
+        const input = document.getElementById(itemKey);
+        if (input && input.checked) selectiveSelected.add(itemKey);
+        else selectiveSelected.delete(itemKey);
+      }
+
+      function toggleSelectiveActive(itemKey, evt) {
+        if (evt) evt.stopPropagation();
+        // For future: highlight active item, update details
+      }
 
       function loadAllObjectOptions() {
         // Получаем все проекты
