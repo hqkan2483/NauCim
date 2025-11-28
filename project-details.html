@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nautilus.CIM - Сведения о проекте</title>
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      .context-menu {
+        position: fixed;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        z-index: 10000;
+        min-width: 180px;
+        display: none;
+      }
+      .context-menu.show {
+        display: block;
+      }
+      .context-menu-item {
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #333;
+        transition: background-color 0.2s;
+      }
+      .context-menu-item:hover {
+        background-color: #f0f0f0;
+      }
+      .context-menu-item:active {
+        background-color: #e0e0e0;
+      }
+    </style>
   </head>
   <body>
     <div class="app-container">
@@ -253,6 +281,13 @@
       </div>
     </div>
 
+    <!-- Context Menu -->
+    <div id="context-menu" class="context-menu">
+      <div class="context-menu-item" onclick="handleContextMenuAction('add-package')">📦 Добавить пакет</div>
+      <div class="context-menu-item" onclick="handleContextMenuAction('add-class')">📄 Добавить класс</div>
+      <div class="context-menu-item" onclick="handleContextMenuAction('add-diagram')">📐 Добавить диаграмму</div>
+    </div>
+
     <script src="data.js"></script>
     <script src="sidebar.js"></script>
     <script>
@@ -260,6 +295,7 @@
       let selectedModelName = null;
       let selectedProfileId = null;
       let selectedProfileName = null;
+      let contextMenuTarget = null; // Stores the element that triggered context menu
 
       document.addEventListener("DOMContentLoaded", async () => {
         await loadSampleData();
@@ -270,6 +306,7 @@
         updatePageTitle();
         restoreSidebarState();
         restoreProjectsTreeState();
+        initContextMenu();
       });
 
       function updateSidebarTitle() {
@@ -708,7 +745,7 @@
                           rootPkg.id || ""
                         }" data-type="package" data-profile-id="${
           profileId || ""
-        }" onclick="selectTreeItem(event)">${typeLabel} ${
+        }" onclick="selectTreeItem(event)" oncontextmenu="handlePackageContextMenu(event)">${typeLabel} ${
           rootPkg.name || "Корневой пакет"
         }</span>
                     </div>
@@ -777,7 +814,7 @@
                           pkg.id || ""
                         }" data-type="package" data-profile-id="${
           profileId || ""
-        }" onclick="selectTreeItem(event)">📁 ${
+        }" onclick="selectTreeItem(event)" oncontextmenu="handlePackageContextMenu(event)">📁 ${
           pkg.name || "Пакет"
         }</span>
                     </div>
@@ -944,7 +981,7 @@
                           rootPkg.id || ""
                         }" data-type="package" data-model-id="${
           modelId || ""
-        }" onclick="selectTreeItem(event)">📦 ${
+        }" onclick="selectTreeItem(event)" oncontextmenu="handlePackageContextMenu(event)">📦 ${
           rootPkg.name || "Корневой пакет"
         }</span>
                     </div>
@@ -1011,7 +1048,7 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           pkg.id || ""
-                        }" data-type="package" onclick="selectTreeItem(event)">📁 ${
+                        }" data-type="package" onclick="selectTreeItem(event)" oncontextmenu="handlePackageContextMenu(event)">📁 ${
           pkg.name || "Пакет"
         }</span>
                     </div>
@@ -2042,6 +2079,102 @@
         }
 
         return null;
+      }
+
+      // Context Menu Functions
+      function handlePackageContextMenu(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Find the closest element with data-type attribute
+        let element = event.target;
+        while (element && !element.getAttribute('data-type')) {
+          element = element.parentElement;
+        }
+        
+        if (!element) return;
+        
+        const type = element.getAttribute('data-type');
+        
+        // Only show context menu for packages
+        if (type === 'package') {
+          showContextMenu(event.clientX, event.clientY, element);
+        }
+      }
+
+      function initContextMenu() {
+        const contextMenu = document.getElementById('context-menu');
+        
+        // Close context menu on click outside (with slight delay to allow onclick to fire)
+        document.addEventListener('click', (e) => {
+          // Don't close if clicking inside the menu
+          if (contextMenu.contains(e.target)) {
+            return;
+          }
+          hideContextMenu();
+        });
+        
+        // Close context menu on scroll
+        document.addEventListener('scroll', hideContextMenu, true);
+        
+        // Prevent context menu from closing when clicking inside it
+        contextMenu.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+
+      function showContextMenu(x, y, element) {
+        const contextMenu = document.getElementById('context-menu');
+        contextMenuTarget = element;
+        
+        // Position the menu
+        contextMenu.style.left = x + 'px';
+        contextMenu.style.top = y + 'px';
+        contextMenu.classList.add('show');
+        
+        // Adjust if menu goes off screen
+        const rect = contextMenu.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+          contextMenu.style.left = (x - rect.width) + 'px';
+        }
+        if (rect.bottom > window.innerHeight) {
+          contextMenu.style.top = (y - rect.height) + 'px';
+        }
+      }
+
+      function hideContextMenu() {
+        const contextMenu = document.getElementById('context-menu');
+        contextMenu.classList.remove('show');
+        contextMenuTarget = null;
+      }
+
+      function handleContextMenuAction(action) {
+        if (!contextMenuTarget) {
+          hideContextMenu();
+          return;
+        }
+        
+        const packageId = contextMenuTarget.getAttribute('data-id');
+        let packageName = contextMenuTarget.textContent.trim();
+        // Remove emoji icons from the name
+        packageName = packageName.replace(/^[📦📁🗂️]\s*/, '');
+        const modelId = contextMenuTarget.getAttribute('data-model-id');
+        const profileId = contextMenuTarget.getAttribute('data-profile-id');
+        
+        // Hide menu after getting all the data
+        hideContextMenu();
+        
+        switch(action) {
+          case 'add-package':
+            alert(`Добавление пакета в "${packageName}"\nФункция в разработке`);
+            break;
+          case 'add-class':
+            alert(`Добавление класса в "${packageName}"\nФункция в разработке`);
+            break;
+          case 'add-diagram':
+            alert(`Добавление диаграммы для "${packageName}"\nФункция в разработке`);
+            break;
+        }
       }
 
       function createModel() {
