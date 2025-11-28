@@ -188,7 +188,7 @@ async function loadSampleData() {
         },
         {
           id: 5,
-          name: "GOST-58651.3",
+          name: "Проект ГОСТ-58651.Х",
           description: "Профиль модели ЛЭП 110-750 кВ",
           baseModel: "GOSTExtension",
           baseModelId: 3,

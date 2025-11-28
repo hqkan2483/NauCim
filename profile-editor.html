@@ -122,8 +122,12 @@
         color: #000;
         font-weight: 600;
       }
-      .tab-content { display: none; }
-      .tab-content.active { display: block; }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
 
       .transfer-options {
         margin-bottom: 15px;
@@ -258,27 +262,28 @@
           </div>
         </div>
 
-        <div class="editor-content-area">
-          <div class="editor-container">
-            <!-- LEFT PANEL: Available Models and Profiles -->
-            <div class="editor-panel">
-              <div class="editor-panel-header">Модели и профили проекта</div>
-              <div class="editor-panel-content">
-                <div class="search-box">
-                  <input
-                    type="text"
-                    class="search-input"
-                    placeholder="Поиск..."
-                    id="left-search"
-                    oninput="filterLeftTree()"
-                  />
+        <div class="editor-content-area editor-standart-mode">
+          <div class="editor-wrapper editor-content-area">
+            <div class="editor-container">
+              <!-- LEFT PANEL: Available Models and Profiles -->
+              <div class="editor-panel">
+                <div class="editor-panel-header">Модели и профили проекта</div>
+                <div class="editor-panel-content">
+                  <div class="search-box">
+                    <input
+                      type="text"
+                      class="search-input"
+                      placeholder="Поиск..."
+                      id="left-search"
+                      oninput="filterLeftTree()"
+                    />
+                  </div>
+                  <div id="available-tree">
+                    <!-- Tree will be rendered here -->
+                  </div>
                 </div>
-                <div id="available-tree">
-                  <!-- Tree will be rendered here -->
-                </div>
-              </div>
-              <div class="editor-panel-actions">
-                <!-- <div class="transfer-options">
+                <div class="editor-panel-actions">
+                  <!-- <div class="transfer-options">
                                 <h4>Опции переноса</h4>
                                 <div class="option-checkbox">
                                     <input type="checkbox" id="option-selected-only" checked>
@@ -301,94 +306,110 @@
                                     <label for="option-include-associations">Включить классы, связанные через ассоциацию</label>
                                 </div>
                             </div> -->
-                <button
-                  class="btn btn-primary"
-                  onclick="transferToProfile()"
-                  style="width: 100%"
-                >
-                  → Перенести в профиль
-                </button>
-
-                <button
-                  class="btn btn-primary"
-                  onclick="transferToProfile()"
-                  style="width: 100%"
-                >
-                  ✕ Снять выделение
-                </button>
-              </div>
-            </div>
-
-            <!-- RIGHT PANEL: Profile Being Edited -->
-            <div class="editor-panel">
-              <div class="editor-panel-header">
-                <span id="profile-header-name">Новый профиль</span>
-              </div>
-              <div class="editor-panel-content">
-                <div class="search-box">
-                  <input
-                    type="text"
-                    class="search-input"
-                    placeholder="Поиск..."
-                    id="right-search"
-                    oninput="filterRightTree()"
-                  />
-                </div>
-                <div id="profile-tree">
-                  <div
-                    class="text-center text-muted"
-                    style="padding: 40px 20px"
+                  <button
+                    class="btn btn-primary"
+                    onclick="transferToProfile()"
+                    style="width: 100%"
                   >
-                    Профиль пуст. Выберите элементы слева и перенесите их в
-                    профиль.
-                  </div>
+                    → Перенести в профиль
+                  </button>
+
+                  <button
+                    class="btn btn-secondary"
+                    onclick="transferToProfile()"
+                    style="width: 100%"
+                  >
+                    ✕ Снять выделение
+                  </button>
                 </div>
               </div>
-              <div class="editor-panel-actions">
-                <button
-                  class="btn btn-secondary"
-                  onclick="removeFromProfile()"
-                  style="width: 100%"
-                >
-                  ✕ Исключить выделенное
-                </button>
 
-                <button
-                  class="btn btn-primary"
-                  onclick="transferToProfile()"
-                  style="width: 100%"
-                >
-                  ✕ Снять выделение
-                </button>
+              <div id="diagram-editor" class="hidden"></div>
+
+              <!-- RIGHT PANEL: Profile Being Edited -->
+              <div class="editor-panel">
+                <div class="editor-panel-header">
+                  <span id="profile-header-name">Новый профиль</span>
+                </div>
+                <div class="editor-panel-content">
+                  <div class="search-box">
+                    <input
+                      type="text"
+                      class="search-input"
+                      placeholder="Поиск..."
+                      id="right-search"
+                      oninput="filterRightTree()"
+                    />
+                  </div>
+                  <div id="profile-tree">
+                    <div
+                      class="text-center text-muted"
+                      style="padding: 40px 20px"
+                    >
+                      Профиль пуст. Выберите элементы слева и перенесите их в
+                      профиль.
+                    </div>
+                  </div>
+                </div>
+                <div class="editor-panel-actions">
+                  <button
+                    class="btn btn-primary"
+                    onclick="removeFromProfile()"
+                    style="width: 100%"
+                  >
+                    ✕ Исключить из профиля
+                  </button>
+
+                  <button
+                    class="btn btn-secondary"
+                    onclick="transferToProfile()"
+                    style="width: 100%"
+                  >
+                    ✕ Снять выделение
+                  </button>
+                </div>
+              </div>
+              <div class="details-panel">
+                <div class="details-panel-content">
+                  <div class="tabs" id="details-tabs">
+                    <div
+                      class="tab active"
+                      data-tab="model"
+                      onclick="switchDetailsTab('model')"
+                    >
+                      Информация об объекте модели
+                    </div>
+                    <div
+                      class="tab"
+                      data-tab="profile"
+                      onclick="switchDetailsTab('profile')"
+                    >
+                      Информация об объекте профиля
+                    </div>
+                    <!-- <div class="tab" data-tab="misc" onclick="switchDetailsTab('misc')">разное</div> -->
+                  </div>
+
+                  <div class="tab-content active" data-tab-content="model">
+                    <div class="text-muted" style="padding: 10px 0">
+                      Здесь будет отображаться информация об объекте модели.
+                    </div>
+                  </div>
+
+                  <div class="tab-content" data-tab-content="profile">
+                    <div class="text-muted" style="padding: 10px 0">
+                      Здесь будет отображаться информация об объекте профиля.
+                    </div>
+                  </div>
+
+                  <!-- <div class="tab-content" data-tab-content="misc">
+                    <div class="text-muted" style="padding: 10px 0">
+                      Прочие сведения и служебная информация.
+                    </div>
+                  </div> -->
+                </div>
               </div>
             </div>
-            <div class="details-panel">
-              <div class="details-panel-content">
-                <div class="tabs" id="details-tabs">
-                  <div class="tab active" data-tab="model" onclick="switchDetailsTab('model')">информация из модели</div>
-                  <div class="tab" data-tab="profile" onclick="switchDetailsTab('profile')">информация из профиля</div>
-                  <div class="tab" data-tab="misc" onclick="switchDetailsTab('misc')">разное</div>
-                </div>
-
-                <div class="tab-content active" data-tab-content="model">
-                  <div class="text-muted" style="padding: 10px 0;">
-                    Здесь будет отображаться информация из выбранной модели.
-                  </div>
-                </div>
-
-                <div class="tab-content" data-tab-content="profile">
-                  <div class="text-muted" style="padding: 10px 0;">
-                    Здесь будет отображаться информация из выбранного профиля.
-                  </div>
-                </div>
-
-                <div class="tab-content" data-tab-content="misc">
-                  <div class="text-muted" style="padding: 10px 0;">
-                    Прочие сведения и служебная информация.
-                  </div>
-                </div>
-              </div>
-            </div>
+            <div id="editor-mode-details-panel" class="hidden"></div>
           </div>
         </div>
       </div>
@@ -703,14 +724,14 @@
         if (event) event.stopPropagation();
         activeLeftItem = itemKey;
         renderAvailableTree();
-        updateDetailsPanel('left');
+        updateDetailsPanel("left");
       }
 
       function setActiveRightItem(itemKey, event) {
         if (event) event.stopPropagation();
         activeRightItem = itemKey;
         renderProfileTree();
-        updateDetailsPanel('right');
+        updateDetailsPanel("right");
       }
 
       function transferToProfile() {
@@ -721,13 +742,13 @@
 
         let transferredCount = 0;
 
-        selectedLeftItems.forEach(itemKey => {
+        selectedLeftItems.forEach((itemKey) => {
           const info = resolveLeftKey(itemKey);
           if (!info || !info.data) return;
 
           // Parse the path to understand package hierarchy
           const pathInfo = parseItemPath(itemKey, info);
-          
+
           // Transfer the item
           if (transferItem(pathInfo, info)) {
             transferredCount++;
@@ -737,14 +758,14 @@
         if (transferredCount > 0) {
           // Save to MemoryStore
           saveProfileToMemoryStore();
-          
+
           // Clear selections
           selectedLeftItems.clear();
-          
+
           // Re-render both trees
           renderAvailableTree();
           renderProfileTree();
-          
+
           alert(`Успешно перенесено элементов: ${transferredCount}`);
         } else {
           alert("Не удалось перенести элементы");
@@ -754,28 +775,34 @@
       function parseItemPath(itemKey, info) {
         // Extract package path from itemKey
         // itemKey format: left-{type}-{id}[-pkg-{idx}]*[-elem-{idx}]
-        const baseEntry = availableData.find(e => itemKey.startsWith(`left-${e.type}-${e.id}`));
+        const baseEntry = availableData.find((e) =>
+          itemKey.startsWith(`left-${e.type}-${e.id}`)
+        );
         if (!baseEntry) return null;
 
         const baseKey = `left-${baseEntry.type}-${baseEntry.id}`;
         const tail = itemKey.slice(baseKey.length);
-        
+
         const packagePath = [];
         let currentPackages = baseEntry.children || [];
-        
+
         if (tail) {
-          const tokens = tail.split('-').filter(Boolean);
+          const tokens = tail.split("-").filter(Boolean);
           for (let i = 0; i < tokens.length; i += 2) {
             const t = tokens[i];
             const idx = parseInt(tokens[i + 1], 10);
-            
-            if (t === 'pkg') {
+
+            if (t === "pkg") {
               const pkg = currentPackages[idx];
               if (pkg) {
-                packagePath.push({ name: pkg.name, type: pkg.type, originalData: pkg });
+                packagePath.push({
+                  name: pkg.name,
+                  type: pkg.type,
+                  originalData: pkg,
+                });
                 currentPackages = pkg.children || [];
               }
-            } else if (t === 'elem') {
+            } else if (t === "elem") {
               // Element is inside the last package
               break;
             }
@@ -785,7 +812,7 @@
         return {
           packagePath,
           itemKind: info.kind,
-          itemData: info.data
+          itemData: info.data,
         };
       }
 
@@ -797,27 +824,29 @@
 
         // Navigate/create package structure in profile
         let targetPackages = profileData.items;
-        
+
         for (const pkgInfo of pathInfo.packagePath) {
           // Find or create package at this level
-          let existingPkg = targetPackages.find(p => p.name === pkgInfo.name && p.type === pkgInfo.type);
-          
+          let existingPkg = targetPackages.find(
+            (p) => p.name === pkgInfo.name && p.type === pkgInfo.type
+          );
+
           if (!existingPkg) {
             // Create new package
             existingPkg = {
               id: generateId(),
               name: pkgInfo.name,
               type: pkgInfo.type,
-              description: pkgInfo.originalData.description || '',
-              description_ru: pkgInfo.originalData.description_ru || '',
+              description: pkgInfo.originalData.description || "",
+              description_ru: pkgInfo.originalData.description_ru || "",
               children: [],
-              elements: []
+              elements: [],
             };
             targetPackages.push(existingPkg);
           }
-          
+
           // Navigate deeper
-          if (info.kind === 'element') {
+          if (info.kind === "element") {
             // If transferring an element, it goes into elements array
             targetPackages = existingPkg.elements;
           } else {
@@ -827,17 +856,21 @@
         }
 
         // Add the copied item to target location
-        if (info.kind === 'package') {
+        if (info.kind === "package") {
           // Check if package already exists
-          const exists = targetPackages.some(p => p.name === copiedData.name && p.type === copiedData.type);
+          const exists = targetPackages.some(
+            (p) => p.name === copiedData.name && p.type === copiedData.type
+          );
           if (!exists) {
             copiedData.id = generateId();
             targetPackages.push(copiedData);
             return true;
           }
-        } else if (info.kind === 'element') {
+        } else if (info.kind === "element") {
           // Check if element already exists
-          const exists = targetPackages.some(e => e.name === copiedData.name && e.type === copiedData.type);
+          const exists = targetPackages.some(
+            (e) => e.name === copiedData.name && e.type === copiedData.type
+          );
           if (!exists) {
             copiedData.id = generateId();
             targetPackages.push(copiedData);
@@ -849,9 +882,9 @@
       }
 
       function deepCopy(obj) {
-        if (obj === null || typeof obj !== 'object') return obj;
-        if (Array.isArray(obj)) return obj.map(item => deepCopy(item));
-        
+        if (obj === null || typeof obj !== "object") return obj;
+        if (Array.isArray(obj)) return obj.map((item) => deepCopy(item));
+
         const copy = {};
         for (const key in obj) {
           if (obj.hasOwnProperty(key)) {
@@ -873,11 +906,11 @@
         if (!project) return;
 
         // Find the profile in the project
-        const profile = project.profiles.find(p => p.id === profileData.id);
+        const profile = project.profiles.find((p) => p.id === profileData.id);
         if (profile) {
           // Update rootPackages with current profileData.items
           profile.rootPackages = profileData.items;
-          console.log('✅ Profile saved to MemoryStore:', profile.name);
+          console.log("✅ Profile saved to MemoryStore:", profile.name);
         }
       }
 
@@ -896,7 +929,7 @@
           return depthB - depthA; // Sort descending by depth
         });
 
-        sortedItems.forEach(itemKey => {
+        sortedItems.forEach((itemKey) => {
           if (removeItemFromProfile(itemKey)) {
             removedCount++;
           }
@@ -905,20 +938,23 @@
         if (removedCount > 0) {
           // Save to MemoryStore
           saveProfileToMemoryStore();
-          
+
           // Clear selections
           selectedRightItems.clear();
           activeRightItem = null;
-          
+
           // Re-render profile tree
           renderProfileTree();
-          
+
           // Clear details panel
-          const profileContainer = document.querySelector('.details-panel [data-tab-content="profile"]');
+          const profileContainer = document.querySelector(
+            '.details-panel [data-tab-content="profile"]'
+          );
           if (profileContainer) {
-            profileContainer.innerHTML = '<div class="text-muted" style="padding: 10px 0;">Здесь будет отображаться информация из выбранного профиля.</div>';
+            profileContainer.innerHTML =
+              '<div class="text-muted" style="padding: 10px 0;">Здесь будет отображаться информация из выбранного профиля.</div>';
           }
-          
+
           alert(`Успешно удалено элементов: ${removedCount}`);
         } else {
           alert("Не удалось удалить элементы");
@@ -928,14 +964,14 @@
       function removeItemFromProfile(itemKey) {
         // Parse itemKey to find the item location
         // itemKey format: profile[-pkg-{idx}]*[-elem-{idx}]
-        const prefix = 'profile';
+        const prefix = "profile";
         if (!itemKey.startsWith(prefix)) return false;
 
         const tail = itemKey.slice(prefix.length);
         if (!tail) return false; // Cannot remove root
 
-        const tokens = tail.split('-').filter(Boolean);
-        
+        const tokens = tail.split("-").filter(Boolean);
+
         // Navigate to parent and get index to remove
         let currentContainer = profileData.items;
         let parentContainer = null;
@@ -945,21 +981,21 @@
         for (let i = 0; i < tokens.length; i += 2) {
           const t = tokens[i];
           const idx = parseInt(tokens[i + 1], 10);
-          
+
           if (i === tokens.length - 2) {
             // Last token - this is what we want to remove
             indexToRemove = idx;
             parentContainer = currentContainer;
-            isElement = (t === 'elem');
+            isElement = t === "elem";
             break;
           } else {
             // Navigate deeper
-            if (t === 'pkg') {
+            if (t === "pkg") {
               const pkg = currentContainer[idx];
               if (!pkg) return false;
-              
+
               // Check if next token is 'elem' to switch to elements array
-              if (i + 2 < tokens.length && tokens[i + 2] === 'elem') {
+              if (i + 2 < tokens.length && tokens[i + 2] === "elem") {
                 currentContainer = pkg.elements || [];
               } else {
                 currentContainer = pkg.children || [];
@@ -969,7 +1005,11 @@
         }
 
         // Remove the item
-        if (parentContainer && indexToRemove >= 0 && indexToRemove < parentContainer.length) {
+        if (
+          parentContainer &&
+          indexToRemove >= 0 &&
+          indexToRemove < parentContainer.length
+        ) {
           parentContainer.splice(indexToRemove, 1);
           return true;
         }
@@ -1008,53 +1048,70 @@
 
       // Переключение вкладок в панели деталей
       function switchDetailsTab(tabKey) {
-        const tabsContainer = document.getElementById('details-tabs');
+        const tabsContainer = document.getElementById("details-tabs");
         if (!tabsContainer) return;
 
-        const tabs = tabsContainer.querySelectorAll('.tab');
-        const contents = document.querySelectorAll('.details-panel .tab-content');
+        const tabs = tabsContainer.querySelectorAll(".tab");
+        const contents = document.querySelectorAll(
+          ".details-panel .tab-content"
+        );
 
-        tabs.forEach(t => {
-          if (t.getAttribute('data-tab') === tabKey) t.classList.add('active');
-          else t.classList.remove('active');
+        tabs.forEach((t) => {
+          if (t.getAttribute("data-tab") === tabKey) t.classList.add("active");
+          else t.classList.remove("active");
         });
 
-        contents.forEach(c => {
-          if (c.getAttribute('data-tab-content') === tabKey) c.classList.add('active');
-          else c.classList.remove('active');
+        contents.forEach((c) => {
+          if (c.getAttribute("data-tab-content") === tabKey)
+            c.classList.add("active");
+          else c.classList.remove("active");
         });
       }
 
       function updateDetailsPanel(side) {
-        if (side === 'left' && activeLeftItem) {
+        if (side === "left" && activeLeftItem) {
           const info = resolveLeftKey(activeLeftItem);
           const html = renderDetailsHtml(info);
-          const container = document.querySelector('.details-panel [data-tab-content="model"]');
+          const container = document.querySelector(
+            '.details-panel [data-tab-content="model"]'
+          );
           if (container) container.innerHTML = html;
-          switchDetailsTab('model');
-        } else if (side === 'right' && activeRightItem) {
+          switchDetailsTab("model");
+        } else if (side === "right" && activeRightItem) {
           const info = resolveRightKey(activeRightItem);
           const html = renderDetailsHtml(info);
-          const container = document.querySelector('.details-panel [data-tab-content="profile"]');
+          const container = document.querySelector(
+            '.details-panel [data-tab-content="profile"]'
+          );
           if (container) container.innerHTML = html;
-          switchDetailsTab('profile');
+          switchDetailsTab("profile");
         }
       }
 
+      // выбирает свойства объекта по ключу
       function resolveLeftKey(itemKey) {
         let baseEntry = null;
         for (const entry of availableData) {
           const baseKey = `left-${entry.type}-${entry.id}`;
-          if (itemKey.startsWith(baseKey)) { baseEntry = { entry, baseKey }; break; }
+          if (itemKey.startsWith(baseKey)) {
+            baseEntry = { entry, baseKey };
+            break;
+          }
         }
-        if (!baseEntry) return { kind: 'unknown', data: null, source: 'left', name: '' };
+        if (!baseEntry)
+          return { kind: "unknown", data: null, source: "left", name: "" };
 
         const { entry, baseKey } = baseEntry;
         const tail = itemKey.slice(baseKey.length);
         if (!tail) {
-          return { kind: entry.type, data: entry.data, source: 'left', name: entry.name };
+          return {
+            kind: entry.type,
+            data: entry.data,
+            source: "left",
+            name: entry.name,
+          };
         }
-        const tokens = tail.split('-').filter(Boolean);
+        const tokens = tail.split("-").filter(Boolean);
         let packages = entry.children || [];
         let elements = null;
         let current = null;
@@ -1062,25 +1119,31 @@
         for (let i = 0; i < tokens.length; i += 2) {
           const t = tokens[i];
           const idx = parseInt(tokens[i + 1], 10);
-          if (t === 'pkg') {
+          if (t === "pkg") {
             current = packages && packages[idx];
-            kind = 'package';
+            kind = "package";
             packages = (current && current.children) || [];
             elements = (current && current.elements) || [];
-          } else if (t === 'elem') {
+          } else if (t === "elem") {
             current = elements && elements[idx];
-            kind = 'element';
+            kind = "element";
             elements = null;
           }
         }
-        return { kind, data: current, source: 'left', name: entry.name };
+        return { kind, data: current, source: "left", name: entry.name };
       }
 
       function resolveRightKey(itemKey) {
-        const prefix = 'profile';
-        if (!itemKey.startsWith(prefix)) return { kind: 'unknown', data: null, source: 'right', name: profileData.name };
+        const prefix = "profile";
+        if (!itemKey.startsWith(prefix))
+          return {
+            kind: "unknown",
+            data: null,
+            source: "right",
+            name: profileData.name,
+          };
         const tail = itemKey.slice(prefix.length);
-        const tokens = tail.split('-').filter(Boolean);
+        const tokens = tail.split("-").filter(Boolean);
         let packages = profileData.items || [];
         let elements = null;
         let current = null;
@@ -1088,23 +1151,23 @@
         for (let i = 0; i < tokens.length; i += 2) {
           const t = tokens[i];
           const idx = parseInt(tokens[i + 1], 10);
-          if (t === 'pkg') {
+          if (t === "pkg") {
             current = packages && packages[idx];
-            kind = 'package';
+            kind = "package";
             packages = (current && current.children) || [];
             elements = (current && current.elements) || [];
-          } else if (t === 'elem') {
+          } else if (t === "elem") {
             current = elements && elements[idx];
-            kind = 'element';
+            kind = "element";
             elements = null;
           }
         }
-        return { kind, data: current, source: 'right', name: profileData.name };
+        return { kind, data: current, source: "right", name: profileData.name };
       }
 
       function esc(v) {
-        if (v === undefined || v === null) return '';
-        const d = document.createElement('div');
+        if (v === undefined || v === null) return "";
+        const d = document.createElement("div");
         d.textContent = String(v);
         return d.innerHTML;
       }
@@ -1114,63 +1177,89 @@
           return '<div class="text-muted" style="padding:10px 0;">Нет данных для отображения.</div>';
         }
         const d = info.data;
-        const typeLabel = info.kind === 'element' ? 'Класс' : (info.kind === 'package' ? 'Пакет' : (info.kind === 'model' ? 'Модель' : (info.kind === 'profile' ? 'Профиль' : 'Объект')));
+        const typeLabel =
+          info.kind === "element"
+            ? "Класс"
+            : info.kind === "package"
+            ? "Пакет"
+            : info.kind === "model"
+            ? "Модель"
+            : info.kind === "profile"
+            ? "Профиль"
+            : "Объект";
         const header = `
-          <div class="mb-10" style="font-weight:600;">${esc(typeLabel)}: ${esc(d.name || info.name || '')}</div>
+          <div class="mb-10" style="font-weight:600;">${esc(typeLabel)}: ${esc(
+          d.name || info.name || ""
+        )}</div>
         `;
 
-        if (info.kind === 'model' || info.kind === 'profile') {
+        if (info.kind === "model" || info.kind === "profile") {
           const metaRows = [
-            ['Название', d.name],
-            ['Описание', d.description || d.description_ru || ''],
-            ['Версия', d.version || '']
-          ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null);
+            // ['Название', d.name],
+            ["Описание", d.description || d.description_ru || ""],
+            ["Версия", d.version || ""],
+          ];
+          // ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null);
           return header + table(metaRows);
         }
 
-        if (info.kind === 'package') {
+        if (info.kind === "package") {
           const rows = [
-            ['Название', d.name],
-            ['Тип', d.type || 'Package'],
-            ['Описание', d.description || d.description_ru || '']
-          ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null);
+            // ['Название', d.name],
+            // ['Тип', d.type || 'Package'],
+            ["Описание", d.description || d.description_ru || ""],
+          ];
+          // ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null)
           return header + table(rows);
         }
 
-        if (info.kind === 'element') {
+        if (info.kind === "element") {
           const attrs = Array.isArray(d.attributes) ? d.attributes : [];
           const links = Array.isArray(d.links) ? d.links : [];
           const basicRows = [
-            ['Название', d.name],
-            ['Тип', d.type || 'Class'],
-            ['Абстрактный', d.isAbstract ? 'Да' : 'Нет'],
-            ['Описание', d.description || d.description_ru || '']
-          ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null);
+            // ['Название', d.name],
+            // ['Тип', d.type || 'Class'],
+            ["Абстрактный", d.isAbstract ? "Да" : "Нет"],
+            ["Описание", d.description || d.description_ru || ""],
+          ];
+          // ].filter(r => r[1] !== '' && r[1] !== undefined && r[1] !== null);
 
           let html = header + table(basicRows);
 
           if (attrs.length) {
-            const rows = attrs.map(a => [
-              a.name || '-',
-              a.type || a.dataType || '-',
-              a.multiplicity || '',
-              a.description || a.details || ''
+            const rows = attrs.map((a) => [
+              a.name || "-",
+              a.type || a.dataType || "-",
+              a.multiplicity || "",
+              a.description || a.details || "",
             ]);
-            html += sectionTitle('Атрибуты') + tableWithHead(['Имя','Тип','Кратность','Описание'], rows);
+            html +=
+              sectionTitle("Атрибуты") +
+              tableWithHead(["Имя", "Тип", "Кратность", "Описание"], rows);
           } else {
-            html += sectionTitle('Атрибуты') + '<div class="text-muted">Нет атрибутов</div>';
+            html +=
+              sectionTitle("Атрибуты") +
+              '<div class="text-muted">Нет атрибутов</div>';
           }
 
           if (links.length) {
-            const rows = links.map(l => [
-              l.name || '-',
-              l.relation_kind || '-',
-              l.multiplicity || '',
-              l.description || l.details || ''
+            const rows = links.map((l) => [
+              l.target_class_role_name || "-",
+              l.relation_kind || "-",
+              l.target_class_name || "-",
+              l.multiplicity || "",
+              l.description || l.details || "",
             ]);
-            html += sectionTitle('Связи') + tableWithHead(['Имя','Вид связи','Кратность','Описание'], rows);
+            html +=
+              sectionTitle("Связи") +
+              tableWithHead(
+                ["Имя", "Вид связи", "Целевой класс", "Кратность", "Описание"],
+                rows
+              );
           } else {
-            html += sectionTitle('Связи') + '<div class="text-muted">Нет связей</div>';
+            html +=
+              sectionTitle("Связи") +
+              '<div class="text-muted">Нет связей</div>';
           }
 
           return html;
@@ -1180,22 +1269,39 @@
       }
 
       function sectionTitle(t) {
-        return `<h4 style="margin:12px 0 6px 0;">${esc(t)}</h4>`;
+        return `<h4 style="margin:20px 0 6px 0;">${esc(t)}</h4>`;
       }
 
       function table(rows) {
-        if (!rows || !rows.length) return '';
-        const trs = rows.map(r => `<tr><td style="font-weight:600; width:180px;">${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('');
+        if (!rows || !rows.length) return "";
+        const trs = rows
+          .map(
+            (r) =>
+              `<tr><td style="font-weight:600; width:180px;">${esc(
+                r[0]
+              )}</td><td>${esc(r[1])}</td></tr>`
+          )
+          .join("");
         return `<table class="table" style="margin-top:6px;">${trs}</table>`;
       }
 
       function tableWithHead(head, rows) {
-        const thead = `<tr>${head.map(h => `<th style="text-align:left; padding:4px 6px;">${esc(h)}</th>`).join('')}</tr>`;
-        const tbody = rows.map(r => `<tr>${r.map(c => `<td style="padding:4px 6px;">${esc(c)}</td>`).join('')}</tr>`).join('');
-        return `<table class="table" style="margin-top:6px; border-collapse:collapse; width:100%;">${thead}${tbody}</table>`;
+        const thead = `<tr>${head
+          .map(
+            (h) =>
+              `<th style="text-align:left; padding:4px 6px;">${esc(h)}</th>`
+          )
+          .join("")}</tr>`;
+        const tbody = rows
+          .map(
+            (r) =>
+              `<tr>${r
+                .map((c) => `<td style="padding:4px 6px;">${esc(c)}</td>`)
+                .join("")}</tr>`
+          )
+          .join("");
+        return `  <table class="table" style="margin-top:6px; border-collapse:collapse; width:100%;">${thead}${tbody}</table>`;
       }
-
-      
     </script>
   </body>
 </html>
