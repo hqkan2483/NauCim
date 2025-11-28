@@ -144,6 +144,9 @@
           </div>
 
           <div id="item-container" class="hidden"></div>
+
+          <div id="diagramm-container"class="hidden" ></div>
+        <div id="item-container-diagramm"class="hidden" ></div>
         </div>
       </div>
     </div>
@@ -296,17 +299,30 @@
       let selectedProfileId = null;
       let selectedProfileName = null;
       let contextMenuTarget = null; // Stores the element that triggered context menu
+      let contextMenuInitialized = false; // Prevent multiple initializations
 
       document.addEventListener("DOMContentLoaded", async () => {
-        await loadSampleData();
-        updateCurrentProject();
-        checkProject();
-        renderCurrentProjectStructure();
-        updateSidebarTitle();
-        updatePageTitle();
-        restoreSidebarState();
-        restoreProjectsTreeState();
-        initContextMenu();
+        try {
+          await loadSampleData();
+          updateCurrentProject();
+          checkProject();
+          renderCurrentProjectStructure();
+          updateSidebarTitle();
+          updatePageTitle();
+          restoreSidebarState();
+          restoreProjectsTreeState();
+        } catch (error) {
+          console.error('Error during initialization:', error);
+        }
+        
+        if (!contextMenuInitialized) {
+          try {
+            initContextMenu();
+            contextMenuInitialized = true;
+          } catch (error) {
+            console.error('Error initializing context menu:', error);
+          }
+        }
       });
 
       function updateSidebarTitle() {
@@ -1100,7 +1116,7 @@
           expandedItems[itemId] = true;
         }
 
-        console.log("expandedItems after toggle:", expandedItems);
+        // console.log("expandedItems after toggle:", expandedItems);
         localStorage.setItem(
           "expandedTreeItems",
           JSON.stringify(expandedItems)
@@ -1115,7 +1131,7 @@
           btn.addEventListener("click", function (e) {
             e.stopPropagation();
             const itemId = this.getAttribute("data-item-id");
-            console.log("Tree button clicked, itemId:", itemId);
+            // console.log("Tree button clicked, itemId:", itemId);
             toggleTreeItem(itemId);
           });
         });
@@ -1126,7 +1142,7 @@
           projectBtn.addEventListener("click", function (e) {
             e.stopPropagation();
             const projectId = parseInt(this.getAttribute("data-project-id"));
-            console.log("Project button clicked, projectId:", projectId);
+            // console.log("Project button clicked, projectId:", projectId);
             toggleCurrentProjectStructure(projectId);
           });
         }
@@ -1181,7 +1197,7 @@
       function renderProfiles() {
         const projectId = getCurrentProjectId();
         const profiles = getProfiles(projectId);
-        console.log("Rendering profiles:", profiles);
+        // console.log("Rendering profiles:", profiles);
 
         const html = profiles
           .map(
@@ -1195,7 +1211,7 @@
           )
           .join("");
 
-        console.log("Profiles HTML:", html);
+        // console.log("Profiles HTML:", html);
 
         document.getElementById("profiles-list").innerHTML =
           html || '<div class="no-items text-muted">Нет профилей</div>';
@@ -2105,22 +2121,50 @@
       function initContextMenu() {
         const contextMenu = document.getElementById('context-menu');
         
-        // Close context menu on click outside (with slight delay to allow onclick to fire)
-        document.addEventListener('click', (e) => {
-          // Don't close if clicking inside the menu
-          if (contextMenu.contains(e.target)) {
+        if (!contextMenu) {
+          console.error('Context menu element not found');
+          return;
+        }
+        
+        // Handle clicks anywhere on document
+        const handleDocumentClick = (e) => {
+          // Check if menu is visible
+          if (!contextMenu.classList.contains('show')) return;
+          
+          // If click is inside menu item, let it process and close after
+          if (e.target.classList.contains('context-menu-item')) {
+            // Menu will be closed by handleContextMenuAction
             return;
           }
+          
+          // Otherwise close immediately
           hideContextMenu();
+        };
+        
+        // Use capture phase to catch events early
+        document.addEventListener('click', handleDocumentClick, true);
+        
+        // Close on scroll
+        window.addEventListener('scroll', () => {
+          if (contextMenu.classList.contains('show')) {
+            hideContextMenu();
+          }
+        }, true);
+        
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+          if ((e.key === 'Escape' || e.key === 'Esc') && contextMenu.classList.contains('show')) {
+            hideContextMenu();
+            e.preventDefault();
+          }
         });
         
-        // Close context menu on scroll
-        document.addEventListener('scroll', hideContextMenu, true);
-        
-        // Prevent context menu from closing when clicking inside it
-        contextMenu.addEventListener('click', (e) => {
-          e.stopPropagation();
-        });
+        // Close on right click elsewhere
+        document.addEventListener('contextmenu', (e) => {
+          if (contextMenu.classList.contains('show') && !e.target.closest('.tree-structure-name')) {
+            hideContextMenu();
+          }
+        }, true);
       }
 
       function showContextMenu(x, y, element) {

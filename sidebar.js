@@ -235,9 +235,15 @@ function toggleProjectStructure(projectId) {
 
 // Restore projects tree state on page load
 function restoreProjectsTreeState() {
-    const isExpanded = localStorage.getItem('projectsTreeExpanded') === 'true';
     const container = document.getElementById('projects-tree-container');
     const button = document.querySelector('.nav-tree-toggle');
+    
+    // If elements don't exist on this page, skip restoration
+    if (!container || !button) {
+        return;
+    }
+    
+    const isExpanded = localStorage.getItem('projectsTreeExpanded') === 'true';
     
     if (isExpanded) {
         container.classList.remove('nav-tree-collapsed');
