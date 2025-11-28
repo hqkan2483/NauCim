@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nautilus.CIM - Редактор профиля</title>
     <link rel="stylesheet" href="styles.css" />
+    <!-- Joint.js library for diagram editor -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.7.1/joint.min.css" />
+    <!-- jQuery должен загружаться первым -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.0/backbone-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.7.1/joint.min.js"></script>
     <style>
       body,
       html {
@@ -240,7 +247,64 @@
         border: 1px solid #ddd;
         border-radius: 4px;
         background: #f9f9f9;
-        overflow: auto;
+        overflow: hidden;
+        position: relative;
+      }
+
+      #diagram-editor .diagram-canvas {
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        background-image: linear-gradient(0deg, transparent 24%, rgba(0, 0, 0, .05) 25%, rgba(0, 0, 0, .05) 26%, transparent 27%, transparent 74%, rgba(0, 0, 0, .05) 75%, rgba(0, 0, 0, .05) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(0, 0, 0, .05) 25%, rgba(0, 0, 0, .05) 26%, transparent 27%, transparent 74%, rgba(0, 0, 0, .05) 75%, rgba(0, 0, 0, .05) 76%, transparent 77%, transparent);
+        background-size: 20px 20px;
+      }
+
+      .diagram-toolbar {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+        background: white;
+        padding: 8px;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        display: flex;
+        gap: 8px;
+      }
+
+      .diagram-tool-btn {
+        padding: 6px 12px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+      }
+
+      .diagram-tool-btn:hover {
+        background: #f5f5f5;
+        border-color: #4a90e2;
+      }
+
+      .diagram-tool-btn.active {
+        background: #4a90e2;
+        color: white;
+        border-color: #4a90e2;
+      }
+
+      .tree-item-label {
+        cursor: grab;
+      }
+
+      .tree-item-label.dragging {
+        opacity: 0.5;
+        cursor: grabbing;
+      }
+
+      #diagram-editor.drag-over {
+        background: #e3f2fd;
       }
 
       .search-box {
@@ -574,7 +638,7 @@
                             onchange="toggleLeftItem('${itemKey}'); event.stopPropagation();"
                             onclick="event.stopPropagation();"
                         >
-                        <span class="tree-item-label">
+                        <span class="tree-item-label" draggable="true" ondragstart="handleDragStart(event, '${itemKey}')">
                             ${icon} ${item.name} (${
             item.type === "model" ? "Model" : "Profile"
           })
@@ -646,7 +710,7 @@
                             }('${itemKey}'); event.stopPropagation();"
                             onclick="event.stopPropagation();"
                         >
-                        <span class="tree-item-label">
+                        <span class="tree-item-label" draggable="true" ondragstart="handleDragStart(event, '${itemKey}')">
                             📦 ${item.name || "Package"}
                         </span>
                     </div>
@@ -691,7 +755,7 @@
                                         }('${elemKey}'); event.stopPropagation();"
                                         onclick="event.stopPropagation();"
                                     >
-                                    <span class="tree-item-label">
+                                    <span class="tree-item-label" draggable="true" ondragstart="handleDragStart(event, '${elemKey}')">
                                         📄 ${elem.name || "Class"}
                                     </span>
                                 </div>
@@ -1084,6 +1148,11 @@
         // 3. Redirecting back to project-details.html
       }
 
+      // Diagram editor globals
+      let diagramGraph = null;
+      let diagramPaper = null;
+      let currentLinkMode = null; // 'generalization' or 'association'
+
       function setEditorMode() {
         const contentArea = document.querySelector('.editor-content-area');
         const toggleBtn = document.getElementById('toggle-mode-btn');
@@ -1094,27 +1163,331 @@
           contentArea.classList.add('editor-mode');
           toggleBtn.textContent = '📋 Стандартный режим';
           
-          // Render diagram placeholder
-          document.getElementById('diagram-editor').innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">
-              <div style="text-align: center;">
-                <div style="font-size: 48px; margin-bottom: 15px;">📐</div>
-                <h3>Режим диаграммы</h3>
-                <p>Визуализация диаграммы профиля будет реализована позже</p>
-              </div>
-            </div>
-          `;
+          // Initialize diagram editor
+          initializeDiagramEditor();
           
           // Render details panel placeholder
           document.getElementById('editor-mode-details-panel').innerHTML = `
             <h4 style="margin-top: 0;">Детали выбранного элемента</h4>
-            <div class="text-muted">Выберите элемент на диаграмме для просмотра деталей</div>
+            <div class="text-muted">Выберите элемент на диаграмме или перетащите класс из дерева для просмотра деталей</div>
           `;
         } else {
           // Switch back to standard mode
           contentArea.classList.remove('editor-mode');
           contentArea.classList.add('standart-mode');
           toggleBtn.textContent = '📐 Режим диаграммы';
+          
+          // Clean up diagram
+          if (diagramPaper) {
+            diagramPaper.remove();
+            diagramPaper = null;
+          }
+          diagramGraph = null;
+          currentLinkMode = null;
+        }
+      }
+
+      function initializeDiagramEditor() {
+        const container = document.getElementById('diagram-editor');
+        
+        // Create toolbar and canvas
+        container.innerHTML = `
+          <div class="diagram-toolbar">
+            <button class="diagram-tool-btn" onclick="setLinkMode('generalization')" id="gen-btn" title="Создать связь обобщения">
+              🔺 Обобщение
+            </button>
+            <button class="diagram-tool-btn" onclick="setLinkMode('association')" id="assoc-btn" title="Создать связь ассоциации">
+              ➡️ Ассоциация
+            </button>
+            <button class="diagram-tool-btn" onclick="clearLinkMode()" title="Отменить режим связи">
+              ❌ Отмена
+            </button>
+            <button class="diagram-tool-btn" onclick="clearDiagram()" title="Очистить диаграмму">
+              🗑️ Очистить
+            </button>
+          </div>
+          <div class="diagram-canvas" id="diagram-canvas"></div>
+        `;
+
+        // Initialize JointJS
+        const namespace = joint.shapes;
+        diagramGraph = new joint.dia.Graph({}, { cellNamespace: namespace });
+        
+        diagramPaper = new joint.dia.Paper({
+          el: document.getElementById('diagram-canvas'),
+          model: diagramGraph,
+          width: '100%',
+          height: '100%',
+          gridSize: 10,
+          drawGrid: false,
+          background: { color: 'transparent' },
+          cellViewNamespace: namespace,
+          defaultLink: new joint.shapes.standard.Link(),
+          linkPinning: false,
+          interactive: { linkMove: false }
+        });
+
+        // Handle element click for both selection and link creation
+        diagramPaper.on('element:pointerclick', function(elementView, evt) {
+          if (currentLinkMode) {
+            // Link creation mode
+            if (!startLinkFrom) {
+              // First click - select source element
+              startLinkFrom = elementView.model;
+              
+              // Visual feedback - highlight selected element
+              elementView.model.attr('body/strokeWidth', 4);
+              elementView.model.attr('body/stroke', '#4a90e2');
+              
+              console.log('Выбран исходный элемент:', elementView.model.get('data').name);
+            } else if (startLinkFrom !== elementView.model) {
+              // Second click - create link to target element
+              const sourceElement = startLinkFrom;
+              createLink(sourceElement, elementView.model, currentLinkMode);
+              
+              // Reset visual feedback before clearing startLinkFrom
+              sourceElement.attr('body/strokeWidth', 2);
+              sourceElement.attr('body/stroke', '#333');
+              
+              startLinkFrom = null;
+            } else {
+              // Clicked same element - cancel
+              startLinkFrom.attr('body/strokeWidth', 2);
+              startLinkFrom.attr('body/stroke', '#333');
+              startLinkFrom = null;
+              console.log('Отменено - кликнули на тот же элемент');
+            }
+          } else {
+            // Normal selection mode - show details
+            showDiagramElementDetails(elementView.model);
+          }
+        });
+
+        // Setup drag and drop
+        setupDragAndDrop();
+      }
+
+      let startLinkFrom = null;
+
+      function setLinkMode(mode) {
+        currentLinkMode = mode;
+        document.getElementById('gen-btn').classList.remove('active');
+        document.getElementById('assoc-btn').classList.remove('active');
+        
+        if (mode === 'generalization') {
+          document.getElementById('gen-btn').classList.add('active');
+        } else if (mode === 'association') {
+          document.getElementById('assoc-btn').classList.add('active');
+        }
+      }
+
+      function clearLinkMode() {
+        currentLinkMode = null;
+        
+        // Reset visual feedback if there was a selected element
+        if (startLinkFrom) {
+          startLinkFrom.attr('body/strokeWidth', 2);
+          startLinkFrom.attr('body/stroke', '#333');
+          startLinkFrom = null;
+        }
+        
+        document.getElementById('gen-btn').classList.remove('active');
+        document.getElementById('assoc-btn').classList.remove('active');
+      }
+
+      function createLink(source, target, linkType) {
+        let link;
+        
+        if (linkType === 'generalization') {
+          // Generalization (inheritance) - triangle arrow
+          link = new joint.shapes.standard.Link({
+            source: { id: source.id },
+            target: { id: target.id },
+            attrs: {
+              line: {
+                stroke: '#333',
+                strokeWidth: 2,
+                targetMarker: {
+                  type: 'path',
+                  d: 'M 10 -5 0 0 10 5 Z',
+                  fill: 'white',
+                  stroke: '#333'
+                }
+              }
+            },
+            labels: [{
+              attrs: { text: { text: '◁ Generalization' } }
+            }]
+          });
+        } else if (linkType === 'association') {
+          // Association - simple arrow
+          link = new joint.shapes.standard.Link({
+            source: { id: source.id },
+            target: { id: target.id },
+            attrs: {
+              line: {
+                stroke: '#333',
+                strokeWidth: 2,
+                targetMarker: {
+                  type: 'path',
+                  d: 'M 10 -5 0 0 10 5 z'
+                }
+              }
+            },
+            labels: [{
+              attrs: { text: { text: 'Association ➡' } }
+            }]
+          });
+        }
+
+        link.addTo(diagramGraph);
+        clearLinkMode();
+      }
+
+      function clearDiagram() {
+        if (confirm('Очистить всю диаграмму?')) {
+          diagramGraph.clear();
+        }
+      }
+
+      function setupDragAndDrop() {
+        const diagramEditor = document.getElementById('diagram-editor');
+        
+        // Prevent default drag behavior
+        diagramEditor.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          diagramEditor.classList.add('drag-over');
+        });
+
+        diagramEditor.addEventListener('dragleave', function(e) {
+          diagramEditor.classList.remove('drag-over');
+        });
+
+        diagramEditor.addEventListener('drop', function(e) {
+          e.preventDefault();
+          diagramEditor.classList.remove('drag-over');
+          
+          const data = e.dataTransfer.getData('text/plain');
+          if (!data) return;
+          
+          try {
+            const itemInfo = JSON.parse(data);
+            if (itemInfo.kind === 'element' && itemInfo.data) {
+              const canvas = document.getElementById('diagram-canvas');
+              const rect = canvas.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              
+              createClassElement(itemInfo.data, x, y);
+            }
+          } catch (err) {
+            console.error('Drop error:', err);
+          }
+        });
+      }
+
+      function createClassElement(classData, x, y) {
+        const attrs = classData.attributes || [];
+        const links = classData.links || [];
+        
+        // Build attributes text
+        const attrText = attrs.length > 0 
+          ? attrs.slice(0, 5).map(a => `+ ${a.name}: ${a.type || a.dataType || 'any'}`).join('\n')
+          : '(нет атрибутов)';
+        
+        // Build methods/links text
+        const linkText = links.length > 0
+          ? links.slice(0, 3).map(l => `+ ${l.target_class_role_name || 'link'}`).join('\n')
+          : '(нет связей)';
+
+        const classShape = new joint.shapes.standard.Rectangle({
+          position: { x: x - 75, y: y - 50 },
+          size: { width: 200, height: 120 },
+          attrs: {
+            body: {
+              fill: '#ffffff',
+              stroke: '#333',
+              strokeWidth: 2,
+              rx: 5,
+              ry: 5
+            },
+            label: {
+              text: `«class»\n${classData.name}\n${'—'.repeat(15)}\n${attrText}`,
+              fill: '#333',
+              fontSize: 11,
+              fontFamily: 'monospace',
+              textAnchor: 'start',
+              textVerticalAnchor: 'top',
+              refX: 5,
+              refY: 5
+            }
+          },
+          data: classData // Store original data
+        });
+
+        classShape.addTo(diagramGraph);
+      }
+
+      function showDiagramElementDetails(element) {
+        const classData = element.get('data');
+        if (!classData) return;
+
+        const detailsPanel = document.getElementById('editor-mode-details-panel');
+        const attrs = classData.attributes || [];
+        const links = classData.links || [];
+        
+        let html = `
+          <h4 style="margin-top: 0;">Класс: ${classData.name}</h4>
+          <p><strong>Тип:</strong> ${classData.type || 'Class'}</p>
+          <p><strong>Абстрактный:</strong> ${classData.isAbstract ? 'Да' : 'Нет'}</p>
+          <p><strong>Описание:</strong> ${classData.description || classData.description_ru || 'Нет описания'}</p>
+          
+          <h5 style="margin-top: 15px; margin-bottom: 5px;">Атрибуты (${attrs.length}):</h5>
+        `;
+        
+        if (attrs.length > 0) {
+          html += '<ul style="margin: 0; padding-left: 20px;">';
+          attrs.forEach(a => {
+            html += `<li><strong>${a.name}</strong>: ${a.type || a.dataType || 'any'} ${a.multiplicity ? `[${a.multiplicity}]` : ''}</li>`;
+          });
+          html += '</ul>';
+        } else {
+          html += '<p class="text-muted">Нет атрибутов</p>';
+        }
+        
+        html += `<h5 style="margin-top: 15px; margin-bottom: 5px;">Связи (${links.length}):</h5>`;
+        
+        if (links.length > 0) {
+          html += '<ul style="margin: 0; padding-left: 20px;">';
+          links.forEach(l => {
+            html += `<li><strong>${l.target_class_role_name || 'link'}</strong> → ${l.target_class_name} (${l.relation_kind})</li>`;
+          });
+          html += '</ul>';
+        } else {
+          html += '<p class="text-muted">Нет связей</p>';
+        }
+        
+        detailsPanel.innerHTML = html;
+      }
+
+      function handleDragStart(event, itemKey) {
+        event.stopPropagation();
+        
+        // Determine if this is from left or right tree
+        let info;
+        if (itemKey.startsWith('left-')) {
+          info = resolveLeftKey(itemKey);
+        } else if (itemKey.startsWith('profile')) {
+          info = resolveRightKey(itemKey);
+        }
+        
+        if (info && info.kind === 'element' && info.data) {
+          // Only allow dragging class elements
+          event.dataTransfer.setData('text/plain', JSON.stringify(info));
+          event.dataTransfer.effectAllowed = 'copy';
+          event.target.classList.add('dragging');
+        } else {
+          event.preventDefault();
         }
       }
 
