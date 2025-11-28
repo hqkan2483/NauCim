@@ -11,7 +11,7 @@
         background: white;
         border: 1px solid #ccc;
         border-radius: 4px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         z-index: 10000;
         min-width: 180px;
         display: none;
@@ -31,6 +31,31 @@
       }
       .context-menu-item:active {
         background-color: #e0e0e0;
+      }
+
+      /* Diagram Mode Styles */
+      .diagramm-mode-content-on {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      #diagramm-container {
+        height: 66.666%;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-secondary);
+        overflow: hidden;
+        margin-bottom: 15px;
+      }
+
+      #item-container-diagramm {
+        height: 33.333%;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-secondary);
+        overflow: auto;
+        padding: 15px;
       }
     </style>
   </head>
@@ -145,8 +170,11 @@
 
           <div id="item-container" class="hidden"></div>
 
-          <div id="diagramm-container"class="hidden" ></div>
-        <div id="item-container-diagramm"class="hidden" ></div>
+          <div id="diagramm-mode-content" class="hidden">
+            <div id="diagramm-container"></div>
+            <div class="divider mb-15"></div>
+            <div id="item-container-diagramm"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -179,7 +207,7 @@
             placeholder="Описание модели"
           ></textarea>
         </div>
-        
+
         <div class="modal-buttons">
           <button
             class="btn btn-secondary"
@@ -286,17 +314,42 @@
 
     <!-- Context Menu -->
     <div id="context-menu" class="context-menu">
-      <div class="context-menu-item" onclick="handleContextMenuAction('add-package')">📦 Добавить пакет</div>
-      <div class="context-menu-item" onclick="handleContextMenuAction('add-class')">📄 Добавить класс</div>
-      <div class="context-menu-item" onclick="handleContextMenuAction('add-diagram')">📐 Добавить диаграмму</div>
+      <div
+        class="context-menu-item"
+        onclick="handleContextMenuAction('add-package')"
+      >
+        📦 Добавить пакет
+      </div>
+      <div
+        class="context-menu-item"
+        onclick="handleContextMenuAction('add-class')"
+      >
+        📄 Добавить класс
+      </div>
+      <div
+        class="context-menu-item"
+        onclick="handleContextMenuAction('add-diagram')"
+      >
+        📐 Добавить диаграмму
+      </div>
     </div>
 
     <!-- MODAL: New Diagram -->
-    <div id="new-diagram-modal" class="modal" onclick="if(event.target.id === 'new-diagram-modal') closeModal('new-diagram-modal')">
+    <div
+      id="new-diagram-modal"
+      class="modal"
+      onclick="if(event.target.id === 'new-diagram-modal') closeModal('new-diagram-modal')"
+    >
       <div class="modal-content">
         <div class="modal-header">
           <div class="modal-title">Создать диаграмму классов</div>
-          <button class="modal-close" onclick="closeModal('new-diagram-modal')" aria-label="Закрыть">×</button>
+          <button
+            class="modal-close"
+            onclick="closeModal('new-diagram-modal')"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
         </div>
         <div class="form-group">
           <label class="form-label">Название диаграммы *</label>
@@ -306,7 +359,16 @@
             class="form-input"
             placeholder="Введите название диаграммы"
           />
-          <div id="diagram-name-error" class="form-error" style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;">
+          <div
+            id="diagram-name-error"
+            class="form-error"
+            style="
+              display: none;
+              color: #d32f2f;
+              font-size: 12px;
+              margin-top: 5px;
+            "
+          >
             Введите название диаграммы
           </div>
         </div>
@@ -345,15 +407,15 @@
           restoreSidebarState();
           restoreProjectsTreeState();
         } catch (error) {
-          console.error('Error during initialization:', error);
+          console.error("Error during initialization:", error);
         }
-        
+
         if (!contextMenuInitialized) {
           try {
             initContextMenu();
             contextMenuInitialized = true;
           } catch (error) {
-            console.error('Error initializing context menu:', error);
+            console.error("Error initializing context menu:", error);
           }
         }
       });
@@ -592,7 +654,9 @@
                     <span class="tree-expand-btn-empty"></span>
                     <span class="tree-structure-name" data-id="${
                       link.assoc_id || link.id || ""
-                    }" data-type="link" onclick="selectTreeItem(event)">${renderLinkItemContent(link)}</span>
+                    }" data-type="link" onclick="selectTreeItem(event)">${renderLinkItemContent(
+          link
+        )}</span>
                     </div>
                 </div>
             `;
@@ -683,10 +747,12 @@
         );
         const itemId = baseId;
         const isExpanded = expandedItems[itemId];
-        
+
         // Check for both attributes and rootPackages as children
-        const hasAttributes = profile.attributes && profile.attributes.length > 0;
-        const hasRootPackages = profile.rootPackages && profile.rootPackages.length > 0;
+        const hasAttributes =
+          profile.attributes && profile.attributes.length > 0;
+        const hasRootPackages =
+          profile.rootPackages && profile.rootPackages.length > 0;
         const hasChildren = hasAttributes || hasRootPackages;
 
         let html = `
@@ -721,7 +787,7 @@
 
         if (hasChildren && isExpanded) {
           html += `<div class="tree-structure-children">`;
-          
+
           // Render root packages if they exist
           if (hasRootPackages) {
             profile.rootPackages.forEach((rootPkg, idx) => {
@@ -733,7 +799,7 @@
               );
             });
           }
-          
+
           // Render attributes if they exist
           if (hasAttributes) {
             profile.attributes.forEach((attr, idx) => {
@@ -744,8 +810,8 @@
                             <span class="tree-structure-name" data-id="${
                               attr.id || ""
                             }" data-type="profile-attribute" data-profile-id="${
-                              profile.id || ""
-                            }" onclick="selectTreeItem(event)">• ${
+                profile.id || ""
+              }" onclick="selectTreeItem(event)">• ${
                 attr.name || "Атрибут"
               }</span>
             </div>
@@ -753,7 +819,7 @@
                     `;
             });
           }
-          
+
           html += `</div>`;
         }
 
@@ -791,7 +857,7 @@
                     </button>
                 `;
 
-        const typeLabel = rootPkg.type === 'Model' ? '🗂️' : '📦';
+        const typeLabel = rootPkg.type === "Model" ? "🗂️" : "📦";
         html += `
                         <span class="tree-structure-name" data-id="${
                           rootPkg.id || ""
@@ -813,9 +879,13 @@
                 <div class="tree-structure-item" style="margin-left: 20px;">
                   <div class="flex">
                     <span class="tree-expand-btn-empty"></span>
-                    <span class="tree-structure-name" data-id="${diagram.id || ""}" data-type="diagram" data-profile-id="${
-          profileId || ""
-        }" onclick="selectTreeItem(event)">📐 ${diagram.name || "Диаграмма"}</span>
+                    <span class="tree-structure-name" data-id="${
+                      diagram.id || ""
+                    }" data-type="diagram" data-profile-id="${
+                profileId || ""
+              }" onclick="selectTreeItem(event)">📐 ${
+                diagram.name || "Диаграмма"
+              }</span>
                   </div>
                 </div>
               `;
@@ -853,7 +923,12 @@
         return html;
       }
 
-      function renderProfilePackageTree(pkg, level = 0, baseId = "", profileId = null) {
+      function renderProfilePackageTree(
+        pkg,
+        level = 0,
+        baseId = "",
+        profileId = null
+      ) {
         const expandedItems = JSON.parse(
           localStorage.getItem("expandedTreeItems") || "{}"
         );
@@ -899,9 +974,13 @@
                 <div class="tree-structure-item" style="margin-left: 20px;">
                   <div class="flex">
                     <span class="tree-expand-btn-empty"></span>
-                    <span class="tree-structure-name" data-id="${diagram.id || ""}" data-type="diagram" data-profile-id="${
-          profileId || ""
-        }" onclick="selectTreeItem(event)">📐 ${diagram.name || "Диаграмма"}</span>
+                    <span class="tree-structure-name" data-id="${
+                      diagram.id || ""
+                    }" data-type="diagram" data-profile-id="${
+                profileId || ""
+              }" onclick="selectTreeItem(event)">📐 ${
+                diagram.name || "Диаграмма"
+              }</span>
                   </div>
                 </div>
               `;
@@ -939,7 +1018,12 @@
         return html;
       }
 
-      function renderProfileElementTree(elem, level = 0, baseId = "", profileId = null) {
+      function renderProfileElementTree(
+        elem,
+        level = 0,
+        baseId = "",
+        profileId = null
+      ) {
         const expandedItems = JSON.parse(
           localStorage.getItem("expandedTreeItems") || "{}"
         );
@@ -995,10 +1079,8 @@
                                 <span class="tree-structure-name" data-id="${
                                   attr.id || ""
                                 }" data-type="attribute" data-profile-id="${
-                                  profileId || ""
-                                }" onclick="selectTreeItem(event)">🔹 ${
-                attr.name
-              }: ${attr.type}${
+                profileId || ""
+              }" onclick="selectTreeItem(event)">🔹 ${attr.name}: ${attr.type}${
                 attr.multiplicity ? " [" + attr.multiplicity + "]" : ""
               }${defaultValue}</span>
                             </div>
@@ -1015,8 +1097,10 @@
                                 <span class="tree-structure-name" data-id="${
                                   link.assoc_id || link.id || ""
                                 }" data-type="link" data-profile-id="${
-                                  profileId || ""
-                                }" onclick="selectTreeItem(event)">${renderLinkItemContent(link)}</span>
+                profileId || ""
+              }" onclick="selectTreeItem(event)">${renderLinkItemContent(
+                link
+              )}</span>
                                 </div>
                             </div>
                         `;
@@ -1028,6 +1112,95 @@
 
         html += `</div>`;
         return html;
+      }
+
+      function selectDiagram(event, diagramId, diagramName, modelId) {
+        event.stopPropagation();
+
+        // Remove selection from all tree items
+        document.querySelectorAll(".tree-structure-name").forEach((el) => {
+          el.classList.remove("selected");
+        });
+
+        // Add selection to clicked diagram
+        event.target.classList.add("selected");
+
+        // Enable diagram mode
+        const contentArea = document.querySelector(".content-area");
+        contentArea.classList.add("diagramm-mode-on");
+
+        // Hide models, profiles and item containers
+        document.getElementById("models-container").classList.add("hidden");
+        document.getElementById("profiles-container").classList.add("hidden");
+        document.getElementById("item-container").classList.add("hidden");
+
+        // Show diagram mode content
+        const diagramModeContent = document.getElementById("diagramm-mode-content");
+        diagramModeContent.classList.remove("hidden");
+        diagramModeContent.classList.add("diagramm-mode-content-on");
+
+        // Render diagram content
+        renderDiagramMode(diagramId, diagramName, modelId);
+      }
+
+      function renderDiagramMode(diagramId, diagramName, modelId) {
+        // Render diagram container (placeholder for now)
+        document.getElementById("diagramm-container").innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
+            <div style="text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 15px;">📐</div>
+              <h3>Диаграмма: ${diagramName}</h3>
+              <p>Визуализация диаграммы будет реализована позже</p>
+            </div>
+          </div>
+        `;
+
+        // Render tabs in item-container-diagramm
+        document.getElementById("item-container-diagramm").innerHTML = `
+          <div class="tabs">
+            <div class="tab active" onclick="switchDiagramTab('general')">Общая информация</div>
+            <div class="tab" onclick="switchDiagramTab('attributes')">Атрибуты</div>
+            <div class="tab" onclick="switchDiagramTab('links')">Связи</div>
+          </div>
+
+          <div id="diagram-tab-general" class="tab-content active">
+            <h4 style="margin-bottom: 10px;">Общая информация</h4>
+            <table class="table">
+              <tr>
+                <td style="font-weight:600; width:200px;">Название диаграммы</td>
+                <td>${diagramName}</td>
+              </tr>
+              <tr>
+                <td style="font-weight:600;">Тип диаграммы</td>
+                <td>Диаграмма классов</td>
+              </tr>
+              <tr>
+                <td style="font-weight:600;">ID диаграммы</td>
+                <td>${diagramId}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div id="diagram-tab-attributes" class="tab-content">
+            <h4 style="margin-bottom: 10px;">Атрибуты</h4>
+            <div class="text-muted">Атрибуты для выбранных классов будут отображаться здесь</div>
+          </div>
+
+          <div id="diagram-tab-links" class="tab-content">
+            <h4 style="margin-bottom: 10px;">Связи</h4>
+            <div class="text-muted">Связи между классами будут отображаться здесь</div>
+          </div>
+        `;
+      }
+
+      function switchDiagramTab(tabName) {
+        // Remove active class from all tabs
+        document.querySelectorAll("#item-container-diagramm .tab").forEach((t) => t.classList.remove("active"));
+        document.querySelectorAll("#item-container-diagramm .tab-content").forEach((t) => t.classList.remove("active"));
+
+        // Add active class to selected tab
+        event.target.classList.add("active");
+        document.getElementById("diagram-tab-" + tabName).classList.add("active");
       }
 
       function renderRootPackageTree(
@@ -1077,13 +1250,18 @@
           // Рендер диаграмм пакета
           if (rootPkg.diagrams && rootPkg.diagrams.length > 0) {
             rootPkg.diagrams.forEach((diagram, idx) => {
+              const diagramNameEscaped = (diagram.name || "Диаграмма").replace(/'/g, "\\'");
               html += `
                 <div class="tree-structure-item" style="margin-left: 10px;">
                   <div class="flex">
                     <span class="tree-expand-btn-empty"></span>
-                    <span class="tree-structure-name" data-id="${diagram.id || ""}" data-type="diagram" data-model-id="${
-          modelId || ""
-        }" onclick="selectTreeItem(event)">📐 ${diagram.name || "Диаграмма"}</span>
+                    <span class="tree-structure-name" data-id="${
+                      diagram.id || ""
+                    }" data-type="diagram" data-model-id="${
+                modelId || ""
+              }" onclick="selectDiagram(event, ${diagram.id || ""}, '${diagramNameEscaped}', ${modelId || ""})">📐 ${
+                diagram.name || "Диаграмма"
+              }</span>
                   </div>
                 </div>
               `;
@@ -1163,13 +1341,18 @@
           // Рендер диаграмм пакета
           if (pkg.diagrams && pkg.diagrams.length > 0) {
             pkg.diagrams.forEach((diagram, idx) => {
+              const diagramNameEscaped = (diagram.name || "Диаграмма").replace(/'/g, "\\'");
               html += `
                 <div class="tree-structure-item" style="margin-left: 10px;">
                   <div class="flex">
                     <span class="tree-expand-btn-empty"></span>
-                    <span class="tree-structure-name" data-id="${diagram.id || ""}" data-type="diagram" data-model-id="${
-          modelId || ""
-        }" onclick="selectTreeItem(event)">📐 ${diagram.name || "Диаграмма"}</span>
+                    <span class="tree-structure-name" data-id="${
+                      diagram.id || ""
+                    }" data-type="diagram" data-model-id="${
+                modelId || ""
+              }" onclick="selectDiagram(event, ${diagram.id || ""}, '${diagramNameEscaped}', ${modelId || ""})">📐 ${
+                diagram.name || "Диаграмма"
+              }</span>
                   </div>
                 </div>
               `;
@@ -1370,13 +1553,30 @@
                         </tr>
                         <tr>
                             <td>Дата создания/загрузки: </td>
-                            <td><span> ${model.createDate !== null && model.createDate !== undefined ? model.createDate : "---"}</span></td>
+                            <td><span> ${
+                              model.createDate !== null &&
+                              model.createDate !== undefined
+                                ? model.createDate
+                                : "---"
+                            }</span></td>
                             <td>Дата изменения: </td>
-                            <td><span> ${model.modifyDate !== null && model.modifyDate !== undefined ? model.modifyDate : "---"}</span></td>
+                            <td><span> ${
+                              model.modifyDate !== null &&
+                              model.modifyDate !== undefined
+                                ? model.modifyDate
+                                : "---"
+                            }</span></td>
                         </tr>
                         <tr>
                             <td colspan="2">Используется в профилях</td>
-                            <td colspan="2">${model.relatedProfiles && model.relatedProfiles.length > 0 ? model.relatedProfiles.map(p => p.name).join(", ") : "---"}</td>
+                            <td colspan="2">${
+                              model.relatedProfiles &&
+                              model.relatedProfiles.length > 0
+                                ? model.relatedProfiles
+                                    .map((p) => p.name)
+                                    .join(", ")
+                                : "---"
+                            }</td>
                         </tr>
                        
                     </table>
@@ -1445,7 +1645,9 @@
                     </table>
                     
                     <div id="tab-properties" class="mt-20">
-                        <button class="btn btn-primary" onclick="window.location.href='profile-editor.html?profileId=${profile.id}'">✏️ Редактировать</button>
+                        <button class="btn btn-primary" onclick="window.location.href='profile-editor.html?profileId=${
+                          profile.id
+                        }'">✏️ Редактировать</button>
                         <button class="btn btn-primary" onclick="alert('Функция экспорта в разработке')">📥 Экспорт XSD</button>
                         <button class="btn btn-secondary" onclick="alert('Функция валидации в разработке')">✓ Валидировать</button>
                     </div>
@@ -1672,7 +1874,11 @@
 
         // Search only in the specific profile's rootPackages
         if (profile.rootPackages) {
-          const result = findItemInProfile(profile.rootPackages, itemId, itemType);
+          const result = findItemInProfile(
+            profile.rootPackages,
+            itemId,
+            itemType
+          );
           if (result) {
             if (result.item) {
               itemData = result.item;
@@ -1692,7 +1898,10 @@
         }
 
         // For attribute or link, render the parent element details
-        if ((itemType === "attribute" || itemType === "link") && parentElement) {
+        if (
+          (itemType === "attribute" || itemType === "link") &&
+          parentElement
+        ) {
           itemData = parentElement;
           itemType = "element";
         }
@@ -1935,7 +2144,10 @@
         }
 
         // For attribute or link, render the parent element details
-        if ((itemType === "attribute" || itemType === "link") && parentElement) {
+        if (
+          (itemType === "attribute" || itemType === "link") &&
+          parentElement
+        ) {
           itemData = parentElement;
           itemType = "element";
         }
@@ -2171,18 +2383,20 @@
               if (attr) {
                 return {
                   item: attr,
-                  parent: elem
+                  parent: elem,
                 };
               }
             }
 
             // Search in links - return parent element
             if (elem.links && itemType === "link") {
-              const link = elem.links.find((l) => (l.assoc_id || l.id) == itemId);
+              const link = elem.links.find(
+                (l) => (l.assoc_id || l.id) == itemId
+              );
               if (link) {
                 return {
                   item: link,
-                  parent: elem
+                  parent: elem,
                 };
               }
             }
@@ -2204,103 +2418,114 @@
       function handlePackageContextMenu(event) {
         event.preventDefault();
         event.stopPropagation();
-        
+
         // Find the closest element with data-type attribute
         let element = event.target;
-        while (element && !element.getAttribute('data-type')) {
+        while (element && !element.getAttribute("data-type")) {
           element = element.parentElement;
         }
-        
+
         if (!element) return;
-        
-        const type = element.getAttribute('data-type');
-        
+
+        const type = element.getAttribute("data-type");
+
         // Only show context menu for packages
-        if (type === 'package') {
+        if (type === "package") {
           showContextMenu(event.clientX, event.clientY, element);
         }
       }
 
       function initContextMenu() {
-        const contextMenu = document.getElementById('context-menu');
-        
+        const contextMenu = document.getElementById("context-menu");
+
         if (!contextMenu) {
-          console.error('Context menu element not found');
+          console.error("Context menu element not found");
           return;
         }
-        
+
         // Handle clicks anywhere on document
         const handleDocumentClick = (e) => {
           // Check if menu is visible
-          if (!contextMenu.classList.contains('show')) return;
-          
+          if (!contextMenu.classList.contains("show")) return;
+
           // If click is inside menu item, let it process and close after
-          if (e.target.classList.contains('context-menu-item')) {
+          if (e.target.classList.contains("context-menu-item")) {
             // Menu will be closed by handleContextMenuAction
             return;
           }
-          
+
           // Otherwise close immediately
           hideContextMenu();
         };
-        
+
         // Use capture phase to catch events early
-        document.addEventListener('click', handleDocumentClick, true);
-        
+        document.addEventListener("click", handleDocumentClick, true);
+
         // Close on scroll
-        window.addEventListener('scroll', () => {
-          if (contextMenu.classList.contains('show')) {
-            hideContextMenu();
-          }
-        }, true);
-        
+        window.addEventListener(
+          "scroll",
+          () => {
+            if (contextMenu.classList.contains("show")) {
+              hideContextMenu();
+            }
+          },
+          true
+        );
+
         // Close on Escape key
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' || e.key === 'Esc') {
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" || e.key === "Esc") {
             // Close context menu if visible
-            if (contextMenu.classList.contains('show')) {
+            if (contextMenu.classList.contains("show")) {
               hideContextMenu();
               e.preventDefault();
             }
             // Close diagram modal if visible
-            const diagramModal = document.getElementById('new-diagram-modal');
-            if (diagramModal && diagramModal.classList.contains('active')) {
-              closeModal('new-diagram-modal');
+            const diagramModal = document.getElementById("new-diagram-modal");
+            if (diagramModal && diagramModal.classList.contains("active")) {
+              closeModal("new-diagram-modal");
               e.preventDefault();
             }
           }
         });
-        
+
         // Close on right click elsewhere
-        document.addEventListener('contextmenu', (e) => {
-          if (contextMenu.classList.contains('show') && !e.target.closest('.tree-structure-name')) {
-            hideContextMenu();
-          }
-        }, true);
+        document.addEventListener(
+          "contextmenu",
+          (e) => {
+            if (
+              contextMenu.classList.contains("show") &&
+              !e.target.closest(".tree-structure-name")
+            ) {
+              hideContextMenu();
+            }
+          },
+          true
+        );
       }
 
       function showContextMenu(x, y, element) {
-        const contextMenu = document.getElementById('context-menu');
+        const contextMenu = document.getElementById("context-menu");
         contextMenuTarget = element;
-        
+
         // Position the menu
-        contextMenu.style.left = x + 'px';
-        contextMenu.style.top = y + 'px';
-        contextMenu.classList.add('show');
-        
+        contextMenu.style.left = x + "px";
+        contextMenu.style.top = y + "px";
+        contextMenu.classList.add("show");
+
         // Adjust if menu goes off screen
         const rect = contextMenu.getBoundingClientRect();
         if (rect.right > window.innerWidth) {
-          contextMenu.style.left = (x - rect.width) + 'px';
+          contextMenu.style.left = x - rect.width + "px";
         }
         if (rect.bottom > window.innerHeight) {
-          contextMenu.style.top = (y - rect.height) + 'px';
+          contextMenu.style.top = y - rect.height + "px";
         }
       }
 
       function hideContextMenu() {
-        const contextMenu = document.getElementById('context-menu');
-        contextMenu.classList.remove('show');
+        const contextMenu = document.getElementById("context-menu");
+        contextMenu.classList.remove("show");
         contextMenuTarget = null;
       }
 
@@ -2309,96 +2534,108 @@
           hideContextMenu();
           return;
         }
-        
-        const packageId = contextMenuTarget.getAttribute('data-id');
+
+        const packageId = contextMenuTarget.getAttribute("data-id");
         let packageName = contextMenuTarget.textContent.trim();
         // Remove emoji icons from the name
-        packageName = packageName.replace(/^[📦📁🗂️]\s*/, '');
-        const modelId = contextMenuTarget.getAttribute('data-model-id');
-        const profileId = contextMenuTarget.getAttribute('data-profile-id');
-        
+        packageName = packageName.replace(/^[📦📁🗂️]\s*/, "");
+        const modelId = contextMenuTarget.getAttribute("data-model-id");
+        const profileId = contextMenuTarget.getAttribute("data-profile-id");
+
         // Store context for later use
         window.currentPackageContext = {
           packageId,
           packageName,
           modelId,
-          profileId
+          profileId,
         };
-        
+
         // Hide menu after getting all the data
         hideContextMenu();
-        
-        switch(action) {
-          case 'add-package':
+
+        switch (action) {
+          case "add-package":
             alert(`Добавление пакета в "${packageName}"\nФункция в разработке`);
             break;
-          case 'add-class':
+          case "add-class":
             alert(`Добавление класса в "${packageName}"\nФункция в разработке`);
             break;
-          case 'add-diagram':
-            openModal('new-diagram-modal');
+          case "add-diagram":
+            openModal("new-diagram-modal");
             break;
         }
       }
 
       function createDiagram() {
-        const nameInput = document.getElementById('diagram-name');
-        const errorDiv = document.getElementById('diagram-name-error');
+        const nameInput = document.getElementById("diagram-name");
+        const errorDiv = document.getElementById("diagram-name-error");
         const diagramName = nameInput.value.trim();
-        
+
         // Validate input
         if (!diagramName) {
-          errorDiv.style.display = 'block';
+          errorDiv.style.display = "block";
           nameInput.focus();
           return;
         }
-        
+
         // Hide error if shown
-        errorDiv.style.display = 'none';
-        
+        errorDiv.style.display = "none";
+
         // Get package context
         const context = window.currentPackageContext;
-        
+
         if (!context) {
-          alert('Ошибка: контекст пакета не найден');
+          alert("Ошибка: контекст пакета не найден");
           return;
         }
-        
+
         // Find the package and add diagram
         const projectId = getCurrentProjectId();
         const project = getProject(projectId);
-        
+
         if (!project) {
-          alert('Ошибка: проект не найден');
+          alert("Ошибка: проект не найден");
           return;
         }
-        
+
         // Find the package in model or profile
         let packageFound = false;
-        
+
         if (context.modelId) {
-          const model = project.models.find(m => m.id == context.modelId);
+          const model = project.models.find((m) => m.id == context.modelId);
           if (model && model.rootPackages) {
-            packageFound = addDiagramToPackage(model.rootPackages, context.packageId, diagramName);
+            packageFound = addDiagramToPackage(
+              model.rootPackages,
+              context.packageId,
+              diagramName
+            );
           }
         } else if (context.profileId) {
-          const profile = project.profiles.find(p => p.id == context.profileId);
+          const profile = project.profiles.find(
+            (p) => p.id == context.profileId
+          );
           if (profile && profile.rootPackages) {
-            packageFound = addDiagramToPackage(profile.rootPackages, context.packageId, diagramName);
+            packageFound = addDiagramToPackage(
+              profile.rootPackages,
+              context.packageId,
+              diagramName
+            );
           }
         }
-        
+
         if (packageFound) {
           // Close modal and clear input
-          closeModal('new-diagram-modal');
-          nameInput.value = '';
-          
+          closeModal("new-diagram-modal");
+          nameInput.value = "";
+
           // Refresh tree
           renderCurrentProjectStructure();
-          
-          alert(`Диаграмма "${diagramName}" успешно создана в пакете "${context.packageName}"`);
+
+          alert(
+            `Диаграмма "${diagramName}" успешно создана в пакете "${context.packageName}"`
+          );
         } else {
-          alert('Ошибка: пакет не найден');
+          alert("Ошибка: пакет не найден");
         }
       }
 
@@ -2409,19 +2646,19 @@
             if (!pkg.diagrams) {
               pkg.diagrams = [];
             }
-            
+
             // Create new diagram
             const newDiagram = {
               id: Date.now(),
               name: diagramName,
-              type: 'ClassDiagram',
-              createdAt: new Date().toISOString()
+              type: "ClassDiagram",
+              createdAt: new Date().toISOString(),
             };
-            
+
             pkg.diagrams.push(newDiagram);
             return true;
           }
-          
+
           // Search in child packages
           if (pkg.children && pkg.children.length > 0) {
             if (addDiagramToPackage(pkg.children, packageId, diagramName)) {
@@ -2429,7 +2666,7 @@
             }
           }
         }
-        
+
         return false;
       }
 
@@ -2448,8 +2685,12 @@
 
         // Check if model with this name already exists
         const existingModels = getModels(projectId);
-        if (existingModels.some((m) => m.name.toLowerCase() === name.toLowerCase())) {
-          alert("Модель с названием \"" + name + "\" уже существует в проекте");
+        if (
+          existingModels.some(
+            (m) => m.name.toLowerCase() === name.toLowerCase()
+          )
+        ) {
+          alert('Модель с названием "' + name + '" уже существует в проекте');
           return;
         }
 
@@ -2492,8 +2733,12 @@
 
         // Check if profile with this name already exists
         const existingProfiles = getProfiles(projectId);
-        if (existingProfiles.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
-          alert("Профиль с названием \"" + name + "\" уже существует в проекте");
+        if (
+          existingProfiles.some(
+            (p) => p.name.toLowerCase() === name.toLowerCase()
+          )
+        ) {
+          alert('Профиль с названием "' + name + '" уже существует в проекте');
           return;
         }
 
