@@ -34,13 +34,18 @@
       }
 
       /* Diagram Mode Styles */
-      .diagramm-mode-content-on {
+      .diagram-mode-content-on {
         display: flex;
         flex-direction: column;
         height: 100%;
       }
 
-      #diagramm-container {
+      /* Hide standard mode content when diagram mode is active */
+      .content-area:has(.diagram-mode-content-on) #standard-mode-content {
+        display: none;
+      }
+
+      #diagram-container {
         height: 66.666%;
         border: 1px solid var(--border-color);
         border-radius: 8px;
@@ -49,7 +54,7 @@
         margin-bottom: 15px;
       }
 
-      #item-container-diagramm {
+      #item-container-diagram {
         height: 33.333%;
         border: 1px solid var(--border-color);
         border-radius: 8px;
@@ -136,44 +141,46 @@
             </div>
           </div>
 
-          <div id="models-container" class="hidden">
-            <div class="split-view">
-              <div class="split-left">
-                <h3 class="mb-15">Список моделей</h3>
-                <div id="models-list"></div>
-              </div>
-              <div class="split-right">
-                <div id="model-details">
-                  <div class="text-center">
-                    Выберите модель для просмотра деталей
+          <div id="standard-mode-content">
+            <div id="models-container" class="hidden">
+              <div class="split-view">
+                <div class="split-left">
+                  <h3 class="mb-15">Список моделей</h3>
+                  <div id="models-list"></div>
+                </div>
+                <div class="split-right">
+                  <div id="model-details">
+                    <div class="text-center">
+                      Выберите модель для просмотра деталей
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div id="profiles-container" class="mt-30" class="hidden">
-            <div class="divider mb-15"></div>
-            <div class="split-view">
-              <div class="split-left">
-                <h3 class="mb-15">Список профилей</h3>
-                <div id="profiles-list"></div>
-              </div>
-              <div class="split-right">
-                <div id="profile-details">
-                  <div class="text-center">
-                    Выберите профиль для просмотра деталей
+            <div id="profiles-container" class="mt-30" class="hidden">
+              <div class="divider mb-15"></div>
+              <div class="split-view">
+                <div class="split-left">
+                  <h3 class="mb-15">Список профилей</h3>
+                  <div id="profiles-list"></div>
+                </div>
+                <div class="split-right">
+                  <div id="profile-details">
+                    <div class="text-center">
+                      Выберите профиль для просмотра деталей
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            <div id="item-container" class="hidden"></div>
           </div>
 
-          <div id="item-container" class="hidden"></div>
-
-          <div id="diagramm-mode-content" class="hidden">
-            <div id="diagramm-container"></div>
+          <div id="diagram-mode-content" class="hidden">
+            <div id="diagram-container"></div>
             <div class="divider mb-15"></div>
-            <div id="item-container-diagramm"></div>
+            <div id="item-container-diagram"></div>
           </div>
         </div>
       </div>
@@ -1127,25 +1134,30 @@
 
         // Enable diagram mode
         const contentArea = document.querySelector(".content-area");
-        contentArea.classList.add("diagramm-mode-on");
+        contentArea.classList.add("diagram-mode-on");
 
         // Hide models, profiles and item containers
         document.getElementById("models-container").classList.add("hidden");
         document.getElementById("profiles-container").classList.add("hidden");
         document.getElementById("item-container").classList.add("hidden");
+        document.getElementById("models-container").style.display = "none";
+        document.getElementById("profiles-container").style.display = "none";
+        document.getElementById("item-container").style.display = "none";
 
         // Show diagram mode content
-        const diagramModeContent = document.getElementById("diagramm-mode-content");
-        diagramModeContent.classList.remove("hidden");
-        diagramModeContent.classList.add("diagramm-mode-content-on");
+        const diagramodeContent = document.getElementById(
+          "diagram-mode-content"
+        );
+        diagramodeContent.classList.remove("hidden");
+        diagramodeContent.classList.add("diagram-mode-content-on");
 
         // Render diagram content
-        renderDiagramMode(diagramId, diagramName, modelId);
+        renderdiagramode(diagramId, diagramName, modelId);
       }
 
-      function renderDiagramMode(diagramId, diagramName, modelId) {
+      function renderdiagramode(diagramId, diagramName, modelId) {
         // Render diagram container (placeholder for now)
-        document.getElementById("diagramm-container").innerHTML = `
+        document.getElementById("diagram-container").innerHTML = `
           <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
             <div style="text-align: center;">
               <div style="font-size: 48px; margin-bottom: 15px;">📐</div>
@@ -1155,8 +1167,8 @@
           </div>
         `;
 
-        // Render tabs in item-container-diagramm
-        document.getElementById("item-container-diagramm").innerHTML = `
+        // Render tabs in item-container-diagram
+        document.getElementById("item-container-diagram").innerHTML = `
           <div class="tabs">
             <div class="tab active" onclick="switchDiagramTab('general')">Общая информация</div>
             <div class="tab" onclick="switchDiagramTab('attributes')">Атрибуты</div>
@@ -1195,12 +1207,18 @@
 
       function switchDiagramTab(tabName) {
         // Remove active class from all tabs
-        document.querySelectorAll("#item-container-diagramm .tab").forEach((t) => t.classList.remove("active"));
-        document.querySelectorAll("#item-container-diagramm .tab-content").forEach((t) => t.classList.remove("active"));
+        document
+          .querySelectorAll("#item-container-diagram .tab")
+          .forEach((t) => t.classList.remove("active"));
+        document
+          .querySelectorAll("#item-container-diagram .tab-content")
+          .forEach((t) => t.classList.remove("active"));
 
         // Add active class to selected tab
         event.target.classList.add("active");
-        document.getElementById("diagram-tab-" + tabName).classList.add("active");
+        document
+          .getElementById("diagram-tab-" + tabName)
+          .classList.add("active");
       }
 
       function renderRootPackageTree(
@@ -1250,7 +1268,10 @@
           // Рендер диаграмм пакета
           if (rootPkg.diagrams && rootPkg.diagrams.length > 0) {
             rootPkg.diagrams.forEach((diagram, idx) => {
-              const diagramNameEscaped = (diagram.name || "Диаграмма").replace(/'/g, "\\'");
+              const diagramNameEscaped = (diagram.name || "Диаграмма").replace(
+                /'/g,
+                "\\'"
+              );
               html += `
                 <div class="tree-structure-item" style="margin-left: 10px;">
                   <div class="flex">
@@ -1259,7 +1280,9 @@
                       diagram.id || ""
                     }" data-type="diagram" data-model-id="${
                 modelId || ""
-              }" onclick="selectDiagram(event, ${diagram.id || ""}, '${diagramNameEscaped}', ${modelId || ""})">📐 ${
+              }" onclick="selectDiagram(event, ${
+                diagram.id || ""
+              }, '${diagramNameEscaped}', ${modelId || ""})">📐 ${
                 diagram.name || "Диаграмма"
               }</span>
                   </div>
@@ -1341,7 +1364,10 @@
           // Рендер диаграмм пакета
           if (pkg.diagrams && pkg.diagrams.length > 0) {
             pkg.diagrams.forEach((diagram, idx) => {
-              const diagramNameEscaped = (diagram.name || "Диаграмма").replace(/'/g, "\\'");
+              const diagramNameEscaped = (diagram.name || "Диаграмма").replace(
+                /'/g,
+                "\\'"
+              );
               html += `
                 <div class="tree-structure-item" style="margin-left: 10px;">
                   <div class="flex">
@@ -1350,7 +1376,9 @@
                       diagram.id || ""
                     }" data-type="diagram" data-model-id="${
                 modelId || ""
-              }" onclick="selectDiagram(event, ${diagram.id || ""}, '${diagramNameEscaped}', ${modelId || ""})">📐 ${
+              }" onclick="selectDiagram(event, ${
+                diagram.id || ""
+              }, '${diagramNameEscaped}', ${modelId || ""})">📐 ${
                 diagram.name || "Диаграмма"
               }</span>
                   </div>
@@ -2481,8 +2509,8 @@
               e.preventDefault();
             }
             // Close diagram modal if visible
-            const diagramModal = document.getElementById("new-diagram-modal");
-            if (diagramModal && diagramModal.classList.contains("active")) {
+            const diagramodal = document.getElementById("new-diagram-modal");
+            if (diagramodal && diagramodal.classList.contains("active")) {
               closeModal("new-diagram-modal");
               e.preventDefault();
             }
