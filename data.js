@@ -364,6 +364,15 @@ function openModal(modalId) {
 
 function closeModal(modalId) {
   document.getElementById(modalId).classList.remove("active");
+  
+  // Clear diagram modal input fields
+  if (modalId === 'new-diagram-modal') {
+    const nameInput = document.getElementById('diagram-name');
+    const errorDiv = document.getElementById('diagram-name-error');
+    if (nameInput) nameInput.value = '';
+    if (errorDiv) errorDiv.style.display = 'none';
+    // Don't clear context here - it will be overwritten on next open
+  }
 }
 
 function updateCurrentProject() {

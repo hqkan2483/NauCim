@@ -291,6 +291,39 @@
       <div class="context-menu-item" onclick="handleContextMenuAction('add-diagram')">📐 Добавить диаграмму</div>
     </div>
 
+    <!-- MODAL: New Diagram -->
+    <div id="new-diagram-modal" class="modal" onclick="if(event.target.id === 'new-diagram-modal') closeModal('new-diagram-modal')">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">Создать диаграмму классов</div>
+          <button class="modal-close" onclick="closeModal('new-diagram-modal')" aria-label="Закрыть">×</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Название диаграммы *</label>
+          <input
+            type="text"
+            id="diagram-name"
+            class="form-input"
+            placeholder="Введите название диаграммы"
+          />
+          <div id="diagram-name-error" class="form-error" style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;">
+            Введите название диаграммы
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button
+            class="btn btn-secondary"
+            onclick="closeModal('new-diagram-modal')"
+          >
+            Отменить
+          </button>
+          <button class="btn btn-primary" onclick="createDiagram()">
+            Создать
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="data.js"></script>
     <script src="sidebar.js"></script>
     <script>
@@ -601,7 +634,9 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           elem.id || ""
-                        }" data-type="element" onclick="selectTreeItem(event)">${icon} ${
+                        }" data-type="element" data-model-id="${
+          modelId || ""
+        }" onclick="selectTreeItem(event)">${icon} ${
           elem.name || "Элемент"
         }${abstractMarker}</span>
                     </div>
@@ -739,7 +774,8 @@
         const isExpanded = expandedItems[itemId];
         const hasChildren =
           (rootPkg.children && rootPkg.children.length > 0) ||
-          (rootPkg.elements && rootPkg.elements.length > 0);
+          (rootPkg.elements && rootPkg.elements.length > 0) ||
+          (rootPkg.diagrams && rootPkg.diagrams.length > 0);
 
         let html = `
                 <div class="tree-structure-item" style="margin-left: 20px;">
@@ -770,7 +806,23 @@
         if (hasChildren && isExpanded) {
           html += `<div class="tree-structure-children">`;
 
-          // Render child packages first
+          // Render diagrams first
+          if (rootPkg.diagrams && rootPkg.diagrams.length > 0) {
+            rootPkg.diagrams.forEach((diagram, idx) => {
+              html += `
+                <div class="tree-structure-item" style="margin-left: 20px;">
+                  <div class="flex">
+                    <span class="tree-expand-btn-empty"></span>
+                    <span class="tree-structure-name" data-id="${diagram.id || ""}" data-type="diagram" data-profile-id="${
+          profileId || ""
+        }" onclick="selectTreeItem(event)">📐 ${diagram.name || "Диаграмма"}</span>
+                  </div>
+                </div>
+              `;
+            });
+          }
+
+          // Render child packages
           if (rootPkg.children && rootPkg.children.length > 0) {
             rootPkg.children.forEach((pkg, idx) => {
               html += renderProfilePackageTree(
@@ -809,7 +861,8 @@
         const isExpanded = expandedItems[itemId];
         const hasChildren =
           (pkg.children && pkg.children.length > 0) ||
-          (pkg.elements && pkg.elements.length > 0);
+          (pkg.elements && pkg.elements.length > 0) ||
+          (pkg.diagrams && pkg.diagrams.length > 0);
 
         let html = `
                 <div class="tree-structure-item" style="margin-left: 20px;">
@@ -839,7 +892,23 @@
         if (hasChildren && isExpanded) {
           html += `<div class="tree-structure-children">`;
 
-          // Render child packages first
+          // Render diagrams first
+          if (pkg.diagrams && pkg.diagrams.length > 0) {
+            pkg.diagrams.forEach((diagram, idx) => {
+              html += `
+                <div class="tree-structure-item" style="margin-left: 20px;">
+                  <div class="flex">
+                    <span class="tree-expand-btn-empty"></span>
+                    <span class="tree-structure-name" data-id="${diagram.id || ""}" data-type="diagram" data-profile-id="${
+          profileId || ""
+        }" onclick="selectTreeItem(event)">📐 ${diagram.name || "Диаграмма"}</span>
+                  </div>
+                </div>
+              `;
+            });
+          }
+
+          // Render child packages
           if (pkg.children && pkg.children.length > 0) {
             pkg.children.forEach((subPkg, idx) => {
               html += renderProfilePackageTree(
@@ -974,9 +1043,8 @@
         const isExpanded = expandedItems[itemId];
         const hasChildren =
           (rootPkg.children && rootPkg.children.length > 0) ||
-          (rootPkg.elements && rootPkg.elements.length > 0);
-
-       
+          (rootPkg.elements && rootPkg.elements.length > 0) ||
+          (rootPkg.diagrams && rootPkg.diagrams.length > 0);
 
         let html = `
                 <div class="tree-structure-item" style="margin-left: 10px;">
@@ -1005,6 +1073,22 @@
 
         if (hasChildren && isExpanded) {
           html += `<div class="tree-structure-children">`;
+
+          // Рендер диаграмм пакета
+          if (rootPkg.diagrams && rootPkg.diagrams.length > 0) {
+            rootPkg.diagrams.forEach((diagram, idx) => {
+              html += `
+                <div class="tree-structure-item" style="margin-left: 10px;">
+                  <div class="flex">
+                    <span class="tree-expand-btn-empty"></span>
+                    <span class="tree-structure-name" data-id="${diagram.id || ""}" data-type="diagram" data-model-id="${
+          modelId || ""
+        }" onclick="selectTreeItem(event)">📐 ${diagram.name || "Диаграмма"}</span>
+                  </div>
+                </div>
+              `;
+            });
+          }
 
           // Рендер элементов корневого пакета
           if (rootPkg.elements && rootPkg.elements.length > 0) {
@@ -1045,7 +1129,8 @@
         const isExpanded = expandedItems[itemId];
         const hasChildren =
           (pkg.children && pkg.children.length > 0) ||
-          (pkg.elements && pkg.elements.length > 0);
+          (pkg.elements && pkg.elements.length > 0) ||
+          (pkg.diagrams && pkg.diagrams.length > 0);
 
         let html = `
                 <div class="tree-structure-item" style="margin-left: 10px;">
@@ -1064,7 +1149,9 @@
         html += `
                         <span class="tree-structure-name" data-id="${
                           pkg.id || ""
-                        }" data-type="package" onclick="selectTreeItem(event)" oncontextmenu="handlePackageContextMenu(event)">📁 ${
+                        }" data-type="package" data-model-id="${
+          modelId || ""
+        }" onclick="selectTreeItem(event)" oncontextmenu="handlePackageContextMenu(event)">📁 ${
           pkg.name || "Пакет"
         }</span>
                     </div>
@@ -1072,6 +1159,22 @@
 
         if (hasChildren && isExpanded) {
           html += `<div class="tree-structure-children">`;
+
+          // Рендер диаграмм пакета
+          if (pkg.diagrams && pkg.diagrams.length > 0) {
+            pkg.diagrams.forEach((diagram, idx) => {
+              html += `
+                <div class="tree-structure-item" style="margin-left: 10px;">
+                  <div class="flex">
+                    <span class="tree-expand-btn-empty"></span>
+                    <span class="tree-structure-name" data-id="${diagram.id || ""}" data-type="diagram" data-model-id="${
+          modelId || ""
+        }" onclick="selectTreeItem(event)">📐 ${diagram.name || "Диаграмма"}</span>
+                  </div>
+                </div>
+              `;
+            });
+          }
 
           // Рендер элементов пакета
           if (pkg.elements && pkg.elements.length > 0) {
@@ -2153,9 +2256,18 @@
         
         // Close on Escape key
         document.addEventListener('keydown', (e) => {
-          if ((e.key === 'Escape' || e.key === 'Esc') && contextMenu.classList.contains('show')) {
-            hideContextMenu();
-            e.preventDefault();
+          if (e.key === 'Escape' || e.key === 'Esc') {
+            // Close context menu if visible
+            if (contextMenu.classList.contains('show')) {
+              hideContextMenu();
+              e.preventDefault();
+            }
+            // Close diagram modal if visible
+            const diagramModal = document.getElementById('new-diagram-modal');
+            if (diagramModal && diagramModal.classList.contains('active')) {
+              closeModal('new-diagram-modal');
+              e.preventDefault();
+            }
           }
         });
         
@@ -2205,6 +2317,14 @@
         const modelId = contextMenuTarget.getAttribute('data-model-id');
         const profileId = contextMenuTarget.getAttribute('data-profile-id');
         
+        // Store context for later use
+        window.currentPackageContext = {
+          packageId,
+          packageName,
+          modelId,
+          profileId
+        };
+        
         // Hide menu after getting all the data
         hideContextMenu();
         
@@ -2216,9 +2336,101 @@
             alert(`Добавление класса в "${packageName}"\nФункция в разработке`);
             break;
           case 'add-diagram':
-            alert(`Добавление диаграммы для "${packageName}"\nФункция в разработке`);
+            openModal('new-diagram-modal');
             break;
         }
+      }
+
+      function createDiagram() {
+        const nameInput = document.getElementById('diagram-name');
+        const errorDiv = document.getElementById('diagram-name-error');
+        const diagramName = nameInput.value.trim();
+        
+        // Validate input
+        if (!diagramName) {
+          errorDiv.style.display = 'block';
+          nameInput.focus();
+          return;
+        }
+        
+        // Hide error if shown
+        errorDiv.style.display = 'none';
+        
+        // Get package context
+        const context = window.currentPackageContext;
+        
+        if (!context) {
+          alert('Ошибка: контекст пакета не найден');
+          return;
+        }
+        
+        // Find the package and add diagram
+        const projectId = getCurrentProjectId();
+        const project = getProject(projectId);
+        
+        if (!project) {
+          alert('Ошибка: проект не найден');
+          return;
+        }
+        
+        // Find the package in model or profile
+        let packageFound = false;
+        
+        if (context.modelId) {
+          const model = project.models.find(m => m.id == context.modelId);
+          if (model && model.rootPackages) {
+            packageFound = addDiagramToPackage(model.rootPackages, context.packageId, diagramName);
+          }
+        } else if (context.profileId) {
+          const profile = project.profiles.find(p => p.id == context.profileId);
+          if (profile && profile.rootPackages) {
+            packageFound = addDiagramToPackage(profile.rootPackages, context.packageId, diagramName);
+          }
+        }
+        
+        if (packageFound) {
+          // Close modal and clear input
+          closeModal('new-diagram-modal');
+          nameInput.value = '';
+          
+          // Refresh tree
+          renderCurrentProjectStructure();
+          
+          alert(`Диаграмма "${diagramName}" успешно создана в пакете "${context.packageName}"`);
+        } else {
+          alert('Ошибка: пакет не найден');
+        }
+      }
+
+      function addDiagramToPackage(packages, packageId, diagramName) {
+        for (const pkg of packages) {
+          if (pkg.id == packageId) {
+            // Initialize diagrams array if not exists
+            if (!pkg.diagrams) {
+              pkg.diagrams = [];
+            }
+            
+            // Create new diagram
+            const newDiagram = {
+              id: Date.now(),
+              name: diagramName,
+              type: 'ClassDiagram',
+              createdAt: new Date().toISOString()
+            };
+            
+            pkg.diagrams.push(newDiagram);
+            return true;
+          }
+          
+          // Search in child packages
+          if (pkg.children && pkg.children.length > 0) {
+            if (addDiagramToPackage(pkg.children, packageId, diagramName)) {
+              return true;
+            }
+          }
+        }
+        
+        return false;
       }
 
       function createModel() {
