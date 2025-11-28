@@ -206,6 +206,43 @@
         background-color: #d1e7fd;
       }
 
+      /* Editor Mode Styles */
+      .editor-content-area.standart-mode #diagram-editor {
+        display: none;
+      }
+
+      .editor-content-area.standart-mode #editor-mode-details-panel {
+        display: none;
+      }
+
+      .editor-content-area.editor-mode .details-panel {
+        display: none;
+      }
+
+      .editor-content-area.editor-mode .editor-wrapper {
+        height: 72.666%;
+      }
+
+      .editor-content-area.editor-mode #editor-mode-details-panel {
+        display: block;
+        height: 27.333%;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #fff;
+        overflow: auto;
+        padding: 15px;
+        margin-top: 10px;
+      }
+
+      .editor-content-area.editor-mode #diagram-editor {
+        display: block;
+        flex: 1;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #f9f9f9;
+        overflow: auto;
+      }
+
       .search-box {
         margin-bottom: 10px;
       }
@@ -236,6 +273,10 @@
 
         /* margin-top: 5px; */
       }
+
+
+
+
     </style>
   </head>
   <body>
@@ -252,6 +293,13 @@
           <div class="toolbar-actions">
             <button
               class="btn btn-secondary"
+              id="toggle-mode-btn"
+              onclick="setEditorMode()"
+            >
+              📐 Режим диаграммы
+            </button>
+            <button
+              class="btn btn-secondary"
               onclick="window.location.href='project-details.html'"
             >
               ← Назад
@@ -262,7 +310,7 @@
           </div>
         </div>
 
-        <div class="editor-content-area editor-standart-mode">
+        <div class="editor-content-area standart-mode">
           <div class="editor-wrapper editor-content-area">
             <div class="editor-container">
               <!-- LEFT PANEL: Available Models and Profiles -->
@@ -1034,6 +1082,40 @@
         // 1. Validating profile data
         // 2. Saving to data structure
         // 3. Redirecting back to project-details.html
+      }
+
+      function setEditorMode() {
+        const contentArea = document.querySelector('.editor-content-area');
+        const toggleBtn = document.getElementById('toggle-mode-btn');
+        
+        if (contentArea.classList.contains('standart-mode')) {
+          // Switch to editor mode
+          contentArea.classList.remove('standart-mode');
+          contentArea.classList.add('editor-mode');
+          toggleBtn.textContent = '📋 Стандартный режим';
+          
+          // Render diagram placeholder
+          document.getElementById('diagram-editor').innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">
+              <div style="text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 15px;">📐</div>
+                <h3>Режим диаграммы</h3>
+                <p>Визуализация диаграммы профиля будет реализована позже</p>
+              </div>
+            </div>
+          `;
+          
+          // Render details panel placeholder
+          document.getElementById('editor-mode-details-panel').innerHTML = `
+            <h4 style="margin-top: 0;">Детали выбранного элемента</h4>
+            <div class="text-muted">Выберите элемент на диаграмме для просмотра деталей</div>
+          `;
+        } else {
+          // Switch back to standard mode
+          contentArea.classList.remove('editor-mode');
+          contentArea.classList.add('standart-mode');
+          toggleBtn.textContent = '📐 Режим диаграммы';
+        }
       }
 
       function filterLeftTree() {
