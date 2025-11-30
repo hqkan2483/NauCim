@@ -1064,6 +1064,12 @@
         activeRightItem = itemKey;
         renderProfileTree();
         updateDetailsPanel("right");
+        
+        // Update editor mode profile panel if in editor mode
+        const contentArea = document.querySelector('.editor-content-area');
+        if (contentArea && contentArea.classList.contains('editor-mode')) {
+          renderEditorModeProfilePanel();
+        }
       }
 
       function transferToProfile() {
@@ -1388,6 +1394,7 @@
 
           // Render details panel with tabs
           renderEditorModeDetailsPanel();
+          renderEditorModeProfilePanel();
         } else {
           // Switch back to standard mode
           contentArea.classList.remove("editor-mode");
@@ -1719,6 +1726,8 @@
       // Editor mode details panel state
       let selectedAttributes = new Set();
       let selectedLinks = new Set();
+      let selectedProfileAttributes = new Set();
+      let selectedProfileLinks = new Set();
 
       function renderEditorModeDetailsPanel() {
         const modelObjectPanel = document.getElementById('editor-mode-model-object');
@@ -1859,9 +1868,219 @@
             </div>
           `;
         }
-
         html += '</div>';
         modelObjectPanel.innerHTML = html;
+      }
+
+      function renderEditorModeProfilePanel() {
+        const profileObjectPanel = document.getElementById('editor-mode-profile-object');
+        if (!profileObjectPanel) return;
+
+        if (!activeRightItem) {
+          profileObjectPanel.innerHTML = `
+            <h4 style="margin-top: 0;">Объект профиля</h4>
+            <div class="text-muted" style="padding: 10px 0;">Выберите объект в дереве профиля для просмотра деталей</div>
+          `;
+          return;
+        }
+
+        const info = resolveRightKey(activeRightItem);
+        if (!info || !info.data) {
+          profileObjectPanel.innerHTML = `
+            <h4 style="margin-top: 0;">Объект профиля</h4>
+            <div class="text-muted" style="padding: 10px 0;">Нет данных для отображения</div>
+          `;
+          return;
+        }
+
+        const data = info.data;
+        const isElement = info.kind === 'element';
+
+        if (!isElement) {
+          profileObjectPanel.innerHTML = `
+            <h4 style="margin-top: 0;">${info.kind === 'package' ? 'Пакет' : 'Объект'}: ${esc(data.name)}</h4>
+            <p style="padding: 10px 0;">${esc(data.description || data.description_ru || 'Нет описания')}</p>
+          `;
+          return;
+        }
+
+        // Render tabs for element (class)
+        const attrs = data.attributes || [];
+        const links = data.links || [];
+        
+        // Filter out parent Generalization links
+        const filteredLinks = links.filter(l => {
+          return !(l.relation_kind === 'Generalization' && l.role === 'parent');
+        });
+
+        let html = `
+          <div class="tabs">
+            <div class="tab active" onclick="switchProfileTab('description')">Описание</div>
+            <div class="tab" onclick="switchProfileTab('attributes')">Атрибуты (${attrs.length})</div>
+            <div class="tab" onclick="switchProfileTab('links')">Связи (${filteredLinks.length})</div>
+          </div>
+
+          <div class="tab-content active" data-tab="description">
+            <h4 style="margin-top: 0;">Класс: ${esc(data.name)}</h4>
+            <p><strong>Тип:</strong> ${esc(data.type || 'Class')}</p>
+            <p><strong>Абстрактный:</strong> ${data.isAbstract ? 'Да' : 'Нет'}</p>
+            <p><strong>Описание:</strong> ${esc(data.description || data.description_ru || 'Нет описания')}</p>
+          </div>
+
+          <div class="tab-content" data-tab="attributes">
+            <h4 style="margin-top: 0;">Атрибуты</h4>
+            <div class="attributes-table">
+              <div class="attributes-table-header">
+                <div></div>
+                <div>Имя</div>
+                <div>Тип</div>
+                <div>Кратность</div>
+                <div>Описание</div>
+              </div>
+        `;
+
+        if (attrs.length > 0) {
+          attrs.forEach((attr, idx) => {
+            const attrKey = `${activeRightItem}-attr-${idx}`;
+            const isChecked = selectedProfileAttributes.has(attrKey);
+            html += `
+              <div class="attributes-table-row">
+                <div class="attributes-table-cell-checkbox">
+                  <input type="checkbox" id="${attrKey}" ${isChecked ? 'checked' : ''}
+                    onchange="toggleProfileAttributeSelection('${attrKey}')">
+                </div>
+                <div class="attributes-table-cell">${esc(attr.name || '-')}</div>
+                <div class="attributes-table-cell">${esc(attr.type || attr.dataType || '-')}</div>
+                <div class="attributes-table-cell">${esc(attr.multiplicity || '')}</div>
+                <div class="attributes-table-cell">${esc(attr.description || attr.details || '')}</div>
+              </div>
+            `;
+          });
+          html += `
+            </div>
+            <button class="btn btn-primary" onclick="excludeSelectedAttributes()" style="margin-top: 10px; width: 100%;">
+              ✖ Исключить из профиля
+            </button>
+          `;
+        } else {
+          html += `
+              <div class="attributes-table-empty">Нет атрибутов</div>
+            </div>
+          `;
+        }
+
+        html += '</div><div class="tab-content" data-tab="links"><h4 style="margin-top: 0;">Связи</h4>';
+
+        html += `
+          <div class="attributes-table">
+            <div class="attributes-table-header">
+              <div></div>
+              <div>Роль</div>
+              <div>Тип связи</div>
+              <div>Класс</div>
+              <div>Описание</div>
+            </div>
+        `;
+
+        if (filteredLinks.length > 0) {
+          filteredLinks.forEach((link, idx) => {
+            const linkKey = `${activeRightItem}-link-${idx}`;
+            const isChecked = selectedProfileLinks.has(linkKey);
+            html += `
+              <div class="attributes-table-row">
+                <div class="attributes-table-cell-checkbox">
+                  <input type="checkbox" id="${linkKey}" ${isChecked ? 'checked' : ''}
+                    onchange="toggleProfileLinkSelection('${linkKey}')">
+                </div>
+                <div class="attributes-table-cell">${esc(link.target_class_role_name || '-')}</div>
+                <div class="attributes-table-cell">${esc(link.relation_kind || '-')}</div>
+                <div class="attributes-table-cell">${esc(link.target_class_name || '-')}</div>
+                <div class="attributes-table-cell">${esc(link.description || link.target_description || '')}</div>
+              </div>
+            `;
+          });
+          html += `
+            </div>
+            <button class="btn btn-primary" onclick="excludeSelectedLinks()" style="margin-top: 10px; width: 100%;">
+              ✖ Исключить из профиля
+            </button>
+          `;
+        } else {
+          html += `
+              <div class="attributes-table-empty">Нет связей для отображения</div>
+            </div>
+          `;
+        }
+
+        html += '</div>';
+        profileObjectPanel.innerHTML = html;
+      }
+
+      function switchProfileTab(tabName) {
+        const tabs = document.querySelectorAll('#editor-mode-profile-object .tab');
+        const contents = document.querySelectorAll('#editor-mode-profile-object .tab-content');
+
+        tabs.forEach(tab => {
+          if (tab.getAttribute('onclick').includes(tabName)) {
+            tab.classList.add('active');
+          } else {
+            tab.classList.remove('active');
+          }
+        });
+
+        contents.forEach(content => {
+          if (content.getAttribute('data-tab') === tabName) {
+            content.classList.add('active');
+          } else {
+            content.classList.remove('active');
+          }
+        });
+      }
+
+      function toggleProfileAttributeSelection(attrKey) {
+        const checkbox = document.getElementById(attrKey);
+        if (checkbox && checkbox.checked) {
+          selectedProfileAttributes.add(attrKey);
+        } else {
+          selectedProfileAttributes.delete(attrKey);
+        }
+      }
+
+      function toggleProfileLinkSelection(linkKey) {
+        const checkbox = document.getElementById(linkKey);
+        if (checkbox && checkbox.checked) {
+          selectedProfileLinks.add(linkKey);
+        } else {
+          selectedProfileLinks.delete(linkKey);
+        }
+      }
+
+      function excludeSelectedAttributes() {
+        if (selectedProfileAttributes.size === 0) {
+          alert('Выберите атрибуты для исключения');
+          return;
+        }
+
+        // TODO: Implement attribute exclusion logic
+        alert(`Выбрано атрибутов для исключения: ${selectedProfileAttributes.size}\n\nФункциональность исключения будет реализована позже`);
+        
+        // Clear selection after exclusion
+        selectedProfileAttributes.clear();
+        renderEditorModeProfilePanel();
+      }
+
+      function excludeSelectedLinks() {
+        if (selectedProfileLinks.size === 0) {
+          alert('Выберите связи для исключения');
+          return;
+        }
+
+        // TODO: Implement link exclusion logic
+        alert(`Выбрано связей для исключения: ${selectedProfileLinks.size}\n\nФункциональность исключения будет реализована позже`);
+        
+        // Clear selection after exclusion
+        selectedProfileLinks.clear();
+        renderEditorModeProfilePanel();
       }
 
       function switchEditorTab(tabName) {
