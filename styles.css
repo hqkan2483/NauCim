@@ -1335,3 +1335,10 @@ body {
    line-height: 1;
 
 }
+
+.quick-compare-actions {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}

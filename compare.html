@@ -46,6 +46,12 @@
       .tree-item-with-checkbox:hover {
         background-color: #f5f5f5;
       }
+      .tree-item-error-icon {
+        color: #e74c3c;
+        font-size: 14px;
+        margin-left: 5px;
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
@@ -160,9 +166,12 @@
 
               <div class="divider mt-15 mb-10"></div>
 
-              <div class="quick-actions">
+              <div class="quick-compare-actions">
                 <button class="btn btn-primary" onclick="compareProfiles()">
                   🔍 Сравнить
+                </button>
+                <button id="show-results-btn" class="btn btn-primary" onclick="showComparisonResults()" style="display: none; ">
+                  📊 Показать результаты
                 </button>
               </div>
             </div>
@@ -207,6 +216,13 @@
               <div class="differences-section">
                 <h4>Детальные различия</h4>
                 <div id="differences-list"></div>
+              </div>
+
+              <!-- Save Results Button -->
+              <div style="margin-top: 20px; text-align: center;">
+                <button class="btn btn-primary" onclick="saveComparisonResults()">
+                  💾 Сохранить результат
+                </button>
               </div>
             </div>
           </div>
@@ -362,6 +378,7 @@
       // State for selective tree
       let selectiveExpanded = new Set();
       let selectiveSelected = new Set();
+      let selectiveItemsWithErrors = new Set(); // Track items with comparison errors
       let currentSelectiveObject = null; // Store current object for re-rendering
       let currentSelectiveObject2 = null; // Store second object for analysis mode
 
@@ -387,11 +404,14 @@
         const isExpanded = selectiveExpanded.has(itemKey);
         const isChecked = selectiveSelected.has(itemKey);
 
+        const hasError = selectiveItemsWithErrors.has(itemKey);
+        const errorIcon = hasError ? '<span class="tree-item-error-icon" title="Обнаружены различия">⚠️</span>' : '';
+        
         let html = `
           <div class="tree-item-with-checkbox" onclick="toggleSelectiveActive('${itemKey}', event)">
             <span class="tree-toggle" onclick="toggleSelectiveExpand('${itemKey}'); event.stopPropagation();">${hasChildren ? (isExpanded ? '▾' : '▸') : ''}</span>
             <input type="checkbox" id="${itemKey}" class="tree-item-checkbox" ${isChecked ? 'checked' : ''} onclick="toggleSelectiveCheck('${itemKey}', event)">
-            <span class="tree-item-label">📦 ${name}</span>
+            <span class="tree-item-label">📦 ${name}${errorIcon}</span>
           </div>
         `;
 
@@ -402,11 +422,13 @@
             const eKey = `${itemKey}-elem-${eidx}`;
             const eName = esc(el?.name || el);
             const eChecked = selectiveSelected.has(eKey);
+            const eHasError = selectiveItemsWithErrors.has(eKey);
+            const eErrorIcon = eHasError ? '<span class="tree-item-error-icon" title="Обнаружены различия">⚠️</span>' : '';
             html += `
               <div class="tree-item-with-checkbox" onclick="toggleSelectiveActive('${eKey}', event)">
                 <span class="tree-toggle"></span>
                 <input type="checkbox" id="${eKey}" class="tree-item-checkbox" ${eChecked ? 'checked' : ''} onclick="toggleSelectiveCheck('${eKey}', event)">
-                <span class="tree-item-label">📄 ${eName}</span>
+                <span class="tree-item-label">📄 ${eName}${eErrorIcon}</span>
               </div>
             `;
           });
@@ -555,6 +577,9 @@
 
         const results = [];
         
+        // Clear previous error markers
+        selectiveItemsWithErrors.clear();
+        
         // Process each selected item
         selectiveSelected.forEach(itemKey => {
           const itemData = resolveSelectiveItem(itemKey, object1);
@@ -565,25 +590,45 @@
           
           if (!matchingItem) {
             results.push({
+              itemKey: itemKey,
               name: itemData.name,
               type: itemData.type,
               status: 'not-found',
               message: `Объект не найден в ${object2.objectType === 'model' ? 'модели' : 'профиле'} "${object2.name}"`
             });
+            selectiveItemsWithErrors.add(itemKey);
           } else {
             // Compare the items
             const differences = compareItems(itemData.data, matchingItem);
             results.push({
+              itemKey: itemKey,
               name: itemData.name,
               type: itemData.type,
               status: differences.length > 0 ? 'different' : 'identical',
               differences: differences,
               message: differences.length === 0 ? 'Расхождений не обнаружено' : `Найдено расхождений: ${differences.length}`
             });
+            
+            // Mark items with differences
+            if (differences.length > 0 || differences.length === 0) {
+              if (differences.length > 0) {
+                selectiveItemsWithErrors.add(itemKey);
+              }
+            }
           }
         });
 
-        renderSelectiveComparisonResults(object1, object2, results);
+        // Store results globally for later display
+        window.lastComparisonResults = { object1, object2, results };
+        
+        // Re-render tree to show error icons
+        if (currentSelectiveObject) {
+          document.getElementById('compare-object-one-content').innerHTML = renderObjectTreePanel(currentSelectiveObject);
+        }
+        
+        // Show the "Show Results" button instead of displaying results immediately
+        document.getElementById('show-results-btn').style.display = 'inline-block';
+        document.getElementById('comparison-results').style.display = 'none';
       }
 
       // Resolve item from selective tree key
@@ -1020,6 +1065,79 @@
         } else {
           return 'Изменено значение';
         }
+      }
+
+      // Show comparison results when button is clicked
+      function showComparisonResults() {
+        if (window.lastComparisonResults) {
+          const { object1, object2, results } = window.lastComparisonResults;
+          renderSelectiveComparisonResults(object1, object2, results);
+          // Scroll to results
+          document.getElementById('comparison-results').scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+
+      // Save comparison results to file
+      function saveComparisonResults() {
+        if (!window.lastComparisonResults) {
+          alert('Нет результатов для сохранения');
+          return;
+        }
+
+        const { object1, object2, results } = window.lastComparisonResults;
+        
+        // Generate report content
+        let reportText = `ОТЧЕТ О СРАВНЕНИИ\n`;
+        reportText += `${'='.repeat(80)}\n\n`;
+        reportText += `Дата сравнения: ${new Date().toLocaleString('ru-RU')}\n\n`;
+        reportText += `Объект 1: ${object1.name} (${object1.objectType === 'model' ? 'Модель' : 'Профиль'})\n`;
+        reportText += `Проект: ${object1.projectName}\n\n`;
+        reportText += `Объект 2: ${object2.name} (${object2.objectType === 'model' ? 'Модель' : 'Профиль'})\n`;
+        reportText += `Проект: ${object2.projectName}\n\n`;
+        reportText += `${'='.repeat(80)}\n\n`;
+
+        // Statistics
+        const identical = results.filter(r => r.status === 'identical').length;
+        const different = results.filter(r => r.status === 'different').length;
+        const notFound = results.filter(r => r.status === 'not-found').length;
+        
+        reportText += `СТАТИСТИКА\n`;
+        reportText += `${'-'.repeat(80)}\n`;
+        reportText += `Всего объектов сравнено: ${results.length}\n`;
+        reportText += `Идентичных: ${identical}\n`;
+        reportText += `С различиями: ${different}\n`;
+        reportText += `Не найдено: ${notFound}\n\n`;
+        reportText += `${'='.repeat(80)}\n\n`;
+
+        // Detailed differences
+        reportText += `ДЕТАЛЬНЫЕ РЕЗУЛЬТАТЫ\n`;
+        reportText += `${'='.repeat(80)}\n\n`;
+
+        results.forEach((result, index) => {
+          reportText += `${index + 1}. ${result.name} (${result.type === 'package' ? 'Пакет' : 'Класс'})\n`;
+          reportText += `   Статус: ${result.status === 'identical' ? 'Идентичен' : result.status === 'not-found' ? 'Не найден' : 'Имеет различия'}\n`;
+          reportText += `   ${result.message}\n`;
+
+          if (result.differences && result.differences.length > 0) {
+            reportText += `\n   Обнаруженные различия:\n`;
+            result.differences.forEach((diff, diffIndex) => {
+              reportText += `   ${diffIndex + 1}) ${diff.message}\n`;
+            });
+          }
+          
+          reportText += `\n${'-'.repeat(80)}\n\n`;
+        });
+
+        // Create and download file
+        const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `comparison_${object1.name}_vs_${object2.name}_${new Date().toISOString().slice(0, 10)}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
       }
 
       // Analysis mode comparison (for future implementation)
