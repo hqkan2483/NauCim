@@ -1083,8 +1083,8 @@
             let html = `
               <div class="tabs">
                 <div class="tab active" onclick="switchProfileTab('description')">Описание</div>
-                ${isElement ? `<div class="tab" onclick="switchProfileTab('attributes')">Атрибуты (${attrs.length})</div>` : ''}
-                ${isElement ? `<div class="tab" onclick="switchProfileTab('links')">Связи (${links.length})</div>` : ''}
+                ${isElement ? `<div class="tab" onclick="switchProfileTab('attributes')">Атрибуты</div>` : ''}
+                ${isElement ? `<div class="tab" onclick="switchProfileTab('links')">Связи</div>` : ''}
               </div>
 
               <div class="tab-content active" data-tab="description">
