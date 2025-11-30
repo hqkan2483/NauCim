@@ -1046,6 +1046,122 @@
         renderProfileTree();
       }
 
+      function syncProfileTreeWithLeftItem(leftItemKey) {
+        const leftInfo = resolveLeftKey(leftItemKey);
+        if (!leftInfo || !leftInfo.data) return;
+
+        // Find corresponding item in profile tree
+        const matchingProfileKey = findMatchingProfileItem(leftInfo);
+        
+        if (matchingProfileKey) {
+          // Expand all parent items
+          expandPathToItem(matchingProfileKey);
+          
+          // Set as active
+          activeRightItem = matchingProfileKey;
+          
+          // Re-render trees
+          renderProfileTree();
+          
+          // Update profile panel
+          renderEditorModeProfilePanel();
+        }
+      }
+
+      function findMatchingProfileItem(leftInfo) {
+        const leftData = leftInfo.data;
+        if (!leftData) return null;
+
+        // Strategy 1: Match by model ID and object ID
+        if (leftData.id) {
+          const match1 = searchProfileTreeByModelAndObjectId(leftInfo.name, leftData.id);
+          if (match1) return match1;
+        }
+
+        // Strategy 2: Match by object ID only
+        if (leftData.id) {
+          const match2 = searchProfileTreeByObjectId(leftData.id);
+          if (match2) return match2;
+        }
+
+        // Strategy 3: Match by name
+        if (leftData.name) {
+          const match3 = searchProfileTreeByName(leftData.name, leftInfo.kind);
+          if (match3) return match3;
+        }
+
+        return null;
+      }
+
+      function searchProfileTreeByModelAndObjectId(modelName, objectId) {
+        return searchInProfileItems(profileData.items, 'profile', (item) => {
+          return item.id === objectId;
+        });
+      }
+
+      function searchProfileTreeByObjectId(objectId) {
+        return searchInProfileItems(profileData.items, 'profile', (item) => {
+          return item.id === objectId;
+        });
+      }
+
+      function searchProfileTreeByName(name, kind) {
+        return searchInProfileItems(profileData.items, 'profile', (item) => {
+          return item.name === name;
+        });
+      }
+
+      function searchInProfileItems(items, parentKey, matcher) {
+        if (!items || !Array.isArray(items)) return null;
+
+        for (let pkgIdx = 0; pkgIdx < items.length; pkgIdx++) {
+          const pkg = items[pkgIdx];
+          const pkgKey = `${parentKey}-pkg-${pkgIdx}`;
+
+          // Check if this package matches
+          if (matcher(pkg)) {
+            return pkgKey;
+          }
+
+          // Check elements in this package
+          if (pkg.elements && Array.isArray(pkg.elements)) {
+            for (let elemIdx = 0; elemIdx < pkg.elements.length; elemIdx++) {
+              const elem = pkg.elements[elemIdx];
+              const elemKey = `${pkgKey}-elem-${elemIdx}`;
+
+              if (matcher(elem)) {
+                return elemKey;
+              }
+            }
+          }
+
+          // Recursively search in child packages
+          if (pkg.children && Array.isArray(pkg.children)) {
+            const childMatch = searchInProfileItems(pkg.children, pkgKey, matcher);
+            if (childMatch) return childMatch;
+          }
+        }
+
+        return null;
+      }
+
+      function expandPathToItem(itemKey) {
+        // Parse the path and expand all parent items
+        const parts = itemKey.split('-');
+        let currentPath = 'profile';
+
+        for (let i = 0; i < parts.length; i++) {
+          if (parts[i] === 'pkg' && i + 1 < parts.length) {
+            currentPath += `-pkg-${parts[i + 1]}`;
+            expandedRightItems.add(currentPath);
+            i++; // Skip the index part
+          } else if (parts[i] === 'elem') {
+            // Don't need to expand elements
+            break;
+          }
+        }
+      }
+
       function setActiveLeftItem(itemKey, event) {
         if (event) event.stopPropagation();
         activeLeftItem = itemKey;
@@ -1056,6 +1172,9 @@
         const contentArea = document.querySelector('.editor-content-area');
         if (contentArea && contentArea.classList.contains('editor-mode')) {
           renderEditorModeDetailsPanel();
+          
+          // Synchronize with profile tree
+          syncProfileTreeWithLeftItem(itemKey);
         }
       }
 
