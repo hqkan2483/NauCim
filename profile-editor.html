@@ -1117,9 +1117,6 @@
 
             profileObjectPanel.innerHTML = html;
           }
-          
-          // Update left panel to show transfer button
-          renderEditorModeDetailsPanel();
         }
       }
 
@@ -1226,10 +1223,11 @@
         // Update editor mode details panel if in editor mode
         const contentArea = document.querySelector('.editor-content-area');
         if (contentArea && contentArea.classList.contains('editor-mode')) {
-          renderEditorModeDetailsPanel();
-          
-          // Synchronize with profile tree
+          // Synchronize with profile tree FIRST
           syncProfileTreeWithLeftItem(itemKey);
+          
+          // Then render editor mode details panel (after activeRightItem is set)
+          renderEditorModeDetailsPanel();
         }
       }
 
