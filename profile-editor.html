@@ -503,6 +503,18 @@
    border-left: 1px solid #ddd;
 }
 
+.attributes-table-row.already-in-profile {
+  background-color: #e8f5e9 !important;
+}
+
+.attributes-table-row.already-in-profile:hover {
+  background-color: #c8e6c9 !important;
+}
+
+.attributes-table-row.already-in-profile input[type="checkbox"] {
+  cursor: not-allowed;
+}
+
 
     </style>
   </head>
@@ -1046,6 +1058,79 @@
         renderProfileTree();
       }
 
+      function syncLeftTreeWithRightItem(rightItemKey) {
+        const rightInfo = resolveRightKey(rightItemKey);
+        if (!rightInfo || !rightInfo.data) return;
+
+        // Find corresponding item in left tree
+        const matchingLeftKey = findMatchingLeftItem(rightInfo);
+        
+        if (matchingLeftKey) {
+          // Expand all parent items
+          expandPathToLeftItem(matchingLeftKey);
+          
+          // Set as active
+          activeLeftItem = matchingLeftKey;
+          
+          // Re-render trees
+          renderAvailableTree();
+          
+          // Update model panel
+          renderEditorModeDetailsPanel();
+        } else {
+          // Object not found in left tree - clear active item
+          activeLeftItem = null;
+          renderAvailableTree();
+          
+          // Show "not found" message in left panel
+          const modelObjectPanel = document.getElementById('editor-mode-model-object');
+          if (modelObjectPanel) {
+            const data = rightInfo.data;
+            const isElement = rightInfo.kind === 'element';
+            const attrs = isElement ? (data.attributes || []) : [];
+            const links = isElement ? (data.links || []).filter(l => {
+              return !(l.relation_kind === 'Generalization' && l.role === 'parent');
+            }) : [];
+            
+            let html = `
+              <div class="tabs">
+                <div class="tab active" onclick="switchEditorTab('description')">Описание</div>
+                ${isElement ? `<div class="tab" onclick="switchEditorTab('attributes')">Атрибуты</div>` : ''}
+                ${isElement ? `<div class="tab" onclick="switchEditorTab('links')">Связи</div>` : ''}
+              </div>
+
+              <div class="tab-content active" data-tab="description">
+                <p style="color: #888; font-style: italic; padding: 10px 0;">
+                  Соответствующий объект не найден в доступных моделях.
+                </p>
+              </div>
+            `;
+
+            if (isElement) {
+              html += `
+              <div class="tab-content" data-tab="attributes">
+                <h4 style="margin-top: 0;">Атрибуты</h4>
+                <p style="color: #888; font-style: italic;">
+                  Соответствующий объект не найден в доступных моделях.
+                </p>
+              </div>
+              `;
+
+              html += `
+              <div class="tab-content" data-tab="links">
+                <h4 style="margin-top: 0;">Связи</h4>
+                <p style="color: #888; font-style: italic;">
+                  Соответствующий объект не найден в доступных моделях.
+                </p>
+              </div>
+              `;
+            }
+
+            modelObjectPanel.innerHTML = html;
+          }
+        }
+      }
+
       function syncProfileTreeWithLeftItem(leftItemKey) {
         const leftInfo = resolveLeftKey(leftItemKey);
         if (!leftInfo || !leftInfo.data) return;
@@ -1120,6 +1205,31 @@
         }
       }
 
+      function findMatchingLeftItem(rightInfo) {
+        const rightData = rightInfo.data;
+        if (!rightData) return null;
+
+        // Strategy 1: Match by model ID and object ID
+        if (rightData.id) {
+          const match1 = searchLeftTreeByModelAndObjectId(rightInfo.name, rightData.id);
+          if (match1) return match1;
+        }
+
+        // Strategy 2: Match by object ID only
+        if (rightData.id) {
+          const match2 = searchLeftTreeByObjectId(rightData.id);
+          if (match2) return match2;
+        }
+
+        // Strategy 3: Match by name
+        if (rightData.name) {
+          const match3 = searchLeftTreeByName(rightData.name, rightInfo.kind);
+          if (match3) return match3;
+        }
+
+        return null;
+      }
+
       function findMatchingProfileItem(leftInfo) {
         const leftData = leftInfo.data;
         if (!leftData) return null;
@@ -1143,6 +1253,117 @@
         }
 
         return null;
+      }
+
+      function searchLeftTreeByModelAndObjectId(modelName, objectId) {
+        // Search in availableData (models and profiles)
+        for (let i = 0; i < availableData.length; i++) {
+          const baseEntry = availableData[i];
+          const baseKey = `left-${baseEntry.type}-${baseEntry.id}`;
+          
+          // Check if this is the matching model/profile
+          if (baseEntry.name === modelName || baseEntry.id === objectId) {
+            // Search within this model/profile
+            const result = searchInLeftItems(baseEntry.children || [], baseKey, (item) => {
+              return item.id === objectId;
+            });
+            if (result) return result;
+          }
+        }
+        return null;
+      }
+
+      function searchLeftTreeByObjectId(objectId) {
+        // Search in all availableData
+        for (let i = 0; i < availableData.length; i++) {
+          const baseEntry = availableData[i];
+          const baseKey = `left-${baseEntry.type}-${baseEntry.id}`;
+          
+          const result = searchInLeftItems(baseEntry.children || [], baseKey, (item) => {
+            return item.id === objectId;
+          });
+          if (result) return result;
+        }
+        return null;
+      }
+
+      function searchLeftTreeByName(name, kind) {
+        // Search in all availableData
+        for (let i = 0; i < availableData.length; i++) {
+          const baseEntry = availableData[i];
+          const baseKey = `left-${baseEntry.type}-${baseEntry.id}`;
+          
+          const result = searchInLeftItems(baseEntry.children || [], baseKey, (item) => {
+            return item.name === name;
+          });
+          if (result) return result;
+        }
+        return null;
+      }
+
+      function searchInLeftItems(items, parentKey, matcher) {
+        if (!items || !Array.isArray(items)) return null;
+
+        for (let pkgIdx = 0; pkgIdx < items.length; pkgIdx++) {
+          const pkg = items[pkgIdx];
+          const pkgKey = `${parentKey}-pkg-${pkgIdx}`;
+
+          // Check if this package matches
+          if (matcher(pkg)) {
+            return pkgKey;
+          }
+
+          // Check elements in this package
+          if (pkg.elements && Array.isArray(pkg.elements)) {
+            for (let elemIdx = 0; elemIdx < pkg.elements.length; elemIdx++) {
+              const elem = pkg.elements[elemIdx];
+              const elemKey = `${pkgKey}-elem-${elemIdx}`;
+
+              if (matcher(elem)) {
+                return elemKey;
+              }
+            }
+          }
+
+          // Recursively search in child packages
+          if (pkg.children && Array.isArray(pkg.children)) {
+            const childMatch = searchInLeftItems(pkg.children, pkgKey, matcher);
+            if (childMatch) return childMatch;
+          }
+        }
+
+        return null;
+      }
+
+      function expandPathToLeftItem(itemKey) {
+        // Parse the path and expand all parent items
+        const parts = itemKey.split('-');
+        
+        // First part should be like 'left-model-123' or 'left-profile-456'
+        let currentPath = '';
+        let i = 0;
+        
+        // Build base path (left-{type}-{id})
+        while (i < parts.length && parts[i] !== 'pkg' && parts[i] !== 'elem') {
+          if (currentPath) currentPath += '-';
+          currentPath += parts[i];
+          i++;
+        }
+        
+        // Expand base item
+        expandedLeftItems.add(currentPath);
+        
+        // Now expand packages
+        for (; i < parts.length; i++) {
+          if (parts[i] === 'pkg' && i + 1 < parts.length) {
+            currentPath += `-pkg-${parts[i + 1]}`;
+            expandedLeftItems.add(currentPath);
+            i++; // Skip the index part
+          } else if (parts[i] === 'elem') {
+            // Don't need to expand elements
+            break;
+          }
+        }
       }
 
       function searchProfileTreeByModelAndObjectId(modelName, objectId) {
@@ -1240,6 +1461,10 @@
         // Update editor mode profile panel if in editor mode
         const contentArea = document.querySelector('.editor-content-area');
         if (contentArea && contentArea.classList.contains('editor-mode')) {
+          // Synchronize with left tree FIRST
+          syncLeftTreeWithRightItem(itemKey);
+          
+          // Then render editor mode profile panel (after activeLeftItem is set)
           renderEditorModeProfilePanel();
         }
       }
@@ -1901,6 +2126,31 @@
       let selectedProfileAttributes = new Set();
       let selectedProfileLinks = new Set();
 
+      // Helper function to check if a link exists in profile
+      function linkExistsInProfile(modelLink, profileLinks) {
+        if (!profileLinks || !Array.isArray(profileLinks)) return false;
+        
+        return profileLinks.some(profileLink => {
+          const roleMatch = (modelLink.target_class_role_name || '') === (profileLink.target_class_role_name || '');
+          const kindMatch = (modelLink.relation_kind || '') === (profileLink.relation_kind || '');
+          const classMatch = (modelLink.target_class_name || '') === (profileLink.target_class_name || '');
+          
+          return roleMatch && kindMatch && classMatch;
+        });
+      }
+
+      // Helper function to check if an attribute exists in profile
+      function attributeExistsInProfile(modelAttr, profileAttrs) {
+        if (!profileAttrs || !Array.isArray(profileAttrs)) return false;
+        
+        return profileAttrs.some(profileAttr => {
+          const nameMatch = (modelAttr.name || '') === (profileAttr.name || '');
+          const typeMatch = (modelAttr.type || modelAttr.dataType || '') === (profileAttr.type || profileAttr.dataType || '');
+          
+          return nameMatch && typeMatch;
+        });
+      }
+
       function renderEditorModeDetailsPanel() {
         const modelObjectPanel = document.getElementById('editor-mode-model-object');
         if (!modelObjectPanel) return;
@@ -1976,14 +2226,27 @@
               </div>
         `;
 
+        // Get profile attributes if object exists in profile
+        let profileAttrs = [];
+        if (objectExistsInProfile && activeRightItem) {
+          const profileInfo = resolveRightKey(activeRightItem);
+          if (profileInfo && profileInfo.data) {
+            profileAttrs = profileInfo.data.attributes || [];
+          }
+        }
+
         if (attrs.length > 0) {
           attrs.forEach((attr, idx) => {
             const attrKey = `${activeLeftItem}-attr-${idx}`;
             const isChecked = selectedAttributes.has(attrKey);
+            const alreadyInProfile = attributeExistsInProfile(attr, profileAttrs);
+            const rowClass = alreadyInProfile ? 'attributes-table-row already-in-profile' : 'attributes-table-row';
+            const disabledAttr = alreadyInProfile ? 'disabled' : '';
+            
             html += `
-              <div class="attributes-table-row">
+              <div class="${rowClass}">
                 <div class="attributes-table-cell-checkbox">
-                  <input type="checkbox" id="${attrKey}" ${isChecked ? 'checked' : ''}
+                  <input type="checkbox" id="${attrKey}" ${isChecked ? 'checked' : ''} ${disabledAttr}
                     onchange="toggleAttributeSelection('${attrKey}')">
                 </div>
                 <div class="attributes-table-cell">${esc(attr.name)}</div>
@@ -2021,14 +2284,31 @@
             </div>
         `;
 
+        // Get profile links if object exists in profile
+        let profileLinks = [];
+        if (objectExistsInProfile && activeRightItem) {
+          const profileInfo = resolveRightKey(activeRightItem);
+          if (profileInfo && profileInfo.data) {
+            const allProfileLinks = profileInfo.data.links || [];
+            // Filter out parent Generalization links from profile too
+            profileLinks = allProfileLinks.filter(l => {
+              return !(l.relation_kind === 'Generalization' && l.role === 'parent');
+            });
+          }
+        }
+
         if (filteredLinks.length > 0) {
           filteredLinks.forEach((link, idx) => {
             const linkKey = `${activeLeftItem}-link-${idx}`;
             const isChecked = selectedLinks.has(linkKey);
+            const alreadyInProfile = linkExistsInProfile(link, profileLinks);
+            const rowClass = alreadyInProfile ? 'attributes-table-row already-in-profile' : 'attributes-table-row';
+            const disabledAttr = alreadyInProfile ? 'disabled' : '';
+            
             html += `
-              <div class="attributes-table-row">
+              <div class="${rowClass}">
                 <div class="attributes-table-cell-checkbox">
-                  <input type="checkbox" id="${linkKey}" ${isChecked ? 'checked' : ''}
+                  <input type="checkbox" id="${linkKey}" ${isChecked ? 'checked' : ''} ${disabledAttr}
                     onchange="toggleLinkSelection('${linkKey}')">
                 </div>
                 <div class="attributes-table-cell">${esc(link.target_class_role_name || '-')}</div>
