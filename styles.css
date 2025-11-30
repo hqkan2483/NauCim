@@ -1302,6 +1302,7 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+    line-height: 1;
 }
 
 .comparison-results h3 {

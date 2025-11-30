@@ -497,7 +497,16 @@
           return;
         }
 
-        renderComparison(object1, object2);
+        // Check compare mode
+        const mode = document.querySelector('input[name="compareMode"]:checked')?.value || 'full';
+        
+        if (mode === 'selective') {
+          performSelectiveComparison(object1, object2);
+        } else if (mode === 'analysis') {
+          performAnalysisComparison(object1, object2);
+        } else {
+          renderComparison(object1, object2);
+        }
       }
 
       function parseObjectValue(value) {
@@ -519,6 +528,7 @@
               ...model,
               objectType: "model",
               projectName: project.name,
+              projectId: projectId
             };
           }
         } else if (type === "profile") {
@@ -528,11 +538,325 @@
               ...profile,
               objectType: "profile",
               projectName: project.name,
+              projectId: projectId
             };
           }
         }
 
         return null;
+      }
+
+      // Selective comparison: compare selected items from object1 with object2
+      function performSelectiveComparison(object1, object2) {
+        if (selectiveSelected.size === 0) {
+          alert('Выберите элементы для сравнения в дереве объекта 1');
+          return;
+        }
+
+        const results = [];
+        
+        // Process each selected item
+        selectiveSelected.forEach(itemKey => {
+          const itemData = resolveSelectiveItem(itemKey, object1);
+          if (!itemData) return;
+
+          // Find corresponding item in object2
+          const matchingItem = findMatchingItemInObject(itemData, object2);
+          
+          if (!matchingItem) {
+            results.push({
+              name: itemData.name,
+              type: itemData.type,
+              status: 'not-found',
+              message: `Объект не найден в ${object2.objectType === 'model' ? 'модели' : 'профиле'} "${object2.name}"`
+            });
+          } else {
+            // Compare the items
+            const differences = compareItems(itemData.data, matchingItem);
+            results.push({
+              name: itemData.name,
+              type: itemData.type,
+              status: differences.length > 0 ? 'different' : 'identical',
+              differences: differences,
+              message: differences.length === 0 ? 'Расхождений не обнаружено' : `Найдено расхождений: ${differences.length}`
+            });
+          }
+        });
+
+        renderSelectiveComparisonResults(object1, object2, results);
+      }
+
+      // Resolve item from selective tree key
+      function resolveSelectiveItem(itemKey, sourceObject) {
+        const parts = itemKey.split('-');
+        // Format: sel-{type}-{id}-pkg-{idx}[-pkg-{idx}]*[-elem-{idx}]
+        
+        let packages = sourceObject.rootPackages || [];
+        let current = null;
+        let itemType = 'package';
+        
+        // Skip first 3 parts (sel-{type}-{id})
+        for (let i = 3; i < parts.length; i += 2) {
+          const token = parts[i];
+          const idx = parseInt(parts[i + 1]);
+          
+          if (token === 'pkg') {
+            current = packages[idx];
+            if (!current) return null;
+            packages = current.children || current.packages || [];
+            itemType = 'package';
+          } else if (token === 'elem') {
+            const elements = current ? (current.elements || []) : [];
+            current = elements[idx];
+            itemType = 'element';
+            break;
+          }
+        }
+        
+        if (!current) return null;
+        
+        return {
+          name: current.name || current.className,
+          type: itemType,
+          data: current
+        };
+      }
+
+      // Find matching item in target object by type and name
+      function findMatchingItemInObject(sourceItem, targetObject) {
+        const searchIn = targetObject.rootPackages || [];
+        return searchForMatchingItem(sourceItem, searchIn);
+      }
+
+      function searchForMatchingItem(sourceItem, packages) {
+        if (!packages || !Array.isArray(packages)) return null;
+        
+        for (const pkg of packages) {
+          // Check if this package matches
+          if (sourceItem.type === 'package' && pkg.name === sourceItem.name) {
+            return pkg;
+          }
+          
+          // Check elements in this package
+          if (sourceItem.type === 'element' && pkg.elements) {
+            const match = pkg.elements.find(el => 
+              (el.name || el.className) === sourceItem.name
+            );
+            if (match) return match;
+          }
+          
+          // Recursively search in child packages
+          if (pkg.children || pkg.packages) {
+            const childMatch = searchForMatchingItem(sourceItem, pkg.children || pkg.packages);
+            if (childMatch) return childMatch;
+          }
+        }
+        
+        return null;
+      }
+
+      // Compare two items and return list of differences
+      function compareItems(item1, item2) {
+        const differences = [];
+        
+        if (!item1 || !item2) return differences;
+        
+        // Compare basic properties
+        const compareProps = ['name', 'className', 'type', 'description', 'description_ru', 'isAbstract', 'multiplicity'];
+        
+        compareProps.forEach(prop => {
+          const val1 = item1[prop];
+          const val2 = item2[prop];
+          
+          if (val1 !== val2 && (val1 !== undefined || val2 !== undefined)) {
+            differences.push({
+              field: prop,
+              type: 'property',
+              value1: val1 === undefined ? '(отсутствует)' : val1,
+              value2: val2 === undefined ? '(отсутствует)' : val2,
+              message: `Свойство "${prop}": "${val1 || '(пусто)'}" → "${val2 || '(пусто)'}"`
+            });
+          }
+        });
+        
+        // Compare attributes
+        const attrs1 = item1.attributes || [];
+        const attrs2 = item2.attributes || [];
+        
+        if (attrs1.length !== attrs2.length) {
+          differences.push({
+            field: 'attributes',
+            type: 'count',
+            value1: attrs1.length,
+            value2: attrs2.length,
+            message: `Количество атрибутов: ${attrs1.length} → ${attrs2.length}`
+          });
+        }
+        
+        // Compare each attribute
+        attrs1.forEach(attr1 => {
+          const attr2 = attrs2.find(a => a.name === attr1.name);
+          if (!attr2) {
+            differences.push({
+              field: 'attributes',
+              type: 'missing',
+              value1: attr1.name,
+              value2: null,
+              message: `Атрибут "${attr1.name}" отсутствует во втором объекте`
+            });
+          } else {
+            // Compare attribute properties
+            if (attr1.type !== attr2.type || attr1.dataType !== attr2.dataType) {
+              differences.push({
+                field: 'attributes',
+                type: 'type',
+                value1: attr1.type || attr1.dataType,
+                value2: attr2.type || attr2.dataType,
+                message: `Атрибут "${attr1.name}": тип "${attr1.type || attr1.dataType}" → "${attr2.type || attr2.dataType}"`
+              });
+            }
+            if (attr1.multiplicity !== attr2.multiplicity) {
+              differences.push({
+                field: 'attributes',
+                type: 'multiplicity',
+                value1: attr1.multiplicity,
+                value2: attr2.multiplicity,
+                message: `Атрибут "${attr1.name}": кратность "${attr1.multiplicity || '(не указана)'}" → "${attr2.multiplicity || '(не указана)'}"`
+              });
+            }
+          }
+        });
+        
+        // Check for attributes only in item2
+        attrs2.forEach(attr2 => {
+          const attr1 = attrs1.find(a => a.name === attr2.name);
+          if (!attr1) {
+            differences.push({
+              field: 'attributes',
+              type: 'added',
+              value1: null,
+              value2: attr2.name,
+              message: `Атрибут "${attr2.name}" присутствует только во втором объекте`
+            });
+          }
+        });
+        
+        // Compare links/associations
+        const links1 = item1.links || [];
+        const links2 = item2.links || [];
+        
+        if (links1.length !== links2.length) {
+          differences.push({
+            field: 'links',
+            type: 'count',
+            value1: links1.length,
+            value2: links2.length,
+            message: `Количество связей: ${links1.length} → ${links2.length}`
+          });
+        }
+        
+        // Compare each link
+        links1.forEach(link1 => {
+          const link2 = links2.find(l => 
+            l.target_class_name === link1.target_class_name && 
+            l.relation_kind === link1.relation_kind &&
+            l.target_class_role_name === link1.target_class_role_name
+          );
+          
+          if (!link2) {
+            differences.push({
+              field: 'links',
+              type: 'missing',
+              value1: `${link1.target_class_role_name || ''} → ${link1.target_class_name} (${link1.relation_kind})`,
+              value2: null,
+              message: `Связь "${link1.target_class_role_name || ''}" → "${link1.target_class_name}" (${link1.relation_kind}) отсутствует во втором объекте`
+            });
+          }
+        });
+        
+        // Check for links only in item2
+        links2.forEach(link2 => {
+          const link1 = links1.find(l => 
+            l.target_class_name === link2.target_class_name && 
+            l.relation_kind === link2.relation_kind &&
+            l.target_class_role_name === link2.target_class_role_name
+          );
+          
+          if (!link1) {
+            differences.push({
+              field: 'links',
+              type: 'added',
+              value1: null,
+              value2: `${link2.target_class_role_name || ''} → ${link2.target_class_name} (${link2.relation_kind})`,
+              message: `Связь "${link2.target_class_role_name || ''}" → "${link2.target_class_name}" (${link2.relation_kind}) присутствует только во втором объекте`
+            });
+          }
+        });
+        
+        return differences;
+      }
+
+      // Render selective comparison results
+      function renderSelectiveComparisonResults(object1, object2, results) {
+        document.getElementById("comparison-results").style.display = "block";
+        
+        // Update stats
+        const identical = results.filter(r => r.status === 'identical').length;
+        const different = results.filter(r => r.status === 'different').length;
+        const notFound = results.filter(r => r.status === 'not-found').length;
+        
+        document.getElementById("stat-common").textContent = identical;
+        document.getElementById("stat-unique1").textContent = different;
+        document.getElementById("stat-unique2").textContent = notFound;
+        
+        // Update headers
+        document.getElementById("profile1-name").textContent = `${object1.name} (${object1.objectType === 'model' ? 'Модель' : 'Профиль'})`;
+        document.getElementById("profile2-name").textContent = `${object2.name} (${object2.objectType === 'model' ? 'Модель' : 'Профиль'})`;
+        
+        // Update details
+        document.getElementById("profile1-details").innerHTML = 
+          `<p><strong>Выбрано для сравнения:</strong> ${results.length} объект(ов)</p>` +
+          `<p><strong>Идентичных:</strong> ${identical}</p>` +
+          `<p><strong>С различиями:</strong> ${different}</p>` +
+          `<p><strong>Не найдено:</strong> ${notFound}</p>`;
+        
+        document.getElementById("profile2-details").innerHTML = 
+          `<p><strong>Проект:</strong> ${object2.projectName}</p>` +
+          `<p><strong>Тип:</strong> ${object2.objectType === 'model' ? object2.type : 'Профиль'}</p>`;
+        
+        // Render differences list
+        let diffHtml = '';
+        
+        results.forEach(result => {
+          const statusIcon = result.status === 'identical' ? '✅' : 
+                            result.status === 'not-found' ? '❌' : '⚠️';
+          const statusClass = result.status === 'identical' ? 'diff-added' : 
+                             result.status === 'not-found' ? 'diff-removed' : 'badge';
+          
+          diffHtml += `
+            <div class="card difference-item">
+              <h4><span class="${statusClass}">${statusIcon}</span> ${esc(result.name)} (${result.type === 'package' ? 'Пакет' : 'Класс'})</h4>
+              <p><strong>${result.message}</strong></p>
+          `;
+          
+          if (result.differences && result.differences.length > 0) {
+            diffHtml += '<ul style="margin-top: 10px; padding-left: 20px;">';
+            result.differences.forEach(diff => {
+              diffHtml += `<li>${esc(diff.message)}</li>`;
+            });
+            diffHtml += '</ul>';
+          }
+          
+          diffHtml += '</div>';
+        });
+        
+        document.getElementById("differences-list").innerHTML = diffHtml || '<p class="text-muted">Нет результатов для отображения</p>';
+      }
+
+      // Analysis mode comparison (for future implementation)
+      function performAnalysisComparison(object1, object2) {
+        alert('Режим анализа будет реализован позже');
+        // TODO: Implement bidirectional comparison with both trees
       }
 
       function renderComparison(obj1, obj2) {

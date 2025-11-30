@@ -2905,7 +2905,7 @@
                         "model_item_id": "EAID_915314B2_5F44_4e48_B15F_491126AF6C8F",
                         "model_id": "3",
                         "type": "Susceptance",
-                        "description": "Реактивная проводимость прямой последовательности шунта намагничивания, приведенная к номинальному напряжению вывода с наивысшим напряжением, См.",
+                        "description": "Реактивная проводимость  См.",
                         "multiplicity": "0..1",
                         "visibility": "public"
                       },
@@ -2920,21 +2920,11 @@
                         "visibility": "public"
                       },
                       {
-                        "name": "connectionKind",
-                        "id": "9E3E3656-3D75-41BD-96A8-79D4B760AA3B",
-                        "model_item_id": "EAID_6130B492_931A_4f8c_B5A3_D8E1626DB982",
-                        "model_id": "3",
-                        "type": "WindingConnection",
-                        "description": "Схема соединения обмоток.",
-                        "multiplicity": "0..1",
-                        "visibility": "public"
-                      },
-                      {
                         "name": "g",
                         "id": "8A9DB09B-00AF-4E26-9D76-970303A2F07C",
                         "model_item_id": "EAID_217F8A1D_1632_47fc_93FD_15F9737A7745",
                         "model_id": "3",
-                        "type": "Conductance",
+                        "type": "Conduct",
                         "description": "Активная проводимость прямой последовательности шунта намагничивания, приведенная к номинальному напряжению вывода с наивысшим напряжением, См.",
                         "multiplicity": "0..1",
                         "visibility": "public"
@@ -2944,18 +2934,8 @@
                         "id": "02C809A0-4B84-4C6F-AF68-2C2E8A0462E8",
                         "model_item_id": "EAID_CC9E04D7_9463_49fb_9B34_E49A917ABBBF",
                         "model_id": "3",
-                        "type": "Conductance",
+                        "type": "Conduct",
                         "description": "Активная проводимость нулевой последовательности шунта намагничивания, приведенная к номинальному напряжению вывода с наивысшим напряжением, См.",
-                        "multiplicity": "0..1",
-                        "visibility": "public"
-                      },
-                      {
-                        "name": "phaseAngleClock",
-                        "id": "4B655FB7-5E5F-415A-A040-CB206F3E4D48",
-                        "model_item_id": "EAID_B3AC587A_CD0E_44be_9EFB_82ACD1D8133F",
-                        "model_id": "3",
-                        "type": "Integer",
-                        "description": "Группа соединения обмоток.",
                         "multiplicity": "0..1",
                         "visibility": "public"
                       },
@@ -2975,7 +2955,7 @@
                         "model_item_id": "EAID_110EC86E_FFA9_41c8_980C_1465CFD5E2AC",
                         "model_id": "3",
                         "type": "Resistance",
-                        "description": "Активное сопротивление нулевой последовательности, Ом.",
+                        "description": "Активное сопротивление, Ом.",
                         "multiplicity": "0..1",
                         "visibility": "public"
                       },
@@ -3042,7 +3022,7 @@
                         "role": "unspecified",
                         "target_class_id": "EAID_EF97223D_5392_4c88_AF9F_26256A9E4377",
                         "target_class_name": "PowerTransformer",
-                        "target_class_role_name": "PowerTransformer",
+                        "target_class_role_name": "PowerTransformerBase",
                         "src_class_role_name": "PowerTransformerEnd",
                         "target_description": "Силовой трансформатор, к которому относится вывод.",
                         "multiplicity": "0..1"

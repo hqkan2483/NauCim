@@ -3451,14 +3451,14 @@
                         "description": "Электрический вывод силового трансформатора.",
                         "visibility": "public",
                         "isAbstract": false,
-                        "attributeCount": 12,
-                        "linkCount": 3,
+                        "attributeCount": 3,
+                        "linkCount": 1,
                         "attributes": [
                           {
                             "name": "b",
                             "id": "EAID_915314B2_5F44_4e48_B15F_491126AF6C8F",
                             "type": "Susceptance",
-                            "description": "Реактивная проводимость прямой последовательности шунта намагничивания, приведенная к номинальному напряжению вывода с наивысшим напряжением, См.",
+                            "description": "Реактивная проводимость прямой последовательности шунта. См.",
                             "multiplicity": "0..1",
                             "visibility": "public"
                           },
@@ -3475,22 +3475,6 @@
                             "id": "EAID_6130B492_931A_4f8c_B5A3_D8E1626DB982",
                             "type": "WindingConnection",
                             "description": "Схема соединения обмоток.",
-                            "multiplicity": "0..1",
-                            "visibility": "public"
-                          },
-                          {
-                            "name": "g",
-                            "id": "EAID_217F8A1D_1632_47fc_93FD_15F9737A7745",
-                            "type": "Conductance",
-                            "description": "Активная проводимость прямой последовательности шунта намагничивания, приведенная к номинальному напряжению вывода с наивысшим напряжением, См.",
-                            "multiplicity": "0..1",
-                            "visibility": "public"
-                          },
-                          {
-                            "name": "g0",
-                            "id": "EAID_CC9E04D7_9463_49fb_9B34_E49A917ABBBF",
-                            "type": "Conductance",
-                            "description": "Активная проводимость нулевой последовательности шунта намагничивания, приведенная к номинальному напряжению вывода с наивысшим напряжением, См.",
                             "multiplicity": "0..1",
                             "visibility": "public"
                           },
@@ -3519,22 +3503,6 @@
                             "visibility": "public"
                           },
                           {
-                            "name": "ratedS",
-                            "id": "EAID_9E8B3E2A_1B56_4287_9B58_F7762BE4DE85",
-                            "type": "ApparentPower",
-                            "description": "Номинальная полная мощность, МВА.",
-                            "multiplicity": "0..1",
-                            "visibility": "public"
-                          },
-                          {
-                            "name": "ratedU",
-                            "id": "EAID_CB977B23_8165_4726_96B6_C04E27354F05",
-                            "type": "Voltage",
-                            "description": "Номинальное напряжение вывода трансформатора, кВ.",
-                            "multiplicity": "0..1",
-                            "visibility": "public"
-                          },
-                          {
                             "name": "x",
                             "id": "EAID_32E01F73_CEC8_4c32_AD74_F1343E5FC3E0",
                             "type": "Reactance",
@@ -3546,7 +3514,7 @@
                             "name": "x0",
                             "id": "EAID_18E3834E_4F58_41bb_A097_F37170ADD91C",
                             "type": "Reactance",
-                            "description": "Реактивное сопротивление нулевой последовательности, Ом.",
+                            "description": "Реактивное сопротивление обратной последовательности, Ом.",
                             "multiplicity": "0..1",
                             "visibility": "public"
                           }
@@ -3569,7 +3537,7 @@
                             "role": "unspecified",
                             "target_class_id": "EAID_EF97223D_5392_4c88_AF9F_26256A9E4377",
                             "target_class_name": "PowerTransformer",
-                            "target_class_role_name": "PowerTransformer",
+                            "target_class_role_name": "PowerTransformerBase",
                             "src_class_role_name": "PowerTransformerEnd",
                             "target_description": "Силовой трансформатор, к которому относится вывод.",
                             "multiplicity": "0..1"
