@@ -1065,6 +1065,61 @@
           
           // Update profile panel
           renderEditorModeProfilePanel();
+        } else {
+          // Object not found in profile - clear active item
+          activeRightItem = null;
+          renderProfileTree();
+          
+          // Show "not in profile" message in right panel
+          const profileObjectPanel = document.getElementById('editor-mode-profile-object');
+          if (profileObjectPanel) {
+            const data = leftInfo.data;
+            const isElement = leftInfo.kind === 'element';
+            const attrs = isElement ? (data.attributes || []) : [];
+            const links = isElement ? (data.links || []).filter(l => {
+              return !(l.relation_kind === 'Generalization' && l.role === 'parent');
+            }) : [];
+            
+            let html = `
+              <div class="tabs">
+                <div class="tab active" onclick="switchProfileTab('description')">Описание</div>
+                ${isElement ? `<div class="tab" onclick="switchProfileTab('attributes')">Атрибуты (${attrs.length})</div>` : ''}
+                ${isElement ? `<div class="tab" onclick="switchProfileTab('links')">Связи (${links.length})</div>` : ''}
+              </div>
+
+              <div class="tab-content active" data-tab="description">
+                <p style="color: #888; font-style: italic; padding: 10px 0;">
+                  Данный объект не найден в текущем профиле. 
+                  Вы можете добавить его, используя кнопку "→ Перенести в профиль".
+                </p>
+              </div>
+            `;
+
+            if (isElement) {
+              html += `
+              <div class="tab-content" data-tab="attributes">
+                <h4 style="margin-top: 0;">Атрибуты</h4>
+                <p style="color: #888; font-style: italic;">
+                  Объект отсутствует в профиле. Перенесите объект в профиль, чтобы работать с его атрибутами.
+                </p>
+              </div>
+              `;
+
+              html += `
+              <div class="tab-content" data-tab="links">
+                <h4 style="margin-top: 0;">Связи</h4>
+                <p style="color: #888; font-style: italic;">
+                  Объект отсутствует в профиле. Перенесите объект в профиль, чтобы работать с его связями.
+                </p>
+              </div>
+              `;
+            }
+
+            profileObjectPanel.innerHTML = html;
+          }
+          
+          // Update left panel to show transfer button
+          renderEditorModeDetailsPanel();
         }
       }
 
@@ -1880,6 +1935,9 @@
           return;
         }
 
+        // Check if object exists in profile
+        const objectExistsInProfile = activeRightItem !== null;
+
         // Render tabs for element (class)
         const attrs = data.attributes || [];
         const links = data.links || [];
@@ -1901,6 +1959,11 @@
             <p><strong>Тип:</strong> ${esc(data.type || 'Class')}</p>
             <p><strong>Абстрактный:</strong> ${data.isAbstract ? 'Да' : 'Нет'}</p>
             <p><strong>Описание:</strong> ${esc(data.description || data.description_ru || 'Нет описания')}</p>
+            ${!objectExistsInProfile ? `
+            <button class="btn btn-primary" onclick="transferToProfile()" style="margin-top: 10px; width: 100%;">
+              → Перенести в профиль
+            </button>
+            ` : ''}
           </div>
 
           <div class="tab-content" data-tab="attributes">
@@ -1934,9 +1997,11 @@
           });
           html += `
             </div>
+            ${objectExistsInProfile ? `
             <button class="btn btn-primary" onclick="transferSelectedAttributes()" style="margin-top: 10px; width: 100%;">
               → Перенести в профиль
             </button>
+            ` : ''}
           `;
         } else {
           html += `
@@ -1977,9 +2042,11 @@
           });
           html += `
             </div>
+            ${objectExistsInProfile ? `
             <button class="btn btn-primary" onclick="transferSelectedLinks()" style="margin-top: 10px; width: 100%;">
               → Перенести в профиль
             </button>
+            ` : ''}
           `;
         } else {
           html += `
