@@ -886,17 +886,140 @@
           `;
           
           if (result.differences && result.differences.length > 0) {
-            diffHtml += '<ul style="margin-top: 10px; padding-left: 20px;">';
+            diffHtml += `
+              <table class="table" style="margin-top: 10px;">
+                 <colgroup>
+                    <col style="width: 20%;"/>
+                    <col style="width: 45%;"/>
+                    <col style="width: 20%;"/>
+                    <col style="width: 15%;"/>
+                  </colgroup>
+                <thead>
+                  <tr>
+                    <th>Объект и характеристика</th>
+                    <th>${esc(object1.name)}</th>
+                    <th>${esc(object2.name)}</th>
+                    <th>Тип изменения</th>
+                  </tr>
+                </thead>
+                <tbody>
+            `;
+            
             result.differences.forEach(diff => {
-              diffHtml += `<li>${esc(diff.message)}</li>`;
+              const objLabel = formatDifferenceLabel(diff);
+              const value1 = formatDifferenceValue(diff.value1);
+              const value2 = formatDifferenceValue(diff.value2);
+              const changeType = formatChangeType(diff, object1.name, object2.name);
+              
+              diffHtml += `
+                <tr>
+                  <td>${objLabel}</td>
+                  <td>${value1}</td>
+                  <td>${value2}</td>
+                  <td>${changeType}</td>
+                </tr>
+              `;
             });
-            diffHtml += '</ul>';
+            
+            diffHtml += `
+                </tbody>
+              </table>
+            `;
           }
           
           diffHtml += '</div>';
         });
         
         document.getElementById("differences-list").innerHTML = diffHtml || '<p class="text-muted">Нет результатов для отображения</p>';
+      }
+
+      // Helper function to format difference label (column 1)
+      function formatDifferenceLabel(diff) {
+        if (diff.field === 'attributes') {
+          if (diff.type === 'missing' || diff.type === 'added') {
+            return `Атрибут "${esc(diff.value1 || diff.value2)}"`;
+          }
+          
+          const attrName = extractAttributeName(diff.message);
+          
+          if (diff.type === 'type') {
+            return `Атрибут "${attrName}": тип данных`;
+          } else if (diff.type === 'multiplicity') {
+            return `Атрибут "${attrName}": кратность`;
+          } else if (diff.type === 'description') {
+            return `Атрибут "${attrName}": описание`;
+          } else if (diff.type === 'description_ru') {
+            return `Атрибут "${attrName}": описание (рус)`;
+          }
+        } else if (diff.field === 'links') {
+          if (diff.type === 'missing' || diff.type === 'added') {
+            const linkInfo = extractLinkInfo(diff.value1 || diff.value2);
+            return `Связь "${linkInfo.target}"`;
+          }
+          
+          const linkName = extractLinkName(diff.message);
+          
+          if (diff.type === 'description') {
+            return `Связь "${linkName}": описание`;
+          } else if (diff.type === 'target_description') {
+            return `Связь "${linkName}": целевой класс`;
+          }
+        } else {
+          // Property-level differences
+          return `Свойство "${esc(diff.field)}"`;
+        }
+        
+        return esc(diff.field);
+      }
+
+      // Helper function to extract attribute name from message
+      function extractAttributeName(message) {
+        const match = message.match(/Атрибут "([^"]+)"/);
+        return match ? esc(match[1]) : '';
+      }
+
+      // Helper function to extract link name from message
+      function extractLinkName(message) {
+        const match = message.match(/Связь "([^"]+)"/);
+        return match ? esc(match[1]) : '';
+      }
+
+      // Helper function to extract link info from value string
+      function extractLinkInfo(valueStr) {
+        if (!valueStr) return { target: '' };
+        // Format: "role → TargetClass (kind)"
+        const match = String(valueStr).match(/(.+?)\s*→\s*(.+?)\s*\(/);
+        if (match) {
+          return { role: match[1], target: match[2] };
+        }
+        return { target: String(valueStr) };
+      }
+
+      // Helper function to format values (columns 2 and 3)
+      function formatDifferenceValue(value) {
+        if (value === null || value === undefined) {
+          return '<span style="color: #999; font-style: italic;">отсутствует</span>';
+        }
+        if (value === '' || value === '(пусто)') {
+          return '<span style="color: #999; font-style: italic;">(пусто)</span>';
+        }
+        if (value === '(отсутствует)') {
+          return '<span style="color: #999; font-style: italic;">отсутствует</span>';
+        }
+        return esc(String(value));
+      }
+
+      // Helper function to format change type (column 4)
+      function formatChangeType(diff, obj1Name, obj2Name) {
+        if (diff.type === 'missing') {
+          return `Присутствует только в ${esc(obj1Name)}`;
+        } else if (diff.type === 'added') {
+          return `Присутствует только в ${esc(obj2Name)}`;
+        } else if (diff.type === 'count') {
+          return 'Изменено количество';
+        } else {
+          return 'Изменено значение';
+        }
       }
 
       // Analysis mode comparison (for future implementation)

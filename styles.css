@@ -321,7 +321,7 @@ body {
     padding: 10px;
     text-align: left;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 15px;
     border-bottom: 2px solid var(--border-color);
     color: var(--text-primary);
 }
@@ -330,6 +330,7 @@ body {
     padding: 10px;
     border-bottom: 1px solid var(--border-color);
     font-size: 14px;
+    line-height: 1.2;
 }
 
 .table tr:hover {
@@ -1326,4 +1327,11 @@ body {
 
 .difference-icon {
     margin-right: 10px;
+}
+
+.difference-item {
+    padding: 10px;
+   margin: 10px;
+   line-height: 1;
+
 }
