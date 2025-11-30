@@ -176,7 +176,7 @@
               <h3>Результаты сравнения</h3>
 
               <!-- Summary Stats -->
-              <div class="comparison-stats">
+              <!-- <div class="comparison-stats">
                 <div class="stat-box">
                   <div class="stat-value" id="stat-common">0</div>
                   <div class="stat-label">Общих классов</div>
@@ -189,7 +189,7 @@
                   <div class="stat-value" id="stat-unique2">0</div>
                   <div class="stat-label">Только в профиле 2</div>
                 </div>
-              </div>
+              </div> -->
 
               <!-- Detailed Comparison -->
               <div class="diff-container">
@@ -656,6 +656,7 @@
       }
 
       // Compare two items and return list of differences
+    //   тянет на универсальную функцию сравнения. атрибуты и связи надо сделать так же
       function compareItems(item1, item2) {
         const differences = [];
         
@@ -724,6 +725,30 @@
                 message: `Атрибут "${attr1.name}": кратность "${attr1.multiplicity || '(не указана)'}" → "${attr2.multiplicity || '(не указана)'}"`
               });
             }
+            // Compare description separately
+            const desc1 = attr1.description || '';
+            const desc2 = attr2.description || '';
+            if (desc1 !== desc2) {
+              differences.push({
+                field: 'attributes',
+                type: 'description',
+                value1: desc1,
+                value2: desc2,
+                message: `Атрибут "${attr1.name}": description "${desc1 || '(пусто)'}" → "${desc2 || '(пусто)'}"`
+              });
+            }
+            // Compare description_ru separately
+            const descRu1 = attr1.description_ru || '';
+            const descRu2 = attr2.description_ru || '';
+            if (descRu1 !== descRu2) {
+              differences.push({
+                field: 'attributes',
+                type: 'description_ru',
+                value1: descRu1,
+                value2: descRu2,
+                message: `Атрибут "${attr1.name}": description_ru "${descRu1 || '(пусто)'}" → "${descRu2 || '(пусто)'}"`
+              });
+            }
           }
         });
         
@@ -771,6 +796,31 @@
               value2: null,
               message: `Связь "${link1.target_class_role_name || ''}" → "${link1.target_class_name}" (${link1.relation_kind}) отсутствует во втором объекте`
             });
+          } else {
+            // Compare link properties - description separately
+            const desc1 = link1.description || '';
+            const desc2 = link2.description || '';
+            if (desc1 !== desc2) {
+              differences.push({
+                field: 'links',
+                type: 'description',
+                value1: desc1,
+                value2: desc2,
+                message: `Связь "${link1.target_class_role_name || ''}" → "${link1.target_class_name}": description "${desc1 || '(пусто)'}" → "${desc2 || '(пусто)'}"`
+              });
+            }
+            // Compare target_description separately
+            const targetDesc1 = link1.target_description || '';
+            const targetDesc2 = link2.target_description || '';
+            if (targetDesc1 !== targetDesc2) {
+              differences.push({
+                field: 'links',
+                type: 'target_description',
+                value1: targetDesc1,
+                value2: targetDesc2,
+                message: `Связь "${link1.target_class_role_name || ''}" → "${link1.target_class_name}": target_description "${targetDesc1 || '(пусто)'}" → "${targetDesc2 || '(пусто)'}"`
+              });
+            }
           }
         });
         
@@ -800,14 +850,10 @@
       function renderSelectiveComparisonResults(object1, object2, results) {
         document.getElementById("comparison-results").style.display = "block";
         
-        // Update stats
+        // Calculate stats (but don't render comparison-stats block)
         const identical = results.filter(r => r.status === 'identical').length;
         const different = results.filter(r => r.status === 'different').length;
         const notFound = results.filter(r => r.status === 'not-found').length;
-        
-        document.getElementById("stat-common").textContent = identical;
-        document.getElementById("stat-unique1").textContent = different;
-        document.getElementById("stat-unique2").textContent = notFound;
         
         // Update headers
         document.getElementById("profile1-name").textContent = `${object1.name} (${object1.objectType === 'model' ? 'Модель' : 'Профиль'})`;
@@ -861,17 +907,6 @@
 
       function renderComparison(obj1, obj2) {
         document.getElementById("comparison-results").style.display = "block";
-
-        // Mock statistics
-        const common =
-          Math.min(obj1.classes || 0, obj2.classes || 0) -
-          Math.floor(Math.random() * 10);
-        const unique1 = (obj1.classes || 0) - common;
-        const unique2 = (obj2.classes || 0) - common;
-
-        document.getElementById("stat-common").textContent = common;
-        document.getElementById("stat-unique1").textContent = unique1;
-        document.getElementById("stat-unique2").textContent = unique2;
 
         // Object names with type indicator
         document.getElementById("profile1-name").textContent = `${obj1.name} (${
