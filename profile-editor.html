@@ -6,7 +6,10 @@
     <title>Nautilus.CIM - Редактор профиля</title>
     <link rel="stylesheet" href="styles.css" />
     <!-- Joint.js library for diagram editor -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.7.1/joint.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.7.1/joint.min.css"
+    />
     <!-- jQuery должен загружаться первым -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
@@ -227,12 +230,14 @@
       }
 
       .editor-content-area.editor-mode .editor-wrapper {
-        height: 72.666%;
+        height: 70.666%;
       }
 
       .editor-content-area.editor-mode #editor-mode-details-panel {
-        display: block;
-        height: 27.333%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        height: 30.333%;
         border: 1px solid #ddd;
         border-radius: 4px;
         background: #fff;
@@ -255,8 +260,30 @@
         width: 100%;
         height: 100%;
         background: #ffffff;
-        background-image: linear-gradient(0deg, transparent 24%, rgba(0, 0, 0, .05) 25%, rgba(0, 0, 0, .05) 26%, transparent 27%, transparent 74%, rgba(0, 0, 0, .05) 75%, rgba(0, 0, 0, .05) 76%, transparent 77%, transparent),
-        linear-gradient(90deg, transparent 24%, rgba(0, 0, 0, .05) 25%, rgba(0, 0, 0, .05) 26%, transparent 27%, transparent 74%, rgba(0, 0, 0, .05) 75%, rgba(0, 0, 0, .05) 76%, transparent 77%, transparent);
+        background-image: linear-gradient(
+            0deg,
+            transparent 24%,
+            rgba(0, 0, 0, 0.05) 25%,
+            rgba(0, 0, 0, 0.05) 26%,
+            transparent 27%,
+            transparent 74%,
+            rgba(0, 0, 0, 0.05) 75%,
+            rgba(0, 0, 0, 0.05) 76%,
+            transparent 77%,
+            transparent
+          ),
+          linear-gradient(
+            90deg,
+            transparent 24%,
+            rgba(0, 0, 0, 0.05) 25%,
+            rgba(0, 0, 0, 0.05) 26%,
+            transparent 27%,
+            transparent 74%,
+            rgba(0, 0, 0, 0.05) 75%,
+            rgba(0, 0, 0, 0.05) 76%,
+            transparent 77%,
+            transparent
+          );
         background-size: 20px 20px;
       }
 
@@ -268,7 +295,7 @@
         background: white;
         padding: 8px;
         border-radius: 4px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         display: flex;
         gap: 8px;
       }
@@ -307,6 +334,140 @@
         background: #e3f2fd;
       }
 
+      /* Editor mode details panel tabs */
+      #editor-mode-details-panel .tabs {
+        display: flex;
+        gap: 8px;
+        border-bottom: 1px solid #e5e5e5;
+        margin-bottom: 12px;
+      }
+
+      #editor-mode-details-panel .tab {
+        padding: 6px 12px;
+        font-size: 13px;
+        color: #444;
+        cursor: pointer;
+        border: 1px solid transparent;
+        border-bottom: none;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        background: transparent;
+      }
+
+      #editor-mode-details-panel .tab.active {
+        background: #f5f5f5;
+        border-color: #e5e5e5;
+        color: #000;
+        font-weight: 600;
+      }
+
+      #editor-mode-details-panel .tab-content {
+        display: none;
+      }
+
+      #editor-mode-details-panel .tab-content.active {
+        display: block;
+      }
+
+      .attribute-item, .link-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 8px;
+        margin-bottom: 6px;
+        border: 1px solid #e5e5e5;
+        border-radius: 4px;
+        background: #fafafa;
+      }
+
+      .attribute-item:hover, .link-item:hover {
+        background: #f0f0f0;
+      }
+
+      .attribute-checkbox, .link-checkbox {
+        margin-right: 10px;
+        margin-top: 2px;
+      }
+
+      .attribute-details, .link-details {
+        flex: 1;
+      }
+
+      .attribute-name, .link-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 3px;
+      }
+
+      .attribute-type, .link-type {
+        color: #666;
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+
+      .attribute-description, .link-description {
+        color: #888;
+        font-size: 12px;
+        font-style: italic;
+      }
+
+      /* Table-like layout for attributes */
+      .attributes-table {
+        /* border: 1px solid #ddd; */
+        /* border-radius: 4px; */
+        overflow: hidden;
+        margin-top: 10px;
+      }
+
+      .attributes-table-header {
+        display: grid;
+        grid-template-columns: 40px 1fr 1fr 100px 2fr;
+        background: transparent;
+        border-bottom: 1px solid #ddd;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      .attributes-table-header > div {
+        padding: 6px 10px;
+      }
+
+      .attributes-table-row {
+        display: grid;
+        grid-template-columns: 40px 1fr 1fr 100px 2fr;
+        border-bottom: 1px solid #e5e5e5;
+        background: #fff;
+        align-items: start;
+      }
+
+      .attributes-table-row:hover {
+        background: #f9f9f9;
+      }
+
+      .attributes-table-row:last-child {
+        border-bottom: none;
+      }
+
+      .attributes-table-cell {
+        padding: 6px 10px;
+        font-size: 13px;
+        word-wrap: break-word;
+      }
+
+      .attributes-table-cell-checkbox {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+      }
+
+      .attributes-table-empty {
+        padding: 20px;
+        text-align: center;
+        color: #888;
+        font-style: italic;
+        border-top: 1px solid #e5e5e5;
+      }
+
       .search-box {
         margin-bottom: 10px;
       }
@@ -337,8 +498,10 @@
 
         /* margin-top: 5px; */
       }
-
-
+#editor-mode-profile-object {
+  padding-left: 10px;
+   border-left: 1px solid #ddd;
+}
 
 
     </style>
@@ -521,7 +684,58 @@
                 </div>
               </div>
             </div>
-            <div id="editor-mode-details-panel" class="hidden"></div>
+            <div id="editor-mode-details-panel" class="hidden">
+              <div id="editor-mode-model-object">
+                <div class="tabs" id="editor-details-tabs">
+                  <div class="tab active" data-tab="object-info">Описание</div>
+                  <div class="tab" data-tab="object-attributes">Атрибуты</div>
+                  <div class="tab" data-tab="object-links">Связи</div>
+                </div>
+                <div class="tab-content active">
+                  <div class="text-muted" style="padding: 10px 0">
+                    Здесь будет отображаться информация об описании объекта
+                    модели.
+                  </div>
+                </div>
+                <div class="tab-content">
+                  <div class="text-muted" style="padding: 10px 0">
+                    Здесь будет отображаться информация об аттрибутах объекта
+                    модели.
+                  </div>
+                </div>
+                <div class="tab-content">
+                  <div class="text-muted" style="padding: 10px 0">
+                    Здесь будет отображаться информация о связях объекта модели.
+                  </div>
+                </div>
+              </div>
+              
+              <div id="editor-mode-profile-object">
+                <div class="tabs" id="editor-details-tabs">
+                  <div class="tab active" data-tab="object-info">Описание</div>
+                  <div class="tab" data-tab="object-attributes">Атрибуты</div>
+                  <div class="tab" data-tab="object-links">Связи</div>
+                </div>
+                <div class="tab-content active">
+                  <div class="text-muted" style="padding: 10px 0">
+                    Здесь будет отображаться информация об описании объекта
+                    профиля.
+                  </div>
+                </div>
+                <div class="tab-content">
+                  <div class="text-muted" style="padding: 10px 0">
+                    Здесь будет отображаться информация об аттрибутах объекта
+                    профиля.
+                  </div>
+                </div>
+                <div class="tab-content">
+                  <div class="text-muted" style="padding: 10px 0">
+                    Здесь будет отображаться информация о связях объекта
+                    профиля.
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -837,6 +1051,12 @@
         activeLeftItem = itemKey;
         renderAvailableTree();
         updateDetailsPanel("left");
+        
+        // Update editor mode details panel if in editor mode
+        const contentArea = document.querySelector('.editor-content-area');
+        if (contentArea && contentArea.classList.contains('editor-mode')) {
+          renderEditorModeDetailsPanel();
+        }
       }
 
       function setActiveRightItem(itemKey, event) {
@@ -1154,29 +1374,26 @@
       let currentLinkMode = null; // 'generalization' or 'association'
 
       function setEditorMode() {
-        const contentArea = document.querySelector('.editor-content-area');
-        const toggleBtn = document.getElementById('toggle-mode-btn');
-        
-        if (contentArea.classList.contains('standart-mode')) {
+        const contentArea = document.querySelector(".editor-content-area");
+        const toggleBtn = document.getElementById("toggle-mode-btn");
+
+        if (contentArea.classList.contains("standart-mode")) {
           // Switch to editor mode
-          contentArea.classList.remove('standart-mode');
-          contentArea.classList.add('editor-mode');
-          toggleBtn.textContent = '📋 Стандартный режим';
-          
+          contentArea.classList.remove("standart-mode");
+          contentArea.classList.add("editor-mode");
+          toggleBtn.textContent = "📋 Стандартный режим";
+
           // Initialize diagram editor
           initializeDiagramEditor();
-          
-          // Render details panel placeholder
-          document.getElementById('editor-mode-details-panel').innerHTML = `
-            <h4 style="margin-top: 0;">Детали выбранного элемента</h4>
-            <div class="text-muted">Выберите элемент на диаграмме или перетащите класс из дерева для просмотра деталей</div>
-          `;
+
+          // Render details panel with tabs
+          renderEditorModeDetailsPanel();
         } else {
           // Switch back to standard mode
-          contentArea.classList.remove('editor-mode');
-          contentArea.classList.add('standart-mode');
-          toggleBtn.textContent = '📐 Режим диаграммы';
-          
+          contentArea.classList.remove("editor-mode");
+          contentArea.classList.add("standart-mode");
+          toggleBtn.textContent = "📐 Режим диаграммы";
+
           // Clean up diagram
           if (diagramPaper) {
             diagramPaper.remove();
@@ -1188,8 +1405,8 @@
       }
 
       function initializeDiagramEditor() {
-        const container = document.getElementById('diagram-editor');
-        
+        const container = document.getElementById("diagram-editor");
+
         // Create toolbar and canvas
         container.innerHTML = `
           <div class="diagram-toolbar">
@@ -1212,50 +1429,53 @@
         // Initialize JointJS
         const namespace = joint.shapes;
         diagramGraph = new joint.dia.Graph({}, { cellNamespace: namespace });
-        
+
         diagramPaper = new joint.dia.Paper({
-          el: document.getElementById('diagram-canvas'),
+          el: document.getElementById("diagram-canvas"),
           model: diagramGraph,
-          width: '100%',
-          height: '100%',
+          width: "100%",
+          height: "100%",
           gridSize: 10,
           drawGrid: false,
-          background: { color: 'transparent' },
+          background: { color: "transparent" },
           cellViewNamespace: namespace,
           defaultLink: new joint.shapes.standard.Link(),
           linkPinning: false,
-          interactive: { linkMove: false }
+          interactive: { linkMove: false },
         });
 
         // Handle element click for both selection and link creation
-        diagramPaper.on('element:pointerclick', function(elementView, evt) {
+        diagramPaper.on("element:pointerclick", function (elementView, evt) {
           if (currentLinkMode) {
             // Link creation mode
             if (!startLinkFrom) {
               // First click - select source element
               startLinkFrom = elementView.model;
-              
+
               // Visual feedback - highlight selected element
-              elementView.model.attr('body/strokeWidth', 4);
-              elementView.model.attr('body/stroke', '#4a90e2');
-              
-              console.log('Выбран исходный элемент:', elementView.model.get('data').name);
+              elementView.model.attr("body/strokeWidth", 4);
+              elementView.model.attr("body/stroke", "#4a90e2");
+
+              console.log(
+                "Выбран исходный элемент:",
+                elementView.model.get("data").name
+              );
             } else if (startLinkFrom !== elementView.model) {
               // Second click - create link to target element
               const sourceElement = startLinkFrom;
               createLink(sourceElement, elementView.model, currentLinkMode);
-              
+
               // Reset visual feedback before clearing startLinkFrom
-              sourceElement.attr('body/strokeWidth', 2);
-              sourceElement.attr('body/stroke', '#333');
-              
+              sourceElement.attr("body/strokeWidth", 2);
+              sourceElement.attr("body/stroke", "#333");
+
               startLinkFrom = null;
             } else {
               // Clicked same element - cancel
-              startLinkFrom.attr('body/strokeWidth', 2);
-              startLinkFrom.attr('body/stroke', '#333');
+              startLinkFrom.attr("body/strokeWidth", 2);
+              startLinkFrom.attr("body/stroke", "#333");
               startLinkFrom = null;
-              console.log('Отменено - кликнули на тот же элемент');
+              console.log("Отменено - кликнули на тот же элемент");
             }
           } else {
             // Normal selection mode - show details
@@ -1271,72 +1491,76 @@
 
       function setLinkMode(mode) {
         currentLinkMode = mode;
-        document.getElementById('gen-btn').classList.remove('active');
-        document.getElementById('assoc-btn').classList.remove('active');
-        
-        if (mode === 'generalization') {
-          document.getElementById('gen-btn').classList.add('active');
-        } else if (mode === 'association') {
-          document.getElementById('assoc-btn').classList.add('active');
+        document.getElementById("gen-btn").classList.remove("active");
+        document.getElementById("assoc-btn").classList.remove("active");
+
+        if (mode === "generalization") {
+          document.getElementById("gen-btn").classList.add("active");
+        } else if (mode === "association") {
+          document.getElementById("assoc-btn").classList.add("active");
         }
       }
 
       function clearLinkMode() {
         currentLinkMode = null;
-        
+
         // Reset visual feedback if there was a selected element
         if (startLinkFrom) {
-          startLinkFrom.attr('body/strokeWidth', 2);
-          startLinkFrom.attr('body/stroke', '#333');
+          startLinkFrom.attr("body/strokeWidth", 2);
+          startLinkFrom.attr("body/stroke", "#333");
           startLinkFrom = null;
         }
-        
-        document.getElementById('gen-btn').classList.remove('active');
-        document.getElementById('assoc-btn').classList.remove('active');
+
+        document.getElementById("gen-btn").classList.remove("active");
+        document.getElementById("assoc-btn").classList.remove("active");
       }
 
       function createLink(source, target, linkType) {
         let link;
-        
-        if (linkType === 'generalization') {
+
+        if (linkType === "generalization") {
           // Generalization (inheritance) - triangle arrow
           link = new joint.shapes.standard.Link({
             source: { id: source.id },
             target: { id: target.id },
             attrs: {
               line: {
-                stroke: '#333',
+                stroke: "#333",
                 strokeWidth: 2,
                 targetMarker: {
-                  type: 'path',
-                  d: 'M 10 -5 0 0 10 5 Z',
-                  fill: 'white',
-                  stroke: '#333'
-                }
-              }
+                  type: "path",
+                  d: "M 10 -5 0 0 10 5 Z",
+                  fill: "white",
+                  stroke: "#333",
+                },
+              },
             },
-            labels: [{
-              attrs: { text: { text: '◁ Generalization' } }
-            }]
+            labels: [
+              {
+                attrs: { text: { text: "◁ Generalization" } },
+              },
+            ],
           });
-        } else if (linkType === 'association') {
+        } else if (linkType === "association") {
           // Association - simple arrow
           link = new joint.shapes.standard.Link({
             source: { id: source.id },
             target: { id: target.id },
             attrs: {
               line: {
-                stroke: '#333',
+                stroke: "#333",
                 strokeWidth: 2,
                 targetMarker: {
-                  type: 'path',
-                  d: 'M 10 -5 0 0 10 5 z'
-                }
-              }
+                  type: "path",
+                  d: "M 10 -5 0 0 10 5 z",
+                },
+              },
             },
-            labels: [{
-              attrs: { text: { text: 'Association ➡' } }
-            }]
+            labels: [
+              {
+                attrs: { text: { text: "Association ➡" } },
+              },
+            ],
           });
         }
 
@@ -1345,43 +1569,43 @@
       }
 
       function clearDiagram() {
-        if (confirm('Очистить всю диаграмму?')) {
+        if (confirm("Очистить всю диаграмму?")) {
           diagramGraph.clear();
         }
       }
 
       function setupDragAndDrop() {
-        const diagramEditor = document.getElementById('diagram-editor');
-        
+        const diagramEditor = document.getElementById("diagram-editor");
+
         // Prevent default drag behavior
-        diagramEditor.addEventListener('dragover', function(e) {
+        diagramEditor.addEventListener("dragover", function (e) {
           e.preventDefault();
-          diagramEditor.classList.add('drag-over');
+          diagramEditor.classList.add("drag-over");
         });
 
-        diagramEditor.addEventListener('dragleave', function(e) {
-          diagramEditor.classList.remove('drag-over');
+        diagramEditor.addEventListener("dragleave", function (e) {
+          diagramEditor.classList.remove("drag-over");
         });
 
-        diagramEditor.addEventListener('drop', function(e) {
+        diagramEditor.addEventListener("drop", function (e) {
           e.preventDefault();
-          diagramEditor.classList.remove('drag-over');
-          
-          const data = e.dataTransfer.getData('text/plain');
+          diagramEditor.classList.remove("drag-over");
+
+          const data = e.dataTransfer.getData("text/plain");
           if (!data) return;
-          
+
           try {
             const itemInfo = JSON.parse(data);
-            if (itemInfo.kind === 'element' && itemInfo.data) {
-              const canvas = document.getElementById('diagram-canvas');
+            if (itemInfo.kind === "element" && itemInfo.data) {
+              const canvas = document.getElementById("diagram-canvas");
               const rect = canvas.getBoundingClientRect();
               const x = e.clientX - rect.left;
               const y = e.clientY - rect.top;
-              
+
               createClassElement(itemInfo.data, x, y);
             }
           } catch (err) {
-            console.error('Drop error:', err);
+            console.error("Drop error:", err);
           }
         });
       }
@@ -1389,103 +1613,340 @@
       function createClassElement(classData, x, y) {
         const attrs = classData.attributes || [];
         const links = classData.links || [];
-        
+
         // Build attributes text
-        const attrText = attrs.length > 0 
-          ? attrs.slice(0, 5).map(a => `+ ${a.name}: ${a.type || a.dataType || 'any'}`).join('\n')
-          : '(нет атрибутов)';
-        
+        const attrText =
+          attrs.length > 0
+            ? attrs
+                .slice(0, 5)
+                .map((a) => `+ ${a.name}: ${a.type || a.dataType || "any"}`)
+                .join("\n")
+            : "(нет атрибутов)";
+
         // Build methods/links text
-        const linkText = links.length > 0
-          ? links.slice(0, 3).map(l => `+ ${l.target_class_role_name || 'link'}`).join('\n')
-          : '(нет связей)';
+        const linkText =
+          links.length > 0
+            ? links
+                .slice(0, 3)
+                .map((l) => `+ ${l.target_class_role_name || "link"}`)
+                .join("\n")
+            : "(нет связей)";
 
         const classShape = new joint.shapes.standard.Rectangle({
           position: { x: x - 75, y: y - 50 },
           size: { width: 200, height: 120 },
           attrs: {
             body: {
-              fill: '#ffffff',
-              stroke: '#333',
+              fill: "#ffffff",
+              stroke: "#333",
               strokeWidth: 2,
               rx: 5,
-              ry: 5
+              ry: 5,
             },
             label: {
-              text: `«class»\n${classData.name}\n${'—'.repeat(15)}\n${attrText}`,
-              fill: '#333',
+              text: `«class»\n${classData.name}\n${"—".repeat(
+                15
+              )}\n${attrText}`,
+              fill: "#333",
               fontSize: 11,
-              fontFamily: 'monospace',
-              textAnchor: 'start',
-              textVerticalAnchor: 'top',
+              fontFamily: "monospace",
+              textAnchor: "start",
+              textVerticalAnchor: "top",
               refX: 5,
-              refY: 5
-            }
+              refY: 5,
+            },
           },
-          data: classData // Store original data
+          data: classData, // Store original data
         });
 
         classShape.addTo(diagramGraph);
       }
 
       function showDiagramElementDetails(element) {
-        const classData = element.get('data');
+        const classData = element.get("data");
         if (!classData) return;
 
-        const detailsPanel = document.getElementById('editor-mode-details-panel');
+        const detailsPanel = document.getElementById(
+          "editor-mode-details-panel"
+        );
         const attrs = classData.attributes || [];
         const links = classData.links || [];
-        
+
         let html = `
           <h4 style="margin-top: 0;">Класс: ${classData.name}</h4>
-          <p><strong>Тип:</strong> ${classData.type || 'Class'}</p>
-          <p><strong>Абстрактный:</strong> ${classData.isAbstract ? 'Да' : 'Нет'}</p>
-          <p><strong>Описание:</strong> ${classData.description || classData.description_ru || 'Нет описания'}</p>
+          <p><strong>Тип:</strong> ${classData.type || "Class"}</p>
+          <p><strong>Абстрактный:</strong> ${
+            classData.isAbstract ? "Да" : "Нет"
+          }</p>
+          <p><strong>Описание:</strong> ${
+            classData.description || classData.description_ru || "Нет описания"
+          }</p>
           
-          <h5 style="margin-top: 15px; margin-bottom: 5px;">Атрибуты (${attrs.length}):</h5>
+          <h5 style="margin-top: 15px; margin-bottom: 5px;">Атрибуты (${
+            attrs.length
+          }):</h5>
         `;
-        
+
         if (attrs.length > 0) {
           html += '<ul style="margin: 0; padding-left: 20px;">';
-          attrs.forEach(a => {
-            html += `<li><strong>${a.name}</strong>: ${a.type || a.dataType || 'any'} ${a.multiplicity ? `[${a.multiplicity}]` : ''}</li>`;
+          attrs.forEach((a) => {
+            html += `<li><strong>${a.name}</strong>: ${
+              a.type || a.dataType || "any"
+            } ${a.multiplicity ? `[${a.multiplicity}]` : ""}</li>`;
           });
-          html += '</ul>';
+          html += "</ul>";
         } else {
           html += '<p class="text-muted">Нет атрибутов</p>';
         }
-        
+
         html += `<h5 style="margin-top: 15px; margin-bottom: 5px;">Связи (${links.length}):</h5>`;
-        
+
         if (links.length > 0) {
           html += '<ul style="margin: 0; padding-left: 20px;">';
-          links.forEach(l => {
-            html += `<li><strong>${l.target_class_role_name || 'link'}</strong> → ${l.target_class_name} (${l.relation_kind})</li>`;
+          links.forEach((l) => {
+            html += `<li><strong>${
+              l.target_class_role_name || "link"
+            }</strong> → ${l.target_class_name} (${l.relation_kind})</li>`;
           });
-          html += '</ul>';
+          html += "</ul>";
         } else {
           html += '<p class="text-muted">Нет связей</p>';
         }
-        
+
         detailsPanel.innerHTML = html;
+      }
+
+      // Editor mode details panel state
+      let selectedAttributes = new Set();
+      let selectedLinks = new Set();
+
+      function renderEditorModeDetailsPanel() {
+        const modelObjectPanel = document.getElementById('editor-mode-model-object');
+        if (!modelObjectPanel) return;
+
+        if (!activeLeftItem) {
+          modelObjectPanel.innerHTML = `
+            <h4 style="margin-top: 0;">Объект модели</h4>
+            <div class="text-muted" style="padding: 10px 0;">Выберите объект в дереве моделей для просмотра деталей</div>
+          `;
+          return;
+        }
+
+        const info = resolveLeftKey(activeLeftItem);
+        if (!info || !info.data) {
+          modelObjectPanel.innerHTML = `
+            <h4 style="margin-top: 0;">Объект модели</h4>
+            <div class="text-muted" style="padding: 10px 0;">Нет данных для отображения</div>
+          `;
+          return;
+        }
+
+        const data = info.data;
+        const isElement = info.kind === 'element';
+
+        if (!isElement) {
+          modelObjectPanel.innerHTML = `
+            <h4 style="margin-top: 0;">${info.kind === 'package' ? 'Пакет' : info.kind === 'model' ? 'Модель' : 'Объект'}: ${esc(data.name)}</h4>
+            <p style="padding: 10px 0;">${esc(data.description || data.description_ru || 'Нет описания')}</p>
+          `;
+          return;
+        }
+
+        // Render tabs for element (class)
+        const attrs = data.attributes || [];
+        const links = data.links || [];
+        
+        // Filter out parent Generalization links
+        const filteredLinks = links.filter(l => {
+          return !(l.relation_kind === 'Generalization' && l.role === 'parent');
+        });
+
+        let html = `
+          <div class="tabs">
+            <div class="tab active" onclick="switchEditorTab('description')">Описание</div>
+            <div class="tab" onclick="switchEditorTab('attributes')">Атрибуты (${attrs.length})</div>
+            <div class="tab" onclick="switchEditorTab('links')">Связи (${filteredLinks.length})</div>
+          </div>
+
+          <div class="tab-content active" data-tab="description">
+            <h4 style="margin-top: 0;">Класс: ${esc(data.name)}</h4>
+            <p><strong>Тип:</strong> ${esc(data.type || 'Class')}</p>
+            <p><strong>Абстрактный:</strong> ${data.isAbstract ? 'Да' : 'Нет'}</p>
+            <p><strong>Описание:</strong> ${esc(data.description || data.description_ru || 'Нет описания')}</p>
+          </div>
+
+          <div class="tab-content" data-tab="attributes">
+            <h4 style="margin-top: 0;">Атрибуты</h4>
+            <div class="attributes-table">
+              <div class="attributes-table-header">
+                <div></div>
+                <div>Имя</div>
+                <div>Тип</div>
+                <div>Кратность</div>
+                <div>Описание</div>
+              </div>
+        `;
+
+        if (attrs.length > 0) {
+          attrs.forEach((attr, idx) => {
+            const attrKey = `${activeLeftItem}-attr-${idx}`;
+            const isChecked = selectedAttributes.has(attrKey);
+            html += `
+              <div class="attributes-table-row">
+                <div class="attributes-table-cell-checkbox">
+                  <input type="checkbox" id="${attrKey}" ${isChecked ? 'checked' : ''}
+                    onchange="toggleAttributeSelection('${attrKey}')">
+                </div>
+                <div class="attributes-table-cell">${esc(attr.name)}</div>
+                <div class="attributes-table-cell">${esc(attr.type || attr.dataType || '-')}</div>
+                <div class="attributes-table-cell">${esc(attr.multiplicity || '-')}</div>
+                <div class="attributes-table-cell">${esc(attr.description || attr.description_ru || '')}</div>
+              </div>
+            `;
+          });
+          html += `
+            </div>
+            <button class="btn btn-primary" onclick="transferSelectedAttributes()" style="margin-top: 10px; width: 100%;">
+              → Перенести в профиль
+            </button>
+          `;
+        } else {
+          html += `
+              <div class="attributes-table-empty">Нет атрибутов</div>
+            </div>
+          `;
+        }
+
+        html += '</div><div class="tab-content" data-tab="links"><h4 style="margin-top: 0;">Связи</h4>';
+
+        html += `
+          <div class="attributes-table">
+            <div class="attributes-table-header">
+              <div></div>
+              <div>Роль</div>
+              <div>Тип связи</div>
+              <div>Класс</div>
+              <div>Описание</div>
+            </div>
+        `;
+
+        if (filteredLinks.length > 0) {
+          filteredLinks.forEach((link, idx) => {
+            const linkKey = `${activeLeftItem}-link-${idx}`;
+            const isChecked = selectedLinks.has(linkKey);
+            html += `
+              <div class="attributes-table-row">
+                <div class="attributes-table-cell-checkbox">
+                  <input type="checkbox" id="${linkKey}" ${isChecked ? 'checked' : ''}
+                    onchange="toggleLinkSelection('${linkKey}')">
+                </div>
+                <div class="attributes-table-cell">${esc(link.target_class_role_name || '-')}</div>
+                <div class="attributes-table-cell">${esc(link.relation_kind || '-')}</div>
+                <div class="attributes-table-cell">${esc(link.target_class_name || '-')}</div>
+                <div class="attributes-table-cell">${esc(link.description || link.target_description || '')}</div>
+              </div>
+            `;
+          });
+          html += `
+            </div>
+            <button class="btn btn-primary" onclick="transferSelectedLinks()" style="margin-top: 10px; width: 100%;">
+              → Перенести в профиль
+            </button>
+          `;
+        } else {
+          html += `
+              <div class="attributes-table-empty">Нет связей для отображения</div>
+            </div>
+          `;
+        }
+
+        html += '</div>';
+        modelObjectPanel.innerHTML = html;
+      }
+
+      function switchEditorTab(tabName) {
+        const tabs = document.querySelectorAll('#editor-mode-model-object .tab');
+        const contents = document.querySelectorAll('#editor-mode-model-object .tab-content');
+
+        tabs.forEach(tab => {
+          if (tab.getAttribute('onclick').includes(tabName)) {
+            tab.classList.add('active');
+          } else {
+            tab.classList.remove('active');
+          }
+        });
+
+        contents.forEach(content => {
+          if (content.getAttribute('data-tab') === tabName) {
+            content.classList.add('active');
+          } else {
+            content.classList.remove('active');
+          }
+        });
+      }
+
+      function toggleAttributeSelection(attrKey) {
+        const checkbox = document.getElementById(attrKey);
+        if (checkbox && checkbox.checked) {
+          selectedAttributes.add(attrKey);
+        } else {
+          selectedAttributes.delete(attrKey);
+        }
+      }
+
+      function toggleLinkSelection(linkKey) {
+        const checkbox = document.getElementById(linkKey);
+        if (checkbox && checkbox.checked) {
+          selectedLinks.add(linkKey);
+        } else {
+          selectedLinks.delete(linkKey);
+        }
+      }
+
+      function transferSelectedAttributes() {
+        if (selectedAttributes.size === 0) {
+          alert('Выберите атрибуты для переноса');
+          return;
+        }
+
+        // TODO: Implement attribute transfer logic
+        alert(`Выбрано атрибутов: ${selectedAttributes.size}\n\nФункциональность переноса будет реализована позже`);
+        
+        // Clear selection after transfer
+        selectedAttributes.clear();
+        renderEditorModeDetailsPanel();
+      }
+
+      function transferSelectedLinks() {
+        if (selectedLinks.size === 0) {
+          alert('Выберите связи для переноса');
+          return;
+        }
+
+        // TODO: Implement link transfer logic
+        alert(`Выбрано связей: ${selectedLinks.size}\n\nФункциональность переноса будет реализована позже`);
+        
+        // Clear selection after transfer
+        selectedLinks.clear();
+        renderEditorModeDetailsPanel();
       }
 
       function handleDragStart(event, itemKey) {
         event.stopPropagation();
-        
+
         // Determine if this is from left or right tree
         let info;
-        if (itemKey.startsWith('left-')) {
+        if (itemKey.startsWith("left-")) {
           info = resolveLeftKey(itemKey);
-        } else if (itemKey.startsWith('profile')) {
+        } else if (itemKey.startsWith("profile")) {
           info = resolveRightKey(itemKey);
         }
-        
-        if (info && info.kind === 'element' && info.data) {
+
+        if (info && info.kind === "element" && info.data) {
           // Only allow dragging class elements
-          event.dataTransfer.setData('text/plain', JSON.stringify(info));
-          event.dataTransfer.effectAllowed = 'copy';
-          event.target.classList.add('dragging');
+          event.dataTransfer.setData("text/plain", JSON.stringify(info));
+          event.dataTransfer.effectAllowed = "copy";
+          event.target.classList.add("dragging");
         } else {
           event.preventDefault();
         }
