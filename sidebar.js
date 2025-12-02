@@ -162,6 +162,8 @@ function toggleProjectsTree() {
 
 function renderProjectsTree() {
     const projectsList = document.getElementById('projects-list-tree');
+    if (!projectsList) return;
+    
     const projects = getAllProjects();
     const currentProjectId = getCurrentProjectId();
     const expandedProjects = JSON.parse(localStorage.getItem('expandedProjects') || '{}');
