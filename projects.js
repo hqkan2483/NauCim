@@ -15,6 +15,12 @@ let selectedProjectId = null;
 let selectedModelId = null;
 let selectedProfileId = null;
 
+// Функция рендеринга списка проектов
+
+// один и тот же код, что и в renderRecentProjects в script.js но для всех проектов
+// и с дополнительными кнопками редактирования и просмотра деталей
+// а также с отображением количества моделей и профилей.
+// filterProjects использует похожий код для фильтрации списка проектов
 function renderProjects() {
     // Don't re-render if we're viewing project details
     if (selectedProjectId !== null) {
@@ -23,21 +29,21 @@ function renderProjects() {
     
     const projects = getProjects();
     const html = projects.map(p => `
-        <div class="card">
+        <div class="project-card">
             <div class="flex-between mb-10">
                 <div>
-                    <div style="font-weight:600; font-size:16px; margin-bottom:5px; cursor:pointer;" onclick="viewProjectDetails(${p.id})">${p.name}</div>
-                    <div style="font-size:13px; color:var(--text-secondary);">Версия ${p.version} • Создан: ${p.createdAt || 'N/A'}</div>
+                    <div class="project-card-title" style="cursor:pointer;" onclick="viewProjectDetails(${p.id})">${p.name}</div>
+                    <div class="project-card-meta"><span>📌</span> Версия ${p.version} • <span>📅</span> Создан: ${p.createdAt || 'N/A'}</div>
                 </div>
-                <div class="flex gap-10">
+                <div class="project-card-actions">
                     <button class="btn btn-secondary btn-small" onclick="editProject(${p.id})">✏️ Изменить</button>
                     <button class="btn btn-primary btn-small" onclick="openProject(${p.id})">Открыть →</button>
                 </div>
             </div>
-            <div style="margin-top:10px; color:var(--text-secondary); font-size:14px;">
+            <div class="project-card-description" >
                 ${p.description || 'Нет описания'}
             </div>
-            <div style="margin-top:15px; display:flex; gap:15px; font-size:13px;">
+            <div style="margin-top:15px; display:flex; gap:15px; font-size:14px;">
                 <span>📋 Модели: <strong>${p.models.length}</strong></span>
                 <span>⚙️ Профили: <strong>${p.profiles.length}</strong></span>
             </div>
@@ -134,9 +140,7 @@ function renderModelDetails() {
             <div class="tab active">Свойства</div>
         </div>
         <div class="tab-content active">
-            <div class="flex-between mb-15">
-                <h3 class="no-margin">${model.name}</h3>
-            </div>
+            
             <table class="table model-details-table">
                 <tr>
                     <td colspan="2">Описание</td>
@@ -168,9 +172,7 @@ function renderProfileDetails() {
             <div class="tab active">Свойства</div>
         </div>
         <div class="tab-content active">
-            <div class="flex-between mb-15">
-                <h3 class="no-margin">${profile.name}</h3>
-            </div>
+           
             <table class="table">
                 <tr>
                     <td class="table-label">Базовая модель</td>
@@ -199,6 +201,7 @@ function renderProfileDetails() {
     document.getElementById('profile-details').innerHTML = html;
 }
 
+//Фильтрация проектов по поисковому запросу
 function filterProjects() {
     const query = document.getElementById('search-projects').value.toLowerCase();
     const projects = getProjects();
@@ -207,22 +210,24 @@ function filterProjects() {
         (p.description && p.description.toLowerCase().includes(query))
     );
 
+
+    // один и тот же код, что и в renderProjects, но с filtered вместо projects
     const html = filtered.map(p => `
-        <div class="card">
+      <div class="project-card">
             <div class="flex-between mb-10">
                 <div>
-                    <div style="font-weight:600; font-size:16px; margin-bottom:5px;">${p.name}</div>
-                    <div style="font-size:13px; color:var(--text-secondary);">Версия ${p.version} • Создан: ${p.createdAt || 'N/A'}</div>
+                    <div class="project-card-title" style="cursor:pointer;" onclick="viewProjectDetails(${p.id})">${p.name}</div>
+                    <div class="project-card-meta"><span>📌</span> Версия ${p.version} • <span>📅</span> Создан: ${p.createdAt || 'N/A'}</div>
                 </div>
-                <div class="flex gap-10">
+                <div class="project-card-actions">
                     <button class="btn btn-secondary btn-small" onclick="editProject(${p.id})">✏️ Изменить</button>
                     <button class="btn btn-primary btn-small" onclick="openProject(${p.id})">Открыть →</button>
                 </div>
             </div>
-            <div style="margin-top:10px; color:var(--text-secondary); font-size:14px;">
+            <div class="project-card-description" >
                 ${p.description || 'Нет описания'}
             </div>
-            <div style="margin-top:15px; display:flex; gap:15px; font-size:13px;">
+            <div style="margin-top:15px; display:flex; gap:15px; font-size:14px;">
                 <span>📋 Модели: <strong>${p.models.length}</strong></span>
                 <span>⚙️ Профили: <strong>${p.profiles.length}</strong></span>
             </div>

@@ -24,7 +24,7 @@ function renderRecentProjects() {
             <div class="project-card-header">
                 <div>
                     <div class="project-card-title">${p.name}</div>
-                    <div class="project-card-meta">Версия ${p.version} • Создан: ${p.createdAt || 'N/A'}</div>
+                    <div class="project-card-meta"><span>📌</span> Версия ${p.version} • <span>📅</span> Создан: ${p.createdAt || 'N/A'}</div>
                 </div>
                 <div class="project-card-actions">
                     <button class="btn btn-primary btn-small" onclick="openProject(${p.id})">Открыть →</button>

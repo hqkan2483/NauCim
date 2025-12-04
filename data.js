@@ -79,25 +79,25 @@ async function loadSampleData() {
   // Load rootPackages from external JSON file
   let tc57cimRootPackages = [];
   try {
-    const response = await fetch('./models-data/CIM100.json');
+    const response = await fetch("./models-data/CIM100.json");
     tc57cimRootPackages = await response.json();
     console.log("✅ cim100.json loaded successfully");
   } catch (error) {
     console.error("❌ Error loading cim100.json:", error);
   }
 
-    let gostExtRootPackages = [];
+  let gostExtRootPackages = [];
   try {
-    const response = await fetch('./models-data/GOSTRExtension.json');
+    const response = await fetch("./models-data/GOSTRExtension.json");
     gostExtRootPackages = await response.json();
     console.log("✅ GOSTRExtension.json loaded successfully");
   } catch (error) {
     console.error("❌ Error loading GOSTRExtension.json:", error);
   }
 
-      let CIM16RootPackages = [];
+  let CIM16RootPackages = [];
   try {
-    const response = await fetch('./models-data/CIM16.json');
+    const response = await fetch("./models-data/CIM16.json");
     CIM16RootPackages = await response.json();
     console.log("✅ CIM16.json loaded successfully");
   } catch (error) {
@@ -124,7 +124,7 @@ async function loadSampleData() {
     console.error("❌ Error loading profile-test.json:", error);
   }
 
-   let profile58651_test = [];
+  let profile58651_test = [];
 
   try {
     const response = await fetch("./models-data/profile-test2.json");
@@ -133,7 +133,6 @@ async function loadSampleData() {
   } catch (error) {
     console.error("❌ Error loading profile-test2.json:", error);
   }
-
 
   const sampleProjects = [
     {
@@ -150,12 +149,14 @@ async function loadSampleData() {
           type: "Каноническая модель",
           description: "CIM 100 версия IEC 61970/61968, редакция 2025 года",
           relatedProfiles: [],
-          createDate : "2024-11-20",
+          createDate: "2024-11-20",
           modifyDate: null,
+          legalState: "project",
+          legalAct: "",
+          accessRight: "readOnly",
           classes: 2225,
           attributes: 6328,
           rootPackages: tc57cimRootPackages,
-
         },
         //вторая  модель
         {
@@ -164,15 +165,16 @@ async function loadSampleData() {
           type: "Расширение модели RU",
           description: "Расширения для российских ГОСТов",
           relatedProfiles: [
-            { id: 4, name: "GOST-58651.2" }, 
-            { id: 5, name: "GOST-58651.3" }
+            { id: 4, name: "GOST-XXXXX.2" },
+            { id: 5, name: "Проект ГОСТ-XXXXX.Х" },
           ],
+          version: "1.0",
           createDate: "2024-11-20",
           modifyDate: "2025-10-10",
-          classes: 87,
-          attributes: 345,
+          legalState: "project",
+          legalAct: "",
+          accessRight: "readWrite",
           rootPackages: gostExtRootPackages,
-
         },
       ],
       profiles: [
@@ -183,9 +185,12 @@ async function loadSampleData() {
           baseModel: "GOSTExtension",
           baseModelId: 3,
           version: "1.0",
-          classes: 45,
-          attributes: 234,
-         rootPackages: profile58651_2RootPackages,
+          createDate: "2024-11-20",
+          modifyDate: "2025-10-10",
+          legalState: "project",
+          legalAct: "",
+          accessRight: "readWrite",
+          rootPackages: profile58651_2RootPackages,
           xsd: `<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="AssetInfo" type="AssetInfoType"/>
@@ -203,9 +208,12 @@ async function loadSampleData() {
           baseModel: "GOSTExtension",
           baseModelId: 3,
           version: "1.1",
-          classes: 32,
-          attributes: 178,
-          rootPackages: profile58651_test
+          createDate: "2025-09-21",
+          modifyDate: "2025-10-10",
+          legalState: "project",
+          legalAct: "",
+          accessRight: "readWrite",
+          rootPackages: profile58651_test,
         },
       ],
     },
@@ -221,20 +229,30 @@ async function loadSampleData() {
           name: "CIM16",
           type: "Каноническая модель. Расширение Системного оператора",
           description: "Модель для учета электроэнергии",
-          classes: 267,
-          attributes: 1523,
+          relatedProfiles: [{ id: 8, name: "MeterProfile" }],
+          version: "1.101",
+          createDate: "2025-08-11",
+          modifyDate: "2025-09-10",
+          legalState: "project",
+          legalAct: "",
+          accessRight: "readWrite",
           rootPackages: CIM16RootPackages,
-        },    
-          ],
+        },
+      ],
       profiles: [
         {
           id: 8,
           name: "MeterProfile",
           description: "Профиль обмена данными электросчётчиков",
-          baseModel: "IEC61968",
+          baseModel: "CIM16",
+          baseModelId: 7,
           version: "2.0",
-          classes: 28,
-          attributes: 156,
+          createDate: "2025-08-11",
+          modifyDate: "2025-09-10",
+          legalState: "project",
+          legalAct: "",
+          accessRight: "readWrite",
+          rootPackages: [],
         },
       ],
     },
@@ -249,21 +267,33 @@ async function loadSampleData() {
           id: 10,
           name: "CIM-FiberOptic",
           type: "Расширение для волоконно-оптических линий связи",
-          description: "Проект модели для волоконно-оптических линий связи, включая оконечное оборудование",
-          classes: 267,
-          attributes: 1523,
+          description:
+            "Проект модели для волоконно-оптических линий связи, включая оконечное оборудование",
+
+          relatedProfiles: [{ id: 11, name: "FOProfile" }],
+          version: "0.101",
+          createDate: "2025-05-11",
+          modifyDate: "2025-09-10",
+          legalState: "project",
+          legalAct: "",
+          accessRight: "readWrite",
           rootPackages: foclRootPackages,
-        },    
-          ],
+        },
+      ],
       profiles: [
         {
           id: 11,
           name: "FOProfile",
           description: "Профиль для волоконно-оптических линий связи",
           baseModel: "CIM-FiberOptic",
-          version: "1.0",
-          classes: 28,
-          attributes: 156,
+          baseModelId: 10,
+          version: "0.0.1",
+          createDate: "2025-09-11",
+          modifyDate: "2025-09-11",
+          legalState: "project",
+          legalAct: "",
+          accessRight: "readWrite",
+          rootPackages: [],
         },
       ],
     },
@@ -271,9 +301,9 @@ async function loadSampleData() {
 
   // Initialize MemoryStore instead of localStorage
   // Try to restore currentProjectId from localStorage
-  const savedProjectId = localStorage.getItem('currentProjectId');
+  const savedProjectId = localStorage.getItem("currentProjectId");
   const initialProjectId = savedProjectId ? parseInt(savedProjectId) : 1;
-  
+
   MemoryStore.initialize({
     projects: sampleProjects,
     currentProjectId: initialProjectId,
@@ -302,7 +332,7 @@ function getCurrentProjectId() {
   let id = MemoryStore.getCurrentProjectId();
   // If not in memory, try to restore from localStorage
   if (!id) {
-    const savedId = localStorage.getItem('currentProjectId');
+    const savedId = localStorage.getItem("currentProjectId");
     if (savedId) {
       id = parseInt(savedId);
       MemoryStore.setCurrentProjectId(id);
@@ -315,9 +345,9 @@ function setCurrentProject(projectId) {
   MemoryStore.setCurrentProjectId(projectId);
   // Also save to localStorage for persistence across page loads
   if (projectId) {
-    localStorage.setItem('currentProjectId', projectId);
+    localStorage.setItem("currentProjectId", projectId);
   } else {
-    localStorage.removeItem('currentProjectId');
+    localStorage.removeItem("currentProjectId");
   }
 }
 
@@ -374,13 +404,13 @@ function openModal(modalId) {
 
 function closeModal(modalId) {
   document.getElementById(modalId).classList.remove("active");
-  
+
   // Clear diagram modal input fields
-  if (modalId === 'new-diagram-modal') {
-    const nameInput = document.getElementById('diagram-name');
-    const errorDiv = document.getElementById('diagram-name-error');
-    if (nameInput) nameInput.value = '';
-    if (errorDiv) errorDiv.style.display = 'none';
+  if (modalId === "new-diagram-modal") {
+    const nameInput = document.getElementById("diagram-name");
+    const errorDiv = document.getElementById("diagram-name-error");
+    if (nameInput) nameInput.value = "";
+    if (errorDiv) errorDiv.style.display = "none";
     // Don't clear context here - it will be overwritten on next open
   }
 }

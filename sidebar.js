@@ -111,16 +111,16 @@ function restoreSidebarState() {
 let lastProjectsClickTime = 0;
 
 function handleProjectsClick() {
-    const now = Date.now();
-    const timeSinceLastClick = now - lastProjectsClickTime;
-    lastProjectsClickTime = now;
+    // const now = Date.now();
+    // const timeSinceLastClick = now - lastProjectsClickTime;
+    // lastProjectsClickTime = now;
     
     // это нужно было для главной, я от этого отказался
     // Если двойной клик (менее 300ms между кликами)
-    if (timeSinceLastClick < 300) {
-        window.location.href = 'projects.html';
-        return;
-    }
+    // if (timeSinceLastClick < 300) {
+    //     window.location.href = 'projects.html';
+    //     return;
+    // }
     
     // Одиночный клик - раскрыть/закрыть дерево
     toggleProjectsTree();
@@ -132,21 +132,21 @@ function toggleProjectsTree() {
     const isExpanded = button.getAttribute('aria-expanded') === 'true';
     
     if (isExpanded) {
-        // If on projects.html page, check if we're viewing project details
+        // Если мы на странице projects.html, проверяем, просматриваются ли детали проекта
         if (window.location.pathname.includes('projects.html')) {
             const modelsContainer = document.getElementById('models-container');
             const profilesContainer = document.getElementById('profiles-container');
             
-            // If viewing project details, just show projects list (keep tree expanded)
+            // Если просматриваются детали проекта, просто показываем список проектов (дерево остается раскрытым)
             if (modelsContainer && !modelsContainer.classList.contains('hidden')) {
                 if (typeof showProjectsList === 'function') {
                     showProjectsList();
                 }
-                return; // Don't collapse the tree
+                return; // Не сворачиваем дерево
             }
         }
         
-        // Otherwise, collapse the tree normally
+        // В противном случае сворачиваем дерево обычным образом
         container.classList.add('nav-tree-collapsed');
         button.setAttribute('aria-expanded', 'false');
         // Сохранить состояние дерева в localStorage
