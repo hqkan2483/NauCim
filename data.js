@@ -154,8 +154,6 @@ async function loadSampleData() {
           legalState: "project",
           legalAct: "",
           accessRight: "readOnly",
-          classes: 2225,
-          attributes: 6328,
           rootPackages: tc57cimRootPackages,
         },
         //вторая  модель
@@ -356,6 +354,7 @@ function getCurrentProject() {
 }
 
 // Model Management
+// возвращаем модели проекта - массив всех моделей внутри проекта или пустой массив
 function getModels(projectId) {
   const project = getProject(projectId);
   return project ? project.models : [];
@@ -427,6 +426,7 @@ function updateCurrentProject() {
 }
 
 // Sample class structure for tree view
+// убить.  это уже ненужные данные.
 function getSampleClassStructure() {
   return {
     TC57CIM: [
