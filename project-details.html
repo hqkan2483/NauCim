@@ -2106,9 +2106,10 @@
                               (link) => `
                         <tr>
                           <td>${link.target_class_role_name || ""}</td>
-                          <td>${link.relation_kind || ""} (${
-                                link.role || ""
-                              })</td>
+                          <td>${link.relation_kind || ""}${
+                                link.role === "child" ? " (наследуется от)" : 
+                                link.role === "parent" ? "<br/> (родитель для)" : ""
+                              }</td>
                           <td><a href="#" class="table-link">${
                             link.target_class_name || ""
                           }</a></td>
@@ -2331,9 +2332,10 @@
                               (link) => `
                         <tr>
                           <td>${link.target_class_role_name || ""}</td>
-                          <td>${link.relation_kind || ""} (${
-                                link.role || ""
-                              })</td>
+                          <td>${link.relation_kind || ""}${
+                                link.role === "child" ? " (наследуется от)" : 
+                                link.role === "parent" ? "<br/> (родитель для)" : ""
+                              }</td>
                           <td><a href="#" class="table-link">${
                             link.target_class_name || ""
                           }</a></td>
