@@ -211,8 +211,8 @@ body {
 }
 
 .toolbar {
-  height: 60px;
-  padding: 15px 20px;
+  height: 50px;
+  padding: 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -252,11 +252,9 @@ body {
   font-weight: 500;
 }
 
-/* .btn-toolbar-primary {
-    background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-} */
+.btn.btn-toolbar {
+    margin-bottom: 0;
+}
 
 .btn-primary {
   background: #005a9b;
@@ -326,7 +324,8 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
-  font-weight: 500;
+  /* profile-details  изменил c 500 на 400*/
+  font-weight: 400;
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
@@ -426,7 +425,7 @@ body {
   color: var(--text-primary);
 }
 
-.item-details-th {
+.table th.item-details-th {
   /* для project-details для табов */
   font-size: 14px;
 }
@@ -1384,7 +1383,7 @@ body {
   padding: 10px 20px;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 20px;
 }
 
 /* .item-details h2 {
@@ -1394,8 +1393,9 @@ body {
 
 .item-details-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 40px;
+  /* max-width: 100%; */
 }
 
 .item-details-right {
