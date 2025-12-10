@@ -417,13 +417,18 @@ body {
 }
 
 .table th {
-  background: var(--bg-secondary);
+  /* background: var(--bg-secondary); */
   padding: 10px;
   text-align: left;
   font-weight: 600;
   font-size: 15px;
   border-bottom: 2px solid var(--border-color);
   color: var(--text-primary);
+}
+
+.item-details-th {
+  /* для project-details для табов */
+  font-size: 14px;
 }
 
 .table td {
@@ -444,6 +449,12 @@ body {
   margin-bottom: 20px;
 }
 
+
+.tabs-item-details {
+    /* для project-details */
+    margin-bottom: 0;
+}
+
 .tab {
   padding: 10px 20px;
   cursor: pointer;
@@ -453,6 +464,11 @@ body {
   font-size: 18px;
   font-weight: 500;
 }
+
+.tab-mini {
+  font-size: 14px;
+}
+
 
 .tab:hover {
   color: var(--primary-color);
@@ -1398,7 +1414,8 @@ body {
 .item-section {
   border-top: 1px solid var(--border-color);
   padding-top: 20px;
-  margin-bottom: 20px;
+  /* отключил из-за табов в project-details */
+  /* margin-bottom: 20px; */
 }
 
 .table-bordered {
