@@ -107,9 +107,9 @@
   --info-block: #dbeafe; /* Opacity 30% RGB(219, 234, 254 Информация (легкий синий) */
   --success-block: #dcfce7; /* Opacity 30%   RGB(220, 252, 231) Успех (легкий зеленый) */
   --warning-block: #fef3e0; /* Opacity 30% Предупреждение (легкий оранжевый) — RGB(254, 243, 224)  */
-  --error-block: #fee2e2
-    /* Opacity 30% Ошибка (легкий красный) — RGB(254, 226, 226) */;
+  --error-block: #fee2e2;     /* Opacity 30% Ошибка (легкий красный) — RGB(254, 226, 226) */;
 }
+
 
 * {
   box-sizing: border-box;
@@ -252,7 +252,7 @@ body {
   font-weight: 500;
 }
 
-.btn.btn-toolbar {
+.btn.btn-toolbar, .btn.btn-table {
     margin-bottom: 0;
 }
 
@@ -284,6 +284,18 @@ body {
   min-width: 85px;
 }
 
+.btn-ok {
+ background-color: var(--success);
+ color: #ffffff;
+}
+
+.btn-ok:hover {
+ background-color: rgba(34, 197, 94, 0.4);
+
+}
+
+
+
 /* FORMS */
 .form-group {
   /* margin-bottom: 15px; */
@@ -306,6 +318,10 @@ body {
 
 .form-group-flex-center {
   align-items: center;
+}
+
+.form-group-flex-end {
+  align-items: flex-end;
 }
 
 .form-label {

@@ -126,7 +126,6 @@
           </div>
         </div>
 
-
         <div class="content-area">
           <div id="no-project-warning" class="hidden">
             <div class="warning-title">
@@ -2036,6 +2035,12 @@
                   itemData.details || ""
                 }</textarea>
               </div>
+
+              <div class="form-group form-group-flex form-group-flex-end">
+                <button class="btn btn-primary" onclick="alert('Функция в разработке')"> Сохранить</button> 
+                
+              </div>
+
            
             ${
               itemType === "element"
@@ -2052,7 +2057,8 @@
                     <col style="width: 15%;"/>
                     <col style="width: 15%;"/>
                     <col style="width: 10%;"/>
-                    <col style="min-width: 50%;"/>
+                    <col style="min-width: 45%;"/>
+                    <col style="width: 10%;"/>
                   </colgroup>
                   <thead>
                     <tr>
@@ -2060,6 +2066,7 @@
                       <th class="sortable item-details-th">Тип ⇅</th>
                       <th class="sortable item-details-th">Мн ⇅</th>
                       <th class="sortable item-details-th">Описание</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2075,11 +2082,22 @@
                           <td>${attr.type || ""}</td>
                           <td>${attr.multiplicity || ""}</td>
                           <td>${attr.description || ""}</td>
+                          <td>
+                            <button class="btn-icon" onclick="alert('Редактировать атрибут')" title="Изменить">✏️</button>
+                            <button class="btn-icon" onclick="alert('Удалить атрибут')" title="Удалить">🗑️</button>
+                          </td>
                         </tr>
                       `
                             )
-                            .join("")
-                        : '<tr><td colspan="4" class="text-muted">Нет атрибутов</td></tr>'
+                            .join("") +
+                          `
+                        <tr>
+                          <td colspan="5" >
+                            <button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')">+ Добавить атрибут</button>
+                          </td>
+                        </tr>
+                      `
+                        : '<tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "4"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить атрибут`)"> + Добавить атрибут</button></td></tr>'
                     }
                   </tbody>
                 </table>
@@ -2092,7 +2110,8 @@
                     <col style="width: 15%;"/>
                     <col style="min-width: 20%;"/>
                     <col style="width: 5%;"/>
-                    <col style="max-width: 50%;"/>
+                    <col style="max-width: 40%;"/>
+                    <col style="width: 10%;"/>
                   </colgroup>
                   <thead>
                     <tr>
@@ -2101,6 +2120,7 @@
                       <th class="sortable item-details-th">Класс назначения ⇅</th>
                       <th class="sortable item-details-th">Мн</th>
                       <th>Описание</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2112,19 +2132,33 @@
                         <tr>
                           <td>${link.target_class_role_name || ""}</td>
                           <td>${link.relation_kind || ""}${
-                                link.role === "child" ? " (наследуется от)" : 
-                                link.role === "parent" ? "<br/> (родитель для)" : ""
+                                link.role === "child"
+                                  ? " (наследуется от)"
+                                  : link.role === "parent"
+                                  ? "<br/> (родитель для)"
+                                  : ""
                               }</td>
                           <td><a href="#" class="table-link">${
                             link.target_class_name || ""
                           }</a></td>
                           <td>${link.multiplicity || ""}</td>
                           <td>${link.description || ""}</td>
+                          <td>
+                            <button class="btn-icon" onclick="alert('Редактировать связь')" title="Изменить">✏️</button>
+                            <button class="btn-icon" onclick="alert('Удалить связь')" title="Удалить">🗑️</button>
+                          </td>
                         </tr>
                       `
                             )
-                            .join("")
-                        : '<tr><td colspan="5" class="text-muted">Нет связей</td></tr>'
+                            .join("")+
+                          `
+                        <tr>
+                          <td colspan="4" >
+                            <button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')">+ Добавить связь</button>
+                          </td>
+                        </tr>
+                      `
+                        : '<tr> <td class="text-muted"> Нет связей </td> <td colspan = "3"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить связь`)"> + Добавить связь</button></td></tr>'
                     }
                   </tbody>
                 </table>
@@ -2134,7 +2168,7 @@
             }
               </div>
           `;
-        } 
+        }
 
         document.getElementById("item-container").innerHTML = html;
       }
