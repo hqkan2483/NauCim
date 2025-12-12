@@ -54,14 +54,15 @@
         margin-bottom: 15px;
       }
 
-      #item-container-diagram {
+      .item-container-diagram {
         height: 33.333%;
-        border: 1px solid var(--border-color);
+        /* border: 1px solid var(--border-color);
         border-radius: 8px;
-        background: var(--bg-secondary);
+        background: var(--bg-secondary); */
         overflow: auto;
-        padding: 15px;
+        padding: 0 15px;
       }
+
     </style>
   </head>
   <body>
@@ -180,7 +181,10 @@
           <div id="diagram-mode-content" class="hidden">
             <div id="diagram-container"></div>
             <div class="divider mb-15"></div>
-            <div id="item-container-diagram"></div>
+            <div
+              id="item-container-diagram"
+              class="item-container-diagram"
+            ></div>
           </div>
         </div>
       </div>
@@ -631,6 +635,7 @@
         return html;
       }
 
+      // рендерит строку описания связи класса в дереве проекта
       function renderLinkItemContent(link) {
         let icon = "🔗";
         let linkLabel = "";
@@ -654,6 +659,7 @@
         return `${icon} ${linkLabel}${multiplicity}`;
       }
 
+      // рендерит строку связи класса в дереве проекта,  вызывает renderLinkItemContent
       function renderLinkItem(link) {
         return `
                 <div class="tree-structure-item" style="margin-left: 10px;">
@@ -669,6 +675,7 @@
             `;
       }
 
+      // рендерит дерево пакета в дереве проекта
       function renderElementTree(elem, level = 0, baseId = "", modelId = null) {
         const expandedItems = JSON.parse(
           localStorage.getItem("expandedTreeItems") || "{}"
@@ -748,6 +755,7 @@
         return html;
       }
 
+      // рендерит дерево профиля в дереве проекта
       function renderProfileTree(profile, level = 0, baseId = "") {
         const expandedItems = JSON.parse(
           localStorage.getItem("expandedTreeItems") || "{}"
@@ -834,6 +842,7 @@
         return html;
       }
 
+      // Рендерит корневой пакет профиля в дереве проекта
       function renderProfileRootPackageTree(
         rootPkg,
         level = 0,
@@ -930,6 +939,7 @@
         return html;
       }
 
+      // Рендерит дерево пакета профиля в дереве проекта.  похож на renderProfileTree
       function renderProfilePackageTree(
         pkg,
         level = 0,
@@ -1156,7 +1166,7 @@
         renderdiagramode(diagramId, diagramName, modelId);
       }
 
-      // рендерит раскладку для режима диаграмм
+      // рендерит блок для содержания диаграммы
       function renderdiagramode(diagramId, diagramName, modelId) {
         // Render diagram container (placeholder for now)
         document.getElementById("diagram-container").innerHTML = `
@@ -1171,37 +1181,110 @@
 
         // Render tabs in item-container-diagram
         document.getElementById("item-container-diagram").innerHTML = `
-          <div class="tabs">
-            <div class="tab active" onclick="switchDiagramTab('general')">Общая информация</div>
-            <div class="tab" onclick="switchDiagramTab('attributes')">Атрибуты</div>
-            <div class="tab" onclick="switchDiagramTab('links')">Связи</div>
+          <div class="tabs tabs-item-details">
+            <div class="tab tab-mini active" onclick="switchDiagramTab('general')">Общая информация</div>
+            <div class="tab tab-mini" onclick="switchDiagramTab('attributes')">Атрибуты</div>
+            <div class="tab tab-mini" onclick="switchDiagramTab('links')">Связи</div>
           </div>
+
 
           <div id="diagram-tab-general" class="tab-content active">
-            <h4 style="margin-bottom: 10px;">Общая информация</h4>
-            <table class="table">
-              <tr>
-                <td style="font-weight:600; width:200px;">Название диаграммы</td>
-                <td>${diagramName}</td>
-              </tr>
-              <tr>
-                <td style="font-weight:600;">Тип диаграммы</td>
-                <td>Диаграмма классов</td>
-              </tr>
-              <tr>
-                <td style="font-weight:600;">ID диаграммы</td>
-                <td>${diagramId}</td>
-              </tr>
-            </table>
+            <div class="diagram-tab-general-content">
+              <!-- 1я строка Название + стереотип-->
+              <div class="item-details-grid">
+                
+                <div class="form-group form-group-flex form-group-flex-start">
+                  <label class="form-label">
+                    ${diagramName === "package" ? "Пакет" : "Класс"}
+                    </label>
+                  <input type="text" value="${
+                    diagramName || ""
+                  }" class="form-input" >
+                </div>
+                ${
+                  diagramName === "element"
+                    ? `<div class="item-details-right">
+                  <div class="form-group-flex-line form-group-flex-center">
+                    <label class="form-label form-label-small">Абстрактный класс</label>
+                    <input type="checkbox" ${
+                      diagramName ? "checked" : ""
+                    } class="form-checkbox">
+                  </div>
+                  
+                  <div class="form-group form-group-flex-line form-group-flex-center">
+                    <label class="form-label form-label-small">Стереотип</label>
+                    <input type="text" value="${
+                      diagramName || ""
+                    }" class="form-input form-input-small">
+                  </div>
+                </div>`
+                    : `<div /> 
+                  </div>`
+                }
+              
+              </div>
+
+            <div class="item-details-grid">
+              <!-- Описание  -->
+              
+              <div class="form-group form-group-flex form-group-flex-start">
+                  <label class="form-label form-label-small">Описание</label>
+                  <textarea class="form-textarea form-textarea-small">${
+                    diagramName || diagramName || ""
+                  }</textarea>
+                </div>
+
+              <!-- Описание рус -->
+
+              <div class="form-group form-group-flex form-group-flex-start">
+                  <label class="form-label form-label-small">Описание (доп., рус.)</label>
+                  <textarea class="form-textarea form-textarea-small">${diagramId || ""}</textarea>
+                </div>
+            </div>
+
+               <!-- доп описание -->
+
+            <div class="form-group form-group-flex form-group-flex-start">
+                <label class="form-label form-label-small">Дополнительная информация (рус)</label>
+                <textarea class="form-textarea form-textarea-small">${diagramName || ""}</textarea>
+              </div>
+
+               <!-- кнопка сохранения?? -->
+               <div class="form-group form-group-flex form-group-flex-end">
+                <button class="btn btn-primary" onclick="alert('Функция в разработке')"> Сохранить</button> 
+                
+              </div>
           </div>
+      </div>
 
           <div id="diagram-tab-attributes" class="tab-content">
-            <h4 style="margin-bottom: 10px;">Атрибуты</h4>
-            <div class="text-muted">Атрибуты для выбранных классов будут отображаться здесь</div>
-          </div>
+
+                <table class="table">
+                  <colgroup>
+                    <col style="width: 15%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="width: 10%;"/>
+                    <col style="min-width: 45%;"/>
+                    <col style="width: 10%;"/>
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="sortable item-details-th">Имя ▲</th>
+                      <th class="sortable item-details-th">Тип ⇅</th>
+                      <th class="sortable item-details-th">Мн ⇅</th>
+                      <th class="sortable item-details-th">Описание</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                   <tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "4"><button class="btn btn-secondary btn-table" onclick="alert("Добавить атрибут")"> + Добавить атрибут</button></td></tr>
+                    
+                  </tbody>
+                </table>
+            </div>
 
           <div id="diagram-tab-links" class="tab-content">
-            <h4 style="margin-bottom: 10px;">Связи</h4>
+
             <div class="text-muted">Связи между классами будут отображаться здесь</div>
           </div>
         `;
@@ -1284,9 +1367,9 @@
                       diagram.id || ""
                     }" data-type="diagram" data-model-id="${
                 modelId || ""
-              }" onclick="selectDiagram(event, ${
+              }" onclick="selectDiagram(event, '${
                 diagram.id || ""
-              }, '${diagramNameEscaped}', ${modelId || ""})">📐 ${
+              }', '${diagramNameEscaped}', ${modelId || ""})">📐 ${
                 diagram.name || "Диаграмма"
               }</span>
                   </div>
@@ -1380,9 +1463,9 @@
                       diagram.id || ""
                     }" data-type="diagram" data-model-id="${
                 modelId || ""
-              }" onclick="selectDiagram(event, ${
+              }" onclick="selectDiagram(event, '${
                 diagram.id || ""
-              }, '${diagramNameEscaped}', ${modelId || ""})">📐 ${
+              }', '${diagramNameEscaped}', ${modelId || ""})">📐 ${
                 diagram.name || "Диаграмма"
               }</span>
                   </div>
@@ -1581,6 +1664,7 @@
         return "---";
       }
 
+      // рендерит общее описание модели при клике на проект и на модель
       function renderModelDetails() {
         const projectId = getCurrentProjectId();
         const model = getModel(projectId, selectedModelId);
@@ -1651,7 +1735,7 @@
 
         document.getElementById("model-details").innerHTML = html;
       }
-
+      // рендерит общее описание профиля при клике на проект и профиль
       function renderProfileDetails() {
         const projectId = getCurrentProjectId();
         const profile = getProfile(projectId, selectedProfileId);
@@ -1794,6 +1878,7 @@
           .classList.remove("hidden");
       }
 
+      // при клике на модель  в дереве проекта рендерит сведения о модели, скрывает информацию о классах/пакетах
       function selectModelFromTree(event, modelId, modelName) {
         event.stopPropagation();
 
@@ -1825,6 +1910,7 @@
         document.getElementById("diagram-btn").style.display = "inline-flex";
       }
 
+      // при клике на профиль в дереве проекта рендерит сведения о профиле, скрывает информацию о классах/пакетах
       function selectProfileFromTree(event, profileId, profileName) {
         event.stopPropagation();
 
@@ -1855,6 +1941,7 @@
         renderProfileDetails();
       }
 
+      // при клике на пакет, класс, атрибут или связь в дереве проекта скрывается информация о моделях и профилях, рендерит сведения об объекте (классе, пакете)
       function selectTreeItem(event) {
         event.stopPropagation();
         const target = event.target;
@@ -1988,7 +2075,7 @@
                     </label>
                   <input type="text" value="${
                     itemData.name || ""
-                  }" class="form-input" disabled>
+                  }" class="form-input" >
                 </div>
                 ${
                   itemType === "element"
@@ -2150,7 +2237,7 @@
                         </tr>
                       `
                             )
-                            .join("")+
+                            .join("") +
                           `
                         <tr>
                           <td colspan="4" >

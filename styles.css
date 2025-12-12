@@ -107,9 +107,8 @@
   --info-block: #dbeafe; /* Opacity 30% RGB(219, 234, 254 Информация (легкий синий) */
   --success-block: #dcfce7; /* Opacity 30%   RGB(220, 252, 231) Успех (легкий зеленый) */
   --warning-block: #fef3e0; /* Opacity 30% Предупреждение (легкий оранжевый) — RGB(254, 243, 224)  */
-  --error-block: #fee2e2;     /* Opacity 30% Ошибка (легкий красный) — RGB(254, 226, 226) */;
+  --error-block: #fee2e2; /* Opacity 30% Ошибка (легкий красный) — RGB(254, 226, 226) */
 }
-
 
 * {
   box-sizing: border-box;
@@ -252,8 +251,9 @@ body {
   font-weight: 500;
 }
 
-.btn.btn-toolbar, .btn.btn-table {
-    margin-bottom: 0;
+.btn.btn-toolbar,
+.btn.btn-table {
+  margin-bottom: 0;
 }
 
 .btn-primary {
@@ -285,16 +285,13 @@ body {
 }
 
 .btn-ok {
- background-color: var(--success);
- color: #ffffff;
+  background-color: var(--success);
+  color: #ffffff;
 }
 
 .btn-ok:hover {
- background-color: rgba(34, 197, 94, 0.4);
-
+  background-color: rgba(34, 197, 94, 0.4);
 }
-
-
 
 /* FORMS */
 .form-group {
@@ -332,6 +329,11 @@ body {
   color: var(--text-primary);
 }
 
+.form-label.form-label-small {
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .form-input,
 .form-select,
 .form-textarea {
@@ -345,6 +347,12 @@ body {
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
+
+.form-input.form-input-small, .form-textarea.form-textarea-small {
+  font-size: 13px;
+  padding: 4px 12px;
+}
+
 
 /* .form-input-min-height {
     min-height: 40px;
@@ -464,10 +472,9 @@ body {
   margin-bottom: 20px;
 }
 
-
 .tabs-item-details {
-    /* для project-details */
-    margin-bottom: 0;
+  /* для project-details */
+  margin-bottom: 0;
 }
 
 .tab {
@@ -480,10 +487,17 @@ body {
   font-weight: 500;
 }
 
+.item-container-diagram .tab {
+  padding: 10px 15px;
+}
+
 .tab-mini {
   font-size: 14px;
 }
 
+.item-container-diagram .tab-mini {
+  font-size: 13px;
+}
 
 .tab:hover {
   color: var(--primary-color);
@@ -500,6 +514,21 @@ body {
 
 .tab-content.active {
   display: block;
+}
+
+.item-container-diagram .tab-content.active {
+  margin-top: 15px;
+}
+
+.diagram-tab-general-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.diagram-tab-general-content .tab-mini {
+  font-size: 13px;
 }
 
 /* MODAL */

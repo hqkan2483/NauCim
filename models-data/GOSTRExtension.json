@@ -5624,6 +5624,32 @@
                     "links": []
                   }
                 ],
+                "diagrams": [
+                  {
+                    "id": "EADiagram_5C1D1C3A_7C2F_4f4e_BB8F_3C2F3E3D6A6E",
+                    "name": "D1",
+                    "type": "ClassDiagramm",
+                    "description": "Диаграмма классов Core расширения GOSTR.",
+                    "description_ru": "Общий состав классов пакета Core и их взаимосвязи.",
+                    "details": ""
+                  },
+                  {
+                    "id": "EADiagram_6C1D1C3A_7C2F_4f4e_BB8F_3C2F3E3D6A6E",
+                    "name": "D2",
+                    "type": "ClassDiagramm",
+                    "description": "Диаграмма классов Core ",
+                    "description_ru": "Схема наследования классов пакета Core.",
+                    "details": ""
+                  },
+                  {
+                    "id": "EADiagram_7C1D1C3A_7C2F_4f4e_BB8F_3C2F3E3D6A6E",
+                    "name": "D3",
+                    "type": "ClassDiagramm",
+                    "description": "Диаграмма связи пакетов",
+                    "description_ru": "Схема взаимосвязей пакетов внутри пакета Core.",
+                    "details": ""
+                  }
+                ],
                 "children": []
               },
               {
