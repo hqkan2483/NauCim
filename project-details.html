@@ -1182,9 +1182,9 @@
         // Render tabs in item-container-diagram
         document.getElementById("item-container-diagram").innerHTML = `
           <div class="tabs tabs-item-details">
-            <div class="tab tab-mini active" onclick="switchDiagramTab('general')">Общая информация</div>
-            <div class="tab tab-mini" onclick="switchDiagramTab('attributes')">Атрибуты</div>
-            <div class="tab tab-mini" onclick="switchDiagramTab('links')">Связи</div>
+            <div class="tab tab-mini active" data-tab="general" onclick="switchDiagramTab('general', event)">Общая информация</div>
+            <div class="tab tab-mini" data-tab="attributes" onclick="switchDiagramTab('attributes', event)">Атрибуты</div>
+            <div class="tab tab-mini" data-tab="links" onclick="switchDiagramTab('links', event)">Связи</div>
           </div>
 
 
@@ -1277,7 +1277,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                   <tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "4"><button class="btn btn-secondary btn-table" onclick="alert("Добавить атрибут")"> + Добавить атрибут</button></td></tr>
+                   <tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "4"><button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')"> + Добавить атрибут</button></td></tr>
                     
                   </tbody>
                 </table>
@@ -1305,7 +1305,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                   <tr> <td class="text-muted"> Нет связей </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="alert("Добавить связь")"> + Добавить связь</button></td></tr>
+                   <tr> <td class="text-muted"> Нет связей </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')"> + Добавить связь</button></td></tr>
                     
                   </tbody>
                 </table>
@@ -1315,20 +1315,42 @@
 
       // todo - сделать общую функцию для переключения табов в режиме  диаграммы и в обычном режиме
       // переключение табов в режиме диаграммы
-      function switchDiagramTab(tabName) {
-        // Remove active class from all tabs
-        document
-          .querySelectorAll("#item-container-diagram .tab")
+      function switchDiagramTab(tabName, evt) {
+        const container = document.getElementById("item-container-diagram");
+        if (!container) return;
+
+        // Remove active class from all tabs/content inside the diagram container
+        container
+          .querySelectorAll(".tab")
           .forEach((t) => t.classList.remove("active"));
-        document
-          .querySelectorAll("#item-container-diagram .tab-content")
+        container
+          .querySelectorAll(".tab-content")
           .forEach((t) => t.classList.remove("active"));
 
-        // Add active class to selected tab
-        event.target.classList.add("active");
-        document
-          .getElementById("diagram-tab-" + tabName)
-          .classList.add("active");
+        // Find the tab element either from the click event or by tabName
+        let tabEl = null;
+        if (evt && evt.target) {
+          tabEl = evt.target.classList.contains("tab")
+            ? evt.target
+            : evt.target.closest(".tab");
+        }
+
+        if (!tabEl) {
+          tabEl = container.querySelector(`.tab[data-tab="${tabName}"]`);
+        }
+
+        // Fallback for older markup that doesn't have data-tab
+        if (!tabEl) {
+          tabEl = Array.from(container.querySelectorAll(".tab")).find((t) => {
+            const onclick = t.getAttribute("onclick") || "";
+            return onclick.includes(`'${tabName}'`) || onclick.includes(`\"${tabName}\"`);
+          });
+        }
+
+        if (tabEl) tabEl.classList.add("active");
+
+        const contentEl = document.getElementById("diagram-tab-" + tabName);
+        if (contentEl) contentEl.classList.add("active");
       }
 
       function renderRootPackageTree(
@@ -1880,6 +1902,45 @@
         document.getElementById("tab-" + tabName).classList.add("active");
       }
 
+      // Переключение табов в карточке элемента (обычный режим, item-container)
+      function switchItemDetailsTab(tabName, evt) {
+        const container = document.getElementById("item-container");
+        if (!container) return;
+
+        const tabsRoot = container.querySelector(".tabs-item-details");
+        if (!tabsRoot) return;
+
+        tabsRoot
+          .querySelectorAll(".tab")
+          .forEach((t) => t.classList.remove("active"));
+        container
+          .querySelectorAll("#tab-itemAttributes, #tab-itemLinks")
+          .forEach((t) => t.classList.remove("active"));
+
+        let tabEl = null;
+        if (evt && evt.target) {
+          tabEl = evt.target.classList.contains("tab")
+            ? evt.target
+            : evt.target.closest(".tab");
+        }
+
+        if (!tabEl) {
+          tabEl = tabsRoot.querySelector(`.tab[data-tab="${tabName}"]`);
+        }
+
+        if (!tabEl) {
+          tabEl = Array.from(tabsRoot.querySelectorAll(".tab")).find((t) => {
+            const onclick = t.getAttribute("onclick") || "";
+            return onclick.includes(`'${tabName}'`) || onclick.includes(`\"${tabName}\"`);
+          });
+        }
+
+        if (tabEl) tabEl.classList.add("active");
+
+        const contentEl = container.querySelector("#tab-" + tabName);
+        if (contentEl) contentEl.classList.add("active");
+      }
+
       function selectProject(event) {
         event.stopPropagation();
 
@@ -1973,6 +2034,10 @@
         const modelId = target.getAttribute("data-model-id");
         const profileId = target.getAttribute("data-profile-id");
 
+        const contentArea = document.querySelector(".content-area");
+        const diagramModeActive =
+          contentArea && contentArea.classList.contains("diagram-mode-on");
+
         // Remove previous selection
         document.querySelectorAll(".tree-structure-name").forEach((el) => {
           el.classList.remove("selected");
@@ -1985,17 +2050,58 @@
         document.getElementById("models-container").style.display = "none";
         document.getElementById("profiles-container").style.display = "none";
 
-        // Show item container
-        const itemContainer = document.getElementById("item-container");
-        itemContainer.style.display = "block";
-        itemContainer.classList.remove("hidden");
+        const standardItemContainer = document.getElementById("item-container");
 
-        // Render appropriate item details based on context
-        renderItemDetails(itemId, itemType, modelId, profileId);
+        if (diagramModeActive) {
+          // In diagram mode render details into item-container-diagram
+          if (standardItemContainer) {
+            standardItemContainer.style.display = "none";
+            standardItemContainer.classList.add("hidden");
+          }
+
+          // Render appropriate item details based on context
+          renderItemDetailsDiagramMode(itemId, itemType, modelId, profileId);
+
+          // Auto-switch to the relevant tab for attribute/link clicks
+          if (itemType === "attribute" || itemType === "profile-attribute") {
+            switchDiagramTab("attributes");
+          } else if (itemType === "link") {
+            switchDiagramTab("links");
+          } else if (itemType === "package" || itemType === "element") {
+            switchDiagramTab("general");
+          }
+        } else {
+          // Standard mode: render into item-container
+          if (standardItemContainer) {
+            standardItemContainer.style.display = "block";
+            standardItemContainer.classList.remove("hidden");
+          }
+
+          // If diagram container exists, do not touch it here
+          renderItemDetails(itemId, itemType, modelId, profileId, "item-container");
+
+          // Auto-switch to the relevant tab for attribute/link clicks (standard mode)
+          if (itemType === "attribute" || itemType === "profile-attribute") {
+            switchItemDetailsTab("itemAttributes");
+          } else if (itemType === "link") {
+            switchItemDetailsTab("itemLinks");
+          }
+        }
       }
 
       // рендерим описание пакета или класса - универсальная функция для моделей и профилей
-      function renderItemDetails(itemId, itemType, modelId, profileId = null) {
+      function renderItemDetails(
+        itemId,
+        itemType,
+        modelId,
+        profileId = null,
+        targetContainerId = "item-container"
+      ) {
+        const targetContainer =
+          document.getElementById(targetContainerId) ||
+          document.getElementById("item-container");
+        if (!targetContainer) return;
+
         const projectId = getCurrentProjectId();
         const project = getProject(projectId);
 
@@ -2009,7 +2115,7 @@
         if (profileId) {
           const profile = project.profiles.find((p) => p.id == profileId);
           if (!profile) {
-            document.getElementById("item-container").innerHTML = `
+            targetContainer.innerHTML = `
               <div class="text-center">Профиль не найден</div>
             `;
             return;
@@ -2068,7 +2174,7 @@
         }
 
         if (!itemData) {
-          document.getElementById("item-container").innerHTML = `
+          targetContainer.innerHTML = `
             <div class="text-center">Элемент не найден</div>
           `;
           return;
@@ -2087,7 +2193,7 @@
 
         // Render based on item type
         // единое условие рендеринга - для пакета и элемента
-        if (itemType === "package" || "element") {
+        if (itemType === "package" || itemType === "element") {
           // For package - render only basic info without attributes and links
           html = `
             <div class="item-details">
@@ -2157,8 +2263,8 @@
                 ? `
 
           <div class="item-section tabs tabs-item-details">
-            <div class="tab tab-mini active" onclick="switchTab('itemAttributes')">Атрибуты</div>
-            <div class="tab tab-mini" onclick="switchTab('itemLinks')">Связи</div>
+            <div class="tab tab-mini active" data-tab="itemAttributes" onclick="switchItemDetailsTab('itemAttributes', event)">Атрибуты</div>
+            <div class="tab tab-mini" data-tab="itemLinks" onclick="switchItemDetailsTab('itemLinks', event)">Связи</div>
           </div>
           <div id="tab-itemAttributes" class="tab-content active">
 
@@ -2280,7 +2386,288 @@
           `;
         }
 
-        document.getElementById("item-container").innerHTML = html;
+        targetContainer.innerHTML = html;
+      }
+
+      // Рендерит описание пакета/класса в режиме диаграммы: строго 3 таба (general/attributes/links)
+      function renderItemDetailsDiagramMode(itemId, itemType, modelId, profileId = null) {
+        const targetContainer = document.getElementById("item-container-diagram");
+        if (!targetContainer) return;
+
+        ensureDiagramTabsScaffold();
+
+        const generalTab = document.getElementById("diagram-tab-general");
+        const attributesTab = document.getElementById("diagram-tab-attributes");
+        const linksTab = document.getElementById("diagram-tab-links");
+        if (!generalTab || !attributesTab || !linksTab) return;
+
+        const projectId = getCurrentProjectId();
+        const project = getProject(projectId);
+        if (!project) return;
+
+        let itemData = null;
+        let parentElement = null;
+
+        // If profileId is provided, search in profile
+        if (profileId) {
+          const profile = project.profiles.find((p) => p.id == profileId);
+          if (!profile) {
+            generalTab.innerHTML = `<div class="text-center">Профиль не найден</div>`;
+            attributesTab.innerHTML = "";
+            linksTab.innerHTML = "";
+            return;
+          }
+
+          if (profile.rootPackages) {
+            const result = findItemInProfile(profile.rootPackages, itemId, itemType);
+            if (result) {
+              if (result.item) {
+                itemData = result.item;
+                parentElement = result.parent;
+              } else {
+                itemData = result;
+              }
+            }
+          }
+        } else if (modelId) {
+          const model = project.models.find((m) => m.id == modelId);
+          if (model) {
+            const result = findItemInModel(model, itemId, itemType);
+            if (result) {
+              if (result.item) {
+                itemData = result.item;
+                parentElement = result.parent;
+              } else {
+                itemData = result;
+              }
+            }
+          }
+        } else {
+          // Fallback: search through all models if modelId is not provided
+          for (const model of project.models) {
+            const result = findItemInModel(model, itemId, itemType);
+            if (result) {
+              if (result.item) {
+                itemData = result.item;
+                parentElement = result.parent;
+              } else {
+                itemData = result;
+              }
+              break;
+            }
+          }
+        }
+
+        if (!itemData) {
+          generalTab.innerHTML = `<div class="text-center">Элемент не найден</div>`;
+          attributesTab.innerHTML = "";
+          linksTab.innerHTML = "";
+          return;
+        }
+
+        // For attribute or link, render the parent element details
+        if ((itemType === "attribute" || itemType === "link") && parentElement) {
+          itemData = parentElement;
+          itemType = "element";
+        }
+
+        const titleLabel = itemType === "package" ? "Пакет" : "Класс";
+        const nameValue = escapeHtml(itemData.name || "");
+        const isAbstractChecked = itemData.isAbstract ? "checked" : "";
+        const stereotypeValue = escapeHtml(itemData.stereotype || "");
+        const descriptionValue = escapeHtml(
+          itemData.description_en || itemData.description || ""
+        );
+        const descriptionRuValue = escapeHtml(itemData.description_ru || "");
+        const detailsValue = escapeHtml(itemData.details || "");
+
+        const attributes = Array.isArray(itemData.attributes) ? itemData.attributes : [];
+        const links = Array.isArray(itemData.links) ? itemData.links : [];
+
+        const attributesRows =
+          itemType === "element" && attributes.length > 0
+            ? attributes
+                .map(
+                  (attr) => `
+                        <tr>
+                          <td><a href="#" class="table-link">${escapeHtml(
+                            attr.name || ""
+                          )}</a></td>
+                          <td>${escapeHtml(attr.type || "")}</td>
+                          <td>${escapeHtml(attr.multiplicity || "")}</td>
+                          <td>${escapeHtml(attr.description || "")}</td>
+                          <td>
+                            <button class="btn-icon" onclick="alert('Редактировать атрибут')" title="Изменить">✏️</button>
+                            <button class="btn-icon" onclick="alert('Удалить атрибут')" title="Удалить">🗑️</button>
+                          </td>
+                        </tr>
+                      `
+                )
+                .join("")
+            : null;
+
+        const linksRows =
+          itemType === "element" && links.length > 0
+            ? links
+                .map((link) => {
+                  const roleLabel =
+                    link.role === "child"
+                      ? " (наследуется от)"
+                      : link.role === "parent"
+                      ? "<br/> (родитель для)"
+                      : "";
+
+                  return `
+                        <tr>
+                          <td>${escapeHtml(link.target_class_role_name || "")}</td>
+                          <td>${escapeHtml(link.relation_kind || "")}${roleLabel}</td>
+                          <td><a href="#" class="table-link">${escapeHtml(
+                            link.target_class_name || ""
+                          )}</a></td>
+                          <td>${escapeHtml(link.multiplicity || "")}</td>
+                          <td>${escapeHtml(link.description || "")}</td>
+                          <td>
+                            <button class="btn-icon" onclick="alert('Редактировать связь')" title="Изменить">✏️</button>
+                            <button class="btn-icon" onclick="alert('Удалить связь')" title="Удалить">🗑️</button>
+                          </td>
+                        </tr>
+                      `;
+                })
+                .join("")
+            : null;
+
+        generalTab.innerHTML = `
+          <div class="diagram-tab-general-content">
+            <div class="item-details-grid">
+              <div class="form-group form-group-flex form-group-flex-start">
+                <label class="form-label">${titleLabel}</label>
+                <input type="text" value="${nameValue}" class="form-input" >
+              </div>
+              ${
+                itemType === "element"
+                  ? `<div class="item-details-right">
+                      <div class="form-group-flex-line form-group-flex-center">
+                        <label class="form-label form-label-small">Абстрактный класс</label>
+                        <input type="checkbox" ${isAbstractChecked} class="form-checkbox">
+                      </div>
+                      <div class="form-group form-group-flex-line form-group-flex-center">
+                        <label class="form-label form-label-small">Стереотип</label>
+                        <input type="text" value="${stereotypeValue}" class="form-input form-input-small">
+                      </div>
+                    </div>`
+                  : `<div />`
+              }
+            </div>
+
+            <div class="item-details-grid">
+              <div class="form-group form-group-flex form-group-flex-start">
+                <label class="form-label form-label-small">Описание</label>
+                <textarea class="form-textarea form-textarea-small">${descriptionValue}</textarea>
+              </div>
+
+              <div class="form-group form-group-flex form-group-flex-start">
+                <label class="form-label form-label-small">Описание (доп., рус.)</label>
+                <textarea class="form-textarea form-textarea-small">${descriptionRuValue}</textarea>
+              </div>
+            </div>
+
+            <div class="form-group form-group-flex form-group-flex-start">
+              <label class="form-label form-label-small">Дополнительная информация (рус)</label>
+              <textarea class="form-textarea form-textarea-small">${detailsValue}</textarea>
+            </div>
+
+            <div class="form-group form-group-flex form-group-flex-end">
+              <button class="btn btn-primary" onclick="alert('Функция в разработке')"> Сохранить</button>
+            </div>
+          </div>
+        `;
+
+        attributesTab.innerHTML = `
+          <table class="table">
+            <colgroup>
+              <col style="width: 15%;"/>
+              <col style="width: 15%;"/>
+              <col style="width: 10%;"/>
+              <col style="min-width: 45%;"/>
+              <col style="width: 10%;"/>
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="sortable item-details-th">Имя ▲</th>
+                <th class="sortable item-details-th">Тип ⇅</th>
+                <th class="sortable item-details-th">Мн ⇅</th>
+                <th class="sortable item-details-th">Описание</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${
+                itemType !== "element"
+                  ? `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="4"></td></tr>`
+                  : attributesRows
+                  ? attributesRows +
+                    `<tr><td colspan="5"><button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')"> + Добавить атрибут</button></td></tr>`
+                  : `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="4"><button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')"> + Добавить атрибут</button></td></tr>`
+              }
+            </tbody>
+          </table>
+        `;
+
+        linksTab.innerHTML = `
+          <table class="table">
+            <colgroup>
+              <col style="width: 15%;"/>
+              <col style="width: 15%;"/>
+              <col style="min-width: 20%;"/>
+              <col style="width: 5%;"/>
+              <col style="max-width: 40%;"/>
+              <col style="width: 10%;"/>
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="sortable item-details-th">Имя связи ⇅</th>
+                <th class="sortable item-details-th">Тип связи ⇅</th>
+                <th class="sortable item-details-th">Класс назначения ⇅</th>
+                <th class="sortable item-details-th">Мн</th>
+                <th>Описание</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${
+                itemType !== "element"
+                  ? `<tr><td class="text-muted"> Нет связей </td><td colspan="5"></td></tr>`
+                  : linksRows
+                  ? linksRows +
+                    `<tr><td colspan="6"><button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')"> + Добавить связь</button></td></tr>`
+                  : `<tr><td class="text-muted"> Нет связей </td><td colspan="5"><button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')"> + Добавить связь</button></td></tr>`
+              }
+            </tbody>
+          </table>
+        `;
+      }
+
+      function ensureDiagramTabsScaffold() {
+        const container = document.getElementById("item-container-diagram");
+        if (!container) return;
+
+        const generalTab = document.getElementById("diagram-tab-general");
+        const attributesTab = document.getElementById("diagram-tab-attributes");
+        const linksTab = document.getElementById("diagram-tab-links");
+
+        if (generalTab && attributesTab && linksTab) return;
+
+        container.innerHTML = `
+          <div class="tabs tabs-item-details">
+            <div class="tab tab-mini active" data-tab="general" onclick="switchDiagramTab('general', event)">Общая информация</div>
+            <div class="tab tab-mini" data-tab="attributes" onclick="switchDiagramTab('attributes', event)">Атрибуты</div>
+            <div class="tab tab-mini" data-tab="links" onclick="switchDiagramTab('links', event)">Связи</div>
+          </div>
+
+          <div id="diagram-tab-general" class="tab-content active"></div>
+          <div id="diagram-tab-attributes" class="tab-content"></div>
+          <div id="diagram-tab-links" class="tab-content"></div>
+        `;
       }
 
       function findItemInProfile(rootPackages, itemId, itemType) {
