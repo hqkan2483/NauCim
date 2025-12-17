@@ -1235,6 +1235,13 @@
         // Render diagram content
         renderdiagramode(diagramId, diagramName, modelId);
 
+        // Render selected diagram properties in the details panel
+        if (typeof ensureDiagramTabsScaffold === "function") {
+          ensureDiagramTabsScaffold();
+        }
+        renderItemDetailsDiagramMode(diagramId, "diagram", modelId, null);
+        switchDiagramTab("general");
+
         restoreDiagramModeSplit();
         updateDiagramModeToggleButton(true);
       }
@@ -1280,6 +1287,13 @@
 
         // Render diagram content (placeholder renderer)
         renderdiagramode(diagramId, diagramName, null);
+
+        // Render selected diagram properties in the details panel
+        if (typeof ensureDiagramTabsScaffold === "function") {
+          ensureDiagramTabsScaffold();
+        }
+        renderItemDetailsDiagramMode(diagramId, "diagram", null, profileId);
+        switchDiagramTab("general");
 
         restoreDiagramModeSplit();
         updateDiagramModeToggleButton(true);
@@ -1604,149 +1618,22 @@
 
       // рендерит блок для содержания диаграммы
       function renderdiagramode(diagramId, diagramName, modelId) {
+        const diagramContainer = document.getElementById("diagram-container");
+        if (!diagramContainer) return;
+
         // Render diagram container (placeholder for now)
-        document.getElementById("diagram-container").innerHTML = `
+        const safeName = typeof escapeHtml === "function" ? escapeHtml(diagramName || "") : (diagramName || "");
+        diagramContainer.innerHTML = `
           <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
             <div style="text-align: center;">
               <div style="font-size: 48px; margin-bottom: 15px;">📐</div>
-              <h3>Диаграмма: ${diagramName}</h3>
+              <h3>Диаграмма: ${safeName}</h3>
               <p>Визуализация диаграммы будет реализована позже</p>
             </div>
           </div>
         `;
 
-        // Render tabs in item-container-diagram
-        document.getElementById("item-container-diagram").innerHTML = `
-          <div class="tabs tabs-item-details">
-            <div class="tab tab-mini active" data-tab="general" onclick="switchDiagramTab('general', event)">Общая информация</div>
-            <div class="tab tab-mini" data-tab="attributes" onclick="switchDiagramTab('attributes', event)">Атрибуты</div>
-            <div class="tab tab-mini" data-tab="links" onclick="switchDiagramTab('links', event)">Связи</div>
-          </div>
-
-
-          <div id="diagram-tab-general" class="tab-content active">
-            <div class="diagram-tab-general-content">
-              <!-- 1я строка Название + стереотип-->
-              <div class="item-details-grid">
-                
-                <div class="form-group form-group-flex form-group-flex-start">
-                  <label class="form-label">
-                    ${diagramName === "package" ? "Пакет" : "Класс"}
-                    </label>
-                  <input type="text" value="${
-                    diagramName || ""
-                  }" class="form-input" >
-                </div>
-                ${
-                  diagramName === "element"
-                    ? `<div class="item-details-right">
-                  <div class="form-group-flex-line form-group-flex-center">
-                    <label class="form-label form-label-small">Абстрактный класс</label>
-                    <input type="checkbox" ${
-                      diagramName ? "checked" : ""
-                    } class="form-checkbox">
-                  </div>
-                  
-                  <div class="form-group form-group-flex-line form-group-flex-center">
-                    <label class="form-label form-label-small">Стереотип</label>
-                    <input type="text" value="${
-                      diagramName || ""
-                    }" class="form-input form-input-small">
-                  </div>
-                </div>`
-                    : `<div /> 
-                  </div>`
-                }
-              
-              </div>
-
-            <div class="item-details-grid">
-              <!-- Описание  -->
-              
-              <div class="form-group form-group-flex form-group-flex-start">
-                  <label class="form-label form-label-small">Описание</label>
-                  <textarea class="form-textarea form-textarea-small">${
-                    diagramName || diagramName || ""
-                  }</textarea>
-                </div>
-
-              <!-- Описание рус -->
-
-              <div class="form-group form-group-flex form-group-flex-start">
-                  <label class="form-label form-label-small">Описание (доп., рус.)</label>
-                  <textarea class="form-textarea form-textarea-small">${diagramId || ""}</textarea>
-                </div>
-            </div>
-
-               <!-- доп описание -->
-
-            <div class="form-group form-group-flex form-group-flex-start">
-                <label class="form-label form-label-small">Дополнительная информация (рус)</label>
-                <textarea class="form-textarea form-textarea-small">${diagramName || ""}</textarea>
-              </div>
-
-               <!-- кнопка сохранения?? -->
-               <div class="form-group form-group-flex form-group-flex-end">
-                <button class="btn btn-primary" onclick="alert('Функция в разработке')"> Сохранить</button> 
-                
-              </div>
-          </div>
-      </div>
-
-          <div id="diagram-tab-attributes" class="tab-content">
-
-                <table class="table">
-                  <colgroup>
-                    <col style="width: 15%;"/>
-                    <col style="width: 15%;"/>
-                    <col style="width: 10%;"/>
-                    <col style="min-width: 45%;"/>
-                    <col style="width: 10%;"/>
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th class="sortable item-details-th">Имя ▲</th>
-                      <th class="sortable item-details-th">Тип ⇅</th>
-                      <th class="sortable item-details-th">Мн ⇅</th>
-                      <th class="sortable item-details-th">Описание</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                   <tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "4"><button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')"> + Добавить атрибут</button></td></tr>
-                    
-                  </tbody>
-                </table>
-            </div>
-
-          <div id="diagram-tab-links" class="tab-content">
-
-            <table class="table">
-                  <colgroup>
-                    <col style="width: 15%;"/>
-                    <col style="width: 15%;"/>
-                    <col style="min-width: 20%;"/>
-                    <col style="width: 5%;"/>
-                    <col style="max-width: 40%;"/>
-                    <col style="width: 10%;"/>
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th class="sortable item-details-th">Имя связи ⇅</th>
-                      <th class="sortable item-details-th">Тип связи ⇅</th>
-                      <th class="sortable item-details-th">Класс назначения ⇅</th>
-                      <th class="sortable item-details-th">Мн</th>
-                      <th>Описание</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                   <tr> <td class="text-muted"> Нет связей </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')"> + Добавить связь</button></td></tr>
-                    
-                  </tbody>
-                </table>
-          </div>
-        `;
+        // Details panel is rendered by renderItemDetailsDiagramMode()
       }
 
       // todo - сделать общую функцию для переключения табов в режиме  диаграммы и в обычном режиме
@@ -2931,7 +2818,12 @@
           itemType = "element";
         }
 
-        const titleLabel = itemType === "package" ? "Пакет" : "Класс";
+        const titleLabel =
+          itemType === "package"
+            ? "Пакет"
+            : itemType === "diagram"
+            ? "Диаграмма"
+            : "Класс";
         const nameValue = escapeHtml(itemData.name || "");
         const isAbstractChecked = itemData.isAbstract ? "checked" : "";
         const stereotypeValue = escapeHtml(itemData.stereotype || "");
@@ -3015,7 +2907,8 @@
                         <input type="text" value="${stereotypeValue}" class="form-input form-input-small">
                       </div>
                     </div>`
-                  : `<div />`
+                  : `<div /> 
+                  </div>`
               }
             </div>
 
@@ -3165,6 +3058,17 @@
           return pkg;
         }
 
+        // Search in diagrams - return parent package
+        if (pkg.diagrams && itemType === "diagram") {
+          const diagram = pkg.diagrams.find((d) => d.id == itemId);
+          if (diagram) {
+            return {
+              item: diagram,
+              parent: pkg,
+            };
+          }
+        }
+
         // Search in elements
         if (pkg.elements) {
           for (const elem of pkg.elements) {
@@ -3275,10 +3179,18 @@
               hideContextMenu();
               e.preventDefault();
             }
-            // Close diagram modal if visible
-            const diagramodal = document.getElementById("new-diagram-modal");
-            if (diagramodal && diagramodal.classList.contains("active")) {
-              closeModal("new-diagram-modal");
+
+            // Close any active modal (universal)
+            const activeModals = Array.from(
+              document.querySelectorAll(".modal.active")
+            );
+            const activeModal = activeModals[activeModals.length - 1];
+            if (activeModal && activeModal.id) {
+              if (typeof closeModal === "function") {
+                closeModal(activeModal.id);
+              } else {
+                activeModal.classList.remove("active");
+              }
               e.preventDefault();
             }
           }
