@@ -51,7 +51,26 @@
         border-radius: 8px;
         background: var(--bg-secondary);
         overflow: hidden;
-        margin-bottom: 15px;
+        margin-bottom: 0;
+      }
+
+      .diagram-resize-handle.divider {
+        height: 10px;
+        background: transparent;
+        cursor: row-resize;
+        flex: 0 0 auto;
+        position: relative;
+      }
+
+      .diagram-resize-handle.divider::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 1px;
+        background: var(--border-color);
+        transform: translateY(-0.5px);
       }
 
       .item-container-diagram {
@@ -187,7 +206,7 @@
 
           <div id="diagram-mode-content" class="hidden">
             <div id="diagram-container"></div>
-            <div class="divider mb-15"></div>
+            <div id="diagram-resize-handle" class="divider diagram-resize-handle"></div>
             <div
               id="item-container-diagram"
               class="item-container-diagram"
@@ -425,6 +444,7 @@
           restoreSidebarState();
           restoreProjectsTreeState();
           updateDiagramModeToggleButton();
+          initDiagramModeVerticalResize();
         } catch (error) {
           console.error("Error during initialization:", error);
         }
@@ -1193,6 +1213,7 @@
         // Render diagram content
         renderdiagramode(diagramId, diagramName, modelId);
 
+        restoreDiagramModeSplit();
         updateDiagramModeToggleButton(true);
       }
 
@@ -1238,7 +1259,134 @@
         // Render diagram content (placeholder renderer)
         renderdiagramode(diagramId, diagramName, null);
 
+        restoreDiagramModeSplit();
         updateDiagramModeToggleButton(true);
+      }
+
+      const DIAGRAM_MODE_SPLIT_KEY = "diagramModeSplitRatio";
+      const DIAGRAM_MODE_MIN_PANEL_PX = 120;
+
+      function clampNumber(value, minValue, maxValue) {
+        return Math.min(maxValue, Math.max(minValue, value));
+      }
+
+      function applyDiagramModeSplitRatio(ratio) {
+        const diagramModeContent = document.getElementById("diagram-mode-content");
+        const diagramContainer = document.getElementById("diagram-container");
+        const itemContainer = document.getElementById("item-container-diagram");
+        const handle = document.getElementById("diagram-resize-handle");
+
+        if (!diagramModeContent || !diagramContainer || !itemContainer || !handle) return;
+
+        // Only apply when the container has a real height (mode is visible)
+        const totalHeight = diagramModeContent.clientHeight;
+        if (!totalHeight) return;
+
+        const handleHeight = handle.offsetHeight || 0;
+        const available = totalHeight - handleHeight;
+        if (available <= 0) return;
+
+        const safeRatio = clampNumber(Number(ratio) || 0.666666, 0.2, 0.8);
+        const minPx = DIAGRAM_MODE_MIN_PANEL_PX;
+
+        const desiredDiagramPx = Math.round(available * safeRatio);
+        const diagramPx = clampNumber(desiredDiagramPx, minPx, available - minPx);
+        const itemPx = Math.max(minPx, available - diagramPx);
+
+        diagramContainer.style.height = diagramPx + "px";
+        itemContainer.style.height = itemPx + "px";
+      }
+
+      function restoreDiagramModeSplit() {
+        const raw = localStorage.getItem(DIAGRAM_MODE_SPLIT_KEY);
+        const ratio = raw ? parseFloat(raw) : 0.666666;
+
+        // Defer to allow layout to settle when mode is just shown
+        requestAnimationFrame(() => applyDiagramModeSplitRatio(ratio));
+      }
+
+      function initDiagramModeSplitAutoResize() {
+        if (window.diagramModeSplitAutoResizeInitialized) return;
+
+        let rafId = null;
+        window.addEventListener("resize", () => {
+          const contentArea = document.querySelector(".content-area");
+          const isDiagramMode =
+            contentArea && contentArea.classList.contains("diagram-mode-on");
+          if (!isDiagramMode) return;
+
+          if (rafId) cancelAnimationFrame(rafId);
+          rafId = requestAnimationFrame(() => {
+            rafId = null;
+            restoreDiagramModeSplit();
+          });
+        });
+
+        window.diagramModeSplitAutoResizeInitialized = true;
+      }
+
+      function initDiagramModeVerticalResize() {
+        if (window.diagramModeResizeInitialized) return;
+
+        const handle = document.getElementById("diagram-resize-handle");
+        if (!handle) return;
+
+        handle.addEventListener("mousedown", (e) => {
+          // Only left mouse button
+          if (e.button !== 0) return;
+          e.preventDefault();
+
+          const diagramModeContent = document.getElementById("diagram-mode-content");
+          const diagramContainer = document.getElementById("diagram-container");
+          const itemContainer = document.getElementById("item-container-diagram");
+          if (!diagramModeContent || !diagramContainer || !itemContainer) return;
+
+          const totalHeight = diagramModeContent.clientHeight;
+          const handleHeight = handle.offsetHeight || 0;
+          const available = totalHeight - handleHeight;
+          if (available <= 0) return;
+
+          const startY = e.clientY;
+          const startDiagramPx = diagramContainer.getBoundingClientRect().height;
+
+          const prevUserSelect = document.body.style.userSelect;
+          const prevCursor = document.body.style.cursor;
+          document.body.style.userSelect = "none";
+          document.body.style.cursor = "row-resize";
+
+          const onMove = (moveEvent) => {
+            const delta = moveEvent.clientY - startY;
+            const desiredDiagramPx = startDiagramPx + delta;
+
+            const minPx = DIAGRAM_MODE_MIN_PANEL_PX;
+            const diagramPx = clampNumber(desiredDiagramPx, minPx, available - minPx);
+            const ratio = diagramPx / available;
+
+            applyDiagramModeSplitRatio(ratio);
+          };
+
+          const onUp = () => {
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+
+            document.body.style.userSelect = prevUserSelect;
+            document.body.style.cursor = prevCursor;
+
+            const finalAvailable =
+              (diagramModeContent.clientHeight || 0) - (handle.offsetHeight || 0);
+            if (finalAvailable > 0) {
+              const finalDiagramPx = diagramContainer.getBoundingClientRect().height;
+              const ratio = clampNumber(finalDiagramPx / finalAvailable, 0.2, 0.8);
+              localStorage.setItem(DIAGRAM_MODE_SPLIT_KEY, String(ratio));
+            }
+          };
+
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("mouseup", onUp);
+        });
+
+        window.diagramModeResizeInitialized = true;
+        initDiagramModeSplitAutoResize();
       }
 
       function updateDiagramModeToggleButton(forceDiagramMode = null) {
@@ -1333,6 +1481,9 @@
           if (typeof ensureDiagramTabsScaffold === "function") {
             ensureDiagramTabsScaffold();
           }
+
+          initDiagramModeVerticalResize();
+          restoreDiagramModeSplit();
 
           // Render currently selected tree item details (if any)
           const selected = getSelectedTreeItem();
