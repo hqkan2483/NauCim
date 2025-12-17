@@ -315,62 +315,6 @@
       </div>
     </div>
 
-    <div id="new-project-modal" class="modal" onclick="if(event.target.id === 'new-project-modal') closeModal('new-project-modal')">
-
-      <div class="modal-content">
-        <div class="modal-header">
-        <div class="modal-title">Создать новый проект</div>
-                  <button
-            class="modal-close"
-            onclick="closeModal('new-project-modal')"
-            aria-label="Закрыть"
-          >
-            ×
-          </button>
-</div>
-        <div class="form-group">
-          <label class="form-label">Название проекта *</label>
-          <input
-            type="text"
-            id="project-name"
-            class="form-input"
-            placeholder="Введите название"
-          />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Описание</label>
-          <textarea
-            id="project-desc"
-            class="form-textarea"
-            placeholder="Описание проекта"
-          ></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Версия</label>
-          <input
-            type="text"
-            id="project-version"
-            class="form-input"
-            value="1.0"
-          />
-        </div>
-        <div class="modal-buttons">
-          <button
-            class="btn btn-secondary"
-            onclick="closeModal('new-project-modal')"
-          >
-            Отмена
-          </button>
-          <button
-            class="btn btn-primary"
-            onclick="alert('Создайте проект в разделе Проекты')"
-          >
-            Создать
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Context Menu -->
     <div id="context-menu" class="context-menu">
       <div
@@ -2803,17 +2747,19 @@
                   <colgroup>
                     <col style="width: 15%;"/>
                     <col style="width: 15%;"/>
+                    <col style="width: 8%;"/>
                     <col style="width: 10%;"/>
-                    <col style="min-width: 45%;"/>
-                    <col style="width: 10%;"/>
+                    <col style="min-width: 44%;"/>
+                    <col style="width: 8%;"/>
                   </colgroup>
                   <thead>
                     <tr>
                       <th class="sortable item-details-th">Имя ▲</th>
                       <th class="sortable item-details-th">Тип ⇅</th>
                       <th class="sortable item-details-th">Мн ⇅</th>
-                      <th class="sortable item-details-th">Описание</th>
-                      <th></th>
+                      <th class="item-details-th">Стереотип</th>
+                      <th class="item-details-th">Описание</th>
+                      <th class="item-details-th"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2828,6 +2774,7 @@
                           }</a></td>
                           <td>${attr.type || ""}</td>
                           <td>${attr.multiplicity || ""}</td>
+                          <td>${attr.stereotype || ""}</td>
                           <td>${attr.description || ""}</td>
                           <td>
                             <button class="btn-icon" onclick="alert('Редактировать атрибут')" title="Изменить">✏️</button>
@@ -2839,12 +2786,12 @@
                             .join("") +
                           `
                         <tr>
-                          <td colspan="5" >
+                          <td colspan="6" >
                             <button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')">+ Добавить атрибут</button>
                           </td>
                         </tr>
                       `
-                        : '<tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "4"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить атрибут`)"> + Добавить атрибут</button></td></tr>'
+                        : '<tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить атрибут`)"> + Добавить атрибут</button></td></tr>'
                     }
                   </tbody>
                 </table>
@@ -2855,10 +2802,11 @@
                   <colgroup>
                     <col style="width: 15%;"/>
                     <col style="width: 15%;"/>
-                    <col style="min-width: 20%;"/>
-                    <col style="width: 5%;"/>
-                    <col style="max-width: 40%;"/>
+                    <col style="min-width: 15%;"/>
+                    <col style="width: 7%;"/>
                     <col style="width: 10%;"/>
+                    <col style="max-width: 30%;"/>
+                    <col style="width: 8%;"/>
                   </colgroup>
                   <thead>
                     <tr>
@@ -2866,8 +2814,9 @@
                       <th class="sortable item-details-th">Тип связи ⇅</th>
                       <th class="sortable item-details-th">Класс назначения ⇅</th>
                       <th class="sortable item-details-th">Мн</th>
-                      <th>Описание</th>
-                      <th></th>
+                      <th class="item-details-th">Стереотип</th>
+                      <th class="item-details-th">Описание</th>
+                      <th class="item-details-th"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2889,6 +2838,7 @@
                             link.target_class_name || ""
                           }</a></td>
                           <td>${link.multiplicity || ""}</td>
+                          <td>${link.stereotype || ""}</td>
                           <td>${link.description || ""}</td>
                           <td>
                             <button class="btn-icon" onclick="alert('Редактировать связь')" title="Изменить">✏️</button>
@@ -2900,12 +2850,12 @@
                             .join("") +
                           `
                         <tr>
-                          <td colspan="6" >
+                          <td colspan="7" >
                             <button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')">+ Добавить связь</button>
                           </td>
                         </tr>
                       `
-                        : '<tr> <td class="text-muted"> Нет связей </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить связь`)"> + Добавить связь</button></td></tr>'
+                        : '<tr> <td class="text-muted"> Нет связей </td> <td colspan = "6"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить связь`)"> + Добавить связь</button></td></tr>'
                     }
                   </tbody>
                 </table>
@@ -3031,6 +2981,7 @@
                           )}</a></td>
                           <td>${escapeHtml(attr.type || "")}</td>
                           <td>${escapeHtml(attr.multiplicity || "")}</td>
+                          <td>${escapeHtml(attr.stereotype || "")}</td>
                           <td>${escapeHtml(attr.description || "")}</td>
                           <td>
                             <button class="btn-icon" onclick="alert('Редактировать атрибут')" title="Изменить">✏️</button>
@@ -3061,6 +3012,7 @@
                             link.target_class_name || ""
                           )}</a></td>
                           <td>${escapeHtml(link.multiplicity || "")}</td>
+                          <td>${escapeHtml(link.stereotype || "")}</td>
                           <td>${escapeHtml(link.description || "")}</td>
                           <td>
                             <button class="btn-icon" onclick="alert('Редактировать связь')" title="Изменить">✏️</button>
@@ -3121,30 +3073,33 @@
 
         attributesTab.innerHTML = `
           <table class="table">
-            <colgroup>
-              <col style="width: 15%;"/>
-              <col style="width: 15%;"/>
-              <col style="width: 10%;"/>
-              <col style="min-width: 45%;"/>
-              <col style="width: 10%;"/>
-            </colgroup>
+                  <colgroup>
+                    <col style="width: 15%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="width: 8%;"/>
+                    <col style="width: 10%;"/>
+                    <col style="min-width: 44%;"/>
+                    <col style="width: 8%;"/>
+                  </colgroup>
+
             <thead>
               <tr>
                 <th class="sortable item-details-th">Имя ▲</th>
                 <th class="sortable item-details-th">Тип ⇅</th>
                 <th class="sortable item-details-th">Мн ⇅</th>
-                <th class="sortable item-details-th">Описание</th>
-                <th></th>
+                <th class="sortable item-details-th">Стереотип</th>
+                <th class="item-details-th">Описание</th>
+                <th class="item-details-th"></th>
               </tr>
             </thead>
             <tbody>
               ${
                 itemType !== "element"
-                  ? `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="4"></td></tr>`
+                  ? `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="6"></td></tr>`
                   : attributesRows
                   ? attributesRows +
-                    `<tr><td colspan="5"><button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')"> + Добавить атрибут</button></td></tr>`
-                  : `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="4"><button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')"> + Добавить атрибут</button></td></tr>`
+                    `<tr><td colspan="6"><button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')"> + Добавить атрибут</button></td></tr>`
+                  : `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="5"><button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')"> + Добавить атрибут</button></td></tr>`
               }
             </tbody>
           </table>
@@ -3153,12 +3108,13 @@
         linksTab.innerHTML = `
           <table class="table">
             <colgroup>
-              <col style="width: 15%;"/>
-              <col style="width: 15%;"/>
-              <col style="min-width: 20%;"/>
-              <col style="width: 5%;"/>
-              <col style="max-width: 40%;"/>
-              <col style="width: 10%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="min-width: 15%;"/>
+                    <col style="width: 7%;"/>
+                    <col style="width: 10%;"/>
+                    <col style="max-width: 30%;"/>
+                    <col style="width: 8%;"/>
             </colgroup>
             <thead>
               <tr>
@@ -3166,18 +3122,19 @@
                 <th class="sortable item-details-th">Тип связи ⇅</th>
                 <th class="sortable item-details-th">Класс назначения ⇅</th>
                 <th class="sortable item-details-th">Мн</th>
-                <th>Описание</th>
-                <th></th>
+                <th class="sortable item-details-th">Стереотип</th>
+                <th class="item-details-th">Описание</th>
+                <th class="item-details-th"></th>
               </tr>
             </thead>
             <tbody>
               ${
                 itemType !== "element"
-                  ? `<tr><td class="text-muted"> Нет связей </td><td colspan="5"></td></tr>`
+                  ? `<tr><td class="text-muted"> Нет связей </td><td colspan="7"></td></tr>`
                   : linksRows
                   ? linksRows +
-                    `<tr><td colspan="6"><button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')"> + Добавить связь</button></td></tr>`
-                  : `<tr><td class="text-muted"> Нет связей </td><td colspan="5"><button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')"> + Добавить связь</button></td></tr>`
+                    `<tr><td colspan="7"><button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')"> + Добавить связь</button></td></tr>`
+                  : `<tr><td class="text-muted"> Нет связей </td><td colspan="6"><button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')"> + Добавить связь</button></td></tr>`
               }
             </tbody>
           </table>
