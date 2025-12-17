@@ -550,6 +550,7 @@ body {
 }
 
 .modal-content {
+  position: relative;
   background: var(--bg-secondary);
   border-radius: 12px;
   padding: 25px;
@@ -571,6 +572,17 @@ body {
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
 }
 
 /* SPLIT VIEW */

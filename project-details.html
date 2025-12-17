@@ -124,15 +124,7 @@
           </div>
           <div class="toolbar-actions">
             <button
-              class="btn btn-secondary btn-toolbar"
-              onclick="openDiagram()"
-              id="diagram-btn"
-              class="hidden"
-            >
-              📐 Диаграмма классов
-            </button>
-            <button
-              class="btn btn-secondary btn-toolbar"
+              class="btn btn-primary btn-toolbar"
               id="diagram-mode-toggle-btn"
               onclick="toggleDiagramMode()"
             >
@@ -217,9 +209,19 @@
     </div>
 
     <!-- MODAL: New Model -->
-    <div id="new-model-modal" class="modal">
+    <div id="new-model-modal" class="modal" onclick="if(event.target.id === 'new-model-modal') closeModal('new-model-modal')">
       <div class="modal-content">
+        <div class="modal-header">
         <div class="modal-title">Добавить модель в проект</div>
+        <button
+            class="modal-close"
+            onclick="closeModal('new-model-modal')"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+          
         <div class="form-group">
           <label class="form-label">Название модели *</label>
           <input
@@ -260,9 +262,19 @@
     </div>
 
     <!-- MODAL: New Profile -->
-    <div id="new-profile-modal" class="modal">
+    <div id="new-profile-modal" class="modal" onclick="if(event.target.id === 'new-profile-modal') closeModal('new-profile-modal')">
       <div class="modal-content">
+                <div class="modal-header">
+                  
         <div class="modal-title">Создать новый профиль</div>
+        <button
+            class="modal-close"
+            onclick="closeModal('new-profile-modal')"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+      </div>
         <div class="form-group">
           <label class="form-label">Название профиля *</label>
           <input
@@ -303,9 +315,19 @@
       </div>
     </div>
 
-    <div id="new-project-modal" class="modal">
+    <div id="new-project-modal" class="modal" onclick="if(event.target.id === 'new-project-modal') closeModal('new-project-modal')">
+
       <div class="modal-content">
+        <div class="modal-header">
         <div class="modal-title">Создать новый проект</div>
+                  <button
+            class="modal-close"
+            onclick="closeModal('new-project-modal')"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+</div>
         <div class="form-group">
           <label class="form-label">Название проекта *</label>
           <input
