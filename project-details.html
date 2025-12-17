@@ -490,6 +490,110 @@
       </div>
     </div>
 
+    <!-- MODAL: Attribute (Add/Edit) -->
+    <div
+      id="attribute-modal"
+      class="modal"
+      onclick="if(event.target.id === 'attribute-modal') closeModal('attribute-modal')"
+    >
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title" id="attribute-modal-title">Атрибут</div>
+          <button
+            class="modal-close"
+            onclick="closeModal('attribute-modal')"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Имя *</label>
+          <input
+            type="text"
+            id="attr-name"
+            class="form-input"
+            placeholder="Имя атрибута"
+          />
+          <div
+            id="attr-name-error"
+            class="form-error"
+            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+          >
+            Введите имя атрибута
+          </div>
+          <div
+            id="attr-name-duplicate-error"
+            class="form-error"
+            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+          >
+            Атрибут с таким именем уже существует в этом классе
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Тип данных</label>
+          <input
+            type="text"
+            id="attr-type"
+            class="form-input"
+            placeholder="Тип данных"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Множественность</label>
+          <input
+            type="text"
+            id="attr-multiplicity"
+            class="form-input"
+            placeholder="Например: 0..1, 1..*, *"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Стереотип</label>
+          <input
+            type="text"
+            id="attr-stereotype"
+            class="form-input"
+            placeholder="Стереотип"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Описание</label>
+          <textarea
+            id="attr-description"
+            class="form-textarea"
+            placeholder="Описание"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Дополнительная информация</label>
+          <textarea
+            id="attr-details"
+            class="form-textarea"
+            placeholder="Дополнительная информация"
+          ></textarea>
+        </div>
+
+        <div class="modal-buttons">
+          <button
+            class="btn btn-secondary"
+            onclick="closeModal('attribute-modal')"
+          >
+            Отменить
+          </button>
+          <button class="btn btn-primary" onclick="saveAttribute()">
+            Сохранить
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL: New Package -->
     <div
       id="new-package-modal"
@@ -838,14 +942,16 @@
       }
 
       // рендерит строку связи класса в дереве проекта,  вызывает renderLinkItemContent
-      function renderLinkItem(link) {
+      function renderLinkItem(link, modelId = null) {
         return `
                 <div class="tree-structure-item" style="margin-left: 10px;">
                   <div class="flex">
                     <span class="tree-expand-btn-empty"></span>
                     <span class="tree-structure-name" data-id="${
                       link.assoc_id || link.id || ""
-                    }" data-type="link" onclick="selectTreeItem(event)">${renderLinkItemContent(
+                    }" data-type="link" data-model-id="${
+          modelId || ""
+        }" onclick="selectTreeItem(event)">${renderLinkItemContent(
           link
         )}</span>
                     </div>
@@ -909,7 +1015,9 @@
                                 <span class="tree-expand-btn-empty"></span>
                                 <span class="tree-structure-name" data-id="${
                                   attr.id || ""
-                                }" data-type="attribute" onclick="selectTreeItem(event)">🔹 ${
+                                }" data-type="attribute" data-model-id="${
+                modelId || ""
+              }" onclick="selectTreeItem(event)">🔹 ${
                 attr.name
               }: ${attr.type}${
                 attr.multiplicity ? " [" + attr.multiplicity + "]" : ""
@@ -922,7 +1030,7 @@
 
           if (elem.links && elem.links.length > 0) {
             elem.links.forEach((link, idx) => {
-              html += renderLinkItem(link);
+              html += renderLinkItem(link, modelId);
             });
           }
 
@@ -2626,24 +2734,12 @@
             }
           }
         } else {
-          // todo по моему это не надо.  надо искать только в той модели, к котрой находится объект.
-          // Fallback: search through all models if modelId is not provided
-          for (const model of project.models) {
-            const result = findItemInModel(model, itemId, itemType);
-            if (result) {
-              if (result.item) {
-                itemData = result.item;
-                parentElement = result.parent;
-              } else {
-                itemData = result;
-              }
-              modelContext = model;
-              break;
-            }
-          }
+          targetContainer.innerHTML = `
+            <div class="text-center">Контекст модели/профиля не определён</div>
+          `;
+          return;
         }
-        // todo -  ищет в профилях,  если в модели не найдено.  так не надо - если объект относится к модели - ищем только  в модели. Если объект относится к профилю -  ищем только в профиле..
-        // Search through profiles if not found in models
+
         if (!itemData && itemType === "profile") {
           itemData = project.profiles.find((p) => p.id == itemId);
         }
@@ -2767,7 +2863,7 @@
                       itemData.attributes && itemData.attributes.length > 0
                         ? itemData.attributes
                             .map(
-                              (attr) => `
+                              (attr, idx) => `
                         <tr>
                           <td><a href="#" class="table-link">${
                             attr.name || ""
@@ -2775,9 +2871,15 @@
                           <td>${attr.type || ""}</td>
                           <td>${attr.multiplicity || ""}</td>
                           <td>${attr.stereotype || ""}</td>
-                          <td>${attr.description || ""}</td>
+                          <td>${attr.description || ""}${
+                            attr.details
+                              ? `<br/><span class="text-muted">${attr.details}</span>`
+                              : ""
+                          }</td>
                           <td>
-                            <button class="btn-icon" onclick="alert('Редактировать атрибут')" title="Изменить">✏️</button>
+                            <button class="btn-icon" onclick="openAttributeModal('edit', '${itemData.id}', ${idx}, ${
+                              modelId != null && modelId !== '' ? `'${modelId}'` : "null"
+                            }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'standard')" title="Изменить">✏️</button>
                             <button class="btn-icon" onclick="alert('Удалить атрибут')" title="Удалить">🗑️</button>
                           </td>
                         </tr>
@@ -2787,11 +2889,15 @@
                           `
                         <tr>
                           <td colspan="6" >
-                            <button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')">+ Добавить атрибут</button>
+                            <button class="btn btn-secondary btn-table" onclick="openAttributeModal('add', '${itemData.id}', null, ${
+                              modelId != null && modelId !== '' ? `'${modelId}'` : "null"
+                            }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'standard')">+ Добавить атрибут</button>
                           </td>
                         </tr>
                       `
-                        : '<tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить атрибут`)"> + Добавить атрибут</button></td></tr>'
+                        : `<tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="openAttributeModal('add', '${itemData.id}', null, ${
+                            modelId != null && modelId !== '' ? `'${modelId}'` : "null"
+                          }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'standard')"> + Добавить атрибут</button></td></tr>`
                     }
                   </tbody>
                 </table>
@@ -2924,19 +3030,10 @@
             }
           }
         } else {
-          // Fallback: search through all models if modelId is not provided
-          for (const model of project.models) {
-            const result = findItemInModel(model, itemId, itemType);
-            if (result) {
-              if (result.item) {
-                itemData = result.item;
-                parentElement = result.parent;
-              } else {
-                itemData = result;
-              }
-              break;
-            }
-          }
+          generalTab.innerHTML = `<div class="text-center">Контекст модели/профиля не определён</div>`;
+          attributesTab.innerHTML = "";
+          linksTab.innerHTML = "";
+          return;
         }
 
         if (!itemData) {
@@ -2974,7 +3071,7 @@
           itemType === "element" && attributes.length > 0
             ? attributes
                 .map(
-                  (attr) => `
+                  (attr, idx) => `
                         <tr>
                           <td><a href="#" class="table-link">${escapeHtml(
                             attr.name || ""
@@ -2982,9 +3079,17 @@
                           <td>${escapeHtml(attr.type || "")}</td>
                           <td>${escapeHtml(attr.multiplicity || "")}</td>
                           <td>${escapeHtml(attr.stereotype || "")}</td>
-                          <td>${escapeHtml(attr.description || "")}</td>
+                          <td>${escapeHtml(attr.description || "")}${
+                            attr.details
+                              ? `<br/><span class="text-muted">${escapeHtml(
+                                  attr.details
+                                )}</span>`
+                              : ""
+                          }</td>
                           <td>
-                            <button class="btn-icon" onclick="alert('Редактировать атрибут')" title="Изменить">✏️</button>
+                            <button class="btn-icon" onclick="openAttributeModal('edit', '${itemData.id}', ${idx}, ${
+                              modelId != null && modelId !== '' ? `'${modelId}'` : "null"
+                            }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'diagram')" title="Изменить">✏️</button>
                             <button class="btn-icon" onclick="alert('Удалить атрибут')" title="Удалить">🗑️</button>
                           </td>
                         </tr>
@@ -3098,8 +3203,12 @@
                   ? `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="6"></td></tr>`
                   : attributesRows
                   ? attributesRows +
-                    `<tr><td colspan="6"><button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')"> + Добавить атрибут</button></td></tr>`
-                  : `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="5"><button class="btn btn-secondary btn-table" onclick="alert('Добавить атрибут')"> + Добавить атрибут</button></td></tr>`
+                    `<tr><td colspan="6"><button class="btn btn-secondary btn-table" onclick="openAttributeModal('add', '${itemData.id}', null, ${
+                      modelId != null && modelId !== '' ? `'${modelId}'` : "null"
+                    }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'diagram')"> + Добавить атрибут</button></td></tr>`
+                  : `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="5"><button class="btn btn-secondary btn-table" onclick="openAttributeModal('add', '${itemData.id}', null, ${
+                      modelId != null && modelId !== '' ? `'${modelId}'` : "null"
+                    }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'diagram')"> + Добавить атрибут</button></td></tr>`
               }
             </tbody>
           </table>
@@ -3542,6 +3651,8 @@
         const newPkg = {
           id: generateGuid(),
           name: name,
+          modelId: context && context.modelId ? context.modelId : null,
+          profileId: context && context.profileId ? context.profileId : null,
           description_en: descInput ? descInput.value : "",
           description_ru: descRuInput ? descRuInput.value : "",
           details: detailsInput ? detailsInput.value : "",
@@ -3666,6 +3777,8 @@
           id: generateGuid(),
           type: "Class",
           name: name,
+          modelId: context && context.modelId ? context.modelId : null,
+          profileId: null,
           isAbstract: !!(abstractInput && abstractInput.checked),
           stereotype: stereotypeInput ? stereotypeInput.value : "",
           description_en: descInput ? descInput.value : "",
@@ -3685,6 +3798,172 @@
         renderCurrentProjectStructure();
 
         alert(`Класс "${name}" успешно создан в пакете "${context.packageName}" (модель: "${model.name || ""}")`);
+      }
+
+      function getElementByIdInContext(elementId, modelId, profileId) {
+        const projectId = getCurrentProjectId();
+        const project = getProject(projectId);
+        if (!project) return null;
+
+        if (profileId) {
+          const profile = project.profiles.find((p) => p.id == profileId);
+          if (!profile || !profile.rootPackages) return null;
+          const res = findItemInProfile(profile.rootPackages, elementId, "element");
+          if (!res) return null;
+          return res.item ? res.item : res;
+        }
+
+        if (modelId) {
+          const model = project.models.find((m) => m.id == modelId);
+          if (!model) return null;
+          const res = findItemInModel(model, elementId, "element");
+          if (!res) return null;
+          return res.item ? res.item : res;
+        }
+
+        return null;
+      }
+
+      function openAttributeModal(mode, elementId, attributeIndex, modelId, profileId, uiMode) {
+        const modalTitle = document.getElementById("attribute-modal-title");
+        const nameInput = document.getElementById("attr-name");
+        const typeInput = document.getElementById("attr-type");
+        const multiplicityInput = document.getElementById("attr-multiplicity");
+        const stereotypeInput = document.getElementById("attr-stereotype");
+        const descriptionInput = document.getElementById("attr-description");
+        const detailsInput = document.getElementById("attr-details");
+        const errorRequired = document.getElementById("attr-name-error");
+        const errorDuplicate = document.getElementById("attr-name-duplicate-error");
+
+        if (errorRequired) errorRequired.style.display = "none";
+        if (errorDuplicate) errorDuplicate.style.display = "none";
+
+        window.currentAttributeEditContext = {
+          mode: mode,
+          elementId: elementId,
+          attributeIndex: attributeIndex,
+          modelId: modelId,
+          profileId: profileId,
+          uiMode: uiMode || "standard",
+        };
+
+        if (modalTitle) {
+          modalTitle.textContent = mode === "edit" ? "Редактировать атрибут" : "Добавить атрибут";
+        }
+
+        let existing = null;
+        if (mode === "edit") {
+          const element = getElementByIdInContext(elementId, modelId, profileId);
+          if (!element) {
+            alert("Ошибка: класс не найден");
+            return;
+          }
+          const attrs = Array.isArray(element.attributes) ? element.attributes : [];
+          if (typeof attributeIndex !== "number" || attributeIndex < 0 || attributeIndex >= attrs.length) {
+            alert("Ошибка: атрибут не найден");
+            return;
+          }
+          existing = attrs[attributeIndex];
+        }
+
+        if (nameInput) nameInput.value = existing ? (existing.name || "") : "";
+        if (typeInput) typeInput.value = existing ? (existing.type || "") : "";
+        if (multiplicityInput) multiplicityInput.value = existing ? (existing.multiplicity || "") : "";
+        if (stereotypeInput) stereotypeInput.value = existing ? (existing.stereotype || "") : "";
+        if (descriptionInput) descriptionInput.value = existing ? (existing.description || "") : "";
+        if (detailsInput) detailsInput.value = existing ? (existing.details || "") : "";
+
+        openModal("attribute-modal");
+        if (nameInput) nameInput.focus();
+      }
+
+      function saveAttribute() {
+        const ctx = window.currentAttributeEditContext;
+        if (!ctx || !ctx.elementId) {
+          alert("Ошибка: контекст атрибута не найден");
+          return;
+        }
+
+        const nameInput = document.getElementById("attr-name");
+        const typeInput = document.getElementById("attr-type");
+        const multiplicityInput = document.getElementById("attr-multiplicity");
+        const stereotypeInput = document.getElementById("attr-stereotype");
+        const descriptionInput = document.getElementById("attr-description");
+        const detailsInput = document.getElementById("attr-details");
+        const errorRequired = document.getElementById("attr-name-error");
+        const errorDuplicate = document.getElementById("attr-name-duplicate-error");
+
+        if (errorRequired) errorRequired.style.display = "none";
+        if (errorDuplicate) errorDuplicate.style.display = "none";
+
+        const name = (nameInput && nameInput.value ? nameInput.value : "").trim();
+        if (!name) {
+          if (errorRequired) errorRequired.style.display = "block";
+          if (nameInput) nameInput.focus();
+          return;
+        }
+
+        const element = getElementByIdInContext(ctx.elementId, ctx.modelId, ctx.profileId);
+        if (!element) {
+          alert("Ошибка: класс не найден");
+          return;
+        }
+
+        if (!Array.isArray(element.attributes)) element.attributes = [];
+
+        // Uniqueness: attribute name must be unique within the same class
+        const normalizedName = normalizeName(name);
+        const hasDuplicate = element.attributes.some((a, i) => {
+          if (!a) return false;
+          if (ctx.mode === "edit" && i === ctx.attributeIndex) return false;
+          return normalizeName(a.name) === normalizedName;
+        });
+        if (hasDuplicate) {
+          if (errorDuplicate) errorDuplicate.style.display = "block";
+          if (nameInput) nameInput.focus();
+          return;
+        }
+
+        const payload = {
+          name: name,
+          type: typeInput ? typeInput.value : "",
+          multiplicity: multiplicityInput ? multiplicityInput.value : "",
+          stereotype: stereotypeInput ? stereotypeInput.value : "",
+          description: descriptionInput ? descriptionInput.value : "",
+          details: detailsInput ? detailsInput.value : "",
+        };
+
+        if (ctx.mode === "edit") {
+          const idx = ctx.attributeIndex;
+          if (typeof idx !== "number" || idx < 0 || idx >= element.attributes.length) {
+            alert("Ошибка: атрибут не найден");
+            return;
+          }
+          const existing = element.attributes[idx];
+          element.attributes[idx] = {
+            ...existing,
+            ...payload,
+          };
+        } else {
+          element.attributes.push({
+            id: generateGuid(),
+            ...payload,
+          });
+        }
+
+        closeModal("attribute-modal");
+
+        // Update sidebar tree (attributes are shown under classes)
+        renderCurrentProjectStructure();
+
+        // Refresh the details view and keep the Attributes tab active
+        if (ctx.uiMode === "diagram") {
+          renderItemDetailsDiagramMode(ctx.elementId, "element", ctx.modelId, ctx.profileId);
+          switchDiagramTab("attributes");
+        } else {
+          renderItemDetails(ctx.elementId, "element", ctx.modelId, ctx.profileId, "item-container");
+          switchItemDetailsTab("itemAttributes");
+        }
       }
 
       function createDiagram() {
