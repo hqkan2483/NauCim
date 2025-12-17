@@ -445,6 +445,190 @@
       </div>
     </div>
 
+    <!-- MODAL: New Class -->
+    <div
+      id="new-class-modal"
+      class="modal"
+      onclick="if(event.target.id === 'new-class-modal') closeModal('new-class-modal')"
+    >
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">Создать класс</div>
+          <button
+            class="modal-close"
+            onclick="closeModal('new-class-modal')"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Имя *</label>
+          <input
+            type="text"
+            id="class-name"
+            class="form-input"
+            placeholder="Введите имя класса"
+          />
+          <div
+            id="class-name-error"
+            class="form-error"
+            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+          >
+            Введите имя класса
+          </div>
+          <div
+            id="class-name-duplicate-error"
+            class="form-error"
+            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+          >
+            Класс с таким именем уже существует в этой модели
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Признак абстрактного класса</label>
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" id="class-abstract" />
+            <span>Абстрактный класс</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Стереотип</label>
+          <input
+            type="text"
+            id="class-stereotype"
+            class="form-input"
+            placeholder="Стереотип"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Описание</label>
+          <textarea
+            id="class-desc"
+            class="form-textarea"
+            placeholder="Описание"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Описание (доп., рус)</label>
+          <textarea
+            id="class-desc-ru"
+            class="form-textarea"
+            placeholder="Описание (доп., рус)"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Дополнительная информация (рус)</label>
+          <textarea
+            id="class-details"
+            class="form-textarea"
+            placeholder="Дополнительная информация (рус)"
+          ></textarea>
+        </div>
+
+        <div class="modal-buttons">
+          <button
+            class="btn btn-secondary"
+            onclick="closeModal('new-class-modal')"
+          >
+            Отменить
+          </button>
+          <button class="btn btn-primary" onclick="createClass()">
+            Сохранить
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: New Package -->
+    <div
+      id="new-package-modal"
+      class="modal"
+      onclick="if(event.target.id === 'new-package-modal') closeModal('new-package-modal')"
+    >
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">Создать пакет</div>
+          <button
+            class="modal-close"
+            onclick="closeModal('new-package-modal')"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Имя *</label>
+          <input
+            type="text"
+            id="package-name"
+            class="form-input"
+            placeholder="Введите имя пакета"
+          />
+          <div
+            id="package-name-error"
+            class="form-error"
+            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+          >
+            Введите имя пакета
+          </div>
+          <div
+            id="package-name-duplicate-error"
+            class="form-error"
+            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+          >
+            Пакет с таким именем уже существует
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Описание</label>
+          <textarea
+            id="package-desc"
+            class="form-textarea"
+            placeholder="Описание пакета"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Описание (доп., рус)</label>
+          <textarea
+            id="package-desc-ru"
+            class="form-textarea"
+            placeholder="Описание (доп., рус)"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Дополнительная информация (рус)</label>
+          <textarea
+            id="package-details"
+            class="form-textarea"
+            placeholder="Дополнительная информация (рус)"
+          ></textarea>
+        </div>
+
+        <div class="modal-buttons">
+          <button
+            class="btn btn-secondary"
+            onclick="closeModal('new-package-modal')"
+          >
+            Отменить
+          </button>
+          <button class="btn btn-primary" onclick="createPackage()">
+            Сохранить
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="data.js"></script>
     <script src="sidebar.js"></script>
     <script>
@@ -3262,15 +3446,288 @@
 
         switch (action) {
           case "add-package":
-            alert(`Добавление пакета в "${packageName}"\nФункция в разработке`);
+            openModal("new-package-modal");
             break;
           case "add-class":
-            alert(`Добавление класса в "${packageName}"\nФункция в разработке`);
+            if (!modelId) {
+              alert("Добавлять класс можно только в модели (не в профиле)");
+              break;
+            }
+            openModal("new-class-modal");
             break;
           case "add-diagram":
             openModal("new-diagram-modal");
             break;
         }
+      }
+
+      function generateGuid() {
+        if (typeof crypto !== "undefined" && crypto.randomUUID) {
+          return crypto.randomUUID();
+        }
+        // Fallback GUID (RFC4122-ish)
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+          const r = (Math.random() * 16) | 0;
+          const v = c === "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        });
+      }
+
+      function normalizeName(name) {
+        return String(name || "").trim().toLowerCase();
+      }
+
+      function packageNameExistsInPackages(packages, normalizedName) {
+        if (!Array.isArray(packages)) return false;
+        for (const pkg of packages) {
+          if (normalizeName(pkg && pkg.name) === normalizedName) return true;
+          if (pkg && pkg.children && pkg.children.length > 0) {
+            if (packageNameExistsInPackages(pkg.children, normalizedName)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function classNameExistsInPackages(packages, normalizedName) {
+        if (!Array.isArray(packages)) return false;
+
+        for (const pkg of packages) {
+          const elements = Array.isArray(pkg && pkg.elements) ? pkg.elements : [];
+          for (const el of elements) {
+            if (!el) continue;
+            if (String(el.type || "") !== "Class") continue;
+            if (normalizeName(el.name) === normalizedName) return true;
+          }
+
+          if (pkg && pkg.children && pkg.children.length > 0) {
+            if (classNameExistsInPackages(pkg.children, normalizedName)) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      }
+
+      function addPackageToPackage(packages, packageId, newPackage) {
+        for (const pkg of packages) {
+          if (pkg.id == packageId) {
+            if (!pkg.children) pkg.children = [];
+            pkg.children.push(newPackage);
+            return true;
+          }
+
+          if (pkg.children && pkg.children.length > 0) {
+            if (addPackageToPackage(pkg.children, packageId, newPackage)) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      }
+
+      function addClassToPackage(packages, packageId, newClass) {
+        for (const pkg of packages) {
+          if (pkg.id == packageId) {
+            if (!pkg.elements) pkg.elements = [];
+            pkg.elements.push(newClass);
+            return true;
+          }
+
+          if (pkg.children && pkg.children.length > 0) {
+            if (addClassToPackage(pkg.children, packageId, newClass)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function createPackage() {
+        const nameInput = document.getElementById("package-name");
+        const errorRequired = document.getElementById("package-name-error");
+        const errorDuplicate = document.getElementById(
+          "package-name-duplicate-error"
+        );
+
+        const descInput = document.getElementById("package-desc");
+        const descRuInput = document.getElementById("package-desc-ru");
+        const detailsInput = document.getElementById("package-details");
+
+        const name = (nameInput && nameInput.value ? nameInput.value : "").trim();
+        const normalized = normalizeName(name);
+
+        if (errorRequired) errorRequired.style.display = "none";
+        if (errorDuplicate) errorDuplicate.style.display = "none";
+
+        if (!name) {
+          if (errorRequired) errorRequired.style.display = "block";
+          if (nameInput) nameInput.focus();
+          return;
+        }
+
+        const context = window.currentPackageContext;
+        if (!context || !context.packageId) {
+          alert("Ошибка: контекст пакета не найден");
+          return;
+        }
+
+        const projectId = getCurrentProjectId();
+        const project = getProject(projectId);
+        if (!project) {
+          alert("Ошибка: проект не найден");
+          return;
+        }
+
+        const newPkg = {
+          id: generateGuid(),
+          name: name,
+          description_en: descInput ? descInput.value : "",
+          description_ru: descRuInput ? descRuInput.value : "",
+          details: detailsInput ? detailsInput.value : "",
+          children: [],
+          elements: [],
+          diagrams: [],
+        };
+
+        let containerPackages = null;
+        let uniquenessScopeLabel = "";
+
+        if (context.modelId) {
+          const model = project.models.find((m) => m.id == context.modelId);
+          if (!model || !model.rootPackages) {
+            alert("Ошибка: модель не найдена");
+            return;
+          }
+          // Uniqueness: within the same model
+          if (packageNameExistsInPackages(model.rootPackages, normalized)) {
+            if (errorDuplicate) errorDuplicate.style.display = "block";
+            if (nameInput) nameInput.focus();
+            return;
+          }
+
+          containerPackages = model.rootPackages;
+          uniquenessScopeLabel = `модели "${model.name || ""}"`;
+        } else if (context.profileId) {
+          const profile = project.profiles.find((p) => p.id == context.profileId);
+          if (!profile || !profile.rootPackages) {
+            alert("Ошибка: профиль не найден");
+            return;
+          }
+          // Fallback uniqueness for profiles (same idea)
+          if (packageNameExistsInPackages(profile.rootPackages, normalized)) {
+            if (errorDuplicate) errorDuplicate.style.display = "block";
+            if (nameInput) nameInput.focus();
+            return;
+          }
+
+          containerPackages = profile.rootPackages;
+          uniquenessScopeLabel = `профиля "${profile.name || ""}"`;
+        } else {
+          alert("Ошибка: не определён контекст модели/профиля");
+          return;
+        }
+
+        const ok = addPackageToPackage(containerPackages, context.packageId, newPkg);
+        if (!ok) {
+          alert("Ошибка: пакет-родитель не найден");
+          return;
+        }
+
+        closeModal("new-package-modal");
+
+        if (nameInput) nameInput.value = "";
+        if (descInput) descInput.value = "";
+        if (descRuInput) descRuInput.value = "";
+        if (detailsInput) detailsInput.value = "";
+
+        renderCurrentProjectStructure();
+
+        alert(
+          `Пакет "${name}" успешно создан в "${context.packageName}".\nПроверка уникальности выполнена в рамках ${uniquenessScopeLabel}.`
+        );
+      }
+
+      function createClass() {
+        const nameInput = document.getElementById("class-name");
+        const abstractInput = document.getElementById("class-abstract");
+        const stereotypeInput = document.getElementById("class-stereotype");
+        const descInput = document.getElementById("class-desc");
+        const descRuInput = document.getElementById("class-desc-ru");
+        const detailsInput = document.getElementById("class-details");
+
+        const errorRequired = document.getElementById("class-name-error");
+        const errorDuplicate = document.getElementById("class-name-duplicate-error");
+
+        const name = (nameInput && nameInput.value ? nameInput.value : "").trim();
+        const normalized = normalizeName(name);
+
+        if (errorRequired) errorRequired.style.display = "none";
+        if (errorDuplicate) errorDuplicate.style.display = "none";
+
+        if (!name) {
+          if (errorRequired) errorRequired.style.display = "block";
+          if (nameInput) nameInput.focus();
+          return;
+        }
+
+        const context = window.currentPackageContext;
+        if (!context || !context.packageId) {
+          alert("Ошибка: контекст пакета не найден");
+          return;
+        }
+
+        if (!context.modelId) {
+          alert("Добавлять класс можно только в модели (не в профиле)");
+          return;
+        }
+
+        const projectId = getCurrentProjectId();
+        const project = getProject(projectId);
+        if (!project) {
+          alert("Ошибка: проект не найден");
+          return;
+        }
+
+        const model = project.models.find((m) => m.id == context.modelId);
+        if (!model || !model.rootPackages) {
+          alert("Ошибка: модель не найдена");
+          return;
+        }
+
+        // Uniqueness: within the same model
+        if (classNameExistsInPackages(model.rootPackages, normalized)) {
+          if (errorDuplicate) errorDuplicate.style.display = "block";
+          if (nameInput) nameInput.focus();
+          return;
+        }
+
+        const newClass = {
+          id: generateGuid(),
+          type: "Class",
+          name: name,
+          isAbstract: !!(abstractInput && abstractInput.checked),
+          stereotype: stereotypeInput ? stereotypeInput.value : "",
+          description_en: descInput ? descInput.value : "",
+          description_ru: descRuInput ? descRuInput.value : "",
+          details: detailsInput ? detailsInput.value : "",
+          attributes: [],
+          links: [],
+        };
+
+        const ok = addClassToPackage(model.rootPackages, context.packageId, newClass);
+        if (!ok) {
+          alert("Ошибка: пакет-родитель не найден");
+          return;
+        }
+
+        closeModal("new-class-modal");
+        renderCurrentProjectStructure();
+
+        alert(`Класс "${name}" успешно создан в пакете "${context.packageName}" (модель: "${model.name || ""}")`);
       }
 
       function createDiagram() {

@@ -298,6 +298,10 @@ body {
   /* margin-bottom: 15px; */
 }
 
+.modal-content .form-group {
+  margin-bottom: 20px;
+}
+
 .form-group-flex {
   display: flex;
   gap: 10px;
@@ -332,6 +336,11 @@ body {
 .form-label.form-label-small {
   font-size: 13px;
   font-weight: 500;
+}
+
+
+.modal-content .form-group .form-label {
+  margin-bottom: 8px;
 }
 
 .form-input,

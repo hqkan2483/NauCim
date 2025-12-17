@@ -398,21 +398,98 @@ function getProfile(projectId, profileId) {
 
 // UI Helpers
 function openModal(modalId) {
-  document.getElementById(modalId).classList.add("active");
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.add("active");
+}
+
+function initGlobalModalHandlers() {
+  if (window.__globalModalHandlersInitialized) return;
+
+  // Close modal when clicking on backdrop
+  document.addEventListener(
+    "click",
+    (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+
+      // Backdrop click means the click target is the modal overlay itself
+      if (target.classList.contains("modal") && target.classList.contains("active")) {
+        const modalId = target.id;
+        if (modalId && typeof closeModal === "function") {
+          closeModal(modalId);
+        }
+      }
+    },
+    true
+  );
+
+  // Close the topmost active modal on Escape
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      if (e.key !== "Escape" && e.key !== "Esc") return;
+
+      const activeModals = Array.from(document.querySelectorAll(".modal.active"));
+      const activeModal = activeModals[activeModals.length - 1];
+      if (activeModal && activeModal.id && typeof closeModal === "function") {
+        closeModal(activeModal.id);
+        e.preventDefault();
+      }
+    },
+    true
+  );
+
+  window.__globalModalHandlersInitialized = true;
 }
 
 function closeModal(modalId) {
-  document.getElementById(modalId).classList.remove("active");
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
 
-  // Clear diagram modal input fields
-  if (modalId === "new-diagram-modal") {
-    const nameInput = document.getElementById("diagram-name");
-    const errorDiv = document.getElementById("diagram-name-error");
-    if (nameInput) nameInput.value = "";
-    if (errorDiv) errorDiv.style.display = "none";
-    // Don't clear context here - it will be overwritten on next open
-  }
+  modal.classList.remove("active");
+
+  // Universal behavior: if user closes a modal without saving, clear inputs.
+  // We reset to the HTML defaults so fields with preset values keep them.
+  modal.querySelectorAll("input, textarea, select").forEach((control) => {
+    const tag = (control.tagName || "").toLowerCase();
+
+    if (tag === "input") {
+      const type = (control.getAttribute("type") || "text").toLowerCase();
+      if (type === "button" || type === "submit" || type === "reset" || type === "hidden") {
+        return;
+      }
+
+      if (type === "checkbox" || type === "radio") {
+        control.checked = control.defaultChecked;
+        return;
+      }
+
+      control.value = control.defaultValue ?? "";
+      return;
+    }
+
+    if (tag === "textarea") {
+      control.value = control.defaultValue ?? "";
+      return;
+    }
+
+    if (tag === "select") {
+      const defaultIndex = Array.from(control.options).findIndex(
+        (opt) => opt.defaultSelected
+      );
+      control.selectedIndex = defaultIndex >= 0 ? defaultIndex : 0;
+    }
+  });
+
+  // Hide validation messages (common pattern in this project)
+  modal.querySelectorAll(".form-error").forEach((el) => {
+    el.style.display = "none";
+  });
 }
+
+// Ensure modals behave consistently across all pages that include data.js
+initGlobalModalHandlers();
 
 function updateCurrentProject() {
   const project = getCurrentProject();
@@ -423,75 +500,6 @@ function updateCurrentProject() {
       ? "rgba(255,255,255,0.9)"
       : "rgba(255,255,255,0.5)";
   }
-}
-
-// Sample class structure for tree view
-// убить.  это уже ненужные данные.
-function getSampleClassStructure() {
-  return {
-    TC57CIM: [
-      {
-        name: "IEC61970",
-        type: "package",
-        children: [
-          {
-            name: "Core",
-            type: "package",
-            children: [
-              {
-                name: "IdentifiedObject",
-                type: "class",
-                attributes: [
-                  { name: "mRID", type: "String", multiplicity: "1" },
-                  { name: "name", type: "String", multiplicity: "0..1" },
-                  { name: "description", type: "String", multiplicity: "0..1" },
-                ],
-              },
-              {
-                name: "PowerSystemResource",
-                type: "class",
-                parent: "IdentifiedObject",
-                attributes: [],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        name: "IEC61968",
-        type: "package",
-        children: [
-          {
-            name: "AssetInfo",
-            type: "package",
-            children: [
-              {
-                name: "RotatingMachineInfo",
-                type: "class",
-                stereotype: "rf",
-                attributes: [
-                  {
-                    name: "rotorGD2",
-                    type: "Torque",
-                    multiplicity: "0..1",
-                    description: "Маховой момент ротора генератора, т·м²",
-                  },
-                ],
-                associations: [
-                  {
-                    name: "TestInfo",
-                    type: "Association",
-                    target: "TestInfo",
-                    multiplicity: "0..*",
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  };
 }
 
 // ============================================================
