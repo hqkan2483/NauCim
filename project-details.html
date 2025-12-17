@@ -113,6 +113,13 @@
               📐 Диаграмма классов
             </button>
             <button
+              class="btn btn-secondary btn-toolbar"
+              id="diagram-mode-toggle-btn"
+              onclick="toggleDiagramMode()"
+            >
+              📐 Режим диаграммы
+            </button>
+            <button
               class="btn btn-primary btn-toolbar"
               onclick="openModal('new-model-modal')"
             >
@@ -417,6 +424,7 @@
           updatePageTitle();
           restoreSidebarState();
           restoreProjectsTreeState();
+          updateDiagramModeToggleButton();
         } catch (error) {
           console.error("Error during initialization:", error);
         }
@@ -891,6 +899,10 @@
           // Render diagrams first
           if (rootPkg.diagrams && rootPkg.diagrams.length > 0) {
             rootPkg.diagrams.forEach((diagram, idx) => {
+              const diagramNameEscaped = (diagram.name || "Диаграмма").replace(
+                /'/g,
+                "\\'"
+              );
               html += `
                 <div class="tree-structure-item" style="margin-left: 20px;">
                   <div class="flex">
@@ -899,7 +911,9 @@
                       diagram.id || ""
                     }" data-type="diagram" data-profile-id="${
                 profileId || ""
-              }" onclick="selectTreeItem(event)">📐 ${
+              }" onclick="selectDiagramFromProfile(event, '${
+                diagram.id || ""
+              }', '${diagramNameEscaped}', '${profileId || ""}')">📐 ${
                 diagram.name || "Диаграмма"
               }</span>
                   </div>
@@ -987,6 +1001,10 @@
           // Render diagrams first
           if (pkg.diagrams && pkg.diagrams.length > 0) {
             pkg.diagrams.forEach((diagram, idx) => {
+              const diagramNameEscaped = (diagram.name || "Диаграмма").replace(
+                /'/g,
+                "\\'"
+              );
               html += `
                 <div class="tree-structure-item" style="margin-left: 20px;">
                   <div class="flex">
@@ -995,7 +1013,9 @@
                       diagram.id || ""
                     }" data-type="diagram" data-profile-id="${
                 profileId || ""
-              }" onclick="selectTreeItem(event)">📐 ${
+              }" onclick="selectDiagramFromProfile(event, '${
+                diagram.id || ""
+              }', '${diagramNameEscaped}', '${profileId || ""}')">📐 ${
                 diagram.name || "Диаграмма"
               }</span>
                   </div>
@@ -1135,6 +1155,14 @@
       function selectDiagram(event, diagramId, diagramName, modelId) {
         event.stopPropagation();
 
+        // Remember selection for mode toggling
+        window.lastSelectedTreeItem = {
+          id: diagramId,
+          type: "diagram",
+          modelId: modelId,
+          profileId: null,
+        };
+
         // Remove selection from all tree items
         document.querySelectorAll(".tree-structure-name").forEach((el) => {
           el.classList.remove("selected");
@@ -1164,6 +1192,241 @@
 
         // Render diagram content
         renderdiagramode(diagramId, diagramName, modelId);
+
+        updateDiagramModeToggleButton(true);
+      }
+
+      // переключается в режим диаграммы (диаграмма выбрана в дереве профилей)
+      function selectDiagramFromProfile(event, diagramId, diagramName, profileId) {
+        event.stopPropagation();
+
+        // Remember selection for mode toggling
+        window.lastSelectedTreeItem = {
+          id: diagramId,
+          type: "diagram",
+          modelId: null,
+          profileId: profileId,
+        };
+
+        // Remove selection from all tree items
+        document.querySelectorAll(".tree-structure-name").forEach((el) => {
+          el.classList.remove("selected");
+        });
+
+        // Add selection to clicked diagram
+        event.target.classList.add("selected");
+
+        // Enable diagram mode
+        const contentArea = document.querySelector(".content-area");
+        contentArea.classList.add("diagram-mode-on");
+
+        // Hide models, profiles and item containers
+        document.getElementById("models-container").classList.add("hidden");
+        document.getElementById("profiles-container").classList.add("hidden");
+        document.getElementById("item-container").classList.add("hidden");
+        document.getElementById("models-container").style.display = "none";
+        document.getElementById("profiles-container").style.display = "none";
+        document.getElementById("item-container").style.display = "none";
+
+        // Show diagram mode content
+        const diagramodeContent = document.getElementById(
+          "diagram-mode-content"
+        );
+        diagramodeContent.classList.remove("hidden");
+        diagramodeContent.classList.add("diagram-mode-content-on");
+
+        // Render diagram content (placeholder renderer)
+        renderdiagramode(diagramId, diagramName, null);
+
+        updateDiagramModeToggleButton(true);
+      }
+
+      function updateDiagramModeToggleButton(forceDiagramMode = null) {
+        const btn = document.getElementById("diagram-mode-toggle-btn");
+        if (!btn) return;
+
+        const contentArea = document.querySelector(".content-area");
+        const isDiagramMode =
+          forceDiagramMode !== null
+            ? !!forceDiagramMode
+            : !!(contentArea && contentArea.classList.contains("diagram-mode-on"));
+
+        btn.textContent = isDiagramMode ? "📋 Стандартный режим" : "📐 Режим диаграммы";
+      }
+
+      // Включает/выключает режим диаграммы по кнопке в toolbar
+      function toggleDiagramMode() {
+        const contentArea = document.querySelector(".content-area");
+        if (!contentArea) return;
+
+        const diagramModeContent = document.getElementById("diagram-mode-content");
+        const standardModeContent = document.getElementById("standard-mode-content");
+
+        const isActive = contentArea.classList.contains("diagram-mode-on");
+
+        const getSelectedTreeItem = () => {
+          const selectedEl = document.querySelector(
+            ".tree-structure-name.selected"
+          );
+          if (selectedEl) {
+            return {
+              id: selectedEl.getAttribute("data-id"),
+              type: selectedEl.getAttribute("data-type"),
+              modelId: selectedEl.getAttribute("data-model-id"),
+              profileId: selectedEl.getAttribute("data-profile-id"),
+            };
+          }
+
+          const fromState = window.lastSelectedTreeItem;
+          if (fromState && fromState.id && fromState.type) return fromState;
+          return null;
+        };
+
+        const autoSwitchDiagramTabForType = (itemType) => {
+          if (!itemType) return;
+          if (itemType === "attribute" || itemType === "profile-attribute") {
+            switchDiagramTab("attributes");
+          } else if (itemType === "link") {
+            switchDiagramTab("links");
+          } else if (itemType === "package" || itemType === "element") {
+            switchDiagramTab("general");
+          }
+        };
+
+        const autoSwitchStandardTabForType = (itemType) => {
+          if (!itemType) return;
+          if (itemType === "attribute" || itemType === "profile-attribute") {
+            switchItemDetailsTab("itemAttributes");
+          } else if (itemType === "link") {
+            switchItemDetailsTab("itemLinks");
+          }
+        };
+
+        if (!isActive) {
+          // Enable diagram mode (without forcing a particular diagram selection)
+          contentArea.classList.add("diagram-mode-on");
+
+          if (diagramModeContent) {
+            diagramModeContent.classList.remove("hidden");
+            diagramModeContent.classList.add("diagram-mode-content-on");
+          }
+
+          if (standardModeContent) {
+            standardModeContent.style.display = "none";
+          }
+
+          // Ensure placeholder UI exists if user hasn't selected a diagram yet
+          const diagramContainer = document.getElementById("diagram-container");
+          if (diagramContainer && !diagramContainer.innerHTML.trim()) {
+            diagramContainer.innerHTML = `
+              <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
+                <div style="text-align: center;">
+                  <div style="font-size: 48px; margin-bottom: 15px;">📐</div>
+                  <h3>Режим диаграммы</h3>
+                  <p>Выберите диаграмму в дереве слева</p>
+                </div>
+              </div>
+            `;
+          }
+
+          // Ensure tabs scaffold exists
+          if (typeof ensureDiagramTabsScaffold === "function") {
+            ensureDiagramTabsScaffold();
+          }
+
+          // Render currently selected tree item details (if any)
+          const selected = getSelectedTreeItem();
+          const canRenderSelected =
+            selected &&
+            selected.id &&
+            selected.type &&
+            selected.type !== "diagram" &&
+            selected.type !== "model" &&
+            selected.type !== "profile";
+
+          if (canRenderSelected) {
+            renderItemDetailsDiagramMode(
+              selected.id,
+              selected.type,
+              selected.modelId,
+              selected.profileId
+            );
+            autoSwitchDiagramTabForType(selected.type);
+          }
+
+          updateDiagramModeToggleButton(true);
+          return;
+        }
+
+        // Disable diagram mode
+        contentArea.classList.remove("diagram-mode-on");
+
+        if (diagramModeContent) {
+          diagramModeContent.classList.add("hidden");
+          diagramModeContent.classList.remove("diagram-mode-content-on");
+        }
+
+        if (standardModeContent) {
+          standardModeContent.style.display = "block";
+        }
+
+        // Restore standard view
+        const projectId = getCurrentProjectId();
+        const noProjectWarning = document.getElementById("no-project-warning");
+        const modelsContainer = document.getElementById("models-container");
+        const profilesContainer = document.getElementById("profiles-container");
+        const itemContainer = document.getElementById("item-container");
+
+        if (!projectId) {
+          if (noProjectWarning) noProjectWarning.style.display = "block";
+          if (modelsContainer) modelsContainer.style.display = "none";
+          if (profilesContainer) profilesContainer.style.display = "none";
+          if (itemContainer) {
+            itemContainer.style.display = "none";
+            itemContainer.classList.add("hidden");
+          }
+          updateDiagramModeToggleButton(false);
+          return;
+        }
+
+        if (noProjectWarning) noProjectWarning.style.display = "none";
+
+        const selected = getSelectedTreeItem();
+        const canRenderSelected =
+          selected &&
+          selected.id &&
+          selected.type &&
+          selected.type !== "diagram" &&
+          selected.type !== "model" &&
+          selected.type !== "profile";
+
+        if (canRenderSelected) {
+          if (modelsContainer) modelsContainer.style.display = "none";
+          if (profilesContainer) profilesContainer.style.display = "none";
+
+          if (itemContainer) {
+            itemContainer.style.display = "block";
+            itemContainer.classList.remove("hidden");
+          }
+
+          renderItemDetails(
+            selected.id,
+            selected.type,
+            selected.modelId,
+            selected.profileId,
+            "item-container"
+          );
+          autoSwitchStandardTabForType(selected.type);
+        } else {
+          if (modelsContainer) modelsContainer.style.display = "block";
+          if (profilesContainer) profilesContainer.style.display = "block";
+          if (itemContainer) {
+            itemContainer.style.display = "none";
+            itemContainer.classList.add("hidden");
+          }
+        }
+
+        updateDiagramModeToggleButton(false);
       }
 
       // рендерит блок для содержания диаграммы
@@ -1966,6 +2229,14 @@
       function selectModelFromTree(event, modelId, modelName) {
         event.stopPropagation();
 
+        // Remember selection for mode toggling
+        window.lastSelectedTreeItem = {
+          id: modelId,
+          type: "model",
+          modelId: modelId,
+          profileId: null,
+        };
+
         // Remove selection from all tree items
         document.querySelectorAll(".tree-structure-name").forEach((el) => {
           el.classList.remove("selected");
@@ -1997,6 +2268,14 @@
       // при клике на профиль в дереве проекта рендерит сведения о профиле, скрывает информацию о классах/пакетах
       function selectProfileFromTree(event, profileId, profileName) {
         event.stopPropagation();
+
+        // Remember selection for mode toggling
+        window.lastSelectedTreeItem = {
+          id: profileId,
+          type: "profile",
+          modelId: null,
+          profileId: profileId,
+        };
 
         // Remove selection from all tree items
         document.querySelectorAll(".tree-structure-name").forEach((el) => {
@@ -2033,6 +2312,14 @@
         const itemType = target.getAttribute("data-type");
         const modelId = target.getAttribute("data-model-id");
         const profileId = target.getAttribute("data-profile-id");
+
+        // Remember selection for mode toggling
+        window.lastSelectedTreeItem = {
+          id: itemId,
+          type: itemType,
+          modelId: modelId,
+          profileId: profileId,
+        };
 
         const contentArea = document.querySelector(".content-area");
         const diagramModeActive =
