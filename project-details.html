@@ -1285,7 +1285,30 @@
 
           <div id="diagram-tab-links" class="tab-content">
 
-            <div class="text-muted">Связи между классами будут отображаться здесь</div>
+            <table class="table">
+                  <colgroup>
+                    <col style="width: 15%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="min-width: 20%;"/>
+                    <col style="width: 5%;"/>
+                    <col style="max-width: 40%;"/>
+                    <col style="width: 10%;"/>
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="sortable item-details-th">Имя связи ⇅</th>
+                      <th class="sortable item-details-th">Тип связи ⇅</th>
+                      <th class="sortable item-details-th">Класс назначения ⇅</th>
+                      <th class="sortable item-details-th">Мн</th>
+                      <th>Описание</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                   <tr> <td class="text-muted"> Нет связей </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="alert("Добавить связь")"> + Добавить связь</button></td></tr>
+                    
+                  </tbody>
+                </table>
           </div>
         `;
       }
@@ -2240,12 +2263,12 @@
                             .join("") +
                           `
                         <tr>
-                          <td colspan="4" >
+                          <td colspan="6" >
                             <button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')">+ Добавить связь</button>
                           </td>
                         </tr>
                       `
-                        : '<tr> <td class="text-muted"> Нет связей </td> <td colspan = "3"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить связь`)"> + Добавить связь</button></td></tr>'
+                        : '<tr> <td class="text-muted"> Нет связей </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить связь`)"> + Добавить связь</button></td></tr>'
                     }
                   </tbody>
                 </table>
