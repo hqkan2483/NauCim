@@ -32,7 +32,7 @@ class Attribute:
 @dataclass
 class Link:
     """Связь класса с другими элементами"""
-    assoc_id: Optional[str] = None
+    link_id: Optional[str] = None
     relation_kind: str = "Association"
     role: str = "unspecified"
     target_class_id: Optional[str] = None
@@ -90,7 +90,7 @@ class XMIPackageParser:
         self.element_docs: Dict[str, str] = {}
         self.attribute_docs: Dict[str, str] = {}
         self.connector_docs: Dict[str, str] = {}
-        self.connector_role_docs: Dict[str, Dict[str, str]] = {}  # ✅ НОВОЕ: {assoc_id: {class_id: doc}}
+        self.connector_role_docs: Dict[str, Dict[str, str]] = {}  # ✅ НОВОЕ: {link_id: {class_id: doc}}
         self.element_stereotypes: Dict[str, str] = {}
         self.attribute_stereotypes: Dict[str, str] = {}
 
@@ -181,7 +181,7 @@ class XMIPackageParser:
         element_docs = {}
         attribute_docs = {}
         connector_docs = {}
-        connector_role_docs = {}  # ✅ НОВОЕ: {assoc_id: {class_id: doc}}
+        connector_role_docs = {}  # ✅ НОВОЕ: {link_id: {class_id: doc}}
         element_stereotypes = {}
         attribute_stereotypes = {}
 
@@ -441,15 +441,15 @@ class XMIPackageParser:
                         child_tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
 
                         if child_tag == 'generalization':
-                            assoc_id = child.get(f"{{{self.namespace['xmi']}}}id") or child.get('id')
+                            link_id = child.get(f"{{{self.namespace['xmi']}}}id") or child.get('id')
                             parent_id = child.get('general')
 
                             if parent_id:
                                 parent_name = class_name_by_id.get(parent_id, f'Unknown_{parent_id}')
-                                target_description = self.connector_docs.get(assoc_id)
+                                target_description = self.connector_docs.get(link_id)
 
                                 link = Link(
-                                    assoc_id=assoc_id,
+                                    link_id=link_id,
                                     relation_kind="Generalization",
                                     role="child",
                                     target_class_id=parent_id,
@@ -472,7 +472,7 @@ class XMIPackageParser:
                 xmi_type = elem.get(f"{{{self.namespace['xmi']}}}type") or elem.get('type')
 
                 if xmi_type == 'uml:Association':
-                    assoc_id = elem.get(f"{{{self.namespace['xmi']}}}id") or elem.get('id')
+                    link_id = elem.get(f"{{{self.namespace['xmi']}}}id") or elem.get('id')
 
                     # Извлекаем ownedEnd элементы
                     owned_ends = []
@@ -514,7 +514,7 @@ class XMIPackageParser:
 
                     if len(owned_ends) == 2:
                         associations.append({
-                            'assoc_id': assoc_id,
+                            'link_id': link_id,
                             'ends': owned_ends
                         })
 
@@ -538,13 +538,13 @@ class XMIPackageParser:
 
                         # ✅ НОВОЕ: Получаем target_description из connector_role_docs
                         target_description = None
-                        if assoc['assoc_id'] in self.connector_role_docs:
-                            role_docs = self.connector_role_docs[assoc['assoc_id']]
+                        if assoc['link_id'] in self.connector_role_docs:
+                            role_docs = self.connector_role_docs[assoc['link_id']]
                             # Ищем документацию для target_class_id
                             target_description = role_docs.get(target_class_id)
 
                         link = Link(
-                            assoc_id=assoc['assoc_id'],
+                            link_id=assoc['link_id'],
                             relation_kind="Association",
                             role="unspecified",
                             target_class_id=target_class_id,
@@ -736,7 +736,7 @@ class XMIPackageParser:
 
                         child_elem = self.elements_by_id[child_id]
                         child_link = Link(
-                            assoc_id=gen_id,
+                            link_id=gen_id,
                             relation_kind="Generalization",
                             role="parent",
                             target_class_id=child_id,
@@ -762,7 +762,7 @@ class XMIPackageParser:
 
         def link_to_dict(link: Link) -> dict:
             return {
-                'assoc_id': link.assoc_id,
+                'link_id': link.link_id,
                 'relation_kind': link.relation_kind,
                 'role': link.role,
                 'target_class_id': link.target_class_id,
