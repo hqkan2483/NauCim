@@ -1,0 +1,257 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "XMI Package Parser Detailed Model",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "totalPackages",
+    "totalElements",
+    "totalAttributes",
+    "totalLinks",
+    "rootPackages"
+  ],
+  "properties": {
+    "totalPackages": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "totalElements": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "totalAttributes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "totalLinks": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rootPackages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/package"
+      }
+    }
+  },
+  "definitions": {
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "type",
+        "description",
+        "elementCount",
+        "elements",
+        "children"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "elementCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/element"
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/package"
+          }
+        }
+      }
+    },
+    "element": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "type",
+        "stereotype",
+        "description",
+        "visibility",
+        "isAbstract",
+        "attributeCount",
+        "linkCount",
+        "attributes",
+        "links"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "stereotype": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "visibility": {
+          "type": "string"
+        },
+        "isAbstract": {
+          "type": "boolean"
+        },
+        "attributeCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "linkCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/attribute"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/link"
+          }
+        }
+      }
+    },
+    "attribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "id",
+        "type",
+        "stereotype",
+        "description",
+        "multiplicity",
+        "visibility"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stereotype": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "multiplicity": {
+          "type": "string"
+        },
+        "visibility": {
+          "type": "string"
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "link_id",
+        "relation_kind",
+        "role",
+        "target_class_id",
+        "target_class_name",
+        "target_class_role_name",
+        "src_class_role_name",
+        "target_description",
+        "multiplicity"
+      ],
+      "properties": {
+        "link_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "relation_kind": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "target_class_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "target_class_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "target_class_role_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "src_class_role_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "target_description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "multiplicity": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
