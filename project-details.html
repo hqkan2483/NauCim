@@ -2196,7 +2196,7 @@
         selectedModelName = modelName;
         renderModels();
         renderModelDetails();
-        document.getElementById("diagram-btn").style.display = "inline-flex";
+        // document.getElementById("diagram-btn").style.display = "inline-flex";
       }
 
       function renderProfiles() {
@@ -2275,8 +2275,8 @@
 
         if (!model) return;
 
-        const structure = getSampleClassStructure();
-        const treeHtml = renderTree(structure[model.name] || []);
+        // const structure = getSampleClassStructure();
+        // const treeHtml = renderTree(structure[model.name] || []);
 
         const html = `
                 <div class="tabs">
@@ -2558,7 +2558,7 @@
         selectedModelName = modelName;
         renderModels();
         renderModelDetails();
-        document.getElementById("diagram-btn").style.display = "inline-flex";
+        // document.getElementById("diagram-btn").style.display = "inline-flex";
       }
 
       // при клике на профиль в дереве проекта рендерит сведения о профиле, скрывает информацию о классах/пакетах
