@@ -337,6 +337,16 @@
       </div>
     </div>
 
+    <!-- Context menu for links table target class -->
+    <div id="link-context-menu" class="context-menu">
+      <div class="context-menu-item" onclick="handleLinkContextMenuAction('goto')">
+        Перейти
+      </div>
+      <div class="context-menu-item" onclick="handleLinkContextMenuAction('info')">
+        Посмотреть информацию
+      </div>
+    </div>
+
     <!-- MODAL: New Diagram -->
     <div
       id="new-diagram-modal"
@@ -684,6 +694,8 @@
       let selectedProfileName = null;
       let contextMenuTarget = null; // Stores the element that triggered context menu
       let contextMenuInitialized = false; // Prevent multiple initializations
+      let linkContextMenuTarget = null; // Stores the <a.table-link> that triggered link context menu
+      let linkContextMenuInitialized = false; // Prevent multiple initializations
 
       document.addEventListener("DOMContentLoaded", async () => {
         try {
@@ -707,6 +719,15 @@
             contextMenuInitialized = true;
           } catch (error) {
             console.error("Error initializing context menu:", error);
+          }
+        }
+
+        if (!linkContextMenuInitialized) {
+          try {
+            initLinkContextMenu();
+            linkContextMenuInitialized = true;
+          } catch (error) {
+            console.error("Error initializing link context menu:", error);
           }
         }
       });
@@ -2286,10 +2307,10 @@
 
                     <table class="table model-details-table">
                     <colgroup>
-                      <col style="width: 15%;"/>
-                      <col style="width: 15%;"/>
-                      <col style="width: 15%;"/>
-                      <col style="min-width: 50%;"/>
+                      <col style="width: 25%;"/>
+                      <col style="width: 25%;"/>
+                      <col style="width: 25%;"/>
+                      <col style="width: 25%;"/>
                     </colgroup>
                         <tr>
                             <td colspan="2">Описание</td>
@@ -2354,10 +2375,10 @@
 
                     <table class="table  profile-details-table">
                       <colgroup>
-                          <col style="width: 15%;"/>
-                          <col style="width: 15%;"/>
-                          <col style="width: 15%;"/>
-                          <col style="min-width: 50%;"/>
+                        <col style="width: 25%;"/>
+                        <col style="width: 25%;"/>
+                        <col style="width: 25%;"/>
+                        <col style="width: 25%;"/>
                       </colgroup>
                       <tr>
                           <td class="table-label">Описание</td>
@@ -2743,7 +2764,7 @@
         `;
       }
 
-      function renderLinksTableHtml(itemData, itemType, uiMode) {
+      function renderLinksTableHtml(itemData, itemType, modelId, profileId, uiMode) {
         const safeText = (v) => escapeHtml(v == null ? "" : String(v));
         const links = itemData && Array.isArray(itemData.links) ? itemData.links : [];
 
@@ -2753,7 +2774,17 @@
             : links && links.length > 0
             ? links
                 .map(
-                  (link) => `
+                  (link) => {
+                    const targetObjectId =
+                      (link && (link.target_class || link.targetObjectId || link.target_object_id)) ?? "";
+                    const targetClassId =
+                      (link && (link.target_class_id || link.targetClassId)) ?? "";
+                    const targetOwnerModelId =
+                      (link && (link.target_model_id || link.targetModelId)) ?? modelId ?? "";
+                    const targetOwnerProfileId =
+                      (link && (link.target_profile_id || link.targetProfileId)) ?? profileId ?? "";
+
+                    return `
                         <tr>
                           <td>${safeText(link && link.target_class_role_name ? link.target_class_role_name : "")}</td>
                           <td>${safeText(link && link.relation_kind ? link.relation_kind : "")}${
@@ -2763,7 +2794,20 @@
                               ? "<br/> (родитель для)"
                               : ""
                           }</td>
-                          <td><a href="#" class="table-link">${safeText(link && link.target_class_name ? link.target_class_name : "")}</a></td>
+                          <td>
+                            <a
+                              href="#"
+                              class="table-link"
+                              data-id="${safeText(targetClassId)}"
+                              data-type="element"
+                              data-model-id="${safeText(targetOwnerModelId)}"
+                              data-profile-id="${safeText(targetOwnerProfileId)}"
+                              data-target-object-id="${safeText(targetObjectId || targetClassId)}"
+                              data-target-class-id="${safeText(targetClassId)}"
+                              data-target-model-id="${safeText(targetOwnerModelId)}"
+                              data-target-profile-id="${safeText(targetOwnerProfileId)}"
+                            >${safeText(link && link.target_class_name ? link.target_class_name : "")}</a>
+                          </td>
                           <td>${safeText(link && link.multiplicity ? link.multiplicity : "")}</td>
                           <td>${safeText(link && link.stereotype ? link.stereotype : "")}</td>
                           <td>${safeText(link && link.description ? link.description : "")}</td>
@@ -2773,6 +2817,7 @@
                           </td>
                         </tr>
                       `
+                  }
                 )
                 .join("") +
               `
@@ -2977,7 +3022,7 @@
               </div>
               
                <div id="tab-itemLinks" class="tab-content">
-                ${renderLinksTableHtml(itemData, itemType, 'standard')}
+                ${renderLinksTableHtml(itemData, itemType, modelId, profileId, 'standard')}
               </div>
               `
                 : ` `
@@ -3127,7 +3172,7 @@
 
         attributesTab.innerHTML = renderAttributesTableHtml(itemData, itemType, modelId, profileId, 'diagram');
 
-        linksTab.innerHTML = renderLinksTableHtml(itemData, itemType, 'diagram');
+        linksTab.innerHTML = renderLinksTableHtml(itemData, itemType, modelId, profileId, 'diagram');
       }
 
       function ensureDiagramTabsScaffold() {
@@ -3364,6 +3409,277 @@
         const contextMenu = document.getElementById("context-menu");
         contextMenu.classList.remove("show");
         contextMenuTarget = null;
+      }
+
+      function initLinkContextMenu() {
+        const menu = document.getElementById("link-context-menu");
+        if (!menu) return;
+
+        // Use capture phase to intercept clicks on links created via innerHTML
+        document.addEventListener(
+          "click",
+          (e) => {
+            const target = e.target;
+            const linkEl =
+              target && target.closest
+                ? target.closest(
+                    'a.table-link[data-target-class-id], a.table-link[data-target-object-id]'
+                  )
+                : null;
+
+            if (linkEl) {
+              e.preventDefault();
+              e.stopPropagation();
+
+              linkContextMenuTarget = linkEl;
+              showLinkContextMenu(e.clientX, e.clientY);
+              return;
+            }
+
+            // Click outside closes it
+            if (menu.classList.contains("show")) {
+              const isInsideMenu =
+                target && target.closest
+                  ? !!target.closest("#link-context-menu")
+                  : false;
+              if (!isInsideMenu) hideLinkContextMenu();
+            }
+          },
+          true
+        );
+
+        // Close on Escape
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") hideLinkContextMenu();
+        });
+
+        // Close on scroll
+        window.addEventListener(
+          "scroll",
+          () => {
+            if (menu.classList.contains("show")) hideLinkContextMenu();
+          },
+          true
+        );
+      }
+
+      function showLinkContextMenu(x, y) {
+        const menu = document.getElementById("link-context-menu");
+        if (!menu) return;
+
+        // Hide package menu if open
+        try {
+          hideContextMenu();
+        } catch {}
+
+        menu.classList.add("show");
+
+        // Position within viewport
+        const rect = menu.getBoundingClientRect();
+        const padding = 6;
+        const maxX = window.innerWidth - rect.width - padding;
+        const maxY = window.innerHeight - rect.height - padding;
+
+        const left = Math.max(padding, Math.min(x, maxX));
+        const top = Math.max(padding, Math.min(y, maxY));
+
+        menu.style.left = left + "px";
+        menu.style.top = top + "px";
+      }
+
+      function hideLinkContextMenu() {
+        const menu = document.getElementById("link-context-menu");
+        if (menu) menu.classList.remove("show");
+        linkContextMenuTarget = null;
+      }
+
+      function handleLinkContextMenuAction(action) {
+        const linkEl = linkContextMenuTarget;
+        hideLinkContextMenu();
+
+        if (!linkEl) return;
+
+        if (action === "info") {
+          alert("Посмотреть информацию (в разработке)");
+          return;
+        }
+
+        if (action === "goto") {
+          gotoTargetClassFromLink(linkEl);
+        }
+      }
+
+      function gotoTargetClassFromLink(linkEl) {
+        const targetClassId =
+          (linkEl.dataset && (linkEl.dataset.targetClassId || linkEl.dataset.id)) ||
+          "";
+        const targetModelId =
+          (linkEl.dataset && (linkEl.dataset.targetModelId || linkEl.dataset.modelId)) ||
+          "";
+        const targetProfileId =
+          (linkEl.dataset && (linkEl.dataset.targetProfileId || linkEl.dataset.profileId)) ||
+          "";
+
+        if (!targetClassId) {
+          alert("Целевой класс не определён");
+          return;
+        }
+
+        const expanded = expandTreeToElement(targetClassId, targetModelId, targetProfileId);
+        if (!expanded) {
+          alert("Класс не найден");
+          return;
+        }
+
+        const selectNow = () => {
+          const nodes = document.querySelectorAll(
+            '.tree-structure-name[data-type="element"]'
+          );
+          const match = Array.from(nodes).find((el) => {
+            if ((el.getAttribute("data-id") || "") != targetClassId) return false;
+            if (targetModelId) {
+              return (el.getAttribute("data-model-id") || "") == targetModelId;
+            }
+            if (targetProfileId) {
+              return (el.getAttribute("data-profile-id") || "") == targetProfileId;
+            }
+            return true;
+          });
+
+          if (!match) return false;
+
+          try {
+            match.scrollIntoView({ block: "center" });
+          } catch {}
+
+          match.dispatchEvent(
+            new MouseEvent("click", { bubbles: true, cancelable: true })
+          );
+          return true;
+        };
+
+        // renderCurrentProjectStructure() is sync, but select on next tick to be safe
+        if (!selectNow()) {
+          setTimeout(() => {
+            if (!selectNow()) alert("Класс не найден в дереве");
+          }, 0);
+        }
+      }
+
+      function expandTreeToElement(targetElementId, modelId, profileId) {
+        const projectId = getCurrentProjectId();
+        const project = getProject(projectId);
+        if (!project) return false;
+
+        const expandedItems = JSON.parse(
+          localStorage.getItem("expandedTreeItems") || "{}"
+        );
+
+        const expandAll = (ids) => {
+          if (!ids) return;
+          for (const id of ids) {
+            if (id) expandedItems[id] = true;
+          }
+        };
+
+        const findPathInPackages = (packages, baseIdPrefix) => {
+          if (!packages || !Array.isArray(packages)) return null;
+
+          for (let i = 0; i < packages.length; i++) {
+            const pkg = packages[i];
+            const pkgBaseId = `${baseIdPrefix}-root-${i}`;
+
+            // Elements directly in this root package
+            if (pkg && pkg.elements && Array.isArray(pkg.elements)) {
+              for (let eIdx = 0; eIdx < pkg.elements.length; eIdx++) {
+                const el = pkg.elements[eIdx];
+                if (el && (el.id || "") == targetElementId) {
+                  return [pkgBaseId];
+                }
+              }
+            }
+
+            // Nested packages
+            const nested = findPathInNestedPackage(pkg, pkgBaseId);
+            if (nested) return [pkgBaseId, ...nested];
+          }
+
+          return null;
+        };
+
+        const findPathInNestedPackage = (pkg, pkgBaseId) => {
+          if (!pkg) return null;
+
+          if (pkg.elements && Array.isArray(pkg.elements)) {
+            for (let eIdx = 0; eIdx < pkg.elements.length; eIdx++) {
+              const el = pkg.elements[eIdx];
+              if (el && (el.id || "") == targetElementId) {
+                return []; // parent pkgBaseId will be expanded by caller
+              }
+            }
+          }
+
+          if (pkg.children && Array.isArray(pkg.children)) {
+            for (let cIdx = 0; cIdx < pkg.children.length; cIdx++) {
+              const child = pkg.children[cIdx];
+              const childBaseId = `${pkgBaseId}-pkg-${cIdx}`;
+
+              if (child && child.elements && Array.isArray(child.elements)) {
+                for (let eIdx = 0; eIdx < child.elements.length; eIdx++) {
+                  const el = child.elements[eIdx];
+                  if (el && (el.id || "") == targetElementId) {
+                    return [childBaseId];
+                  }
+                }
+              }
+
+              const deeper = findPathInNestedPackage(child, childBaseId);
+              if (deeper) return [childBaseId, ...deeper];
+            }
+          }
+
+          return null;
+        };
+
+        if (modelId) {
+          const modelIdx = (project.models || []).findIndex(
+            (m) => (m.id || "") == modelId
+          );
+          if (modelIdx < 0) return false;
+
+          const modelBaseId = `model-${projectId}-${modelIdx}`;
+          expandedItems[modelBaseId] = true;
+
+          const model = project.models[modelIdx];
+          const path = findPathInPackages(model.rootPackages, modelBaseId);
+          if (!path) return false;
+          expandAll(path);
+
+          localStorage.setItem("expandedTreeItems", JSON.stringify(expandedItems));
+          renderCurrentProjectStructure();
+          return true;
+        }
+
+        if (profileId) {
+          const profileIdx = (project.profiles || []).findIndex(
+            (p) => (p.id || "") == profileId
+          );
+          if (profileIdx < 0) return false;
+
+          const profileBaseId = `profile-${projectId}-${profileIdx}`;
+          expandedItems[profileBaseId] = true;
+
+          const profile = project.profiles[profileIdx];
+          const path = findPathInPackages(profile.rootPackages, profileBaseId);
+          if (!path) return false;
+          expandAll(path);
+
+          localStorage.setItem("expandedTreeItems", JSON.stringify(expandedItems));
+          renderCurrentProjectStructure();
+          return true;
+        }
+
+        return false;
       }
 
       function handleContextMenuAction(action) {
