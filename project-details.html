@@ -494,8 +494,7 @@
     <div
       id="attribute-modal"
       class="modal"
-      onclick="if(event.target.id === 'attribute-modal') closeModal('attribute-modal')"
-    >
+      onclick="if(event.target.id === 'attribute-modal') closeModal('attribute-modal')">
       <div class="modal-content">
         <div class="modal-header">
           <div class="modal-title" id="attribute-modal-title">Атрибут</div>
@@ -576,8 +575,7 @@
           <textarea
             id="attr-details"
             class="form-textarea"
-            placeholder="Дополнительная информация"
-          ></textarea>
+            placeholder="Дополнительная информация"></textarea>
         </div>
 
         <div class="modal-buttons">
@@ -2672,6 +2670,149 @@
         }
       }
 
+      function formatContextIdForOnclick(id) {
+        return id != null && id !== "" ? `'${id}'` : "null";
+      }
+
+      function renderAttributesTableHtml(itemData, itemType, modelId, profileId, uiMode) {
+        const safeText = (v) => escapeHtml(v == null ? "" : String(v));
+        const attributes = itemData && Array.isArray(itemData.attributes) ? itemData.attributes : [];
+
+        const ctxModel = formatContextIdForOnclick(modelId);
+        const ctxProfile = formatContextIdForOnclick(profileId);
+        const ctxUiMode = uiMode === "diagram" ? "diagram" : "standard";
+
+        const rows =
+          itemType !== "element"
+            ? `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="6"></td></tr>`
+            : attributes && attributes.length > 0
+            ? attributes
+                .map(
+                  (attr, idx) => `
+                        <tr>
+                          <td><a href="#" class="table-link">${safeText(attr && attr.name ? attr.name : "")}</a></td>
+                          <td>${safeText(attr && attr.type ? attr.type : "")}</td>
+                          <td>${safeText(attr && attr.multiplicity ? attr.multiplicity : "")}</td>
+                          <td>${safeText(attr && attr.stereotype ? attr.stereotype : "")}</td>
+                          <td>${safeText(attr && attr.description ? attr.description : "")}${
+                            attr && attr.details
+                              ? `<br/><span class="text-muted">${safeText(attr.details)}</span>`
+                              : ""
+                          }</td>
+                          <td>
+                            <button class="btn-icon" onclick="openAttributeModal('edit', '${itemData.id}', ${idx}, ${ctxModel}, ${ctxProfile}, '${ctxUiMode}')" title="Изменить">✏️</button>
+                            <button class="btn-icon" onclick="alert('Удалить атрибут')" title="Удалить">🗑️</button>
+                          </td>
+                        </tr>
+                      `
+                )
+                .join("") +
+              `
+                        <tr>
+                          <td colspan="6" >
+                            <button class="btn btn-secondary btn-table" onclick="openAttributeModal('add', '${itemData.id}', null, ${ctxModel}, ${ctxProfile}, '${ctxUiMode}')">+ Добавить атрибут</button>
+                          </td>
+                        </tr>
+                      `
+            : `<tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="openAttributeModal('add', '${itemData.id}', null, ${ctxModel}, ${ctxProfile}, '${ctxUiMode}')"> + Добавить атрибут</button></td></tr>`;
+
+        return `
+                <table class="table">
+                  <colgroup>
+                    <col style="width: 15%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="width: 8%;"/>
+                    <col style="width: 10%;"/>
+                    <col style="min-width: 44%;"/>
+                    <col style="width: 8%;"/>
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="sortable item-details-th">Имя ▲</th>
+                      <th class="sortable item-details-th">Тип ⇅</th>
+                      <th class="sortable item-details-th">Мн ⇅</th>
+                      <th class="item-details-th">Стереотип</th>
+                      <th class="item-details-th">Описание</th>
+                      <th class="item-details-th"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${rows}
+                  </tbody>
+                </table>
+        `;
+      }
+
+      function renderLinksTableHtml(itemData, itemType, uiMode) {
+        const safeText = (v) => escapeHtml(v == null ? "" : String(v));
+        const links = itemData && Array.isArray(itemData.links) ? itemData.links : [];
+
+        const rows =
+          itemType !== "element"
+            ? `<tr><td class="text-muted"> Нет связей </td><td colspan="7"></td></tr>`
+            : links && links.length > 0
+            ? links
+                .map(
+                  (link) => `
+                        <tr>
+                          <td>${safeText(link && link.target_class_role_name ? link.target_class_role_name : "")}</td>
+                          <td>${safeText(link && link.relation_kind ? link.relation_kind : "")}${
+                            link && link.role === "child"
+                              ? " (наследуется от)"
+                              : link && link.role === "parent"
+                              ? "<br/> (родитель для)"
+                              : ""
+                          }</td>
+                          <td><a href="#" class="table-link">${safeText(link && link.target_class_name ? link.target_class_name : "")}</a></td>
+                          <td>${safeText(link && link.multiplicity ? link.multiplicity : "")}</td>
+                          <td>${safeText(link && link.stereotype ? link.stereotype : "")}</td>
+                          <td>${safeText(link && link.description ? link.description : "")}</td>
+                          <td>
+                            <button class="btn-icon" onclick="alert('Редактировать связь')" title="Изменить">✏️</button>
+                            <button class="btn-icon" onclick="alert('Удалить связь')" title="Удалить">🗑️</button>
+                          </td>
+                        </tr>
+                      `
+                )
+                .join("") +
+              `
+                        <tr>
+                          <td colspan="7" >
+                            <button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')">+ Добавить связь</button>
+                          </td>
+                        </tr>
+                      `
+            : '<tr> <td class="text-muted"> Нет связей </td> <td colspan = "6"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить связь`)"> + Добавить связь</button></td></tr>';
+
+        return `
+                <table class="table">
+                  <colgroup>
+                    <col style="width: 15%;"/>
+                    <col style="width: 15%;"/>
+                    <col style="min-width: 15%;"/>
+                    <col style="width: 7%;"/>
+                    <col style="width: 10%;"/>
+                    <col style="max-width: 30%;"/>
+                    <col style="width: 8%;"/>
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="sortable item-details-th">Имя связи ⇅</th>
+                      <th class="sortable item-details-th">Тип связи ⇅</th>
+                      <th class="sortable item-details-th">Класс назначения ⇅</th>
+                      <th class="sortable item-details-th">Мн</th>
+                      <th class="item-details-th">Стереотип</th>
+                      <th class="item-details-th">Описание</th>
+                      <th class="item-details-th"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${rows}
+                  </tbody>
+                </table>
+        `;
+      }
+
       // рендерим описание пакета или класса - универсальная функция для моделей и профилей
       function renderItemDetails(
         itemId,
@@ -2773,9 +2914,7 @@
                   <label class="form-label">
                     ${itemType === "package" ? "Пакет" : "Класс"}
                     </label>
-                  <input type="text" value="${
-                    itemData.name || ""
-                  }" class="form-input" >
+                  <input type="text" value="${escapeHtml(itemData.name || "")}" class="form-input" >
                 </div>
                 ${
                   itemType === "element"
@@ -2789,9 +2928,7 @@
                   
                   <div class="form-group form-group-flex-line form-group-flex-center">
                     <label class="form-label">Стереотип</label>
-                    <input type="text" value="${
-                      itemData.stereotype || ""
-                    }" class="form-input">
+                    <input type="text" value="${escapeHtml(itemData.stereotype || "")}" class="form-input">
                   </div>
                 </div>`
                     : `<div /> 
@@ -2803,24 +2940,22 @@
               <div class="item-details-grid">
                 <div class="form-group form-group-flex form-group-flex-start">
                   <label class="form-label">Описание</label>
-                  <textarea class="form-textarea">${
+                  <textarea class="form-textarea">${escapeHtml(
                     itemData.description_en || itemData.description || ""
-                  }</textarea>
+                  )}</textarea>
                 </div>
                 
                 <div class="form-group form-group-flex form-group-flex-start">
                   <label class="form-label">Описание (доп., рус.)</label>
-                  <textarea class="form-textarea">${
+                  <textarea class="form-textarea">${escapeHtml(
                     itemData.description_ru || ""
-                  }</textarea>
+                  )}</textarea>
                 </div>
               </div>
               
               <div class="form-group form-group-flex form-group-flex-start">
                 <label class="form-label">Дополнительная информация (рус)</label>
-                <textarea class="form-textarea">${
-                  itemData.details || ""
-                }</textarea>
+                <textarea class="form-textarea">${escapeHtml(itemData.details || "")}</textarea>
               </div>
 
               <div class="form-group form-group-flex form-group-flex-end">
@@ -2838,133 +2973,11 @@
             <div class="tab tab-mini" data-tab="itemLinks" onclick="switchItemDetailsTab('itemLinks', event)">Связи</div>
           </div>
           <div id="tab-itemAttributes" class="tab-content active">
-
-                <table class="table">
-                  <colgroup>
-                    <col style="width: 15%;"/>
-                    <col style="width: 15%;"/>
-                    <col style="width: 8%;"/>
-                    <col style="width: 10%;"/>
-                    <col style="min-width: 44%;"/>
-                    <col style="width: 8%;"/>
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th class="sortable item-details-th">Имя ▲</th>
-                      <th class="sortable item-details-th">Тип ⇅</th>
-                      <th class="sortable item-details-th">Мн ⇅</th>
-                      <th class="item-details-th">Стереотип</th>
-                      <th class="item-details-th">Описание</th>
-                      <th class="item-details-th"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${
-                      itemData.attributes && itemData.attributes.length > 0
-                        ? itemData.attributes
-                            .map(
-                              (attr, idx) => `
-                        <tr>
-                          <td><a href="#" class="table-link">${
-                            attr.name || ""
-                          }</a></td>
-                          <td>${attr.type || ""}</td>
-                          <td>${attr.multiplicity || ""}</td>
-                          <td>${attr.stereotype || ""}</td>
-                          <td>${attr.description || ""}${
-                            attr.details
-                              ? `<br/><span class="text-muted">${attr.details}</span>`
-                              : ""
-                          }</td>
-                          <td>
-                            <button class="btn-icon" onclick="openAttributeModal('edit', '${itemData.id}', ${idx}, ${
-                              modelId != null && modelId !== '' ? `'${modelId}'` : "null"
-                            }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'standard')" title="Изменить">✏️</button>
-                            <button class="btn-icon" onclick="alert('Удалить атрибут')" title="Удалить">🗑️</button>
-                          </td>
-                        </tr>
-                      `
-                            )
-                            .join("") +
-                          `
-                        <tr>
-                          <td colspan="6" >
-                            <button class="btn btn-secondary btn-table" onclick="openAttributeModal('add', '${itemData.id}', null, ${
-                              modelId != null && modelId !== '' ? `'${modelId}'` : "null"
-                            }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'standard')">+ Добавить атрибут</button>
-                          </td>
-                        </tr>
-                      `
-                        : `<tr> <td class="text-muted"> Нет атрибутов </td> <td colspan = "5"><button class="btn btn-secondary btn-table" onclick="openAttributeModal('add', '${itemData.id}', null, ${
-                            modelId != null && modelId !== '' ? `'${modelId}'` : "null"
-                          }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'standard')"> + Добавить атрибут</button></td></tr>`
-                    }
-                  </tbody>
-                </table>
+                ${renderAttributesTableHtml(itemData, itemType, modelId, profileId, 'standard')}
               </div>
               
                <div id="tab-itemLinks" class="tab-content">
-                <table class="table">
-                  <colgroup>
-                    <col style="width: 15%;"/>
-                    <col style="width: 15%;"/>
-                    <col style="min-width: 15%;"/>
-                    <col style="width: 7%;"/>
-                    <col style="width: 10%;"/>
-                    <col style="max-width: 30%;"/>
-                    <col style="width: 8%;"/>
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th class="sortable item-details-th">Имя связи ⇅</th>
-                      <th class="sortable item-details-th">Тип связи ⇅</th>
-                      <th class="sortable item-details-th">Класс назначения ⇅</th>
-                      <th class="sortable item-details-th">Мн</th>
-                      <th class="item-details-th">Стереотип</th>
-                      <th class="item-details-th">Описание</th>
-                      <th class="item-details-th"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${
-                      itemData.links && itemData.links.length > 0
-                        ? itemData.links
-                            .map(
-                              (link) => `
-                        <tr>
-                          <td>${link.target_class_role_name || ""}</td>
-                          <td>${link.relation_kind || ""}${
-                                link.role === "child"
-                                  ? " (наследуется от)"
-                                  : link.role === "parent"
-                                  ? "<br/> (родитель для)"
-                                  : ""
-                              }</td>
-                          <td><a href="#" class="table-link">${
-                            link.target_class_name || ""
-                          }</a></td>
-                          <td>${link.multiplicity || ""}</td>
-                          <td>${link.stereotype || ""}</td>
-                          <td>${link.description || ""}</td>
-                          <td>
-                            <button class="btn-icon" onclick="alert('Редактировать связь')" title="Изменить">✏️</button>
-                            <button class="btn-icon" onclick="alert('Удалить связь')" title="Удалить">🗑️</button>
-                          </td>
-                        </tr>
-                      `
-                            )
-                            .join("") +
-                          `
-                        <tr>
-                          <td colspan="7" >
-                            <button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')">+ Добавить связь</button>
-                          </td>
-                        </tr>
-                      `
-                        : '<tr> <td class="text-muted"> Нет связей </td> <td colspan = "6"><button class="btn btn-secondary btn-table" onclick="alert(`Добавить связь`)"> + Добавить связь</button></td></tr>'
-                    }
-                  </tbody>
-                </table>
+                ${renderLinksTableHtml(itemData, itemType, 'standard')}
               </div>
               `
                 : ` `
@@ -3064,70 +3077,6 @@
         const descriptionRuValue = escapeHtml(itemData.description_ru || "");
         const detailsValue = escapeHtml(itemData.details || "");
 
-        const attributes = Array.isArray(itemData.attributes) ? itemData.attributes : [];
-        const links = Array.isArray(itemData.links) ? itemData.links : [];
-
-        const attributesRows =
-          itemType === "element" && attributes.length > 0
-            ? attributes
-                .map(
-                  (attr, idx) => `
-                        <tr>
-                          <td><a href="#" class="table-link">${escapeHtml(
-                            attr.name || ""
-                          )}</a></td>
-                          <td>${escapeHtml(attr.type || "")}</td>
-                          <td>${escapeHtml(attr.multiplicity || "")}</td>
-                          <td>${escapeHtml(attr.stereotype || "")}</td>
-                          <td>${escapeHtml(attr.description || "")}${
-                            attr.details
-                              ? `<br/><span class="text-muted">${escapeHtml(
-                                  attr.details
-                                )}</span>`
-                              : ""
-                          }</td>
-                          <td>
-                            <button class="btn-icon" onclick="openAttributeModal('edit', '${itemData.id}', ${idx}, ${
-                              modelId != null && modelId !== '' ? `'${modelId}'` : "null"
-                            }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'diagram')" title="Изменить">✏️</button>
-                            <button class="btn-icon" onclick="alert('Удалить атрибут')" title="Удалить">🗑️</button>
-                          </td>
-                        </tr>
-                      `
-                )
-                .join("")
-            : null;
-
-        const linksRows =
-          itemType === "element" && links.length > 0
-            ? links
-                .map((link) => {
-                  const roleLabel =
-                    link.role === "child"
-                      ? " (наследуется от)"
-                      : link.role === "parent"
-                      ? "<br/> (родитель для)"
-                      : "";
-
-                  return `
-                        <tr>
-                          <td>${escapeHtml(link.target_class_role_name || "")}</td>
-                          <td>${escapeHtml(link.relation_kind || "")}${roleLabel}</td>
-                          <td><a href="#" class="table-link">${escapeHtml(
-                            link.target_class_name || ""
-                          )}</a></td>
-                          <td>${escapeHtml(link.multiplicity || "")}</td>
-                          <td>${escapeHtml(link.stereotype || "")}</td>
-                          <td>${escapeHtml(link.description || "")}</td>
-                          <td>
-                            <button class="btn-icon" onclick="alert('Редактировать связь')" title="Изменить">✏️</button>
-                            <button class="btn-icon" onclick="alert('Удалить связь')" title="Удалить">🗑️</button>
-                          </td>
-                        </tr>
-                      `;
-                })
-                .join("")
-            : null;
 
         generalTab.innerHTML = `
           <div class="diagram-tab-general-content">
@@ -3176,78 +3125,9 @@
           </div>
         `;
 
-        attributesTab.innerHTML = `
-          <table class="table">
-                  <colgroup>
-                    <col style="width: 15%;"/>
-                    <col style="width: 15%;"/>
-                    <col style="width: 8%;"/>
-                    <col style="width: 10%;"/>
-                    <col style="min-width: 44%;"/>
-                    <col style="width: 8%;"/>
-                  </colgroup>
+        attributesTab.innerHTML = renderAttributesTableHtml(itemData, itemType, modelId, profileId, 'diagram');
 
-            <thead>
-              <tr>
-                <th class="sortable item-details-th">Имя ▲</th>
-                <th class="sortable item-details-th">Тип ⇅</th>
-                <th class="sortable item-details-th">Мн ⇅</th>
-                <th class="sortable item-details-th">Стереотип</th>
-                <th class="item-details-th">Описание</th>
-                <th class="item-details-th"></th>
-              </tr>
-            </thead>
-            <tbody>
-              ${
-                itemType !== "element"
-                  ? `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="6"></td></tr>`
-                  : attributesRows
-                  ? attributesRows +
-                    `<tr><td colspan="6"><button class="btn btn-secondary btn-table" onclick="openAttributeModal('add', '${itemData.id}', null, ${
-                      modelId != null && modelId !== '' ? `'${modelId}'` : "null"
-                    }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'diagram')"> + Добавить атрибут</button></td></tr>`
-                  : `<tr><td class="text-muted"> Нет атрибутов </td><td colspan="5"><button class="btn btn-secondary btn-table" onclick="openAttributeModal('add', '${itemData.id}', null, ${
-                      modelId != null && modelId !== '' ? `'${modelId}'` : "null"
-                    }, ${profileId != null && profileId !== '' ? `'${profileId}'` : "null"}, 'diagram')"> + Добавить атрибут</button></td></tr>`
-              }
-            </tbody>
-          </table>
-        `;
-
-        linksTab.innerHTML = `
-          <table class="table">
-            <colgroup>
-                    <col style="width: 15%;"/>
-                    <col style="width: 15%;"/>
-                    <col style="min-width: 15%;"/>
-                    <col style="width: 7%;"/>
-                    <col style="width: 10%;"/>
-                    <col style="max-width: 30%;"/>
-                    <col style="width: 8%;"/>
-            </colgroup>
-            <thead>
-              <tr>
-                <th class="sortable item-details-th">Имя связи ⇅</th>
-                <th class="sortable item-details-th">Тип связи ⇅</th>
-                <th class="sortable item-details-th">Класс назначения ⇅</th>
-                <th class="sortable item-details-th">Мн</th>
-                <th class="sortable item-details-th">Стереотип</th>
-                <th class="item-details-th">Описание</th>
-                <th class="item-details-th"></th>
-              </tr>
-            </thead>
-            <tbody>
-              ${
-                itemType !== "element"
-                  ? `<tr><td class="text-muted"> Нет связей </td><td colspan="7"></td></tr>`
-                  : linksRows
-                  ? linksRows +
-                    `<tr><td colspan="7"><button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')"> + Добавить связь</button></td></tr>`
-                  : `<tr><td class="text-muted"> Нет связей </td><td colspan="6"><button class="btn btn-secondary btn-table" onclick="alert('Добавить связь')"> + Добавить связь</button></td></tr>`
-              }
-            </tbody>
-          </table>
-        `;
+        linksTab.innerHTML = renderLinksTableHtml(itemData, itemType, 'diagram');
       }
 
       function ensureDiagramTabsScaffold() {
