@@ -91,26 +91,50 @@ class XMIPackageParser:
         self.attribute_docs: Dict[str, str] = {}
         self.connector_docs: Dict[str, str] = {}
         self.connector_role_docs: Dict[str, Dict[str, str]] = {}  # ✅ НОВОЕ: {assoc_id: {class_id: doc}}
+        self.element_stereotypes: Dict[str, str] = {}
+        self.attribute_stereotypes: Dict[str, str] = {}
 
     def parse(self) -> None:
         """Parse the XMI file and build complete model"""
         try:
+            # Ensure Unicode output (icons, arrows, etc.) doesn't crash on Windows codepages
+            try:
+                import sys
+
+                if hasattr(sys.stdout, "reconfigure"):
+                    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+                if hasattr(sys.stderr, "reconfigure"):
+                    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
             tree = ET.parse(self.xmi_file)
             root = tree.getroot()
             self.root = root  # Store root for children extraction in v3.12
 
             self._detect_namespaces(root)
 
-            self.element_docs, self.attribute_docs, self.connector_docs, self.connector_role_docs = self._parse_extension_documentation(root)
+            (
+                self.element_docs,
+                self.attribute_docs,
+                self.connector_docs,
+                self.connector_role_docs,
+                self.element_stereotypes,
+                self.attribute_stereotypes,
+            ) = self._parse_extension_documentation(root)
             print(f"Extracted {len(self.element_docs)} element descriptions")
             print(f"Extracted {len(self.attribute_docs)} attribute descriptions")
             print(f"Extracted {len(self.connector_docs)} connector descriptions")
             print(f"Extracted {len(self.connector_role_docs)} connector role descriptions")
+            print(f"Extracted {len(self.element_stereotypes)} element stereotypes")
+            print(f"Extracted {len(self.attribute_stereotypes)} attribute stereotypes")
 
             self._extract_packages_and_elements(root)
             self._extract_attributes(root)
             self._extract_generalizations(root)
             self._extract_associations(root)
+
+            self._apply_stereotypes()
 
             # Extract children (descendants) from EA Extension - NEW in v3.12
             self._extract_children_from_extension()
@@ -143,12 +167,23 @@ class XMIPackageParser:
                 elif 'XMI' in namespace_uri.upper():
                     self.namespace['xmi'] = namespace_uri
 
-    def _parse_extension_documentation(self, root) -> Tuple[Dict[str, str], Dict[str, str], Dict[str, str], Dict[str, Dict[str, str]]]:
-        """Parse Enterprise Architect Extension to extract documentation"""
+    def _parse_extension_documentation(
+        self, root
+    ) -> Tuple[
+        Dict[str, str],
+        Dict[str, str],
+        Dict[str, str],
+        Dict[str, Dict[str, str]],
+        Dict[str, str],
+        Dict[str, str],
+    ]:
+        """Parse Enterprise Architect Extension to extract documentation and stereotypes"""
         element_docs = {}
         attribute_docs = {}
         connector_docs = {}
         connector_role_docs = {}  # ✅ НОВОЕ: {assoc_id: {class_id: doc}}
+        element_stereotypes = {}
+        attribute_stereotypes = {}
 
         for elem in root:
             tag = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
@@ -167,6 +202,9 @@ class XMIPackageParser:
                                         doc = prop.get('documentation')
                                         if doc:
                                             element_docs[xmi_idref] = doc
+                                        st = prop.get('stereotype')
+                                        if st is not None:
+                                            element_stereotypes[xmi_idref] = st
                                         break
 
                         elif child_tag == 'attribute':
@@ -178,7 +216,18 @@ class XMIPackageParser:
                                         doc_value = doc_elem.get('value')
                                         if doc_value:
                                             attribute_docs[xmi_idref] = doc_value
-                                        break
+                                    elif doc_tag == 'stereotype':
+                                        st = doc_elem.get('stereotype')
+                                        if st is not None:
+                                            attribute_stereotypes[xmi_idref] = st
+
+                                # If stereotype tag exists but empty (<stereotype/>), keep explicit empty
+                                if xmi_idref not in attribute_stereotypes:
+                                    for doc_elem in child:
+                                        doc_tag = doc_elem.tag.split('}')[-1] if '}' in doc_elem.tag else doc_elem.tag
+                                        if doc_tag == 'stereotype':
+                                            attribute_stereotypes[xmi_idref] = ""
+                                            break
 
                         elif child_tag == 'connector':
                             xmi_idref = child.get(f"{{{self.namespace['xmi']}}}idref") or child.get('xmi:idref')
@@ -214,7 +263,28 @@ class XMIPackageParser:
 
                 break
 
-        return element_docs, attribute_docs, connector_docs, connector_role_docs
+        return (
+            element_docs,
+            attribute_docs,
+            connector_docs,
+            connector_role_docs,
+            element_stereotypes,
+            attribute_stereotypes,
+        )
+
+    def _apply_stereotypes(self) -> None:
+        """Apply extracted stereotypes from EA Extension to parsed elements/attributes."""
+        for elem_id, elem in self.elements_by_id.items():
+            if elem_id in self.element_stereotypes:
+                elem.stereotype = self.element_stereotypes[elem_id]
+            elif elem.stereotype is None:
+                elem.stereotype = ""
+
+            for attr in elem.attributes:
+                if attr.attr_id and attr.attr_id in self.attribute_stereotypes:
+                    attr.stereotype = self.attribute_stereotypes[attr.attr_id]
+                elif attr.stereotype is None:
+                    attr.stereotype = ""
 
     def _get_element_type(self, xmi_type: str) -> str:
         """Extract element type from xmi:type attribute"""
@@ -588,7 +658,9 @@ class XMIPackageParser:
         icon = self._get_element_icon(elem.element_type)
         abstract_marker = " [abstract]" if elem.is_abstract else ""
 
-        print(f"\n{prefix}{icon} {elem.name} ({elem.element_type}){abstract_marker}")
+        stereotype_str = f" <<{elem.stereotype}>>" if elem.stereotype else ""
+
+        print(f"\n{prefix}{icon} {elem.name} ({elem.element_type}){abstract_marker}{stereotype_str}")
 
         if elem.description:
             desc_lines = elem.description.strip().split('\n')
@@ -603,7 +675,8 @@ class XMIPackageParser:
             for attr in elem.attributes:
                 mult_str = f" [{attr.multiplicity}]" if attr.multiplicity != "1" else ""
                 type_str = f": {attr.attribute_type}" if attr.attribute_type else ""
-                print(f"{prefix}      • {attr.name}{type_str}{mult_str}")
+                attr_stereotype_str = f" <<{attr.stereotype}>>" if attr.stereotype else ""
+                print(f"{prefix}      • {attr.name}{type_str}{mult_str}{attr_stereotype_str}")
                 if attr.description:
                     desc_preview = attr.description[:80] + "..." if len(attr.description) > 80 else attr.description
                     print(f"{prefix}        → {desc_preview}")
