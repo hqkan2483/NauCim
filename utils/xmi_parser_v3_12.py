@@ -47,6 +47,15 @@ class Link:
 
 
 @dataclass
+class EnumLiteral:
+    """Represents a UML Enumeration literal (ownedLiteral)"""
+    name: str
+    literal_id: Optional[str] = None
+    description: str = ""
+    initial_value: str = ""
+
+
+@dataclass
 class UMLElement:
     """Represents a UML element (Class, Interface, DataType, etc.)"""
     xmi_id: str
@@ -58,6 +67,7 @@ class UMLElement:
     stereotype: Optional[str] = None
     attributes: List[Attribute] = field(default_factory=list)
     links: List[Link] = field(default_factory=list)
+    literals: List[EnumLiteral] = field(default_factory=list)
 
 
 @dataclass
@@ -89,6 +99,7 @@ class XMIPackageParser:
         self.total_links = 0
         self.element_docs: Dict[str, str] = {}
         self.attribute_docs: Dict[str, str] = {}
+        self.attribute_initial_values: Dict[str, str] = {}
         self.connector_docs: Dict[str, str] = {}
         self.connector_role_docs: Dict[str, Dict[str, str]] = {}  # ✅ НОВОЕ: {link_id: {class_id: doc}}
         self.element_stereotypes: Dict[str, str] = {}
@@ -117,6 +128,7 @@ class XMIPackageParser:
             (
                 self.element_docs,
                 self.attribute_docs,
+                self.attribute_initial_values,
                 self.connector_docs,
                 self.connector_role_docs,
                 self.element_stereotypes,
@@ -124,6 +136,7 @@ class XMIPackageParser:
             ) = self._parse_extension_documentation(root)
             print(f"Extracted {len(self.element_docs)} element descriptions")
             print(f"Extracted {len(self.attribute_docs)} attribute descriptions")
+            print(f"Extracted {len(self.attribute_initial_values)} attribute initial values")
             print(f"Extracted {len(self.connector_docs)} connector descriptions")
             print(f"Extracted {len(self.connector_role_docs)} connector role descriptions")
             print(f"Extracted {len(self.element_stereotypes)} element stereotypes")
@@ -173,6 +186,7 @@ class XMIPackageParser:
         Dict[str, str],
         Dict[str, str],
         Dict[str, str],
+        Dict[str, str],
         Dict[str, Dict[str, str]],
         Dict[str, str],
         Dict[str, str],
@@ -180,6 +194,7 @@ class XMIPackageParser:
         """Parse Enterprise Architect Extension to extract documentation and stereotypes"""
         element_docs = {}
         attribute_docs = {}
+        attribute_initial_values = {}
         connector_docs = {}
         connector_role_docs = {}  # ✅ НОВОЕ: {link_id: {class_id: doc}}
         element_stereotypes = {}
@@ -216,6 +231,11 @@ class XMIPackageParser:
                                         doc_value = doc_elem.get('value')
                                         if doc_value:
                                             attribute_docs[xmi_idref] = doc_value
+                                    elif doc_tag == 'initial':
+                                        init_value = doc_elem.get('value')
+                                        if init_value is None:
+                                            init_value = (doc_elem.text or "").strip()
+                                        attribute_initial_values[xmi_idref] = init_value
                                     elif doc_tag == 'stereotype':
                                         st = doc_elem.get('stereotype')
                                         if st is not None:
@@ -266,6 +286,7 @@ class XMIPackageParser:
         return (
             element_docs,
             attribute_docs,
+            attribute_initial_values,
             connector_docs,
             connector_role_docs,
             element_stereotypes,
@@ -347,6 +368,28 @@ class XMIPackageParser:
                             visibility=visibility,
                             is_abstract=is_abstract
                         )
+
+                        # Enumeration literals: <ownedLiteral ...>
+                        if element_type == 'Enumeration':
+                            for lit_elem in elem:
+                                lit_tag = lit_elem.tag.split('}')[-1] if '}' in lit_elem.tag else lit_elem.tag
+                                if lit_tag != 'ownedLiteral':
+                                    continue
+
+                                literal_id = lit_elem.get(f"{{{self.namespace['xmi']}}}id") or lit_elem.get('id')
+                                literal_name = lit_elem.get('name', '')
+
+                                description = (self.attribute_docs.get(literal_id) or "") if literal_id else ""
+                                initial_value = (self.attribute_initial_values.get(literal_id) or "") if literal_id else ""
+
+                                uml_element.literals.append(
+                                    EnumLiteral(
+                                        name=literal_name,
+                                        literal_id=literal_id,
+                                        description=description,
+                                        initial_value=initial_value,
+                                    )
+                                )
 
                         self.packages[parent_id].elements.append(uml_element)
                         self.elements_by_id[xmi_id] = uml_element
@@ -697,6 +740,18 @@ class XMIPackageParser:
                 if link.target_description:
                     print(f"{prefix}          описание целевого: {link.target_description[:60]}...")
 
+        if elem.element_type == 'Enumeration' and elem.literals:
+            print(f"{prefix}   Значения перечисления ({len(elem.literals)}):")
+            for lit in elem.literals:
+                lit_id = lit.literal_id or ""
+                print(f"{prefix}      • {lit.name} ({lit_id})")
+                if lit.description:
+                    desc_preview = lit.description[:80] + "..." if len(lit.description) > 80 else lit.description
+                    print(f"{prefix}        → {desc_preview}")
+                if lit.initial_value:
+                    init_preview = lit.initial_value[:80] + "..." if len(lit.initial_value) > 80 else lit.initial_value
+                    print(f"{prefix}        = {init_preview}")
+
     def _extract_children_from_extension(self):
         """Extract children (descendants) relationships from EA Extension."""
         try:
@@ -773,6 +828,14 @@ class XMIPackageParser:
                 'multiplicity': link.multiplicity
             }
 
+        def literal_to_dict(lit: EnumLiteral) -> dict:
+            return {
+                'name': lit.name,
+                'id': lit.literal_id,
+                'description': lit.description,
+                'initial_value': lit.initial_value,
+            }
+
         def attribute_to_dict(attr: Attribute) -> dict:
             return {
                 'name': attr.name,
@@ -796,7 +859,8 @@ class XMIPackageParser:
                 'attributeCount': len(elem.attributes),
                 'linkCount': len(elem.links),
                 'attributes': [attribute_to_dict(attr) for attr in elem.attributes],
-                'links': [link_to_dict(link) for link in elem.links]
+                'links': [link_to_dict(link) for link in elem.links],
+                'literals': [literal_to_dict(lit) for lit in elem.literals]
             }
 
         def package_to_dict(package: Package) -> dict:

@@ -21,7 +21,8 @@
     },
     "totalAttributes": {
       "type": "integer",
-      "minimum": 0
+      "links",
+      "literals"
     },
     "totalLinks": {
       "type": "integer",
@@ -40,9 +41,42 @@
       "additionalProperties": false,
       "required": [
         "id",
+      },
+      "literals": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/enumLiteral"
+        }
         "name",
         "type",
         "description",
+        "enumLiteral": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "id",
+            "description",
+            "initial_value"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": {
+              "type": "string"
+            },
+            "initial_value": {
+              "type": "string"
+            }
+          }
+        },
         "elementCount",
         "elements",
         "children"
