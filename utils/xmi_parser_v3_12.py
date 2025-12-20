@@ -105,6 +105,7 @@ class XMIPackageParser:
         self.connector_role_docs: Dict[str, Dict[str, str]] = {}  # ✅ НОВОЕ: {link_id: {class_id: doc}}
         self.element_stereotypes: Dict[str, str] = {}
         self.attribute_stereotypes: Dict[str, str] = {}
+        self.generalizations_list: List[dict] = []
 
     def parse(self) -> None:
         """Parse the XMI file and build complete model"""
@@ -144,6 +145,8 @@ class XMIPackageParser:
             print(f"Extracted {len(self.attribute_stereotypes)} attribute stereotypes")
 
             self._extract_packages_and_elements(root)
+            # Collect all UML Generalizations once (for export and reuse)
+            self.generalizations_list = self._collect_generalizations_list(root)
             self._extract_attributes(root)
             self._extract_generalizations(root)
             self._extract_associations(root)
@@ -477,40 +480,90 @@ class XMIPackageParser:
 
     def _extract_generalizations(self, root) -> None:
         """Extract Generalization relationships from <generalization> tags"""
+        # Reuse pre-collected list to avoid re-walking the XML
+        for gen in self.generalizations_list:
+            child = gen.get('child') or {}
+            parent = gen.get('parent') or {}
+
+            child_id = child.get('class_id')
+            parent_id = parent.get('class_id')
+            link_id = gen.get('link_id')
+
+            if not child_id or child_id not in self.elements_by_id:
+                continue
+            if not parent_id:
+                continue
+
+            uml_elem = self.elements_by_id[child_id]
+            parent_name = parent.get('class_name') or f'Unknown_{parent_id}'
+            target_description = self.connector_docs.get(link_id) if link_id else None
+
+            link = Link(
+                link_id=link_id,
+                relation_kind="Generalization",
+                role="child",
+                target_class_id=parent_id,
+                target_class_name=parent_name,
+                target_description=target_description,
+            )
+
+            uml_elem.links.append(link)
+            self.total_links += 1
+
+    def _collect_generalizations_list(self, root) -> List[dict]:
+        """Collect a flat list of all UML Generalization relations in the model.
+
+                Each entry has the structure:
+        {
+          "link_id": str|None,
+                    "link_type": "Generalization",
+          "parent": {"class_id": str|None, "class_name": str|None},
+          "child":  {"class_id": str|None, "class_name": str|None}
+        }
+        """
         class_name_by_id = {elem.xmi_id: elem.name for elem in self.elements_by_id.values()}
+        generalizations: List[dict] = []
 
         for elem in root.iter():
             tag = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
+            if tag != 'packagedElement':
+                continue
 
-            if tag == 'packagedElement':
-                xmi_type = elem.get(f"{{{self.namespace['xmi']}}}type") or elem.get('type')
-                owner_id = elem.get(f"{{{self.namespace['xmi']}}}id") or elem.get('id')
+            xmi_type = elem.get(f"{{{self.namespace['xmi']}}}type") or elem.get('type')
+            if xmi_type != 'uml:Class':
+                continue
 
-                if xmi_type == 'uml:Class' and owner_id and owner_id in self.elements_by_id:
-                    uml_elem = self.elements_by_id[owner_id]
+            child_id = elem.get(f"{{{self.namespace['xmi']}}}id") or elem.get('id')
+            child_name = elem.get('name')
 
-                    for child in elem:
-                        child_tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
+            if not child_id:
+                continue
 
-                        if child_tag == 'generalization':
-                            link_id = child.get(f"{{{self.namespace['xmi']}}}id") or child.get('id')
-                            parent_id = child.get('general')
+            for child in elem:
+                child_tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
+                if child_tag != 'generalization':
+                    continue
 
-                            if parent_id:
-                                parent_name = class_name_by_id.get(parent_id, f'Unknown_{parent_id}')
-                                target_description = self.connector_docs.get(link_id)
+                link_id = child.get(f"{{{self.namespace['xmi']}}}id") or child.get('id')
+                parent_id = child.get('general')
+                parent_name = class_name_by_id.get(parent_id) if parent_id else None
 
-                                link = Link(
-                                    link_id=link_id,
-                                    relation_kind="Generalization",
-                                    role="child",
-                                    target_class_id=parent_id,
-                                    target_class_name=parent_name,
-                                    target_description=target_description
-                                )
+                generalizations.append(
+                    {
+                        'link_id': link_id,
+                        'link_type': 'Generalization',
+                        'parent': {
+                            'class_id': parent_id,
+                            'class_name': parent_name,
+                        },
+                        'child': {
+                            'class_id': child_id,
+                            'class_name': child_name,
+                        },
+                    }
+                )
 
-                                uml_elem.links.append(link)
-                                self.total_links += 1
+        return generalizations
 
     def _extract_associations(self, root) -> None:
         """Extract Association relationships from <packagedElement xmi:type="uml:Association">"""
@@ -874,23 +927,28 @@ class XMIPackageParser:
                 'literals': [literal_to_dict(lit) for lit in elem.literals]
             }
 
-        def package_to_dict(package: Package) -> dict:
-            return {
+        def package_to_dict(package: Package, include_generalizations_list: bool = False) -> dict:
+            data = {
                 'id': package.xmi_id,
                 'name': package.name,
                 'type': package.type,
                 'description': package.description,
                 'elementCount': len(package.elements),
                 'elements': [element_to_dict(elem) for elem in package.elements],
-                'children': [package_to_dict(child) for child in package.children]
+                'children': [package_to_dict(child, include_generalizations_list=False) for child in package.children]
             }
+
+            if include_generalizations_list:
+                data['generalizations_list'] = self.generalizations_list
+
+            return data
 
         result = {
             'totalPackages': len(self.packages),
             'totalElements': len(self.elements_by_id),
             'totalAttributes': self.total_attributes,
             'totalLinks': self.total_links,
-            'rootPackages': [package_to_dict(root) for root in self.root_packages]
+            'rootPackages': [package_to_dict(root, include_generalizations_list=True) for root in self.root_packages]
         }
 
         json_str = json.dumps(result, indent=2, ensure_ascii=False)

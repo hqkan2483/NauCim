@@ -35,6 +35,74 @@
     }
   },
   "$defs": {
+    "generalizationsListEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "link_id",
+        "link_type",
+        "parent",
+        "child"
+      ],
+      "properties": {
+        "link_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "link_type": {
+          "type": "string",
+          "enum": [
+            "Generalization"
+          ]
+        },
+        "parent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "class_id",
+            "class_name"
+          ],
+          "properties": {
+            "class_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class_name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "child": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "class_id",
+            "class_name"
+          ],
+          "properties": {
+            "class_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class_name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
     "package": {
       "type": "object",
       "additionalProperties": false,
@@ -78,6 +146,12 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/package"
+          }
+        },
+        "generalizations_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/generalizationsListEntry"
           }
         }
       }
