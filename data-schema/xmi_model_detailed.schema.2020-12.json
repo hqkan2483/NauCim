@@ -39,31 +39,31 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "link_end_id",
-        "link_end_name",
-        "link_end_class_id",
-        "link_end_class_name",
+        "linkEndId",
+        "linkEndName",
+        "linkEndClassId",
+        "linkEndClassName",
         "multiplicity",
         "documentation",
         "stereotype"
       ],
       "properties": {
-        "link_end_id": {
+        "linkEndId": {
           "type": [
             "string",
             "null"
           ]
         },
-        "link_end_name": {
+        "linkEndName": {
           "type": "string"
         },
-        "link_end_class_id": {
+        "linkEndClassId": {
           "type": [
             "string",
             "null"
           ]
         },
-        "link_end_class_name": {
+        "linkEndClassName": {
           "type": [
             "string",
             "null"
@@ -84,20 +84,20 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "link_id",
-        "link_type",
+        "linkId",
+        "linkType",
         "documentation",
         "stereotype",
         "linkEnd"
       ],
       "properties": {
-        "link_id": {
+        "linkId": {
           "type": [
             "string",
             "null"
           ]
         },
-        "link_type": {
+        "linkType": {
           "type": "string",
           "enum": [
             "Association"
@@ -123,21 +123,21 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "link_id",
-        "link_type",
+        "linkId",
+        "linkType",
         "documentation",
         "stereotype",
         "parent",
         "child"
       ],
       "properties": {
-        "link_id": {
+        "linkId": {
           "type": [
             "string",
             "null"
           ]
         },
-        "link_type": {
+        "linkType": {
           "type": "string",
           "enum": [
             "Generalization"
@@ -153,17 +153,17 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "class_id",
-            "class_name"
+            "classId",
+            "className"
           ],
           "properties": {
-            "class_id": {
+            "classId": {
               "type": [
                 "string",
                 "null"
               ]
             },
-            "class_name": {
+            "className": {
               "type": [
                 "string",
                 "null"
@@ -175,17 +175,17 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "class_id",
-            "class_name"
+            "classId",
+            "className"
           ],
           "properties": {
-            "class_id": {
+            "classId": {
               "type": [
                 "string",
                 "null"
               ]
             },
-            "class_name": {
+            "className": {
               "type": [
                 "string",
                 "null"
@@ -240,13 +240,13 @@
             "$ref": "#/$defs/package"
           }
         },
-        "generalizations_list": {
+        "generalizationsList": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/generalizationsListEntry"
           }
         },
-        "associacion_list": {
+        "associacionList": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/associacionListEntry"
@@ -261,7 +261,7 @@
         "name",
         "id",
         "description",
-        "initial_value"
+        "initialValue"
       ],
       "properties": {
         "name": {
@@ -276,7 +276,7 @@
         "description": {
           "type": "string"
         },
-        "initial_value": {
+        "initialValue": {
           "type": "string"
         }
       }
@@ -363,7 +363,7 @@
         "description",
         "multiplicity",
         "visibility",
-        "initial_value"
+        "initialValue"
       ],
       "properties": {
         "name": {
@@ -396,7 +396,7 @@
         "visibility": {
           "type": "string"
         },
-        "initial_value": {
+        "initialValue": {
           "type": "string"
         }
       }
@@ -405,54 +405,54 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "link_id",
-        "relation_kind",
+        "linkId",
+        "relationKind",
         "role",
-        "target_class_id",
-        "target_class_name",
-        "target_class_role_name",
-        "src_class_role_name",
-        "target_description",
+        "targetClassId",
+        "targetClassName",
+        "targetClassRoleName",
+        "srcClassRoleName",
+        "targetDescription",
         "multiplicity"
       ],
       "properties": {
-        "link_id": {
+        "linkId": {
           "type": [
             "string",
             "null"
           ]
         },
-        "relation_kind": {
+        "relationKind": {
           "type": "string"
         },
         "role": {
           "type": "string"
         },
-        "target_class_id": {
+        "targetClassId": {
           "type": [
             "string",
             "null"
           ]
         },
-        "target_class_name": {
+        "targetClassName": {
           "type": [
             "string",
             "null"
           ]
         },
-        "target_class_role_name": {
+        "targetClassRoleName": {
           "type": [
             "string",
             "null"
           ]
         },
-        "src_class_role_name": {
+        "srcClassRoleName": {
           "type": [
             "string",
             "null"
           ]
         },
-        "target_description": {
+        "targetDescription": {
           "type": [
             "string",
             "null"
