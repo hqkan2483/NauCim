@@ -102,10 +102,14 @@ class XMIPackageParser:
         self.attribute_docs: Dict[str, str] = {}
         self.attribute_initial_values: Dict[str, str] = {}
         self.connector_docs: Dict[str, str] = {}
-        self.connector_role_docs: Dict[str, Dict[str, str]] = {}  # ✅ НОВОЕ: {link_id: {class_id: doc}}
+        # EA Extension connector role docs/stereotypes are keyed by ownedEnd xmi:id (source/target xmi:idref)
+        self.connector_role_docs: Dict[str, Dict[str, str]] = {}  # {link_id: {link_end_id: doc}}
+        self.connector_stereotypes: Dict[str, str] = {}  # {link_id: stereotype}
+        self.connector_role_stereotypes: Dict[str, Dict[str, str]] = {}  # {link_id: {link_end_id: stereotype}}
         self.element_stereotypes: Dict[str, str] = {}
         self.attribute_stereotypes: Dict[str, str] = {}
         self.generalizations_list: List[dict] = []
+        self.associacion_list: List[dict] = []
 
     def parse(self) -> None:
         """Parse the XMI file and build complete model"""
@@ -133,6 +137,8 @@ class XMIPackageParser:
                 self.attribute_initial_values,
                 self.connector_docs,
                 self.connector_role_docs,
+                self.connector_stereotypes,
+                self.connector_role_stereotypes,
                 self.element_stereotypes,
                 self.attribute_stereotypes,
             ) = self._parse_extension_documentation(root)
@@ -141,12 +147,16 @@ class XMIPackageParser:
             print(f"Extracted {len(self.attribute_initial_values)} attribute initial values")
             print(f"Extracted {len(self.connector_docs)} connector descriptions")
             print(f"Extracted {len(self.connector_role_docs)} connector role descriptions")
+            print(f"Extracted {len(self.connector_stereotypes)} connector stereotypes")
+            print(f"Extracted {len(self.connector_role_stereotypes)} connector role stereotypes")
             print(f"Extracted {len(self.element_stereotypes)} element stereotypes")
             print(f"Extracted {len(self.attribute_stereotypes)} attribute stereotypes")
 
             self._extract_packages_and_elements(root)
             # Collect all UML Generalizations once (for export and reuse)
             self.generalizations_list = self._collect_generalizations_list(root)
+            # Collect all UML Associations once (for export and reuse)
+            self.associacion_list = self._collect_associacion_list(root)
             self._extract_attributes(root)
             self._extract_generalizations(root)
             self._extract_associations(root)
@@ -193,6 +203,8 @@ class XMIPackageParser:
         Dict[str, str],
         Dict[str, Dict[str, str]],
         Dict[str, str],
+        Dict[str, Dict[str, str]],
+        Dict[str, str],
         Dict[str, str],
     ]:
         """Parse Enterprise Architect Extension to extract documentation and stereotypes"""
@@ -200,7 +212,9 @@ class XMIPackageParser:
         attribute_docs = {}
         attribute_initial_values = {}
         connector_docs = {}
-        connector_role_docs = {}  # ✅ НОВОЕ: {link_id: {class_id: doc}}
+        connector_role_docs = {}  # {link_id: {link_end_id: doc}}
+        connector_stereotypes: Dict[str, str] = {}
+        connector_role_stereotypes: Dict[str, Dict[str, str]] = {}
         element_stereotypes = {}
         attribute_stereotypes = {}
 
@@ -271,8 +285,20 @@ class XMIPackageParser:
                                             connector_docs[xmi_idref] = doc_value
                                         break
 
-                                # ✅ НОВОЕ: Извлекаем документацию для source и target
-                                role_docs = {}
+                                # Стереотип коннектора (connector/properties/@stereotype)
+                                connector_stereotype = None
+                                for doc_elem in child:
+                                    doc_tag = doc_elem.tag.split('}')[-1] if '}' in doc_elem.tag else doc_elem.tag
+                                    if doc_tag == 'properties':
+                                        connector_stereotype = doc_elem.get('stereotype')
+                                        break
+                                if connector_stereotype is None:
+                                    connector_stereotype = ""
+                                connector_stereotypes[xmi_idref] = connector_stereotype
+
+                                # Документация/стереотипы концов (source/target)
+                                role_docs: Dict[str, str] = {}
+                                role_stereotypes: Dict[str, str] = {}
                                 for role_elem in child:
                                     role_tag = role_elem.tag.split('}')[-1] if '}' in role_elem.tag else role_elem.tag
 
@@ -288,8 +314,22 @@ class XMIPackageParser:
                                                         role_docs[role_idref] = doc_value
                                                     break
 
+                                            # Ищем stereotype внутри source/target/role
+                                            role_st = None
+                                            for doc_elem in role_elem:
+                                                doc_tag = doc_elem.tag.split('}')[-1] if '}' in doc_elem.tag else doc_elem.tag
+                                                if doc_tag == 'role':
+                                                    role_st = doc_elem.get('stereotype')
+                                                    break
+                                            if role_st is None:
+                                                role_st = ""
+                                            role_stereotypes[role_idref] = role_st
+
                                 if role_docs:
                                     connector_role_docs[xmi_idref] = role_docs
+
+                                if role_stereotypes:
+                                    connector_role_stereotypes[xmi_idref] = role_stereotypes
 
                 break
 
@@ -299,9 +339,130 @@ class XMIPackageParser:
             attribute_initial_values,
             connector_docs,
             connector_role_docs,
+            connector_stereotypes,
+            connector_role_stereotypes,
             element_stereotypes,
             attribute_stereotypes,
         )
+
+    def _extract_association_end_multiplicity(self, owned_end) -> str:
+        """Extract multiplicity for an association ownedEnd using lowerValue/upperValue."""
+        lower = None
+        upper = None
+
+        for mult_elem in owned_end:
+            mult_tag = mult_elem.tag.split('}')[-1] if '}' in mult_elem.tag else mult_elem.tag
+            if mult_tag == 'lowerValue':
+                lower = mult_elem.get('value', '0')
+            elif mult_tag == 'upperValue':
+                upper_val = mult_elem.get('value', '1')
+                upper = '*' if upper_val == '-1' else upper_val
+
+        return self._format_multiplicity(lower, upper)
+
+    def _collect_associacion_list(self, root) -> List[dict]:
+        """Collect a flat list of all UML Associations in the model.
+
+        Exported only for rootPackages (not for nested children packages).
+
+        Each entry has the structure:
+        {
+          "link_id": str|None,
+          "link_type": "Association",
+          "documentation": str,
+          "stereotype": str,
+          "linkEnd": [
+            {
+              "link_end_id": str|None,
+              "link_end_name": str,
+              "link_end_class_id": str|None,
+              "link_end_class_name": str|None,
+              "multiplicity": str,
+              "documentation": str,
+              "stereotype": str
+            },
+            ...
+          ]
+        }
+        """
+        class_name_by_id = {elem.xmi_id: elem.name for elem in self.elements_by_id.values()}
+        associations: List[dict] = []
+
+        for elem in root.iter():
+            tag = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
+            if tag != 'packagedElement':
+                continue
+
+            xmi_type = elem.get(f"{{{self.namespace['xmi']}}}type") or elem.get('type')
+            if xmi_type != 'uml:Association':
+                continue
+
+            link_id = elem.get(f"{{{self.namespace['xmi']}}}id") or elem.get('id')
+
+            assoc_documentation = self.connector_docs.get(link_id, "") if link_id else ""
+            assoc_stereotype = self.connector_stereotypes.get(link_id, "") if link_id else ""
+
+            link_ends: List[dict] = []
+            for child in elem:
+                child_tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
+                if child_tag != 'ownedEnd':
+                    continue
+
+                end_id = child.get(f"{{{self.namespace['xmi']}}}id") or child.get('id')
+                end_name = child.get('name', '')
+
+                end_class_id = None
+                for type_elem in child:
+                    type_tag = type_elem.tag.split('}')[-1] if '}' in type_elem.tag else type_elem.tag
+                    if type_tag == 'type':
+                        end_class_id = type_elem.get(f"{{{self.namespace['xmi']}}}idref") or type_elem.get('idref')
+                        break
+
+                end_class_name = class_name_by_id.get(end_class_id) if end_class_id else None
+                multiplicity = self._extract_association_end_multiplicity(child)
+
+                end_doc = ""
+                end_st = ""
+                if link_id and end_id:
+                    role_docs = self.connector_role_docs.get(link_id, {}) or {}
+                    role_sts = self.connector_role_stereotypes.get(link_id, {}) or {}
+
+                    end_doc = role_docs.get(end_id, "")
+                    end_st = role_sts.get(end_id, "")
+
+                    # EA Extension may key source/target by class_id instead of ownedEnd id.
+                    if not end_doc and end_class_id:
+                        end_doc = role_docs.get(end_class_id, "")
+                    if not end_st and end_class_id:
+                        end_st = role_sts.get(end_class_id, "")
+
+                link_ends.append(
+                    {
+                        'link_end_id': end_id,
+                        'link_end_name': end_name,
+                        'link_end_class_id': end_class_id,
+                        'link_end_class_name': end_class_name,
+                        'multiplicity': multiplicity,
+                        'documentation': end_doc,
+                        'stereotype': end_st,
+                    }
+                )
+
+            # According to expected export structure, association ends must be exactly two
+            if len(link_ends) != 2:
+                continue
+
+            associations.append(
+                {
+                    'link_id': link_id,
+                    'link_type': 'Association',
+                    'documentation': assoc_documentation,
+                    'stereotype': assoc_stereotype,
+                    'linkEnd': link_ends,
+                }
+            )
+
+        return associations
 
     def _apply_stereotypes(self) -> None:
         """Apply extracted stereotypes from EA Extension to parsed elements/attributes."""
@@ -567,64 +728,17 @@ class XMIPackageParser:
 
     def _extract_associations(self, root) -> None:
         """Extract Association relationships from <packagedElement xmi:type="uml:Association">"""
-        # Собираем все ассоциации
-        associations = []
-
-        for elem in root.iter():
-            tag = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
-
-            if tag == 'packagedElement':
-                xmi_type = elem.get(f"{{{self.namespace['xmi']}}}type") or elem.get('type')
-
-                if xmi_type == 'uml:Association':
-                    link_id = elem.get(f"{{{self.namespace['xmi']}}}id") or elem.get('id')
-
-                    # Извлекаем ownedEnd элементы
-                    owned_ends = []
-                    for child in elem:
-                        child_tag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
-                        if child_tag == 'ownedEnd':
-                            end_id = child.get(f"{{{self.namespace['xmi']}}}id") or child.get('id')
-                            end_name = child.get('name', '')
-                            aggregation = child.get('aggregation', 'none')
-
-                            # Извлекаем type (целевой класс)
-                            target_class_id = None
-                            for type_elem in child:
-                                type_tag = type_elem.tag.split('}')[-1] if '}' in type_elem.tag else type_elem.tag
-                                if type_tag == 'type':
-                                    target_class_id = type_elem.get(f"{{{self.namespace['xmi']}}}idref") or type_elem.get('idref')
-                                    break
-
-                            # Извлекаем множественность
-                            lower = None
-                            upper = None
-                            for mult_elem in child:
-                                mult_tag = mult_elem.tag.split('}')[-1] if '}' in mult_elem.tag else mult_elem.tag
-                                if mult_tag == 'lowerValue':
-                                    lower = mult_elem.get('value', '0')
-                                elif mult_tag == 'upperValue':
-                                    upper_val = mult_elem.get('value', '1')
-                                    upper = '*' if upper_val == '-1' else upper_val
-
-                            multiplicity = self._format_multiplicity(lower, upper)
-
-                            owned_ends.append({
-                                'end_id': end_id,
-                                'name': end_name,
-                                'target_class_id': target_class_id,
-                                'multiplicity': multiplicity,
-                                'aggregation': aggregation
-                            })
-
-                    if len(owned_ends) == 2:
-                        associations.append({
-                            'link_id': link_id,
-                            'ends': owned_ends
-                        })
-
-        # Теперь для каждого класса находим его ассоциации
+        # Теперь для каждого класса находим его ассоциации (используем предсобранный self.associacion_list)
         class_name_by_id = {elem.xmi_id: elem.name for elem in self.elements_by_id.values()}
+
+        # Convert list entries to a simpler internal structure for per-class link filling
+        associations: List[dict] = []
+        for assoc in self.associacion_list:
+            link_id = assoc.get('link_id')
+            ends = assoc.get('linkEnd') or []
+            if len(ends) != 2:
+                continue
+            associations.append({'link_id': link_id, 'ends': ends})
 
         for elem in self.elements_by_id.values():
             class_id = elem.xmi_id
@@ -633,20 +747,16 @@ class XMIPackageParser:
             for assoc in associations:
                 # Проверяем оба конца ассоциации
                 for i, end in enumerate(assoc['ends']):
-                    if end['target_class_id'] == class_id:
+                    if end.get('link_end_class_id') == class_id:
                         # Этот класс является целью одного из концов
                         # Берём информацию о другом конце (противоположном)
                         other_end = assoc['ends'][1 - i]  # Другой конец (0->1 или 1->0)
 
-                        target_class_id = other_end['target_class_id']
+                        target_class_id = other_end.get('link_end_class_id')
                         target_class_name = class_name_by_id.get(target_class_id, f'Unknown_{target_class_id}')
 
-                        # ✅ НОВОЕ: Получаем target_description из connector_role_docs
-                        target_description = None
-                        if assoc['link_id'] in self.connector_role_docs:
-                            role_docs = self.connector_role_docs[assoc['link_id']]
-                            # Ищем документацию для target_class_id
-                            target_description = role_docs.get(target_class_id)
+                        # Описание для целевого конца (EA Extension source/target/documentation)
+                        target_description = other_end.get('documentation')
 
                         link = Link(
                             link_id=assoc['link_id'],
@@ -654,10 +764,10 @@ class XMIPackageParser:
                             role="unspecified",
                             target_class_id=target_class_id,
                             target_class_name=target_class_name,
-                            target_class_role_name=other_end['name'],
-                            src_class_role_name=end['name'],
+                            target_class_role_name=other_end.get('link_end_name'),
+                            src_class_role_name=end.get('link_end_name'),
                             target_description=target_description,  # ✅ ИЗМЕНЕНО
-                            multiplicity=other_end['multiplicity'],
+                            multiplicity=other_end.get('multiplicity') or "1",
                             stereotype=None
                         )
 
@@ -927,7 +1037,11 @@ class XMIPackageParser:
                 'literals': [literal_to_dict(lit) for lit in elem.literals]
             }
 
-        def package_to_dict(package: Package, include_generalizations_list: bool = False) -> dict:
+        def package_to_dict(
+            package: Package,
+            include_generalizations_list: bool = False,
+            include_associacion_list: bool = False,
+        ) -> dict:
             data = {
                 'id': package.xmi_id,
                 'name': package.name,
@@ -935,11 +1049,17 @@ class XMIPackageParser:
                 'description': package.description,
                 'elementCount': len(package.elements),
                 'elements': [element_to_dict(elem) for elem in package.elements],
-                'children': [package_to_dict(child, include_generalizations_list=False) for child in package.children]
+                'children': [
+                    package_to_dict(child, include_generalizations_list=False, include_associacion_list=False)
+                    for child in package.children
+                ]
             }
 
             if include_generalizations_list:
                 data['generalizations_list'] = self.generalizations_list
+
+            if include_associacion_list:
+                data['associacion_list'] = self.associacion_list
 
             return data
 
@@ -948,7 +1068,10 @@ class XMIPackageParser:
             'totalElements': len(self.elements_by_id),
             'totalAttributes': self.total_attributes,
             'totalLinks': self.total_links,
-            'rootPackages': [package_to_dict(root, include_generalizations_list=True) for root in self.root_packages]
+            'rootPackages': [
+                package_to_dict(root, include_generalizations_list=True, include_associacion_list=True)
+                for root in self.root_packages
+            ]
         }
 
         json_str = json.dumps(result, indent=2, ensure_ascii=False)

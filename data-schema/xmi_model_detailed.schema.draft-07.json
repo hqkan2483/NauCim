@@ -35,6 +35,90 @@
     }
   },
   "definitions": {
+    "associationLinkEnd": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "link_end_id",
+        "link_end_name",
+        "link_end_class_id",
+        "link_end_class_name",
+        "multiplicity",
+        "documentation",
+        "stereotype"
+      ],
+      "properties": {
+        "link_end_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "link_end_name": {
+          "type": "string"
+        },
+        "link_end_class_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "link_end_class_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "multiplicity": {
+          "type": "string"
+        },
+        "documentation": {
+          "type": "string"
+        },
+        "stereotype": {
+          "type": "string"
+        }
+      }
+    },
+    "associacionListEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "link_id",
+        "link_type",
+        "documentation",
+        "stereotype",
+        "linkEnd"
+      ],
+      "properties": {
+        "link_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "link_type": {
+          "type": "string",
+          "enum": [
+            "Association"
+          ]
+        },
+        "documentation": {
+          "type": "string"
+        },
+        "stereotype": {
+          "type": "string"
+        },
+        "linkEnd": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/definitions/associationLinkEnd"
+          }
+        }
+      }
+    },
     "generalizationsListEntry": {
       "type": "object",
       "additionalProperties": false,
@@ -152,6 +236,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/generalizationsListEntry"
+          }
+        },
+        "associacion_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/associacionListEntry"
           }
         }
       }
