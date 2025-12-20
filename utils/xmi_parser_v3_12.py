@@ -423,18 +423,13 @@ class XMIPackageParser:
 
                 end_doc = ""
                 end_st = ""
-                if link_id and end_id:
+                if link_id and end_class_id:
                     role_docs = self.connector_role_docs.get(link_id, {}) or {}
                     role_sts = self.connector_role_stereotypes.get(link_id, {}) or {}
 
-                    end_doc = role_docs.get(end_id, "")
-                    end_st = role_sts.get(end_id, "")
-
-                    # EA Extension may key source/target by class_id instead of ownedEnd id.
-                    if not end_doc and end_class_id:
-                        end_doc = role_docs.get(end_class_id, "")
-                    if not end_st and end_class_id:
-                        end_st = role_sts.get(end_class_id, "")
+                    # По ТЗ: ищем внутри EA Extension connector/source|target по xmi:idref == link_end_class_id
+                    end_doc = role_docs.get(end_class_id, "")
+                    end_st = role_sts.get(end_class_id, "")
 
                 link_ends.append(
                     {
@@ -678,8 +673,10 @@ class XMIPackageParser:
         {
           "link_id": str|None,
                     "link_type": "Generalization",
-          "parent": {"class_id": str|None, "class_name": str|None},
-          "child":  {"class_id": str|None, "class_name": str|None}
+                    "documentation": str,
+                    "stereotype": str,
+                    "parent": {"class_id": str|None, "class_name": str|None},
+                    "child":  {"class_id": str|None, "class_name": str|None}
         }
         """
         class_name_by_id = {elem.xmi_id: elem.name for elem in self.elements_by_id.values()}
@@ -709,10 +706,15 @@ class XMIPackageParser:
                 parent_id = child.get('general')
                 parent_name = class_name_by_id.get(parent_id) if parent_id else None
 
+                documentation = self.connector_docs.get(link_id, "") if link_id else ""
+                stereotype = self.connector_stereotypes.get(link_id, "") if link_id else ""
+
                 generalizations.append(
                     {
                         'link_id': link_id,
                         'link_type': 'Generalization',
+                        'documentation': documentation,
+                        'stereotype': stereotype,
                         'parent': {
                             'class_id': parent_id,
                             'class_name': parent_name,
