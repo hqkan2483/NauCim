@@ -21,8 +21,7 @@
     },
     "totalAttributes": {
       "type": "integer",
-      "links",
-      "literals"
+      "minimum": 0
     },
     "totalLinks": {
       "type": "integer",
@@ -41,42 +40,9 @@
       "additionalProperties": false,
       "required": [
         "id",
-      },
-      "literals": {
-        "type": "array",
-        "items": {
-          "$ref": "#/$defs/enumLiteral"
-        }
         "name",
         "type",
         "description",
-        "enumLiteral": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "name",
-            "id",
-            "description",
-            "initial_value"
-          ],
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "id": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "description": {
-              "type": "string"
-            },
-            "initial_value": {
-              "type": "string"
-            }
-          }
-        },
         "elementCount",
         "elements",
         "children"
@@ -116,6 +82,33 @@
         }
       }
     },
+    "enumLiteral": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "id",
+        "description",
+        "initial_value"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "initial_value": {
+          "type": "string"
+        }
+      }
+    },
     "element": {
       "type": "object",
       "additionalProperties": false,
@@ -130,7 +123,8 @@
         "attributeCount",
         "linkCount",
         "attributes",
-        "links"
+        "links",
+        "literals"
       ],
       "properties": {
         "id": {
@@ -177,6 +171,12 @@
           "items": {
             "$ref": "#/$defs/link"
           }
+        },
+        "literals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/enumLiteral"
+          }
         }
       }
     },
@@ -190,7 +190,8 @@
         "stereotype",
         "description",
         "multiplicity",
-        "visibility"
+        "visibility",
+        "initial_value"
       ],
       "properties": {
         "name": {
@@ -221,6 +222,9 @@
           "type": "string"
         },
         "visibility": {
+          "type": "string"
+        },
+        "initial_value": {
           "type": "string"
         }
       }

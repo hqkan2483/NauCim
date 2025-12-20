@@ -27,6 +27,7 @@ class Attribute:
     visibility: str = "public"
     is_derived: bool = False
     default_value: Optional[str] = None
+    initial_value: str = ""  # EA Extension: <initial body="..."/>
 
 
 @dataclass
@@ -233,9 +234,15 @@ class XMIPackageParser:
                                             attribute_docs[xmi_idref] = doc_value
                                     elif doc_tag == 'initial':
                                         init_value = doc_elem.get('value')
+
+                                        # Enterprise Architect often stores literal/attribute init values as <initial body="..."/>
+                                        if init_value is None:
+                                            init_value = doc_elem.get('body')
+
                                         if init_value is None:
                                             init_value = (doc_elem.text or "").strip()
-                                        attribute_initial_values[xmi_idref] = init_value
+
+                                        attribute_initial_values[xmi_idref] = init_value or ""
                                     elif doc_tag == 'stereotype':
                                         st = doc_elem.get('stereotype')
                                         if st is not None:
@@ -451,6 +458,7 @@ class XMIPackageParser:
 
                             multiplicity = self._extract_multiplicity(child)
                             description = self.attribute_docs.get(attr_id) or self._get_documentation(child)
+                            initial_value = (self.attribute_initial_values.get(attr_id) or "") if attr_id else ""
 
                             attribute = Attribute(
                                 name=attr_name,
@@ -460,7 +468,8 @@ class XMIPackageParser:
                                 multiplicity=multiplicity,
                                 visibility=visibility,
                                 is_derived=is_derived,
-                                default_value=default_value
+                                default_value=default_value,
+                                initial_value=initial_value,
                             )
 
                             self.elements_by_id[owner_id].attributes.append(attribute)
@@ -845,6 +854,8 @@ class XMIPackageParser:
                 'description': attr.description,
                 'multiplicity': attr.multiplicity,
                 'visibility': attr.visibility
+                ,
+                'initial_value': attr.initial_value,
             }
 
         def element_to_dict(elem: UMLElement) -> dict:
