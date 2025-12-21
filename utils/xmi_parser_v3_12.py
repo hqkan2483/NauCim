@@ -1006,7 +1006,7 @@ class XMIPackageParser:
             return {
                 'name': lit.name,
                 'id': lit.literal_id,
-                'description': lit.description,
+                'documentation': lit.description,
                 'initialValue': lit.initial_value,
             }
 
@@ -1016,7 +1016,9 @@ class XMIPackageParser:
                 'id': attr.attr_id,  # NEW in v3.9
                 'type': attr.attribute_type,
                 'stereotype': attr.stereotype or "",  # NEW v3.12
-                'description': attr.description,
+                'documentation': attr.description,
+                'documentationRu': "",
+                'details': "",
                 'multiplicity': attr.multiplicity,
                 'visibility': attr.visibility,
                 'initialValue': attr.initial_value,
@@ -1029,6 +1031,8 @@ class XMIPackageParser:
                 'linkId': gen.get('link_id'),
                 'linkType': gen.get('link_type') or 'Generalization',
                 'documentation': gen.get('documentation') or "",
+                'documentationRu': "",
+                'details': "",
                 'stereotype': gen.get('stereotype') or "",
                 'parent': {
                     'classId': parent.get('class_id'),
@@ -1048,6 +1052,8 @@ class XMIPackageParser:
                 'linkEndClassName': end.get('link_end_class_name'),
                 'multiplicity': end.get('multiplicity') or "1",
                 'documentation': end.get('documentation') or "",
+                'documentationRu': "",
+                'details': "",
                 'stereotype': end.get('stereotype') or "",
             }
 
@@ -1057,6 +1063,8 @@ class XMIPackageParser:
                 'linkId': assoc.get('link_id'),
                 'linkType': assoc.get('link_type') or 'Association',
                 'documentation': assoc.get('documentation') or "",
+                'documentationRu': "",
+                'details': "",
                 'stereotype': assoc.get('stereotype') or "",
                 'linkEnd': [association_link_end_to_dict(e) for e in ends],
             }
@@ -1067,7 +1075,9 @@ class XMIPackageParser:
                 'name': elem.name,
                 'type': elem.element_type,
                 'stereotype': elem.stereotype or "",  # NEW v3.12
-                'description': elem.description,
+                'documentation': elem.description,
+                'documentationRu': "",
+                'details': "",
                 'visibility': elem.visibility,
                 'isAbstract': elem.is_abstract,
                 'attributeCount': len(elem.attributes),
@@ -1086,7 +1096,9 @@ class XMIPackageParser:
                 'id': package.xmi_id,
                 'name': package.name,
                 'type': package.type,
-                'description': package.description,
+                'documentation': package.description,
+                'documentationRu': "",
+                'details': "",
                 'elementCount': len(package.elements),
                 'elements': [element_to_dict(elem) for elem in package.elements],
                 'children': [
