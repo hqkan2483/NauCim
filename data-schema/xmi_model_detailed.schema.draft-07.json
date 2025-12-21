@@ -45,6 +45,8 @@
         "linkEndClassName",
         "multiplicity",
         "documentation",
+        "documentationRu",
+        "details",
         "stereotype"
       ],
       "properties": {
@@ -75,6 +77,18 @@
         "documentation": {
           "type": "string"
         },
+        "documentationRu": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "details": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "stereotype": {
           "type": "string"
         }
@@ -87,6 +101,8 @@
         "linkId",
         "linkType",
         "documentation",
+        "documentationRu",
+        "details",
         "stereotype",
         "linkEnd"
       ],
@@ -105,6 +121,18 @@
         },
         "documentation": {
           "type": "string"
+        },
+        "documentationRu": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "details": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "stereotype": {
           "type": "string"
@@ -126,6 +154,8 @@
         "linkId",
         "linkType",
         "documentation",
+        "documentationRu",
+        "details",
         "stereotype",
         "parent",
         "child"
@@ -145,6 +175,18 @@
         },
         "documentation": {
           "type": "string"
+        },
+        "documentationRu": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "details": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "stereotype": {
           "type": "string"
@@ -202,7 +244,9 @@
         "id",
         "name",
         "type",
-        "description",
+        "documentation",
+        "documentationRu",
+        "details",
         "elementCount",
         "elements",
         "children"
@@ -218,7 +262,19 @@
         "type": {
           "type": "string"
         },
-        "description": {
+        "documentation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "documentationRu": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "details": {
           "type": [
             "string",
             "null"
@@ -260,7 +316,7 @@
       "required": [
         "name",
         "id",
-        "description",
+        "documentation",
         "initialValue"
       ],
       "properties": {
@@ -273,7 +329,7 @@
             "null"
           ]
         },
-        "description": {
+        "documentation": {
           "type": "string"
         },
         "initialValue": {
@@ -289,7 +345,9 @@
         "name",
         "type",
         "stereotype",
-        "description",
+        "documentation",
+        "documentationRu",
+        "details",
         "visibility",
         "isAbstract",
         "attributeCount",
@@ -312,7 +370,19 @@
         "stereotype": {
           "type": "string"
         },
-        "description": {
+        "documentation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "documentationRu": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "details": {
           "type": [
             "string",
             "null"
@@ -360,7 +430,9 @@
         "id",
         "type",
         "stereotype",
-        "description",
+        "documentation",
+        "documentationRu",
+        "details",
         "multiplicity",
         "visibility",
         "initialValue"
@@ -384,7 +456,19 @@
         "stereotype": {
           "type": "string"
         },
-        "description": {
+        "documentation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "documentationRu": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "details": {
           "type": [
             "string",
             "null"
