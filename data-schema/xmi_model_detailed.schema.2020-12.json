@@ -80,7 +80,7 @@
         }
       }
     },
-    "associacionListEntry": {
+    "associationListEntry": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -246,10 +246,10 @@
             "$ref": "#/$defs/generalizationsListEntry"
           }
         },
-        "associacionList": {
+        "associationList": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/associacionListEntry"
+            "$ref": "#/$defs/associationListEntry"
           }
         }
       }

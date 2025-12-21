@@ -991,15 +991,15 @@ class XMIPackageParser:
 
         def link_to_dict(link: Link) -> dict:
             return {
-                'link_id': link.link_id,
-                'relation_kind': link.relation_kind,
+                'linkId': link.link_id,
+                'relationKind': link.relation_kind,
                 'role': link.role,
-                'target_class_id': link.target_class_id,
-                'target_class_name': link.target_class_name,
-                'target_class_role_name': link.target_class_role_name,
-                'src_class_role_name': link.src_class_role_name,
-                'target_description': link.target_description,  # ✅ ИЗМЕНЕНО
-                'multiplicity': link.multiplicity
+                'targetClassId': link.target_class_id,
+                'targetClassName': link.target_class_name,
+                'targetClassRoleName': link.target_class_role_name,
+                'srcClassRoleName': link.src_class_role_name,
+                'targetDescription': link.target_description,
+                'multiplicity': link.multiplicity,
             }
 
         def literal_to_dict(lit: EnumLiteral) -> dict:
@@ -1007,7 +1007,7 @@ class XMIPackageParser:
                 'name': lit.name,
                 'id': lit.literal_id,
                 'description': lit.description,
-                'initial_value': lit.initial_value,
+                'initialValue': lit.initial_value,
             }
 
         def attribute_to_dict(attr: Attribute) -> dict:
@@ -1018,9 +1018,47 @@ class XMIPackageParser:
                 'stereotype': attr.stereotype or "",  # NEW v3.12
                 'description': attr.description,
                 'multiplicity': attr.multiplicity,
-                'visibility': attr.visibility
-                ,
-                'initial_value': attr.initial_value,
+                'visibility': attr.visibility,
+                'initialValue': attr.initial_value,
+            }
+
+        def generalization_list_entry_to_dict(gen: dict) -> dict:
+            parent = gen.get('parent') or {}
+            child = gen.get('child') or {}
+            return {
+                'linkId': gen.get('link_id'),
+                'linkType': gen.get('link_type') or 'Generalization',
+                'documentation': gen.get('documentation') or "",
+                'stereotype': gen.get('stereotype') or "",
+                'parent': {
+                    'classId': parent.get('class_id'),
+                    'className': parent.get('class_name'),
+                },
+                'child': {
+                    'classId': child.get('class_id'),
+                    'className': child.get('class_name'),
+                },
+            }
+
+        def association_link_end_to_dict(end: dict) -> dict:
+            return {
+                'linkEndId': end.get('link_end_id'),
+                'linkEndName': end.get('link_end_name') or "",
+                'linkEndClassId': end.get('link_end_class_id'),
+                'linkEndClassName': end.get('link_end_class_name'),
+                'multiplicity': end.get('multiplicity') or "1",
+                'documentation': end.get('documentation') or "",
+                'stereotype': end.get('stereotype') or "",
+            }
+
+        def association_list_entry_to_dict(assoc: dict) -> dict:
+            ends = assoc.get('linkEnd') or []
+            return {
+                'linkId': assoc.get('link_id'),
+                'linkType': assoc.get('link_type') or 'Association',
+                'documentation': assoc.get('documentation') or "",
+                'stereotype': assoc.get('stereotype') or "",
+                'linkEnd': [association_link_end_to_dict(e) for e in ends],
             }
 
         def element_to_dict(elem: UMLElement) -> dict:
@@ -1058,10 +1096,15 @@ class XMIPackageParser:
             }
 
             if include_generalizations_list:
-                data['generalizations_list'] = self.generalizations_list
+                data['generalizationsList'] = [
+                    generalization_list_entry_to_dict(gen) for gen in self.generalizations_list
+                ]
 
             if include_associacion_list:
-                data['associacion_list'] = self.associacion_list
+                # Note: schemas use camelCase; list is still stored internally as self.associacion_list
+                data['associationList'] = [
+                    association_list_entry_to_dict(assoc) for assoc in self.associacion_list
+                ]
 
             return data
 
