@@ -554,7 +554,7 @@ body {
   z-index: 1000;
 }
 
-.modal.active {
+.modal.active  {
   display: flex;
 }
 

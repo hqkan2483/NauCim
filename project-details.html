@@ -81,7 +81,6 @@
         overflow: auto;
         padding: 0 15px;
       }
-
     </style>
   </head>
   <body>
@@ -198,7 +197,10 @@
 
           <div id="diagram-mode-content" class="hidden">
             <div id="diagram-container"></div>
-            <div id="diagram-resize-handle" class="divider diagram-resize-handle"></div>
+            <div
+              id="diagram-resize-handle"
+              class="divider diagram-resize-handle"
+            ></div>
             <div
               id="item-container-diagram"
               class="item-container-diagram"
@@ -209,19 +211,23 @@
     </div>
 
     <!-- MODAL: New Model -->
-    <div id="new-model-modal" class="modal" onclick="if(event.target.id === 'new-model-modal') closeModal('new-model-modal')">
+    <div
+      id="new-model-modal"
+      class="modal"
+      onclick="if(event.target.id === 'new-model-modal') closeModal('new-model-modal')"
+    >
       <div class="modal-content">
-        <div class="modal-header">
-        <div class="modal-title">Добавить модель в проект</div>
         <button
-            class="modal-close"
-            onclick="closeModal('new-model-modal')"
-            aria-label="Закрыть"
-          >
-            ×
-          </button>
+          class="modal-close"
+          onclick="closeModal('new-model-modal')"
+          aria-label="Закрыть"
+        >
+          ×
+        </button>
+        <div class="modal-header">
+          <div class="modal-title">Добавить модель в проект</div>
         </div>
-          
+
         <div class="form-group">
           <label class="form-label">Название модели *</label>
           <input
@@ -262,19 +268,23 @@
     </div>
 
     <!-- MODAL: New Profile -->
-    <div id="new-profile-modal" class="modal" onclick="if(event.target.id === 'new-profile-modal') closeModal('new-profile-modal')">
+    <div
+      id="new-profile-modal"
+      class="modal"
+      onclick="if(event.target.id === 'new-profile-modal') closeModal('new-profile-modal')"
+    >
       <div class="modal-content">
-                <div class="modal-header">
-                  
-        <div class="modal-title">Создать новый профиль</div>
         <button
-            class="modal-close"
-            onclick="closeModal('new-profile-modal')"
-            aria-label="Закрыть"
-          >
-            ×
-          </button>
-      </div>
+          class="modal-close"
+          onclick="closeModal('new-profile-modal')"
+          aria-label="Закрыть"
+        >
+          ×
+        </button>
+
+        <div class="modal-header">
+          <div class="modal-title">Создать новый профиль</div>
+        </div>
         <div class="form-group">
           <label class="form-label">Название профиля *</label>
           <input
@@ -339,10 +349,16 @@
 
     <!-- Context menu for links table target class -->
     <div id="link-context-menu" class="context-menu">
-      <div class="context-menu-item" onclick="handleLinkContextMenuAction('goto')">
+      <div
+        class="context-menu-item"
+        onclick="handleLinkContextMenuAction('goto')"
+      >
         Перейти
       </div>
-      <div class="context-menu-item" onclick="handleLinkContextMenuAction('info')">
+      <div
+        class="context-menu-item"
+        onclick="handleLinkContextMenuAction('info')"
+      >
         Посмотреть информацию
       </div>
     </div>
@@ -354,15 +370,15 @@
       onclick="if(event.target.id === 'new-diagram-modal') closeModal('new-diagram-modal')"
     >
       <div class="modal-content">
+        <button
+          class="modal-close"
+          onclick="closeModal('new-diagram-modal')"
+          aria-label="Закрыть"
+        >
+          ×
+        </button>
         <div class="modal-header">
           <div class="modal-title">Создать диаграмму классов</div>
-          <button
-            class="modal-close"
-            onclick="closeModal('new-diagram-modal')"
-            aria-label="Закрыть"
-          >
-            ×
-          </button>
         </div>
         <div class="form-group">
           <label class="form-label">Название диаграммы *</label>
@@ -406,15 +422,15 @@
       onclick="if(event.target.id === 'new-class-modal') closeModal('new-class-modal')"
     >
       <div class="modal-content">
+        <button
+          class="modal-close"
+          onclick="closeModal('new-class-modal')"
+          aria-label="Закрыть"
+        >
+          ×
+        </button>
         <div class="modal-header">
           <div class="modal-title">Создать класс</div>
-          <button
-            class="modal-close"
-            onclick="closeModal('new-class-modal')"
-            aria-label="Закрыть"
-          >
-            ×
-          </button>
         </div>
 
         <div class="form-group">
@@ -428,14 +444,24 @@
           <div
             id="class-name-error"
             class="form-error"
-            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+            style="
+              display: none;
+              color: #d32f2f;
+              font-size: 12px;
+              margin-top: 5px;
+            "
           >
             Введите имя класса
           </div>
           <div
             id="class-name-duplicate-error"
             class="form-error"
-            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+            style="
+              display: none;
+              color: #d32f2f;
+              font-size: 12px;
+              margin-top: 5px;
+            "
           >
             Класс с таким именем уже существует в этой модели
           </div>
@@ -443,7 +469,7 @@
 
         <div class="form-group">
           <label class="form-label">Признак абстрактного класса</label>
-          <label style="display:flex; align-items:center; gap:10px;">
+          <label style="display: flex; align-items: center; gap: 10px">
             <input type="checkbox" id="class-abstract" />
             <span>Абстрактный класс</span>
           </label>
@@ -504,17 +530,18 @@
     <div
       id="attribute-modal"
       class="modal"
-      onclick="if(event.target.id === 'attribute-modal') closeModal('attribute-modal')">
+      onclick="if(event.target.id === 'attribute-modal') closeModal('attribute-modal')"
+    >
       <div class="modal-content">
+        <button
+          class="modal-close"
+          onclick="closeModal('attribute-modal')"
+          aria-label="Закрыть"
+        >
+          ×
+        </button>
         <div class="modal-header">
           <div class="modal-title" id="attribute-modal-title">Атрибут</div>
-          <button
-            class="modal-close"
-            onclick="closeModal('attribute-modal')"
-            aria-label="Закрыть"
-          >
-            ×
-          </button>
         </div>
 
         <div class="form-group">
@@ -528,14 +555,24 @@
           <div
             id="attr-name-error"
             class="form-error"
-            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+            style="
+              display: none;
+              color: #d32f2f;
+              font-size: 12px;
+              margin-top: 5px;
+            "
           >
             Введите имя атрибута
           </div>
           <div
             id="attr-name-duplicate-error"
             class="form-error"
-            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+            style="
+              display: none;
+              color: #d32f2f;
+              font-size: 12px;
+              margin-top: 5px;
+            "
           >
             Атрибут с таким именем уже существует в этом классе
           </div>
@@ -585,7 +622,8 @@
           <textarea
             id="attr-details"
             class="form-textarea"
-            placeholder="Дополнительная информация"></textarea>
+            placeholder="Дополнительная информация"
+          ></textarea>
         </div>
 
         <div class="modal-buttons">
@@ -609,15 +647,15 @@
       onclick="if(event.target.id === 'new-package-modal') closeModal('new-package-modal')"
     >
       <div class="modal-content">
+        <button
+          class="modal-close"
+          onclick="closeModal('new-package-modal')"
+          aria-label="Закрыть"
+        >
+          ×
+        </button>
         <div class="modal-header">
           <div class="modal-title">Создать пакет</div>
-          <button
-            class="modal-close"
-            onclick="closeModal('new-package-modal')"
-            aria-label="Закрыть"
-          >
-            ×
-          </button>
         </div>
 
         <div class="form-group">
@@ -631,14 +669,24 @@
           <div
             id="package-name-error"
             class="form-error"
-            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+            style="
+              display: none;
+              color: #d32f2f;
+              font-size: 12px;
+              margin-top: 5px;
+            "
           >
             Введите имя пакета
           </div>
           <div
             id="package-name-duplicate-error"
             class="form-error"
-            style="display: none; color: #d32f2f; font-size: 12px; margin-top: 5px;"
+            style="
+              display: none;
+              color: #d32f2f;
+              font-size: 12px;
+              margin-top: 5px;
+            "
           >
             Пакет с таким именем уже существует
           </div>
@@ -813,7 +861,7 @@
         let html = `
                 <div class="project-tree-item">
                     <div class="project-tree-header active">
-                        <button class="project-expand-btn" data-project-id="${projectId}" 
+                        <button class="project-expand-btn" data-project-id="${projectId}"
                                 aria-expanded="${
                                   isExpanded ? "true" : "false"
                                 }">
@@ -970,9 +1018,7 @@
                       link.assoc_id || link.id || ""
                     }" data-type="link" data-model-id="${
           modelId || ""
-        }" onclick="selectTreeItem(event)">${renderLinkItemContent(
-          link
-        )}</span>
+        }" onclick="selectTreeItem(event)">${renderLinkItemContent(link)}</span>
                     </div>
                 </div>
             `;
@@ -1036,9 +1082,7 @@
                                   attr.id || ""
                                 }" data-type="attribute" data-model-id="${
                 modelId || ""
-              }" onclick="selectTreeItem(event)">🔹 ${
-                attr.name
-              }: ${attr.type}${
+              }" onclick="selectTreeItem(event)">🔹 ${attr.name}: ${attr.type}${
                 attr.multiplicity ? " [" + attr.multiplicity + "]" : ""
               }</span>
               </div>
@@ -1502,7 +1546,12 @@
       }
 
       // переключается в режим диаграммы (диаграмма выбрана в дереве профилей)
-      function selectDiagramFromProfile(event, diagramId, diagramName, profileId) {
+      function selectDiagramFromProfile(
+        event,
+        diagramId,
+        diagramName,
+        profileId
+      ) {
         event.stopPropagation();
 
         // Remember selection for mode toggling
@@ -1562,12 +1611,20 @@
       }
 
       function applyDiagramModeSplitRatio(ratio) {
-        const diagramModeContent = document.getElementById("diagram-mode-content");
+        const diagramModeContent = document.getElementById(
+          "diagram-mode-content"
+        );
         const diagramContainer = document.getElementById("diagram-container");
         const itemContainer = document.getElementById("item-container-diagram");
         const handle = document.getElementById("diagram-resize-handle");
 
-        if (!diagramModeContent || !diagramContainer || !itemContainer || !handle) return;
+        if (
+          !diagramModeContent ||
+          !diagramContainer ||
+          !itemContainer ||
+          !handle
+        )
+          return;
 
         // Only apply when the container has a real height (mode is visible)
         const totalHeight = diagramModeContent.clientHeight;
@@ -1581,7 +1638,11 @@
         const minPx = DIAGRAM_MODE_MIN_PANEL_PX;
 
         const desiredDiagramPx = Math.round(available * safeRatio);
-        const diagramPx = clampNumber(desiredDiagramPx, minPx, available - minPx);
+        const diagramPx = clampNumber(
+          desiredDiagramPx,
+          minPx,
+          available - minPx
+        );
         const itemPx = Math.max(minPx, available - diagramPx);
 
         diagramContainer.style.height = diagramPx + "px";
@@ -1627,10 +1688,15 @@
           if (e.button !== 0) return;
           e.preventDefault();
 
-          const diagramModeContent = document.getElementById("diagram-mode-content");
+          const diagramModeContent = document.getElementById(
+            "diagram-mode-content"
+          );
           const diagramContainer = document.getElementById("diagram-container");
-          const itemContainer = document.getElementById("item-container-diagram");
-          if (!diagramModeContent || !diagramContainer || !itemContainer) return;
+          const itemContainer = document.getElementById(
+            "item-container-diagram"
+          );
+          if (!diagramModeContent || !diagramContainer || !itemContainer)
+            return;
 
           const totalHeight = diagramModeContent.clientHeight;
           const handleHeight = handle.offsetHeight || 0;
@@ -1638,7 +1704,8 @@
           if (available <= 0) return;
 
           const startY = e.clientY;
-          const startDiagramPx = diagramContainer.getBoundingClientRect().height;
+          const startDiagramPx =
+            diagramContainer.getBoundingClientRect().height;
 
           const prevUserSelect = document.body.style.userSelect;
           const prevCursor = document.body.style.cursor;
@@ -1650,7 +1717,11 @@
             const desiredDiagramPx = startDiagramPx + delta;
 
             const minPx = DIAGRAM_MODE_MIN_PANEL_PX;
-            const diagramPx = clampNumber(desiredDiagramPx, minPx, available - minPx);
+            const diagramPx = clampNumber(
+              desiredDiagramPx,
+              minPx,
+              available - minPx
+            );
             const ratio = diagramPx / available;
 
             applyDiagramModeSplitRatio(ratio);
@@ -1664,10 +1735,16 @@
             document.body.style.cursor = prevCursor;
 
             const finalAvailable =
-              (diagramModeContent.clientHeight || 0) - (handle.offsetHeight || 0);
+              (diagramModeContent.clientHeight || 0) -
+              (handle.offsetHeight || 0);
             if (finalAvailable > 0) {
-              const finalDiagramPx = diagramContainer.getBoundingClientRect().height;
-              const ratio = clampNumber(finalDiagramPx / finalAvailable, 0.2, 0.8);
+              const finalDiagramPx =
+                diagramContainer.getBoundingClientRect().height;
+              const ratio = clampNumber(
+                finalDiagramPx / finalAvailable,
+                0.2,
+                0.8
+              );
               localStorage.setItem(DIAGRAM_MODE_SPLIT_KEY, String(ratio));
             }
           };
@@ -1688,9 +1765,13 @@
         const isDiagramMode =
           forceDiagramMode !== null
             ? !!forceDiagramMode
-            : !!(contentArea && contentArea.classList.contains("diagram-mode-on"));
+            : !!(
+                contentArea && contentArea.classList.contains("diagram-mode-on")
+              );
 
-        btn.textContent = isDiagramMode ? "📋 Стандартный режим" : "📐 Режим диаграммы";
+        btn.textContent = isDiagramMode
+          ? "📋 Стандартный режим"
+          : "📐 Режим диаграммы";
       }
 
       // Включает/выключает режим диаграммы по кнопке в toolbar
@@ -1698,8 +1779,12 @@
         const contentArea = document.querySelector(".content-area");
         if (!contentArea) return;
 
-        const diagramModeContent = document.getElementById("diagram-mode-content");
-        const standardModeContent = document.getElementById("standard-mode-content");
+        const diagramModeContent = document.getElementById(
+          "diagram-mode-content"
+        );
+        const standardModeContent = document.getElementById(
+          "standard-mode-content"
+        );
 
         const isActive = contentArea.classList.contains("diagram-mode-on");
 
@@ -1877,7 +1962,10 @@
         if (!diagramContainer) return;
 
         // Render diagram container (placeholder for now)
-        const safeName = typeof escapeHtml === "function" ? escapeHtml(diagramName || "") : (diagramName || "");
+        const safeName =
+          typeof escapeHtml === "function"
+            ? escapeHtml(diagramName || "")
+            : diagramName || "";
         diagramContainer.innerHTML = `
           <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
             <div style="text-align: center;">
@@ -1921,7 +2009,10 @@
         if (!tabEl) {
           tabEl = Array.from(container.querySelectorAll(".tab")).find((t) => {
             const onclick = t.getAttribute("onclick") || "";
-            return onclick.includes(`'${tabName}'`) || onclick.includes(`\"${tabName}\"`);
+            return (
+              onclick.includes(`'${tabName}'`) ||
+              onclick.includes(`\"${tabName}\"`)
+            );
           });
         }
 
@@ -2302,7 +2393,7 @@
                     <div class="tab active" onclick="switchTab('properties')">Свойства</div>
 
                 </div>
-                
+
                 <div id="tab-properties" class="tab-content active">
 
                     <table class="table model-details-table">
@@ -2343,7 +2434,7 @@
                             model.accessRight
                           )}</span></td>
                         </tr>
-                       
+
                     </table>
 
                     <div id="tab-properties" class="mt-20">
@@ -2353,7 +2444,7 @@
                     </div>
 
                 </div>
-                
+
             `;
 
         document.getElementById("model-details").innerHTML = html;
@@ -2370,7 +2461,7 @@
                     <div class="tab active" onclick="switchTab('properties')">Свойства</div>
 
                 </div>
-                
+
                 <div id="tab-properties" class="tab-content active">
 
                     <table class="table  profile-details-table">
@@ -2411,12 +2502,12 @@
                           )}</span></td>
                       </tr>
                     </table>
-                    
+
                     <div id="tab-properties" class="mt-20">
                         <button class="btn btn-primary" onclick="window.location.href='profile-editor.html?profileId=${
                           profile.id
                         }'">✏️ Редактировать</button>
-                        <button class="btn btn-primary" onclick="alert('Функция импорта в разработке')">📥 Импорт модели</button> 
+                        <button class="btn btn-primary" onclick="alert('Функция импорта в разработке')">📥 Импорт модели</button>
                         <button class="btn btn-primary" onclick="alert('Функция экспорта в разработке')">📤 Экспорт </button>
                         <button class="btn btn-primary" onclick="alert('Функция валидации в разработке')">✓ Проверка</button>
                         <button class="btn btn-primary" onclick="alert('Функция создания документации в разработке')">📄 Документация</button>
@@ -2509,7 +2600,10 @@
         if (!tabEl) {
           tabEl = Array.from(tabsRoot.querySelectorAll(".tab")).find((t) => {
             const onclick = t.getAttribute("onclick") || "";
-            return onclick.includes(`'${tabName}'`) || onclick.includes(`\"${tabName}\"`);
+            return (
+              onclick.includes(`'${tabName}'`) ||
+              onclick.includes(`\"${tabName}\"`)
+            );
           });
         }
 
@@ -2680,7 +2774,13 @@
           }
 
           // If diagram container exists, do not touch it here
-          renderItemDetails(itemId, itemType, modelId, profileId, "item-container");
+          renderItemDetails(
+            itemId,
+            itemType,
+            modelId,
+            profileId,
+            "item-container"
+          );
 
           // Auto-switch to the relevant tab for attribute/link clicks (standard mode)
           if (itemType === "attribute" || itemType === "profile-attribute") {
@@ -2695,9 +2795,18 @@
         return id != null && id !== "" ? `'${id}'` : "null";
       }
 
-      function renderAttributesTableHtml(itemData, itemType, modelId, profileId, uiMode) {
+      function renderAttributesTableHtml(
+        itemData,
+        itemType,
+        modelId,
+        profileId,
+        uiMode
+      ) {
         const safeText = (v) => escapeHtml(v == null ? "" : String(v));
-        const attributes = itemData && Array.isArray(itemData.attributes) ? itemData.attributes : [];
+        const attributes =
+          itemData && Array.isArray(itemData.attributes)
+            ? itemData.attributes
+            : [];
 
         const ctxModel = formatContextIdForOnclick(modelId);
         const ctxProfile = formatContextIdForOnclick(profileId);
@@ -2711,17 +2820,31 @@
                 .map(
                   (attr, idx) => `
                         <tr>
-                          <td><a href="#" class="table-link">${safeText(attr && attr.name ? attr.name : "")}</a></td>
-                          <td>${safeText(attr && attr.type ? attr.type : "")}</td>
-                          <td>${safeText(attr && attr.multiplicity ? attr.multiplicity : "")}</td>
-                          <td>${safeText(attr && attr.stereotype ? attr.stereotype : "")}</td>
-                          <td>${safeText(attr && attr.description ? attr.description : "")}${
-                            attr && attr.details
-                              ? `<br/><span class="text-muted">${safeText(attr.details)}</span>`
-                              : ""
-                          }</td>
+                          <td><a href="#" class="table-link">${safeText(
+                            attr && attr.name ? attr.name : ""
+                          )}</a></td>
+                          <td>${safeText(
+                            attr && attr.type ? attr.type : ""
+                          )}</td>
+                          <td>${safeText(
+                            attr && attr.multiplicity ? attr.multiplicity : ""
+                          )}</td>
+                          <td>${safeText(
+                            attr && attr.stereotype ? attr.stereotype : ""
+                          )}</td>
+                          <td>${safeText(
+                            attr && attr.description ? attr.description : ""
+                          )}${
+                    attr && attr.details
+                      ? `<br/><span class="text-muted">${safeText(
+                          attr.details
+                        )}</span>`
+                      : ""
+                  }</td>
                           <td>
-                            <button class="btn-icon" onclick="openAttributeModal('edit', '${itemData.id}', ${idx}, ${ctxModel}, ${ctxProfile}, '${ctxUiMode}')" title="Изменить">✏️</button>
+                            <button class="btn-icon" onclick="openAttributeModal('edit', '${
+                              itemData.id
+                            }', ${idx}, ${ctxModel}, ${ctxProfile}, '${ctxUiMode}')" title="Изменить">✏️</button>
                             <button class="btn-icon" onclick="alert('Удалить атрибут')" title="Удалить">🗑️</button>
                           </td>
                         </tr>
@@ -2764,36 +2887,58 @@
         `;
       }
 
-      function renderLinksTableHtml(itemData, itemType, modelId, profileId, uiMode) {
+      function renderLinksTableHtml(
+        itemData,
+        itemType,
+        modelId,
+        profileId,
+        uiMode
+      ) {
         const safeText = (v) => escapeHtml(v == null ? "" : String(v));
-        const links = itemData && Array.isArray(itemData.links) ? itemData.links : [];
+        const links =
+          itemData && Array.isArray(itemData.links) ? itemData.links : [];
 
         const rows =
           itemType !== "element"
             ? `<tr><td class="text-muted"> Нет связей </td><td colspan="7"></td></tr>`
             : links && links.length > 0
             ? links
-                .map(
-                  (link) => {
-                    const targetObjectId =
-                      (link && (link.target_class || link.targetObjectId || link.target_object_id)) ?? "";
-                    const targetClassId =
-                      (link && (link.target_class_id || link.targetClassId)) ?? "";
-                    const targetOwnerModelId =
-                      (link && (link.target_model_id || link.targetModelId)) ?? modelId ?? "";
-                    const targetOwnerProfileId =
-                      (link && (link.target_profile_id || link.targetProfileId)) ?? profileId ?? "";
+                .map((link) => {
+                  const targetObjectId =
+                    (link &&
+                      (link.target_class ||
+                        link.targetObjectId ||
+                        link.target_object_id)) ??
+                    "";
+                  const targetClassId =
+                    (link && (link.target_class_id || link.targetClassId)) ??
+                    "";
+                  const targetOwnerModelId =
+                    (link && (link.target_model_id || link.targetModelId)) ??
+                    modelId ??
+                    "";
+                  const targetOwnerProfileId =
+                    (link &&
+                      (link.target_profile_id || link.targetProfileId)) ??
+                    profileId ??
+                    "";
 
-                    return `
+                  return `
                         <tr>
-                          <td>${safeText(link && link.target_class_role_name ? link.target_class_role_name : "")}</td>
-                          <td>${safeText(link && link.relation_kind ? link.relation_kind : "")}${
-                            link && link.role === "child"
-                              ? " (наследуется от)"
-                              : link && link.role === "parent"
-                              ? "<br/> (родитель для)"
+                          <td>${safeText(
+                            link && link.target_class_role_name
+                              ? link.target_class_role_name
                               : ""
-                          }</td>
+                          )}</td>
+                          <td>${safeText(
+                            link && link.relation_kind ? link.relation_kind : ""
+                          )}${
+                    link && link.role === "child"
+                      ? " (наследуется от)"
+                      : link && link.role === "parent"
+                      ? "<br/> (родитель для)"
+                      : ""
+                  }</td>
                           <td>
                             <a
                               href="#"
@@ -2801,24 +2946,41 @@
                               data-id="${safeText(targetClassId)}"
                               data-type="element"
                               data-model-id="${safeText(targetOwnerModelId)}"
-                              data-profile-id="${safeText(targetOwnerProfileId)}"
-                              data-target-object-id="${safeText(targetObjectId || targetClassId)}"
+                              data-profile-id="${safeText(
+                                targetOwnerProfileId
+                              )}"
+                              data-target-object-id="${safeText(
+                                targetObjectId || targetClassId
+                              )}"
                               data-target-class-id="${safeText(targetClassId)}"
-                              data-target-model-id="${safeText(targetOwnerModelId)}"
-                              data-target-profile-id="${safeText(targetOwnerProfileId)}"
-                            >${safeText(link && link.target_class_name ? link.target_class_name : "")}</a>
+                              data-target-model-id="${safeText(
+                                targetOwnerModelId
+                              )}"
+                              data-target-profile-id="${safeText(
+                                targetOwnerProfileId
+                              )}"
+                            >${safeText(
+                              link && link.target_class_name
+                                ? link.target_class_name
+                                : ""
+                            )}</a>
                           </td>
-                          <td>${safeText(link && link.multiplicity ? link.multiplicity : "")}</td>
-                          <td>${safeText(link && link.stereotype ? link.stereotype : "")}</td>
-                          <td>${safeText(link && link.description ? link.description : "")}</td>
+                          <td>${safeText(
+                            link && link.multiplicity ? link.multiplicity : ""
+                          )}</td>
+                          <td>${safeText(
+                            link && link.stereotype ? link.stereotype : ""
+                          )}</td>
+                          <td>${safeText(
+                            link && link.description ? link.description : ""
+                          )}</td>
                           <td>
                             <button class="btn-icon" onclick="alert('Редактировать связь')" title="Изменить">✏️</button>
                             <button class="btn-icon" onclick="alert('Удалить связь')" title="Удалить">🗑️</button>
                           </td>
                         </tr>
-                      `
-                  }
-                )
+                      `;
+                })
                 .join("") +
               `
                         <tr>
@@ -2959,7 +3121,9 @@
                   <label class="form-label">
                     ${itemType === "package" ? "Пакет" : "Класс"}
                     </label>
-                  <input type="text" value="${escapeHtml(itemData.name || "")}" class="form-input" >
+                  <input type="text" value="${escapeHtml(
+                    itemData.name || ""
+                  )}" class="form-input" >
                 </div>
                 ${
                   itemType === "element"
@@ -2970,16 +3134,18 @@
                       itemData.isAbstract ? "checked" : ""
                     } class="form-checkbox">
                   </div>
-                  
+
                   <div class="form-group form-group-flex-line form-group-flex-center">
                     <label class="form-label">Стереотип</label>
-                    <input type="text" value="${escapeHtml(itemData.stereotype || "")}" class="form-input">
+                    <input type="text" value="${escapeHtml(
+                      itemData.stereotype || ""
+                    )}" class="form-input">
                   </div>
                 </div>`
-                    : `<div /> 
+                    : `<div />
                     </div>`
                 }
-              
+
               </div>
 
               <div class="item-details-grid">
@@ -2989,7 +3155,7 @@
                     itemData.description_en || itemData.description || ""
                   )}</textarea>
                 </div>
-                
+
                 <div class="form-group form-group-flex form-group-flex-start">
                   <label class="form-label">Описание (доп., рус.)</label>
                   <textarea class="form-textarea">${escapeHtml(
@@ -2997,18 +3163,20 @@
                   )}</textarea>
                 </div>
               </div>
-              
+
               <div class="form-group form-group-flex form-group-flex-start">
                 <label class="form-label">Дополнительная информация (рус)</label>
-                <textarea class="form-textarea">${escapeHtml(itemData.details || "")}</textarea>
+                <textarea class="form-textarea">${escapeHtml(
+                  itemData.details || ""
+                )}</textarea>
               </div>
 
               <div class="form-group form-group-flex form-group-flex-end">
-                <button class="btn btn-primary" onclick="alert('Функция в разработке')"> Сохранить</button> 
-                
+                <button class="btn btn-primary" onclick="alert('Функция в разработке')"> Сохранить</button>
+
               </div>
 
-           
+
             ${
               itemType === "element"
                 ? `
@@ -3018,11 +3186,23 @@
             <div class="tab tab-mini" data-tab="itemLinks" onclick="switchItemDetailsTab('itemLinks', event)">Связи</div>
           </div>
           <div id="tab-itemAttributes" class="tab-content active">
-                ${renderAttributesTableHtml(itemData, itemType, modelId, profileId, 'standard')}
+                ${renderAttributesTableHtml(
+                  itemData,
+                  itemType,
+                  modelId,
+                  profileId,
+                  "standard"
+                )}
               </div>
-              
+
                <div id="tab-itemLinks" class="tab-content">
-                ${renderLinksTableHtml(itemData, itemType, modelId, profileId, 'standard')}
+                ${renderLinksTableHtml(
+                  itemData,
+                  itemType,
+                  modelId,
+                  profileId,
+                  "standard"
+                )}
               </div>
               `
                 : ` `
@@ -3035,8 +3215,15 @@
       }
 
       // Рендерит описание пакета/класса в режиме диаграммы: строго 3 таба (general/attributes/links)
-      function renderItemDetailsDiagramMode(itemId, itemType, modelId, profileId = null) {
-        const targetContainer = document.getElementById("item-container-diagram");
+      function renderItemDetailsDiagramMode(
+        itemId,
+        itemType,
+        modelId,
+        profileId = null
+      ) {
+        const targetContainer = document.getElementById(
+          "item-container-diagram"
+        );
         if (!targetContainer) return;
 
         ensureDiagramTabsScaffold();
@@ -3064,7 +3251,11 @@
           }
 
           if (profile.rootPackages) {
-            const result = findItemInProfile(profile.rootPackages, itemId, itemType);
+            const result = findItemInProfile(
+              profile.rootPackages,
+              itemId,
+              itemType
+            );
             if (result) {
               if (result.item) {
                 itemData = result.item;
@@ -3102,7 +3293,10 @@
         }
 
         // For attribute or link, render the parent element details
-        if ((itemType === "attribute" || itemType === "link") && parentElement) {
+        if (
+          (itemType === "attribute" || itemType === "link") &&
+          parentElement
+        ) {
           itemData = parentElement;
           itemType = "element";
         }
@@ -3121,7 +3315,6 @@
         );
         const descriptionRuValue = escapeHtml(itemData.description_ru || "");
         const detailsValue = escapeHtml(itemData.details || "");
-
 
         generalTab.innerHTML = `
           <div class="diagram-tab-general-content">
@@ -3142,7 +3335,7 @@
                         <input type="text" value="${stereotypeValue}" class="form-input form-input-small">
                       </div>
                     </div>`
-                  : `<div /> 
+                  : `<div />
                   </div>`
               }
             </div>
@@ -3170,9 +3363,21 @@
           </div>
         `;
 
-        attributesTab.innerHTML = renderAttributesTableHtml(itemData, itemType, modelId, profileId, 'diagram');
+        attributesTab.innerHTML = renderAttributesTableHtml(
+          itemData,
+          itemType,
+          modelId,
+          profileId,
+          "diagram"
+        );
 
-        linksTab.innerHTML = renderLinksTableHtml(itemData, itemType, modelId, profileId, 'diagram');
+        linksTab.innerHTML = renderLinksTableHtml(
+          itemData,
+          itemType,
+          modelId,
+          profileId,
+          "diagram"
+        );
       }
 
       function ensureDiagramTabsScaffold() {
@@ -3423,7 +3628,7 @@
             const linkEl =
               target && target.closest
                 ? target.closest(
-                    'a.table-link[data-target-class-id], a.table-link[data-target-object-id]'
+                    "a.table-link[data-target-class-id], a.table-link[data-target-object-id]"
                   )
                 : null;
 
@@ -3511,13 +3716,16 @@
 
       function gotoTargetClassFromLink(linkEl) {
         const targetClassId =
-          (linkEl.dataset && (linkEl.dataset.targetClassId || linkEl.dataset.id)) ||
+          (linkEl.dataset &&
+            (linkEl.dataset.targetClassId || linkEl.dataset.id)) ||
           "";
         const targetModelId =
-          (linkEl.dataset && (linkEl.dataset.targetModelId || linkEl.dataset.modelId)) ||
+          (linkEl.dataset &&
+            (linkEl.dataset.targetModelId || linkEl.dataset.modelId)) ||
           "";
         const targetProfileId =
-          (linkEl.dataset && (linkEl.dataset.targetProfileId || linkEl.dataset.profileId)) ||
+          (linkEl.dataset &&
+            (linkEl.dataset.targetProfileId || linkEl.dataset.profileId)) ||
           "";
 
         if (!targetClassId) {
@@ -3525,7 +3733,11 @@
           return;
         }
 
-        const expanded = expandTreeToElement(targetClassId, targetModelId, targetProfileId);
+        const expanded = expandTreeToElement(
+          targetClassId,
+          targetModelId,
+          targetProfileId
+        );
         if (!expanded) {
           alert("Класс не найден");
           return;
@@ -3536,12 +3748,15 @@
             '.tree-structure-name[data-type="element"]'
           );
           const match = Array.from(nodes).find((el) => {
-            if ((el.getAttribute("data-id") || "") != targetClassId) return false;
+            if ((el.getAttribute("data-id") || "") != targetClassId)
+              return false;
             if (targetModelId) {
               return (el.getAttribute("data-model-id") || "") == targetModelId;
             }
             if (targetProfileId) {
-              return (el.getAttribute("data-profile-id") || "") == targetProfileId;
+              return (
+                (el.getAttribute("data-profile-id") || "") == targetProfileId
+              );
             }
             return true;
           });
@@ -3655,7 +3870,10 @@
           if (!path) return false;
           expandAll(path);
 
-          localStorage.setItem("expandedTreeItems", JSON.stringify(expandedItems));
+          localStorage.setItem(
+            "expandedTreeItems",
+            JSON.stringify(expandedItems)
+          );
           renderCurrentProjectStructure();
           return true;
         }
@@ -3674,7 +3892,10 @@
           if (!path) return false;
           expandAll(path);
 
-          localStorage.setItem("expandedTreeItems", JSON.stringify(expandedItems));
+          localStorage.setItem(
+            "expandedTreeItems",
+            JSON.stringify(expandedItems)
+          );
           renderCurrentProjectStructure();
           return true;
         }
@@ -3736,7 +3957,9 @@
       }
 
       function normalizeName(name) {
-        return String(name || "").trim().toLowerCase();
+        return String(name || "")
+          .trim()
+          .toLowerCase();
       }
 
       function packageNameExistsInPackages(packages, normalizedName) {
@@ -3756,7 +3979,9 @@
         if (!Array.isArray(packages)) return false;
 
         for (const pkg of packages) {
-          const elements = Array.isArray(pkg && pkg.elements) ? pkg.elements : [];
+          const elements = Array.isArray(pkg && pkg.elements)
+            ? pkg.elements
+            : [];
           for (const el of elements) {
             if (!el) continue;
             if (String(el.type || "") !== "Class") continue;
@@ -3819,7 +4044,9 @@
         const descRuInput = document.getElementById("package-desc-ru");
         const detailsInput = document.getElementById("package-details");
 
-        const name = (nameInput && nameInput.value ? nameInput.value : "").trim();
+        const name = (
+          nameInput && nameInput.value ? nameInput.value : ""
+        ).trim();
         const normalized = normalizeName(name);
 
         if (errorRequired) errorRequired.style.display = "none";
@@ -3876,7 +4103,9 @@
           containerPackages = model.rootPackages;
           uniquenessScopeLabel = `модели "${model.name || ""}"`;
         } else if (context.profileId) {
-          const profile = project.profiles.find((p) => p.id == context.profileId);
+          const profile = project.profiles.find(
+            (p) => p.id == context.profileId
+          );
           if (!profile || !profile.rootPackages) {
             alert("Ошибка: профиль не найден");
             return;
@@ -3895,7 +4124,11 @@
           return;
         }
 
-        const ok = addPackageToPackage(containerPackages, context.packageId, newPkg);
+        const ok = addPackageToPackage(
+          containerPackages,
+          context.packageId,
+          newPkg
+        );
         if (!ok) {
           alert("Ошибка: пакет-родитель не найден");
           return;
@@ -3924,9 +4157,13 @@
         const detailsInput = document.getElementById("class-details");
 
         const errorRequired = document.getElementById("class-name-error");
-        const errorDuplicate = document.getElementById("class-name-duplicate-error");
+        const errorDuplicate = document.getElementById(
+          "class-name-duplicate-error"
+        );
 
-        const name = (nameInput && nameInput.value ? nameInput.value : "").trim();
+        const name = (
+          nameInput && nameInput.value ? nameInput.value : ""
+        ).trim();
         const normalized = normalizeName(name);
 
         if (errorRequired) errorRequired.style.display = "none";
@@ -3984,7 +4221,11 @@
           links: [],
         };
 
-        const ok = addClassToPackage(model.rootPackages, context.packageId, newClass);
+        const ok = addClassToPackage(
+          model.rootPackages,
+          context.packageId,
+          newClass
+        );
         if (!ok) {
           alert("Ошибка: пакет-родитель не найден");
           return;
@@ -3993,7 +4234,11 @@
         closeModal("new-class-modal");
         renderCurrentProjectStructure();
 
-        alert(`Класс "${name}" успешно создан в пакете "${context.packageName}" (модель: "${model.name || ""}")`);
+        alert(
+          `Класс "${name}" успешно создан в пакете "${
+            context.packageName
+          }" (модель: "${model.name || ""}")`
+        );
       }
 
       function getElementByIdInContext(elementId, modelId, profileId) {
@@ -4004,7 +4249,11 @@
         if (profileId) {
           const profile = project.profiles.find((p) => p.id == profileId);
           if (!profile || !profile.rootPackages) return null;
-          const res = findItemInProfile(profile.rootPackages, elementId, "element");
+          const res = findItemInProfile(
+            profile.rootPackages,
+            elementId,
+            "element"
+          );
           if (!res) return null;
           return res.item ? res.item : res;
         }
@@ -4020,7 +4269,14 @@
         return null;
       }
 
-      function openAttributeModal(mode, elementId, attributeIndex, modelId, profileId, uiMode) {
+      function openAttributeModal(
+        mode,
+        elementId,
+        attributeIndex,
+        modelId,
+        profileId,
+        uiMode
+      ) {
         const modalTitle = document.getElementById("attribute-modal-title");
         const nameInput = document.getElementById("attr-name");
         const typeInput = document.getElementById("attr-type");
@@ -4029,7 +4285,9 @@
         const descriptionInput = document.getElementById("attr-description");
         const detailsInput = document.getElementById("attr-details");
         const errorRequired = document.getElementById("attr-name-error");
-        const errorDuplicate = document.getElementById("attr-name-duplicate-error");
+        const errorDuplicate = document.getElementById(
+          "attr-name-duplicate-error"
+        );
 
         if (errorRequired) errorRequired.style.display = "none";
         if (errorDuplicate) errorDuplicate.style.display = "none";
@@ -4044,30 +4302,45 @@
         };
 
         if (modalTitle) {
-          modalTitle.textContent = mode === "edit" ? "Редактировать атрибут" : "Добавить атрибут";
+          modalTitle.textContent =
+            mode === "edit" ? "Редактировать атрибут" : "Добавить атрибут";
         }
 
         let existing = null;
         if (mode === "edit") {
-          const element = getElementByIdInContext(elementId, modelId, profileId);
+          const element = getElementByIdInContext(
+            elementId,
+            modelId,
+            profileId
+          );
           if (!element) {
             alert("Ошибка: класс не найден");
             return;
           }
-          const attrs = Array.isArray(element.attributes) ? element.attributes : [];
-          if (typeof attributeIndex !== "number" || attributeIndex < 0 || attributeIndex >= attrs.length) {
+          const attrs = Array.isArray(element.attributes)
+            ? element.attributes
+            : [];
+          if (
+            typeof attributeIndex !== "number" ||
+            attributeIndex < 0 ||
+            attributeIndex >= attrs.length
+          ) {
             alert("Ошибка: атрибут не найден");
             return;
           }
           existing = attrs[attributeIndex];
         }
 
-        if (nameInput) nameInput.value = existing ? (existing.name || "") : "";
-        if (typeInput) typeInput.value = existing ? (existing.type || "") : "";
-        if (multiplicityInput) multiplicityInput.value = existing ? (existing.multiplicity || "") : "";
-        if (stereotypeInput) stereotypeInput.value = existing ? (existing.stereotype || "") : "";
-        if (descriptionInput) descriptionInput.value = existing ? (existing.description || "") : "";
-        if (detailsInput) detailsInput.value = existing ? (existing.details || "") : "";
+        if (nameInput) nameInput.value = existing ? existing.name || "" : "";
+        if (typeInput) typeInput.value = existing ? existing.type || "" : "";
+        if (multiplicityInput)
+          multiplicityInput.value = existing ? existing.multiplicity || "" : "";
+        if (stereotypeInput)
+          stereotypeInput.value = existing ? existing.stereotype || "" : "";
+        if (descriptionInput)
+          descriptionInput.value = existing ? existing.description || "" : "";
+        if (detailsInput)
+          detailsInput.value = existing ? existing.details || "" : "";
 
         openModal("attribute-modal");
         if (nameInput) nameInput.focus();
@@ -4087,19 +4360,27 @@
         const descriptionInput = document.getElementById("attr-description");
         const detailsInput = document.getElementById("attr-details");
         const errorRequired = document.getElementById("attr-name-error");
-        const errorDuplicate = document.getElementById("attr-name-duplicate-error");
+        const errorDuplicate = document.getElementById(
+          "attr-name-duplicate-error"
+        );
 
         if (errorRequired) errorRequired.style.display = "none";
         if (errorDuplicate) errorDuplicate.style.display = "none";
 
-        const name = (nameInput && nameInput.value ? nameInput.value : "").trim();
+        const name = (
+          nameInput && nameInput.value ? nameInput.value : ""
+        ).trim();
         if (!name) {
           if (errorRequired) errorRequired.style.display = "block";
           if (nameInput) nameInput.focus();
           return;
         }
 
-        const element = getElementByIdInContext(ctx.elementId, ctx.modelId, ctx.profileId);
+        const element = getElementByIdInContext(
+          ctx.elementId,
+          ctx.modelId,
+          ctx.profileId
+        );
         if (!element) {
           alert("Ошибка: класс не найден");
           return;
@@ -4131,7 +4412,11 @@
 
         if (ctx.mode === "edit") {
           const idx = ctx.attributeIndex;
-          if (typeof idx !== "number" || idx < 0 || idx >= element.attributes.length) {
+          if (
+            typeof idx !== "number" ||
+            idx < 0 ||
+            idx >= element.attributes.length
+          ) {
             alert("Ошибка: атрибут не найден");
             return;
           }
@@ -4154,10 +4439,21 @@
 
         // Refresh the details view and keep the Attributes tab active
         if (ctx.uiMode === "diagram") {
-          renderItemDetailsDiagramMode(ctx.elementId, "element", ctx.modelId, ctx.profileId);
+          renderItemDetailsDiagramMode(
+            ctx.elementId,
+            "element",
+            ctx.modelId,
+            ctx.profileId
+          );
           switchDiagramTab("attributes");
         } else {
-          renderItemDetails(ctx.elementId, "element", ctx.modelId, ctx.profileId, "item-container");
+          renderItemDetails(
+            ctx.elementId,
+            "element",
+            ctx.modelId,
+            ctx.profileId,
+            "item-container"
+          );
           switchItemDetailsTab("itemAttributes");
         }
       }

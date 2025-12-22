@@ -68,7 +68,15 @@
 
     <div id="new-project-modal" class="modal">
       <div class="modal-content">
+        <button
+          class="modal-close"
+          onclick="closeModal('new-project-modal')"
+          aria-label="Закрыть"
+        >
+          ×
+        </button>
         <div class="modal-title">Создать новый проект</div>
+
         <div class="form-group">
           <label class="form-label">Название проекта *</label>
           <input
