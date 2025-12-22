@@ -1,14 +1,16 @@
+const STORAGE_KEY = "cim.currentProjectId";
+
 function getCurrentProjectId() {
-  let id = localStorage.getItem("cim.currentProjectId");
+  let id = localStorage.getItem(STORAGE_KEY);
   return id? id : null;
 }
 
-function setCurrentProject(projectId) {
+function setCurrentProjectId(projectId) {
   if (projectId) {
-    localStorage.setItem("cim.currentProjectId", projectId);
+    localStorage.setItem(STORAGE_KEY, String(projectId));
   } else {
-    localStorage.removeItem("cim.currentProjectId");
+    localStorage.removeItem(STORAGE_KEY);
   }
 }
 
-export { getCurrentProjectId, setCurrentProject };
+export { getCurrentProjectId, setCurrentProjectId };
