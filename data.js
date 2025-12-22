@@ -136,7 +136,7 @@ async function loadSampleData() {
 
   const sampleProjects = [
     {
-      id: 1,
+      id: "1",
       name: "Россети - Профили обмена данными",
       description:
         "Разработка профилей для обмена данными между информационными системами Россетей",
@@ -144,7 +144,7 @@ async function loadSampleData() {
       createdAt: "2024-09-15",
       models: [
         {
-          id: 2,
+          id: "2",
           name: "TC57CIM - CIM100",
           type: "Каноническая модель",
           description: "CIM 100 версия IEC 61970/61968, редакция 2025 года",
@@ -158,13 +158,13 @@ async function loadSampleData() {
         },
         //вторая  модель
         {
-          id: 3,
+          id: "3",
           name: "GOSTExtension",
           type: "Расширение модели RU",
           description: "Расширения для российских ГОСТов",
           relatedProfiles: [
-            { id: 4, name: "GOST-XXXXX.2" },
-            { id: 5, name: "Проект ГОСТ-XXXXX.Х" },
+            { id: "4", name: "GOST-XXXXX.2" },
+            { id: "5", name: "Проект ГОСТ-XXXXX.Х" },
           ],
           version: "1.0",
           createDate: "2024-11-20",
@@ -177,11 +177,11 @@ async function loadSampleData() {
       ],
       profiles: [
         {
-          id: 4,
+          id: "4",
           name: "GOST-XXXXX.2",
           description: "Базисный профиль информационной модели",
           baseModel: "GOSTExtension",
-          baseModelId: 3,
+          baseModelId: "3",
           version: "1.0",
           createDate: "2024-11-20",
           modifyDate: "2025-10-10",
@@ -189,22 +189,13 @@ async function loadSampleData() {
           legalAct: "",
           accessRight: "readWrite",
           rootPackages: profile58651_2RootPackages,
-          xsd: `<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="AssetInfo" type="AssetInfoType"/>
-  <xs:complexType name="AssetInfoType">
-    <xs:sequence>
-      <xs:element name="rotorGD2" type="xs:float" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-</xs:schema>`,
         },
         {
-          id: 5,
+          id: "5",
           name: "Проект ГОСТ-XXXXX.Х",
           description: "Профиль модели ЛЭП",
           baseModel: "GOSTExtension",
-          baseModelId: 3,
+          baseModelId: "3",
           version: "1.1",
           createDate: "2025-09-21",
           modifyDate: "2025-10-10",
@@ -216,18 +207,18 @@ async function loadSampleData() {
       ],
     },
     {
-      id: 6,
+      id: "6",
       name: "Профили электросчётчиков",
       description: "Профили для систем АИИС КУЭ",
       version: "1.5",
       createdAt: "2024-10-01",
       models: [
         {
-          id: 7,
+          id: "7",
           name: "CIM16",
           type: "Каноническая модель. Расширение Системного оператора",
           description: "Модель для учета электроэнергии",
-          relatedProfiles: [{ id: 8, name: "MeterProfile" }],
+          relatedProfiles: [{ id: "8", name: "MeterProfile" }],
           version: "1.101",
           createDate: "2025-08-11",
           modifyDate: "2025-09-10",
@@ -239,11 +230,11 @@ async function loadSampleData() {
       ],
       profiles: [
         {
-          id: 8,
+          id: "8",
           name: "MeterProfile",
           description: "Профиль обмена данными электросчётчиков",
           baseModel: "CIM16",
-          baseModelId: 7,
+          baseModelId: "7",
           version: "2.0",
           createDate: "2025-08-11",
           modifyDate: "2025-09-10",
@@ -255,20 +246,20 @@ async function loadSampleData() {
       ],
     },
     {
-      id: 9,
+      id: "9",
       name: "Волоконно-оптические линии",
       description: "Проект расширения CIM для волоконно-оптических линий связи",
       version: "1.0",
       createdAt: "2025-10-01",
       models: [
         {
-          id: 10,
+          id: "10",
           name: "CIM-FiberOptic",
           type: "Расширение для волоконно-оптических линий связи",
           description:
             "Проект модели для волоконно-оптических линий связи, включая оконечное оборудование",
 
-          relatedProfiles: [{ id: 11, name: "FOProfile" }],
+          relatedProfiles: [{ id: "11", name: "FOProfile" }],
           version: "0.101",
           createDate: "2025-05-11",
           modifyDate: "2025-09-10",
@@ -280,11 +271,11 @@ async function loadSampleData() {
       ],
       profiles: [
         {
-          id: 11,
+          id: "11",
           name: "FOProfile",
           description: "Профиль для волоконно-оптических линий связи",
           baseModel: "CIM-FiberOptic",
-          baseModelId: 10,
+          baseModelId: "10",
           version: "0.0.1",
           createDate: "2025-09-11",
           modifyDate: "2025-09-11",
@@ -300,7 +291,7 @@ async function loadSampleData() {
   // Initialize MemoryStore instead of localStorage
   // Try to restore currentProjectId from localStorage
   const savedProjectId = localStorage.getItem("currentProjectId");
-  const initialProjectId = savedProjectId ? parseInt(savedProjectId) : 1;
+  const initialProjectId = savedProjectId || "1";
 
   MemoryStore.initialize({
     projects: sampleProjects,
@@ -332,7 +323,7 @@ function getCurrentProjectId() {
   if (!id) {
     const savedId = localStorage.getItem("currentProjectId");
     if (savedId) {
-      id = parseInt(savedId);
+      id = savedId;
       MemoryStore.setCurrentProjectId(id);
     }
   }
@@ -353,6 +344,20 @@ function getCurrentProject() {
   return MemoryStore.getCurrentProject();
 }
 
+// UUID Generation
+function generateUUID() {
+  // Use crypto.randomUUID if available (modern browsers)
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback implementation for older browsers
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 // Model Management
 // возвращаем модели проекта - массив всех моделей внутри проекта или пустой массив
 function getModels(projectId) {
@@ -363,7 +368,7 @@ function getModels(projectId) {
 function addModel(projectId, model) {
   const project = MemoryStore.getProject(projectId);
   if (project) {
-    model.id = Math.max(...project.models.map((m) => m.id), 0) + 1;
+    model.id = generateUUID();
     project.models.push(model);
     return model;
   }
@@ -384,7 +389,7 @@ function getProfiles(projectId) {
 function addProfile(projectId, profile) {
   const project = MemoryStore.getProject(projectId);
   if (project) {
-    profile.id = Math.max(...project.profiles.map((p) => p.id), 0) + 1;
+    profile.id = generateUUID();
     project.profiles.push(profile);
     return profile;
   }

@@ -1,119 +1,116 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nautilus.CIM - Главная</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div class="app-container">
-        <!-- SIDEBAR -->
-        <div class="sidebar" id="sidebar">
-            <button class="sidebar-toggle sidebar-open" onclick="toggleSidebar()" aria-label="Toggle sidebar">
-                <span class="toggle-icon">☰</span>
+      <!-- SIDEBAR -->
+      <div class="sidebar" id="sidebar">
+        <button
+          class="sidebar-toggle sidebar-open"
+          onclick="toggleSidebar()"
+          aria-label="Toggle sidebar"
+        >
+          <span class="toggle-icon">☰</span>
+        </button>
+        <div class="sidebar-header">
+          <span>Nautilus.CIM</span>
+        </div>
+        <div class="sidebar-nav">
+          <a href="projects.html" class="nav-item">📁 Проекты</a>
+
+          <div class="nav-section-title">Текущий проект</div>
+          <div id="current-project" class="current-project-info">
+            Нет проекта
+          </div>
+
+          <div class="nav-section-title">Действия</div>
+          <div class="nav-item" onclick="openModal('new-project-modal')">
+            + Новый проект
+          </div>
+
+          <a href="compare.html" class="nav-item">🔍 Сравнение</a>
+        </div>
+      </div>
+      <div class="sidebar-resize-handle" id="sidebar-resize-handle"></div>
+
+      <!-- MAIN CONTENT -->
+      <div class="main-content">
+        <div class="toolbar">
+          <div class="toolbar-title">Главная</div>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary" onclick="location.reload()">
+              🔄 Обновить
             </button>
-            <div class="sidebar-header">
-                <span>Nautilus.CIM</span>
-            </div>
-            <div class="sidebar-nav">
-                
-                <!-- <a href="index.html" class="nav-item">📊 Главная</a> -->
-                <a href="projects.html" class="nav-item">📁 Проекты</a>
-                
-                <!-- 
-                <a href="models.html" class="nav-item">📋 Модели</a>
-                <a href="profiles.html" class="nav-item active">⚙️ Профили</a> 
-                -->
-                
-                <div class="nav-section-title">Текущий проект</div>
-                <div id="current-project" class="current-project-info">
-                    Нет проекта
-                </div>
-
-                <div class="nav-section-title">Действия</div>
-                <div class="nav-item" onclick="openModal('new-project-modal')">+ Новый проект</div>
-                <!-- 
-                <div class="nav-item" onclick="openModal('new-model-modal')">⬆️ Импорт модели</div> 
-                -->
-                <a href="compare.html" class="nav-item">🔍 Сравнение</a>
-            </div>
+          </div>
         </div>
-        <div class="sidebar-resize-handle" id="sidebar-resize-handle"></div>
 
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-            <div class="toolbar">
-                <div class="toolbar-title">Главная</div>
-                <div class="toolbar-actions">
-                    <button class="btn btn-primary" onclick="location.reload()">🔄 Обновить</button>
-                </div>
-            </div>
+        <div class="content-area">
+          <h3 class="section-title">Недавние проекты</h3>
+          <div id="recent-projects" class="projects-grid"></div>
 
-            <div class="content-area">
-                <h3 class="section-title">Недавние проекты</h3>
-                <div id="recent-projects" class="projects-grid"></div>
-
-                <h3 class="section-title mt-30">Быстрые действия</h3>
-                <div class="quick-actions">
-                    <button class="btn btn-primary" onclick="window.location.href='projects.html'">Перейти к проектам</button>
-
-                </div>
-            </div>
+          <h3 class="section-title mt-30">Быстрые действия</h3>
+          <div class="quick-actions">
+            <button
+              class="btn btn-primary"
+              onclick="window.location.href='projects.html'"
+            >
+              Перейти к проектам
+            </button>
+          </div>
         </div>
+      </div>
     </div>
-
-    <!-- MODAL: New Profile -->
-    <!-- <div id="new-profile-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-title">Создать новый профиль</div>
-            <div class="form-group">
-                <label class="form-label">Название профиля *</label>
-                <input type="text" id="profile-name" class="form-input" placeholder="Например: GOST-58651.2">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Базовая модель *</label>
-                <select id="profile-base-model" class="form-select">
-                    <option value="">-- Выберите модель --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Описание</label>
-                <textarea id="profile-desc" class="form-textarea" placeholder="Описание профиля"></textarea>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Версия</label>
-                <input type="text" id="profile-version" class="form-input" value="1.0">
-            </div>
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeModal('new-profile-modal')">Отмена</button>
-                <button class="btn btn-primary" onclick="createProfile()">Создать</button>
-            </div>
-        </div>
-    </div> -->
 
     <div id="new-project-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-title">Создать новый проект</div>
-            <p class="modal-info-text">Создайте проект в разделе "Проекты"</p>
-            <div class="modal-buttons">
-                <button class="btn btn-primary" onclick="window.location.href='projects.html'">Перейти к проектам</button>
-            </div>
+      <div class="modal-content">
+        <div class="modal-title">Создать новый проект</div>
+        <div class="form-group">
+          <label class="form-label">Название проекта *</label>
+          <input
+            type="text"
+            id="project-name"
+            class="form-input"
+            placeholder="Введите название"
+          />
         </div>
+        <div class="form-group">
+          <label class="form-label">Описание</label>
+          <textarea
+            id="project-desc"
+            class="form-textarea"
+            placeholder="Описание проекта"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Версия</label>
+          <input
+            type="text"
+            id="project-version"
+            class="form-input"
+            value="1.0"
+          />
+        </div>
+        <div class="modal-buttons">
+          <button
+            class="btn btn-secondary"
+            onclick="closeModal('new-project-modal')"
+          >
+            Отмена
+          </button>
+          <button class="btn btn-primary" onclick="createProject()">
+            Создать
+          </button>
+        </div>
+      </div>
     </div>
-<!-- 
-    <div id="new-model-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-title">Добавить модель</div>
-            <p class="modal-info-text">Добавьте модель в разделе "Модели"</p>
-            <div class="modal-buttons">
-                <button class="btn btn-primary" onclick="window.location.href='models.html'">Перейти к моделям</button>
-            </div>
-        </div>
-    </div> -->
 
     <script src="data.js"></script>
     <script src="sidebar.js"></script>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
