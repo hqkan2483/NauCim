@@ -337,6 +337,28 @@
         }
       }
     },
+    "profileRelation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId",
+        "profileItemId"
+      ],
+      "properties": {
+        "profileId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "profileItemId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "element": {
       "type": "object",
       "additionalProperties": false,
@@ -354,7 +376,10 @@
         "linkCount",
         "attributes",
         "links",
-        "literals"
+        "literals",
+        "profileRelations",
+        "modelId",
+        "modelItemId"
       ],
       "properties": {
         "id": {
@@ -419,6 +444,24 @@
           "items": {
             "$ref": "#/$defs/enumLiteral"
           }
+        },
+        "profileRelations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/profileRelation"
+          }
+        },
+        "modelId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "modelItemId": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },

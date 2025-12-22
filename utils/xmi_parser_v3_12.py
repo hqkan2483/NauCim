@@ -1084,7 +1084,11 @@ class XMIPackageParser:
                 'linkCount': len(elem.links),
                 'attributes': [attribute_to_dict(attr) for attr in elem.attributes],
                 'links': [link_to_dict(link) for link in elem.links],
-                'literals': [literal_to_dict(lit) for lit in elem.literals]
+                'literals': [literal_to_dict(lit) for lit in elem.literals],
+                # Added for NauCim schema compatibility (2020-12 + draft-07)
+                'profileRelations': [],
+                'modelId': None,
+                'modelItemId': None,
             }
 
         def package_to_dict(
