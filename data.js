@@ -76,6 +76,7 @@ async function loadSampleData() {
     return;
   }
 
+
   // Load rootPackages from external JSON file
   let tc57cimRootPackages = [];
   try {
@@ -103,6 +104,30 @@ async function loadSampleData() {
   } catch (error) {
     console.error("❌ Error loading CIM16.json:", error);
   }
+  // // Универсальная загрузка JSON (rootPackages) с логированием и fallback
+  // async function loadRootPackages(url, label, fallback = []) {
+  //   try {
+  //     const response = await fetch(url);
+  //     if (!response.ok) {
+  //       throw new Error(`${response.status} ${response.statusText}`);
+  //     }
+
+  //     const data = await response.json();
+  //     console.log(`✅ ${label} loaded successfully`);
+  //     return data;
+  //   } catch (error) {
+  //     console.error(`❌ Error loading ${label}:`, error);
+  //     return fallback;
+  //   }
+  // }
+
+  // Пример замены однотипных блоков:
+  // tc57cimRootPackages = await loadRootPackages("./models-data/CIM100.json", "cim100.json");
+  // gostExtRootPackages = await loadRootPackages("./models-data/GOSTRExtension.json", "GOSTRExtension.json");
+  // CIM16RootPackages = await loadRootPackages("./models-data/CIM16.json", "CIM16.json");
+  // foclRootPackages = await loadRootPackages("./models-data/focl.json", "focl.json");
+  // profile58651_2RootPackages = await loadRootPackages("./models-data/profile-test.json", "profile-test.json");
+  // profile58651_test = await loadRootPackages("./models-data/profile-test2.json", "profile-test2.json");
 
   let foclRootPackages = [];
 
@@ -143,6 +168,7 @@ async function loadSampleData() {
       version: "2.0",
       createdAt: "2024-09-15",
       models: [
+        // первая модель
         {
           id: "2",
           name: "TC57CIM - CIM100",
@@ -401,24 +427,6 @@ function openModal(modalId) {
 
 function initGlobalModalHandlers() {
   if (window.__globalModalHandlersInitialized) return;
-
-  // Close modal when clicking on backdrop
-  document.addEventListener(
-    "click",
-    (e) => {
-      const target = e.target;
-      if (!(target instanceof Element)) return;
-
-      // Backdrop click means the click target is the modal overlay itself
-      if (target.classList.contains("modal") && target.classList.contains("active")) {
-        const modalId = target.id;
-        if (modalId && typeof closeModal === "function") {
-          closeModal(modalId);
-        }
-      }
-    },
-    true
-  );
 
   // Close the topmost active modal on Escape
   document.addEventListener(
