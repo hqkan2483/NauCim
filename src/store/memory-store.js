@@ -1,5 +1,6 @@
 // ============================================================
 // MEMORY STORE - Global In-Memory Data Storage
+
 // ============================================================
 const MemoryStore = {
   // In-memory storage for all data
@@ -19,7 +20,7 @@ const MemoryStore = {
   },
 
   // Get single project by ID
-  getProject(id) {
+  getProjectById(id) {
     return this.store.projects.find((p) => p.id === id) || null;
   },
 
@@ -31,7 +32,7 @@ const MemoryStore = {
 
   // Update project
   updateProject(id, updates) {
-    const project = this.getProject(id);
+    const project = this.getProjectById(id);
     if (project) {
       Object.assign(project, updates);
     }

@@ -1,8 +1,7 @@
 const STORAGE_KEY = "cim.currentProjectId";
 
 function getCurrentProjectId() {
-  let id = localStorage.getItem(STORAGE_KEY);
-  return id? id : null;
+  return localStorage.getItem(STORAGE_KEY);
 }
 
 function setCurrentProjectId(projectId) {
