@@ -1,12 +1,16 @@
 // Универсальная загрузка JSON (rootPackages) с логированием и fallback
-async function fetchPackages(url, fallback = []) {
+async function fetchPackages(url, fallback, { expectArray = false } = {}) {
   try {
     const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`${response.status} ${response.statusText}`);
-    }
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
 
     const data = await response.json();
+
+    if (expectArray && !Array.isArray(data)) {
+      console.warn(`⚠️ ${url} returned non-array JSON. Using fallback.`);
+      return fallback;
+    }
+
     console.log(`✅ ${url} loaded successfully`);
     return data;
   } catch (error) {
@@ -24,12 +28,12 @@ async function loadTestData() {
     profile58651_2RootPackages,
     profile58651_test,
   ] = await Promise.all([
-    fetchPackages("./models-data/CIM100.json", []),
-    fetchPackages("./models-data/GOSTRExtension.json", []),
-    fetchPackages("./models-data/CIM16.json", []),
-    fetchPackages("./models-data/focl.json", []),
-    fetchPackages("./models-data/profile-test.json", []),
-    fetchPackages("./models-data/profile-test2.json", []),
+    fetchPackages("./models-data/CIM100.json", [], { expectArray: true }),
+    fetchPackages("./models-data/GOSTRExtension.json", [], { expectArray: true }),
+    fetchPackages("./models-data/CIM16.json", [], { expectArray: true }),
+    fetchPackages("./models-data/focl.json", [], { expectArray: true }),
+    fetchPackages("./models-data/profile-test.json", [], { expectArray: true }),
+    fetchPackages("./models-data/profile-test2.json", [], { expectArray: true }),
   ]);
 
   const testProjects = [
@@ -190,4 +194,4 @@ async function loadTestData() {
   return testProjects;
 }
 
-export { loadTestData }
+export { loadTestData };
