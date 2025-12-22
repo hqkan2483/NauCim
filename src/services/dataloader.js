@@ -1,49 +1,38 @@
-   // Универсальная загрузка JSON (rootPackages) с логированием и fallback
-  async function fetchPackages(url, fallback = []) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log(`✅ ${url} loaded successfully`);
-      return data;
-    } catch (error) {
-      console.error(`❌ Error loading ${url}:`, error);
-      return fallback;
+// Универсальная загрузка JSON (rootPackages) с логированием и fallback
+async function fetchPackages(url, fallback = []) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`${response.status} ${response.statusText}`);
     }
+
+    const data = await response.json();
+    console.log(`✅ ${url} loaded successfully`);
+    return data;
+  } catch (error) {
+    console.error(`❌ Error loading ${url}:`, error);
+    return fallback;
   }
+}
 
-  // Загрузка rootPackages с использованием универсальной функции
-  const tc57cimRootPackages = await fetchPackages(
-    "./models-data/CIM100.json",
-    []
-  );
+async function loadTestData() {
+  const [
+    tc57cimRootPackages,
+    gostExtRootPackages,
+    CIM16RootPackages,
+    foclRootPackages,
+    profile58651_2RootPackages,
+    profile58651_test,
+  ] = await Promise.all([
+    fetchPackages("./models-data/CIM100.json", []),
+    fetchPackages("./models-data/GOSTRExtension.json", []),
+    fetchPackages("./models-data/CIM16.json", []),
+    fetchPackages("./models-data/focl.json", []),
+    fetchPackages("./models-data/profile-test.json", []),
+    fetchPackages("./models-data/profile-test2.json", []),
+  ]);
 
-  const gostExtRootPackages = await fetchPackages( "./models-data/GOSTRExtension.json",   [] );
-
-  const CIM16RootPackages = await fetchPackages(
-    "./models-data/CIM16.json",
-    []
-  );
-
-  const foclRootPackages = await fetchPackages(
-    "./models-data/focl.json",
-    []
-  );
-
-  const profile58651_2RootPackages = await fetchPackages(
-    "./models-data/profile-test.json",
-    []
-  );
-
-  const profile58651_test = await fetchPackages(
-    "./models-data/profile-test2.json",
-    []
-  );
-
-  const sampleProjects = [
+  const testProjects = [
     {
       id: "1",
       name: "Россети - Профили обмена данными",
@@ -198,3 +187,7 @@
     },
   ];
 
+  return testProjects;
+}
+
+export { loadTestData }
