@@ -10,3 +10,5 @@ function setCurrentProject(projectId) {
     localStorage.removeItem("cim.currentProjectId");
   }
 }
+
+export { getCurrentProjectId, setCurrentProject };
