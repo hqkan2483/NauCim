@@ -1,9 +1,15 @@
-CIM100.json - export-EA-CIM100.xmi
+#модели
+CIM100-model.json - export-EA-CIM100.xmi
 focl.json - export-EA-FOCL.xmi
-GOSTRExtension.json - export-EA-FOCL.xmi без FOCL
+GOSTRExt-model.json - export-EA-FOCL.xmi без FOCL
+CIM16-model.json -export-EA-FOCL.xmi без FOCL и GOSTRExtension
+--
 
-CIM16.json -export-EA-FOCL.xmi без FOCL и GOSTRExtension
-58651.2-2.json -- export-EA-FOCL.xmi без FOCL и обрезанный какой-то
+#профили
+GOST_X_2_profile - ? TC57CIM -> IEC61970 + IEC61968 (более полный. без смысла)
+GOST_X_1_profile - ? только TC57CIM -> совсем обрезанный. без смысла
+--
 
-profile-test.json - ? TC57CIM -> IEC61970 + IEC61968
-profile-test2.json - ? только TC57CIM -> IEC6197 -> Base
+# старое
+58651.2-2.json -- export-EA-FOCL.xmi без FOCL и обрезанный какой-то - оставим только по одному пакету из CIM16 (не используется)
+

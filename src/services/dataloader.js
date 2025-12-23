@@ -21,19 +21,19 @@ async function fetchPackages(url, fallback, { expectArray = false } = {}) {
 
 async function loadTestData() {
   const [
-    tc57cimRootPackages,
-    gostExtRootPackages,
-    CIM16RootPackages,
-    foclRootPackages,
-    profile58651_2RootPackages,
-    profile58651_test,
+    CIM100Model,
+    gostrExtModel,
+    CIM16Model,
+    foclModel,
+    GOST_X_2_profile,
+    GOST_X_1_profile,
   ] = await Promise.all([
-    fetchPackages("./models-data/CIM100.json", [], { expectArray: true }),
-    fetchPackages("./models-data/GOSTRExtension.json", [], { expectArray: true }),
-    fetchPackages("./models-data/CIM16.json", [], { expectArray: true }),
-    fetchPackages("./models-data/focl.json", [], { expectArray: true }),
-    fetchPackages("./models-data/profile-test.json", [], { expectArray: true }),
-    fetchPackages("./models-data/profile-test2.json", [], { expectArray: true }),
+    fetchPackages("./models-data/CIM100-model.json", [], { expectArray: true }),
+    fetchPackages("./models-data/GOSTRExt-model.json", [], { expectArray: true }),
+    fetchPackages("./models-data/CIM16-model.json", [], { expectArray: true }),
+    fetchPackages("./models-data/focl-model.json", [], { expectArray: true }),
+    fetchPackages("./models-data/GOST-XXXXX.2-profile.json", [], { expectArray: true }),
+    fetchPackages("./models-data/GOST-XXXXX.1-profile.json", [], { expectArray: true }),
   ]);
 
   const testProjects = [
@@ -57,7 +57,7 @@ async function loadTestData() {
           legalState: "project",
           legalAct: "",
           accessRight: "readOnly",
-          rootPackages: tc57cimRootPackages,
+          rootPackages: CIM100Model,
         },
         //вторая  модель
         {
@@ -75,7 +75,7 @@ async function loadTestData() {
           legalState: "project",
           legalAct: "",
           accessRight: "readWrite",
-          rootPackages: gostExtRootPackages,
+          rootPackages: gostrExtModel,
         },
       ],
       profiles: [
@@ -91,7 +91,7 @@ async function loadTestData() {
           legalState: "project",
           legalAct: "",
           accessRight: "readWrite",
-          rootPackages: profile58651_2RootPackages,
+          rootPackages: GOST_X_2_profile,
         },
         {
           id: "5",
@@ -105,7 +105,7 @@ async function loadTestData() {
           legalState: "project",
           legalAct: "",
           accessRight: "readWrite",
-          rootPackages: profile58651_test,
+          rootPackages: GOST_X_1_profile,
         },
       ],
     },
@@ -128,7 +128,7 @@ async function loadTestData() {
           legalState: "project",
           legalAct: "",
           accessRight: "readWrite",
-          rootPackages: CIM16RootPackages,
+          rootPackages: CIM16Model,
         },
       ],
       profiles: [
@@ -169,7 +169,7 @@ async function loadTestData() {
           legalState: "project",
           legalAct: "",
           accessRight: "readWrite",
-          rootPackages: foclRootPackages,
+          rootPackages: foclModel,
         },
       ],
       profiles: [
