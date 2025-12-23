@@ -126,6 +126,8 @@ body {
   font-size: 14px;
 }
 
+body.modal-open { overflow: hidden; }
+
 .app-container {
   display: flex;
   height: 100vh;

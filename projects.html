@@ -12,7 +12,6 @@
       <div class="sidebar" id="sidebar">
         <button
           class="sidebar-toggle sidebar-open"
-          onclick="toggleSidebar()"
           aria-label="Toggle sidebar"
         >
           <span class="toggle-icon">☰</span>
@@ -30,7 +29,6 @@
             <div class="nav-tree-item">
               <button
                 class="nav-tree-toggle"
-                onclick="handleProjectsClick()"
                 aria-expanded="true"
                 aria-label="Toggle projects list"
               >
@@ -59,7 +57,7 @@
             </div>
 
             <div class="nav-section-title">Действия</div>
-            <div class="nav-item" onclick="openModal('new-project-modal')">
+            <div class="nav-item" data-modal-open="new-project-modal">
               + Новый проект
             </div>
 
@@ -76,7 +74,7 @@
           <div class="toolbar-actions">
             <button
               class="btn btn-primary"
-              onclick="openModal('new-project-modal')"
+              data-modal-open="new-project-modal"
             >
               + Новый проект
             </button>
@@ -94,7 +92,6 @@
               class="search-input"
               id="search-projects"
               placeholder="Поиск проектов..."
-              oninput="filterProjects()"
             />
           </div>
 
@@ -133,7 +130,7 @@
           <div class="divider mt-30 mb-30"></div>
 
           <div class="quick-actions hidden" id="open-project-action">
-            <button class="btn btn-primary" onclick="openCurrentProject()">
+            <button class="btn btn-primary" id="open-selected-project-btn">
               Перейти в проект
             </button>
           </div>
@@ -174,11 +171,11 @@
         <div class="modal-buttons">
           <button
             class="btn btn-secondary"
-            onclick="closeModal('new-project-modal')"
+            data-modal-close
           >
             Отмена
           </button>
-          <button class="btn btn-primary" onclick="createProject()">
+          <button class="btn btn-primary" id="create-project-btn">
             Создать
           </button>
         </div>
@@ -204,20 +201,20 @@
         <div class="modal-buttons">
           <button
             class="btn btn-secondary"
-            onclick="closeModal('edit-project-modal')"
+            data-modal-close
           >
             Отмена
           </button>
-          <button class="btn btn-primary" onclick="saveProjectEdit()">
+          <button class="btn btn-primary" id="save-project-edit-btn">
             Сохранить
           </button>
         </div>
       </div>
     </div>
 
-    <script src="data.js"></script>
+    <!-- <script src="data.js"></script>
     <script src="sidebar.js"></script>
-    <script src="projects.js"></script>
+    <script src="projects.js"></script> -->
     <script type="module" src="./src/app/pages/projects-page.js"></script>
   </body>
 </html>
