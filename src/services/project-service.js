@@ -9,7 +9,7 @@ import { loadTestData } from "./dataloader.js";
 // PROJECT SERVICE - Manages Project Data Operations
 // ============================================================
 async function appDataInit() {
-  if (MemoryStore.getProjects().length === 0) {
+  if (MemoryStore.getAllProjects().length === 0) {
     console.log("🔄 Loading test data into MemoryStore...");
     const testData = await loadTestData();
     MemoryStore.initialize({ projects: testData });
