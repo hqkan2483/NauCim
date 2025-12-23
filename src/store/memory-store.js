@@ -15,7 +15,7 @@ const MemoryStore = {
   },
 
   // Get all projects
-  getProjects() {
+  getAllProjects() {
     return this.store.projects || [];
   },
 

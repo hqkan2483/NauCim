@@ -24,6 +24,7 @@ function renderProjects() {
     return;
   }
 
+  // все проекты
   const projects = getProjects();
   const html = projects
     .map(
@@ -196,6 +197,7 @@ function getAccessRightValue(key) {
   return "---";
 }
 
+// рендерит подробное описание модели
 function renderModelDetails() {
   const model = getModel(selectedProjectId, selectedModelId);
   if (!model) return;
@@ -205,7 +207,7 @@ function renderModelDetails() {
             <div class="tab active">Свойства</div>
         </div>
         <div class="tab-content active">
-            
+
             <table class="table model-details-table">
                 <colgroup>
                     <col style="width: 15%;"/>
@@ -241,7 +243,7 @@ function renderModelDetails() {
                       model.accessRight
                     )}</span></td>
                 </tr>
-               
+
             </table>
         </div>
     `;
@@ -249,6 +251,7 @@ function renderModelDetails() {
   document.getElementById("model-details").innerHTML = html;
 }
 
+// рендерит подробное описание профиля
 function renderProfileDetails() {
   const profile = getProfile(selectedProjectId, selectedProfileId);
   if (!profile) return;
@@ -258,7 +261,7 @@ function renderProfileDetails() {
             <div class="tab active">Свойства</div>
         </div>
         <div class="tab-content active">
-           
+
             <table class="table profile-details-table">
                 <colgroup>
                     <col style="width: 15%;"/>
@@ -266,7 +269,7 @@ function renderProfileDetails() {
                     <col style="width: 15%;"/>
                     <col style="min-width: 50%;"/>
                 </colgroup>
-                
+
                  <tr>
                     <td class="table-label" >Описание</td>
                     <td colspan="3">${profile.description}</td>
@@ -352,6 +355,7 @@ function filterProjects() {
     '<div style="text-align:center; color:var(--text-secondary); padding:40px;">Проекты не найдены</div>';
 }
 
+// создание нового проекта
 function createProject() {
   const name = document.getElementById("project-name").value.trim();
   if (!name) {
@@ -384,6 +388,7 @@ function createProject() {
   alert("Проект успешно создан!");
 }
 
+// редактирование описания существующего проекта
 function editProject(projectId) {
   currentEditProjectId = projectId;
   const project = getProject(projectId);
@@ -396,6 +401,7 @@ function editProject(projectId) {
   openModal("edit-project-modal");
 }
 
+// сохранение изменений после редактирования проекта
 function saveProjectEdit() {
   if (!currentEditProjectId) return;
 
@@ -413,11 +419,13 @@ function saveProjectEdit() {
   alert("Проект успешно обновлён!");
 }
 
+// открывает страницу проекта по его id
 function openProject(projectId) {
   setCurrentProject(projectId);
   window.location.href = "project-details.html";
 }
 
+// открываает страницу текущего проекта
 function openCurrentProject() {
   if (selectedProjectId) {
     setCurrentProject(selectedProjectId);

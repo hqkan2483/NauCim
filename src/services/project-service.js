@@ -29,7 +29,7 @@ async function appDataInit() {
 }
 
 function getAllProjects() {
-  return MemoryStore.getProjects();
+  return MemoryStore.getAllProjects();
 }
 
 function getProjectById(id) {
