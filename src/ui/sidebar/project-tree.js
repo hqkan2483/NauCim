@@ -13,6 +13,7 @@
 };
 
 let treeConfig = null;
+let eventsInitialized = false;
 
 /**
  * Initialize projects tree in sidebar.
@@ -29,6 +30,9 @@ function initProjectsTree(options = {}) {
 
   // Bind toggle button
   toggleBtn.addEventListener("click", () => toggleProjectsTree());
+
+  // Навесить обработчик событий ОДИН РАЗ на весь список проектов
+  bindProjectTreeEvents();
 
   // Restore tree state
   restoreProjectsTreeState();
@@ -152,21 +156,23 @@ function renderProjectsTree() {
 
   projectsList.innerHTML = html;
 
-  // Bind events (delegated)
-  bindProjectTreeEvents(projectsList);
 }
 
-function bindProjectTreeEvents(root) {
-  if (!treeConfig) return;
+function bindProjectTreeEvents() {
+  if (!treeConfig || eventsInitialized) return;
 
-  root.addEventListener("click", (e) => {
+  const projectsList = document.querySelector(treeConfig.listSelector);
+  if (!projectsList) return;
+
+  // ✅ Навешиваем обработчик ОДИН РАЗ на родительский элемент
+  projectsList.addEventListener("click", (e) => {
     const target = e.target instanceof HTMLElement ? e.target : null;
     if (!target) return;
 
     // Expand/collapse project structure
-    const expandBtn = target.closest("[data-action='expand']");
+    const expandBtn = target. closest("[data-action='expand']");
     if (expandBtn) {
-      const projectId = expandBtn.getAttribute("data-project-id");
+      const projectId = expandBtn. getAttribute("data-project-id");
       if (projectId) {
         toggleProjectStructure(projectId);
         e.stopPropagation();
@@ -178,12 +184,14 @@ function bindProjectTreeEvents(root) {
     const selectEl = target.closest("[data-action='select']");
     if (selectEl) {
       const projectId = selectEl.getAttribute("data-project-id");
-      if (projectId && treeConfig.onProjectSelect) {
+      if (projectId && treeConfig. onProjectSelect) {
         treeConfig.onProjectSelect(projectId);
         e.stopPropagation();
       }
     }
   });
+
+  eventsInitialized = true;
 }
 
 function toggleProjectStructure(projectId) {
