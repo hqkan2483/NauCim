@@ -1319,37 +1319,6 @@ body.modal-open { overflow: hidden; }
   padding-left: 10px;
 }
 
-/* Project Card Details */
-/* .project-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.project-card-title {
-    font-weight: 600;
-    font-size: 18px;
-    margin-bottom: 5px;
-    color: var(--text-primary);
-}
-
-.project-card-meta {
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-.project-card-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.project-card-description {
-    margin-top: 10px;
-    color: var(--text-secondary);
-    font-size: 14px;
-} */
 
 /* Tree Structure Styles for project-details.html */
 .tree-structure-item {

@@ -4,6 +4,7 @@ import {
 } from "../state/current-project-state.js";
 import { MemoryStore } from "../store/memory-store.js";
 import { loadTestData } from "./dataloader.js";
+import { generateUUID } from "../utils/uuid.js";
 
 // ============================================================
 // PROJECT SERVICE - Manages Project Data Operations
@@ -46,16 +47,108 @@ function getCurrentProject() {
   }
 }
 
-function createProject() {}
+/**
+ * Create a new project.
+ * @param {object} payload - { name, description?, version?  }
+ * @returns {object|null} - Created project or null on error
+ */
+function createProject(payload) {
+  if (!payload || ! payload.name || !payload.name.trim()) {
+    console.error("[createProject] Name is required");
+    return null;
+  }
 
-function updateProject() {}
+  const newProject = {
+    id:  generateUUID(),
+    name: payload.name. trim(),
+    description: payload. description ?  payload.description.trim() : "",
+    version: payload.version ?  payload.version.trim() : "1.0",
+    models: [],
+    profiles: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 
-function deleteProject() {
-  //  при deleteProject если удалён текущий — выбрать новый и обновить currentProjectId через state-модуль
+  MemoryStore.addProject(newProject);
+
+  // Auto-select new project as current
+  setCurrentProjectId(newProject.id);
+
+  console.log(`✅ Project created: ${newProject.name} (id: ${newProject.id})`);
+  return newProject;
+}
+
+/**
+ * Update an existing project.
+ * @param {string} projectId
+ * @param {object} updates - { name?, description?, version?, models?, profiles? }
+ * @returns {object|null} - Updated project or null on error
+ */
+function updateProject(projectId, updates) {
+  if (!projectId) {
+    console.error("[updateProject] Project ID is required");
+    return null;
+  }
+
+  const project = getProjectById(projectId);
+  if (!project) {
+    console.error(`[updateProject] Project not found: ${projectId}`);
+    return null;
+  }
+
+  // Merge updates
+  const updated = {
+    ...project,
+    ... updates,
+    id: project.id, // ID cannot be changed
+    updatedAt: new Date().toISOString(),
+  };
+
+  // Validate name
+  if (updated.name && ! updated.name.trim()) {
+    console.error("[updateProject] Name cannot be empty");
+    return null;
+  }
+
+  MemoryStore.updateProject(projectId, updated);
+
+  console.log(`✅ Project updated: ${updated.name} (id: ${projectId})`);
+  return updated;
+}
+
+/**
+ * Delete a project by ID.
+ * If deleted project is current, select next available project.
+ * @param {string} projectId
+ * @returns {boolean} - true if deleted, false if not found
+ */
+function deleteProject(projectId) {
+  if (!projectId) {
+    console.error("[deleteProject] Project ID is required");
+    return false;
+  }
+
+  const project = getProjectById(projectId);
+  if (!project) {
+    console.error(`[deleteProject] Project not found: ${projectId}`);
+    return false;
+  }
+
+  MemoryStore.deleteProject(projectId);
+
+  // If deleted project was current, select another one
+  if (getCurrentProjectId() === projectId) {
+    {
+      setCurrentProjectId(null);
+      console.log("ℹ️ No projects remaining");
+    }
+  }
+
+  console.log(`✅ Project deleted: ${project.name} (id: ${projectId})`);
+  return true;
 }
 
 // Exported functions
-
 export {
   getAllProjects,
   getProjectById,
