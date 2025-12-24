@@ -4,7 +4,7 @@ import { getCurrentProjectId, setCurrentProjectId } from "../../state/current-pr
 import { initSidebar, initProjectsTree, renderProjectsTree } from "../../ui/sidebar/index.js";
 
 
-let currentProjectId = null;
+let editingProjectId = null;
 let searchQuery = "";
 
 // ============================================================
