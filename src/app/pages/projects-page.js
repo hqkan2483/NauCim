@@ -47,10 +47,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     onProjectSelect: (projectId) => {
       selectProject(projectId);
     },
-      onLabelClick: () => {
-    // ✅ Клик по "📁 Проекты" — вернуть список проектов
-    showProjectsList();
-  },
+    onLabelClick: () => {
+      // ✅ Клик по "📁 Проекты" — вернуть список проектов
+      showProjectsList();
+    },
   });
   // 3. Bind page-specific events
   bindEvents();
@@ -114,11 +114,12 @@ function bindEvents() {
         return;
       }
 
-      // Select project (click on card)
-      const projectCard = target.closest(".project-card");
-      if (projectCard) {
-        const projectId = projectCard.getAttribute("data-project-id");
+      // Select project (click on title)
+      const selectEl = target.closest("[data-action='select-project']");
+      if (selectEl) {
+        const projectId = selectEl.getAttribute("data-project-id");
         if (projectId) selectProject(projectId);
+        return;
       }
     });
   }
@@ -157,7 +158,11 @@ function renderProjectsList() {
       }">
       <div class="project-card-content">
         <div class="project-card-header">
-          <div class="project-card-title">${p.name}</div>
+          <div class="project-card-title"
+             data-action="select-project"
+             data-project-id="${p.id}">
+             ${p.name}
+        </div>
         </div>
         ${
           p.description
@@ -221,7 +226,7 @@ function selectProject(projectId) {
   // Re-render tree to update active state
   renderProjectsTree();
 
-    // ✅ ДОБАВИТЬ:  скрыть список проектов
+  // ✅ ДОБАВИТЬ:  скрыть список проектов
   hideProjectsList();
 
   // Show project details (models/profiles)
@@ -249,8 +254,10 @@ function showProjectDetails(projectId) {
         .map(
           (m) => `
         <div class="list-item">
-          <div class="list-item-title"><span>📦</span><span>${m.name || "Модель без названия"}</span></div>
-          
+          <div class="list-item-title"><span>📦 </span><span>${
+            m.name || "Модель без названия"
+          }</span></div>
+
         </div>
       `
         )
@@ -272,7 +279,7 @@ function showProjectDetails(projectId) {
         .map(
           (pr) => `
         <div class="list-item">
-          <div class="list-item-title"><span>📦</span><span>${
+          <div class="list-item-title"><span>⚙️ </span><span>${
             pr.name || "Профиль без названия"
           }</span></div>
 
@@ -291,7 +298,7 @@ function showProjectsList() {
   // ✅ Показать список проектов
   const projectsListContainer = document.getElementById("projects-list");
   if (projectsListContainer) {
-    projectsListContainer.classList. remove("hidden");
+    projectsListContainer.classList.remove("hidden");
   }
 
   // Скрыть детали

@@ -442,6 +442,11 @@ body.modal-open { overflow: hidden; }
   white-space: wrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.project-card-title:hover {
+  color:  var(--main-color); /* ✅ цвет при наведении */
 }
 
 .project-card-actions {
