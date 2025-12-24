@@ -391,10 +391,153 @@ body.modal-open { overflow: hidden; }
   margin-bottom: 15px;
 }
 
-/* .project-card-info {
-    font-size: 12px;
-    color: var(--text-secondary);
-} */
+/* PROJECT CARDS (for projects list) */
+.project-card {
+  width: 100%;
+  background-color: #f5f7fa;
+  /* background: var(--bg-secondary); */
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 10px;
+  /* cursor: pointer; */
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.project-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  border-color: var(--main-color);
+}
+
+.project-card.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.project-card.active .project-card-title {
+  color: white;
+}
+
+.project-card.active .project-card-info {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+
+.project-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.project-card-title {
+  width: 100%;
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 5px;
+  color: var(--text-primary);
+  white-space: wrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.project-card-meta {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.project-card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.project-card-description {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.project-card-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.project-card-meta span {
+  display: flex;
+  align-items: center;
+}
+
+/* ICON BUTTONS */
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  line-height: 1;
+}
+
+.btn-icon:hover {
+  background: rgba(0, 90, 155, 0.1);
+  transform: scale(1.1);
+}
+
+/* LIST ITEMS (for models/profiles display) */
+.list-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+
+.list-item:hover {
+  border-color: var(--primary-color);
+  background: rgba(0, 90, 155, 0.02);
+}
+
+.list-item-title {
+  font-size: 15px;
+  font-weight:  600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.list-item-description {
+  font-size:  13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* NO DATA MESSAGE */
+.no-data {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 40px 20px;
+  font-size:  14px;
+}
+
+/* QUICK ACTIONS */
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.quick-actions.hidden {
+  display: none;
+}
 
 .stat-box {
   background: var(--bg-secondary);
@@ -1162,88 +1305,7 @@ body.modal-open { overflow: hidden; }
   margin-bottom: 30px;
 }
 
-.project-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 10px;
-}
 
-.project-card {
-  width: 100%;
-  background-color: #f5f7fa;
-  /* background: var(--bg-secondary); */
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 20px;
-  margin-bottom: 10px;
-  /* cursor: pointer; */
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.project-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transform: translateY(-2px);
-  border-color: var(--main-color);
-}
-
-.project-card.active {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.project-card.active .project-card-title {
-  color: white;
-}
-
-.project-card.active .project-card-info {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.project-card-title {
-  width: 100%;
-  font-weight: 600;
-  font-size: 18px;
-  margin-bottom: 5px;
-  color: var(--text-primary);
-  white-space: wrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.project-card-meta {
-  font-size: 14px;
-  color: var(--text-secondary);
-}
-
-.project-card-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.project-card-description {
-  margin-top: 10px;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-/* .project-card-info {
-    font-size: 13px;
-    color: var(--text-secondary);
-} */
-
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-}
-
-.quick-actions.hidden {
-  display: none;
-}
 
 .no-items-message {
   color: var(--text-secondary);
