@@ -1,8 +1,29 @@
-import {getAllProjects, getProjectById, getCurrentProject, appDataInit, createProject, updateProject, deleteProject,} from "../../services/project-service.js";
-import { initModalSystem, bindModalTriggers, openModal, closeModal} from "../../ui/modal.js";
-import { getCurrentProjectId, setCurrentProjectId } from "../../state/current-project-state.js";
-import { initSidebarResize, initSidebarToggle, restoreSidebarState, initProjectsTree } from "../../ui/sidebar/index.js";
-
+import {
+  getAllProjects,
+  getProjectById,
+  getCurrentProject,
+  appDataInit,
+  createProject,
+  updateProject,
+  deleteProject,
+} from "../../services/project-service.js";
+import {
+  initModalSystem,
+  bindModalTriggers,
+  openModal,
+  closeModal,
+} from "../../ui/modal.js";
+import {
+  getCurrentProjectId,
+  setCurrentProjectId,
+} from "../../state/current-project-state.js";
+import {
+  initSidebarResize,
+  initSidebarToggle,
+  restoreSidebarState,
+  initProjectsTree,
+  renderProjectsTree,
+} from "../../ui/sidebar/index.js";
 
 let editingProjectId = null;
 let searchQuery = "";
@@ -43,7 +64,7 @@ function bindEvents() {
   const searchInput = document.getElementById("search-projects");
   if (searchInput) {
     searchInput.addEventListener("input", (e) => {
-      searchQuery = e. target.value. toLowerCase();
+      searchQuery = e.target.value.toLowerCase();
       renderProjectsList();
     });
   }
@@ -71,7 +92,7 @@ function bindEvents() {
   if (projectsListEl) {
     projectsListEl.addEventListener("click", (e) => {
       const target = e.target instanceof HTMLElement ? e.target : null;
-      if (! target) return;
+      if (!target) return;
 
       // Delete project
       const deleteBtn = target.closest("[data-action='delete-project']");
@@ -111,10 +132,10 @@ function renderProjectsList() {
 
   // Filter
   const filtered = projects.filter((p) => {
-    if (! searchQuery) return true;
+    if (!searchQuery) return true;
     return (
       p.name.toLowerCase().includes(searchQuery) ||
-      (p.description && p.description. toLowerCase().includes(searchQuery))
+      (p.description && p.description.toLowerCase().includes(searchQuery))
     );
   });
 
@@ -127,21 +148,43 @@ function renderProjectsList() {
     .map((p) => {
       const isActive = p.id === currentProjectId;
       return `
-      <div class="project-card ${isActive ? "active" : ""}" data-project-id="${p.id}">
+      <div class="project-card ${isActive ? "active" : ""}" data-project-id="${
+        p.id
+      }">
+      <div class="project-card-content">
         <div class="project-card-header">
           <div class="project-card-title">${p.name}</div>
-          <div class="project-card-actions">
-            <button class="btn-icon" data-action="edit-project" data-project-id="${p. id}" title="Редактировать">✏️</button>
-            <button class="btn-icon" data-action="delete-project" data-project-id="${p.id}" title="Удалить">🗑️</button>
+        </div>
+        ${
+          p.description
+            ? `<div class="project-card-description">${p.description}</div>`
+            : ""
+        }
+        <div class="project-card-meta">
+        <div class="project-card-meta_item">
+          <span>📌 Версия: ${p.version || "—"}</span>
+          <span>📅 Создан: ${
+            p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "—"
+          }</span>
+          </div>
+        <div class="project-card-meta_item">
+          <span>📋 Моделей: ${p.models ? p.models.length : 0}</span>
+          <span>⚙️ Профилей: ${p.profiles ? p.profiles.length : 0}</span>
           </div>
         </div>
-        ${p.description ? `<div class="project-card-description">${p.description}</div>` : ""}
-        <div class="project-card-meta">
-          <span>Версия: ${p.version || "—"}</span>
-          <span>Моделей: ${p.models ?  p.models.length : 0}</span>
-          <span>Профилей: ${p.profiles ? p.profiles.length : 0}</span>
-        </div>
+
       </div>
+      <div class="project-card-actions">
+        <button class="btn btn-secondary btn-small" data-action="edit-project" data-project-id="${
+          p.id
+        }">✏️ Редактировать</button>
+        <button class="btn btn-secondary btn-small" data-action="delete-project" data-project-id="${
+          p.id
+        }">🗑️ Удалить</button>
+
+      </div>
+
+    </div>
     `;
     })
     .join("");
@@ -158,7 +201,7 @@ function updateCurrentProjectDisplay() {
     currentProjectEl.textContent = project.name;
     currentProjectEl.style.color = "rgba(255, 255, 255, 0.95)";
   } else {
-    currentProjectEl. textContent = "Нет проекта";
+    currentProjectEl.textContent = "Нет проекта";
     currentProjectEl.style.color = "rgba(255, 255, 255, 0.7)";
   }
 }
@@ -188,7 +231,7 @@ function showProjectDetails(projectId) {
   if (!project) return;
 
   // Show models
-  const modelsContainer = document. getElementById("models-container");
+  const modelsContainer = document.getElementById("models-container");
   const modelsList = document.getElementById("models-list");
   if (modelsContainer && modelsList) {
     modelsContainer.classList.remove("hidden");
@@ -199,7 +242,11 @@ function showProjectDetails(projectId) {
           (m) => `
         <div class="list-item">
           <div class="list-item-title">${m.name || "Модель без названия"}</div>
-          ${m.description ? `<div class="list-item-description">${m.description}</div>` : ""}
+          ${
+            m.description
+              ? `<div class="list-item-description">${m.description}</div>`
+              : ""
+          }
         </div>
       `
         )
@@ -217,12 +264,18 @@ function showProjectDetails(projectId) {
     profilesContainer.classList.remove("hidden");
 
     if (project.profiles && project.profiles.length > 0) {
-      const html = project. profiles
+      const html = project.profiles
         .map(
           (pr) => `
         <div class="list-item">
-          <div class="list-item-title">${pr.name || "Профиль без названия"}</div>
-          ${pr.description ? `<div class="list-item-description">${pr.description}</div>` : ""}
+          <div class="list-item-title">${
+            pr.name || "Профиль без названия"
+          }</div>
+          ${
+            pr.description
+              ? `<div class="list-item-description">${pr.description}</div>`
+              : ""
+          }
         </div>
       `
         )
@@ -240,7 +293,7 @@ function showProjectsList() {
   const openProjectAction = document.getElementById("open-project-action");
 
   if (modelsContainer) modelsContainer.classList.add("hidden");
-  if (profilesContainer) profilesContainer.classList. add("hidden");
+  if (profilesContainer) profilesContainer.classList.add("hidden");
   if (openProjectAction) openProjectAction.classList.add("hidden");
 }
 
@@ -262,8 +315,8 @@ function handleCreateProject() {
 
   const payload = {
     name,
-    description: descInput ?  descInput.value.trim() : "",
-    version: versionInput ?  versionInput.value. trim() : "1.0",
+    description: descInput ? descInput.value.trim() : "",
+    version: versionInput ? versionInput.value.trim() : "1.0",
   };
 
   const newProject = createProject(payload);
@@ -303,7 +356,7 @@ function handleEditProject(projectId) {
   editingProjectId = projectId;
 
   // Open modal
-  const modal = document. getElementById("edit-project-modal");
+  const modal = document.getElementById("edit-project-modal");
   if (modal) openModal(modal);
 }
 
@@ -324,7 +377,7 @@ function handleSaveProjectEdit() {
 
   const updates = {
     name,
-    description: descInput ? descInput. value.trim() : "",
+    description: descInput ? descInput.value.trim() : "",
     version: versionInput ? versionInput.value.trim() : "1.0",
   };
 
@@ -332,7 +385,7 @@ function handleSaveProjectEdit() {
 
   if (updated) {
     // Close modal
-    const modal = document. getElementById("edit-project-modal");
+    const modal = document.getElementById("edit-project-modal");
     if (modal) closeModal(modal);
 
     editingProjectId = null;
@@ -349,7 +402,7 @@ function handleDeleteProject(projectId) {
   if (!project) return;
 
   const confirmed = confirm(`Удалить проект "${project.name}"?`);
-  if (! confirmed) return;
+  if (!confirmed) return;
 
   deleteProject(projectId);
 
@@ -366,7 +419,7 @@ function handleDeleteProject(projectId) {
 
 function handleOpenCurrentProject() {
   const currentProjectId = getCurrentProjectId();
-  if (! currentProjectId) {
+  if (!currentProjectId) {
     alert("Не выбран текущий проект");
     return;
   }
