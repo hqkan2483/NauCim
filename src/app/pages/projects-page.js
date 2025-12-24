@@ -1,7 +1,7 @@
 import {getAllProjects, getProjectById, getCurrentProject, appDataInit, createProject, updateProject, deleteProject,} from "../../services/project-service.js";
 import { initModalSystem, bindModalTriggers, openModal, closeModal} from "../../ui/modal.js";
 import { getCurrentProjectId, setCurrentProjectId } from "../../state/current-project-state.js";
-import { initSidebar, initProjectsTree, renderProjectsTree } from "../../ui/sidebar/index.js";
+import { initSidebarResize, initSidebarToggle, restoreSidebarState, initProjectsTree } from "../../ui/sidebar/index.js";
 
 
 let editingProjectId = null;
@@ -16,7 +16,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   initModalSystem();
   bindModalTriggers(document);
 
-  initSidebar();
+  restoreSidebarState();
+  initSidebarToggle();
+  initSidebarResize();
 
   initProjectsTree({
     getProjects: getAllProjects,
@@ -88,7 +90,7 @@ function bindEvents() {
       }
 
       // Select project (click on card)
-      const projectCard = target.closest(". project-card");
+      const projectCard = target.closest(".project-card");
       if (projectCard) {
         const projectId = projectCard.getAttribute("data-project-id");
         if (projectId) selectProject(projectId);
