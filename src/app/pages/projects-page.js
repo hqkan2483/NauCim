@@ -141,6 +141,16 @@ function bindEvents() {
       }
     });
   }
+
+  // Clear modal forms on open
+  document.addEventListener("modal:beforeopen", (e) => {
+    const modalId = e.detail.modalId;
+
+    if (modalId === "new-project-modal") {
+      clearNewProjectModal();
+    }
+    
+  });
 }
 
 // ============================================================
@@ -358,6 +368,31 @@ function hideProjectsList() {
 }
 
 // ============================================================
+// MODAL HELPERS
+// ============================================================
+function clearNewProjectModal() {
+  const nameInput = document.getElementById("project-name");
+  const descInput = document.getElementById("project-desc");
+  const versionInput = document.getElementById("project-version");
+
+  if (nameInput) nameInput.value = "";
+  if (descInput) descInput.value = "";
+  if (versionInput) versionInput.value = "1.0";
+}
+
+// function clearEditProjectModal() {
+//   const nameInput = document.getElementById("edit-project-name");
+//   const descInput = document.getElementById("edit-project-desc");
+//   const versionInput = document.getElementById("edit-project-version");
+
+//   if (nameInput) nameInput.value = "";
+//   if (descInput) descInput.value = "";
+//   if (versionInput) versionInput.value = "";
+
+//   editingProjectId = null;
+// }
+
+// ============================================================
 // CRUD HANDLERS
 // ============================================================
 function handleCreateProject() {
@@ -375,17 +410,17 @@ function handleCreateProject() {
 
   const payload = {
     name,
-    description: descInput ? descInput.value.trim() : "",
-    version: versionInput ? versionInput.value.trim() : "1.0",
+    description: descInput ?  descInput.value.trim() : "",
+    version: versionInput ?  versionInput.value. trim() : "1.0",
   };
 
   const newProject = createProject(payload);
 
   if (newProject) {
-    // Clear form
-    nameInput.value = "";
-    if (descInput) descInput.value = "";
-    if (versionInput) versionInput.value = "1.0";
+    // ❌ УБРАТЬ ручную очистку (теперь автоматически при закрытии)
+    // nameInput.value = "";
+    // if (descInput) descInput.value = "";
+    // if (versionInput) versionInput.value = "1.0";
 
     // Close modal
     const modal = document.getElementById("new-project-modal");

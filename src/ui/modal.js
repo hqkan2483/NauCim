@@ -27,19 +27,35 @@ function syncBodyScrollLock(cfg) {
 }
 
 function openModal(modalEl, options = {}) {
-  const cfg = { ...DEFAULTS, ... options };
+  const cfg = { ...DEFAULTS, ...options };
   const modal = assertModalEl(modalEl);
 
-  modal.classList.add(cfg.activeClass);
+  // Dispatch event before opening
+  const event = new CustomEvent("modal:beforeopen", {
+    detail: { modalId: modal.id },
+    bubbles: true,
+    cancelable: false,
+  });
+  modal.dispatchEvent(event);
+
+  modal.classList. add(cfg.activeClass);
   syncBodyScrollLock(cfg);
 }
 
 function closeModal(modalEl, options = {}) {
-  const cfg = { ...DEFAULTS, ... options };
+  const cfg = { ... DEFAULTS, ...options };
   const modal = assertModalEl(modalEl);
 
-  modal.classList.remove(cfg. activeClass);
+  modal.classList.remove(cfg.activeClass);
   syncBodyScrollLock(cfg);
+
+  // Dispatch event after closing
+  const event = new CustomEvent("modal:afterclose", {
+    detail: { modalId: modal.id },
+    bubbles: true,
+    cancelable: false,
+  });
+  modal.dispatchEvent(event);
 }
 
 /**
