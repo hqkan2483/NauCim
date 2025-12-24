@@ -91,12 +91,30 @@ function bindEvents() {
     openProjectBtn.addEventListener("click", handleOpenCurrentProject);
   }
 
+  // Back to projects list
+  const backBtn = document.getElementById("back-to-projects-btn");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      showProjectsList();
+    });
+  }
+
   // Delegated events on projects list (edit, delete, select)
   const projectsListEl = document.getElementById("projects-list");
   if (projectsListEl) {
     projectsListEl.addEventListener("click", (e) => {
       const target = e.target instanceof HTMLElement ? e.target : null;
       if (!target) return;
+
+      // Open project details page
+      const openBtn = target.closest("[data-action='open-project-details']");
+      if (openBtn) {
+        const projectId = openBtn.getAttribute("data-project-id");
+        if (projectId) {
+          window.location.href = `project-details.html?id=${projectId}`;
+        }
+        return;
+      }
 
       // Delete project
       const deleteBtn = target.closest("[data-action='delete-project']");
@@ -190,6 +208,9 @@ function renderProjectsList() {
         <button class="btn btn-secondary btn-small" data-action="delete-project" data-project-id="${
           p.id
         }">🗑️ Удалить</button>
+        <button class="btn btn-primary btn-small" data-action="open-project-details" data-project-id="${
+          p.id
+        }" title="Открыть">📂 Открыть проект</button>
 
       </div>
 
@@ -297,8 +318,17 @@ function showProjectDetails(projectId) {
 function showProjectsList() {
   // ✅ Показать список проектов
   const projectsListContainer = document.getElementById("projects-list");
+  const searchBox = document.getElementById("search-box");
+  const backNav = document.getElementById("back-navigation");
+
   if (projectsListContainer) {
     projectsListContainer.classList.remove("hidden");
+  }
+  if (searchBox) {
+    searchBox.classList.remove("hidden");
+  }
+  if (backNav) {
+    backNav.classList.add("hidden");
   }
 
   // Скрыть детали
@@ -313,8 +343,17 @@ function showProjectsList() {
 
 function hideProjectsList() {
   const projectsListContainer = document.getElementById("projects-list");
+  const searchBox = document.getElementById("search-box");
+  const backNav = document.getElementById("back-navigation");
+
   if (projectsListContainer) {
     projectsListContainer.classList.add("hidden");
+  }
+  if (searchBox) {
+    searchBox.classList.add("hidden");
+  }
+  if (backNav) {
+    backNav.classList.remove("hidden");
   }
 }
 
