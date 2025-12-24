@@ -10,6 +10,7 @@
   getCurrentProjectId: () => null,
   onProjectSelect: null, // (projectId) => void
   onProjectExpand: null, // (projectId, isExpanded) => void
+  onLabelClick: null, //
 };
 
 let treeConfig = null;
@@ -20,7 +21,7 @@ let eventsInitialized = false;
  * @param {object} options - Configuration and callbacks
  */
 function initProjectsTree(options = {}) {
-  treeConfig = { ...DEFAULTS, ...options };
+  treeConfig = { ... DEFAULTS, ...options };
 
   const toggleBtn = document.querySelector(treeConfig.toggleBtnSelector);
   if (!toggleBtn) {
@@ -28,10 +29,21 @@ function initProjectsTree(options = {}) {
     return;
   }
 
-  // Bind toggle button
-  toggleBtn.addEventListener("click", () => toggleProjectsTree());
+  // ✅ Bind toggle button (только иконка)
+  toggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // останавливаем всплытие
+    toggleProjectsTree();
+  });
 
-  // Навесить обработчик событий ОДИН РАЗ на весь список проектов
+  // ✅ Bind label (корень дерева)
+  const labelEl = document.querySelector(".nav-tree-label");
+  if (labelEl && treeConfig.onLabelClick) {
+    labelEl.addEventListener("click", () => {
+      treeConfig. onLabelClick();
+    });
+  }
+
+  // Bind events (delegated)
   bindProjectTreeEvents();
 
   // Restore tree state

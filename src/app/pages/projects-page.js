@@ -47,6 +47,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     onProjectSelect: (projectId) => {
       selectProject(projectId);
     },
+      onLabelClick: () => {
+    // ✅ Клик по "📁 Проекты" — вернуть список проектов
+    showProjectsList();
+  },
   });
   // 3. Bind page-specific events
   bindEvents();
@@ -206,6 +210,7 @@ function updateCurrentProjectDisplay() {
   }
 }
 
+// скрывает список проектов показывает детали конкретного проекта
 function selectProject(projectId) {
   setCurrentProjectId(projectId);
 
@@ -215,6 +220,9 @@ function selectProject(projectId) {
 
   // Re-render tree to update active state
   renderProjectsTree();
+
+    // ✅ ДОБАВИТЬ:  скрыть список проектов
+  hideProjectsList();
 
   // Show project details (models/profiles)
   showProjectDetails(projectId);
@@ -241,12 +249,8 @@ function showProjectDetails(projectId) {
         .map(
           (m) => `
         <div class="list-item">
-          <div class="list-item-title">${m.name || "Модель без названия"}</div>
-          ${
-            m.description
-              ? `<div class="list-item-description">${m.description}</div>`
-              : ""
-          }
+          <div class="list-item-title"><span>📦</span><span>${m.name || "Модель без названия"}</span></div>
+          
         </div>
       `
         )
@@ -268,14 +272,10 @@ function showProjectDetails(projectId) {
         .map(
           (pr) => `
         <div class="list-item">
-          <div class="list-item-title">${
+          <div class="list-item-title"><span>📦</span><span>${
             pr.name || "Профиль без названия"
-          }</div>
-          ${
-            pr.description
-              ? `<div class="list-item-description">${pr.description}</div>`
-              : ""
-          }
+          }</span></div>
+
         </div>
       `
         )
@@ -288,6 +288,13 @@ function showProjectDetails(projectId) {
 }
 
 function showProjectsList() {
+  // ✅ Показать список проектов
+  const projectsListContainer = document.getElementById("projects-list");
+  if (projectsListContainer) {
+    projectsListContainer.classList. remove("hidden");
+  }
+
+  // Скрыть детали
   const modelsContainer = document.getElementById("models-container");
   const profilesContainer = document.getElementById("profiles-container");
   const openProjectAction = document.getElementById("open-project-action");
@@ -295,6 +302,13 @@ function showProjectsList() {
   if (modelsContainer) modelsContainer.classList.add("hidden");
   if (profilesContainer) profilesContainer.classList.add("hidden");
   if (openProjectAction) openProjectAction.classList.add("hidden");
+}
+
+function hideProjectsList() {
+  const projectsListContainer = document.getElementById("projects-list");
+  if (projectsListContainer) {
+    projectsListContainer.classList.add("hidden");
+  }
 }
 
 // ============================================================

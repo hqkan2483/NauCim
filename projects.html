@@ -10,10 +10,7 @@
     <div class="app-container">
       <!-- SIDEBAR -->
       <div class="sidebar" id="sidebar">
-        <button
-          class="sidebar-toggle sidebar-open"
-          aria-label="Toggle sidebar"
-        >
+        <button class="sidebar-toggle sidebar-open" aria-label="Toggle sidebar">
           <span class="toggle-icon">☰</span>
         </button>
 
@@ -22,47 +19,47 @@
         </div>
 
         <div class="sidebar-nav">
+          <a href="index.html" class="nav-item">📊 Главная</a>
 
-            <a href="index.html" class="nav-item">📊 Главная</a>
-
-            <!-- Projects Tree -->
-            <div class="nav-tree-item">
+          <!-- Projects Tree -->
+          <div class="nav-tree-item">
+            <div class="nav-tree-header">
               <button
                 class="nav-tree-toggle"
                 aria-expanded="true"
                 aria-label="Toggle projects list"
               >
                 <span class="tree-icon">▶</span>
-                📁 Проекты
               </button>
-              <div
-                id="projects-tree-container"
-                class="nav-tree-children nav-tree-collapsed"
-              >
-                <div id="projects-list-tree"></div>
-
-              </div>
+              <span class="nav-tree-label">📁 Проекты</span>
             </div>
 
-            <div class="nav-section-title">Текущий проект</div>
             <div
-              id="current-project"
-              style="
-                padding: 10px 15px;
-                font-size: 14px;
-                color: rgba(255, 255, 255, 0.7);
-              "
+              id="projects-tree-container"
+              class="nav-tree-children nav-tree-collapsed"
             >
-              Нет проекта
+              <div id="projects-list-tree"></div>
             </div>
+          </div>
 
-            <div class="nav-section-title">Действия</div>
-            <div class="nav-item" data-modal-open="new-project-modal">
-              + Новый проект
-            </div>
+          <div class="nav-section-title">Текущий проект</div>
+          <div
+            id="current-project"
+            style="
+              padding: 10px 15px;
+              font-size: 14px;
+              color: rgba(255, 255, 255, 0.7);
+            "
+          >
+            Нет проекта
+          </div>
 
-            <a href="compare.html" class="nav-item">🔍 Сравнение</a>
+          <div class="nav-section-title">Действия</div>
+          <div class="nav-item" data-modal-open="new-project-modal">
+            + Новый проект
+          </div>
 
+          <a href="compare.html" class="nav-item">🔍 Сравнение</a>
         </div>
       </div>
       <div class="sidebar-resize-handle" id="sidebar-resize-handle"></div>
@@ -72,10 +69,7 @@
         <div class="toolbar">
           <div class="toolbar-title">Проекты</div>
           <div class="toolbar-actions">
-            <button
-              class="btn btn-primary"
-              data-modal-open="new-project-modal"
-            >
+            <button class="btn btn-primary" data-modal-open="new-project-modal">
               + Новый проект
             </button>
             <button class="btn btn-primary" onclick="location.reload()">
@@ -130,7 +124,7 @@
           <div class="divider mt-30 mb-30"></div>
 
           <div class="quick-actions hidden" id="open-project-action">
-            <button class="btn btn-primary" id="open-selected-project-btn">
+            <button class="btn btn-primary" id="open-current-project-btn">
               Перейти в проект
             </button>
           </div>
@@ -173,12 +167,7 @@
           />
         </div>
         <div class="modal-buttons">
-          <button
-            class="btn btn-secondary"
-            data-modal-close
-          >
-            Отмена
-          </button>
+          <button class="btn btn-secondary" data-modal-close>Отмена</button>
           <button class="btn btn-primary" id="create-project-btn">
             Создать
           </button>
@@ -203,12 +192,7 @@
           <input type="text" id="edit-project-version" class="form-input" />
         </div>
         <div class="modal-buttons">
-          <button
-            class="btn btn-secondary"
-            data-modal-close
-          >
-            Отмена
-          </button>
+          <button class="btn btn-secondary" data-modal-close>Отмена</button>
           <button class="btn btn-primary" id="save-project-edit-btn">
             Сохранить
           </button>
