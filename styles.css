@@ -545,7 +545,7 @@ body.modal-open { overflow: hidden; }
   padding: 12px;
   margin-bottom: 10px;
   transition: all 0.2s; */
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   font-family: "Inter";
   font-size: 16px;
   padding: 4px 10px;
@@ -559,6 +559,12 @@ body.modal-open { overflow: hidden; }
   /* border-color: var(--primary-color); */
    background: rgba(74, 174, 247, 0.1);
 }
+
+.list-item.selected {
+  background: rgba(74, 174, 247, 0.2);
+  border-left: 3px solid var(--main-color);
+}
+
 
 .list-item-title {
   font-size: 16px;
@@ -621,7 +627,7 @@ body.modal-open { overflow: hidden; }
 
 /* tree-item - это старые классы для табов с описаниями модели и проекта */
 
-.tree-item {
+/* .tree-item {
   font-family: "Inter";
   font-size: 16px;
   padding: 4px 10px;
@@ -642,7 +648,7 @@ body.modal-open { overflow: hidden; }
 
 .tree-children {
   padding-left: 20px;
-}
+} */
 
 /* TABLE */
 .table {
@@ -680,7 +686,7 @@ body.modal-open { overflow: hidden; }
 .tabs {
   display: flex;
   border-bottom: 2px solid var(--border-color);
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .tabs-item-details {
@@ -694,8 +700,8 @@ body.modal-open { overflow: hidden; }
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
   transition: all 0.2s;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 400;
 }
 
 .item-container-diagram .tab {
@@ -837,7 +843,7 @@ body.modal-open { overflow: hidden; }
   color: var(--text-secondary);
 }
 
-/* CODE BLOCK */
+/* CODE BLOCK
 .code-block {
   background: #2d2d2d;
   color: #f8f8f2;
@@ -847,7 +853,7 @@ body.modal-open { overflow: hidden; }
   font-family: "Courier New", monospace;
   font-size: 13px;
   line-height: 1.5;
-}
+} */
 
 /* BADGE */
 /* Бэйджик для выделения. пока отказались от использования */
@@ -865,6 +871,139 @@ body.modal-open { overflow: hidden; }
   background: rgba(94, 82, 64, 0.15);
   color: var(--text-secondary);
 } */
+
+
+/* ============================================================
+   PROJECT DETAILS PAGE
+   ============================================================ */
+
+/* No Project Warning */
+.warning-content {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.model-icon-large {
+  font-size: 64px;
+  margin-bottom:  20px;
+}
+
+.warning-content h3 {
+  margin:  0 0 10px 0;
+  color: var(--text-primary);
+}
+
+.warning-content p {
+  margin: 0 0 20px 0;
+}
+
+/* Tree Item (models/profiles list) */
+.tree-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.tree-item:hover {
+  background:  rgba(0, 0, 0, 0.05);
+}
+
+.tree-item.selected {
+  background: rgba(0, 90, 155, 0.1);
+  border-left: 3px solid var(--primary-color);
+}
+
+/* No items message */
+.no-items {
+  padding: 20px;
+  text-align:  center;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.text-muted {
+  color: var(--text-secondary);
+}
+
+/* Context Menu (будет использоваться в PR9) */
+.context-menu {
+  position: fixed;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  min-width: 180px;
+  display: none;
+}
+
+.context-menu.show {
+  display: block;
+}
+
+.context-menu-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: background-color 0.2s;
+}
+
+.context-menu-item:hover {
+  background-color: #f0f0f0;
+}
+
+.context-menu-item:active {
+  background-color: #e0e0e0;
+}
+
+/* Diagram Mode (будет использоваться в PR8) */
+.diagram-mode-content-on {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.content-area:has(.diagram-mode-content-on) #standard-mode-content {
+  display: none;
+}
+
+#diagram-container {
+  height: 66.666%;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.diagram-resize-handle.divider {
+  height: 10px;
+  background: transparent;
+  cursor: row-resize;
+  flex:  0 0 auto;
+  position: relative;
+}
+
+.diagram-resize-handle.divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top:  50%;
+  height: 1px;
+  background: var(--border-color);
+  transform: translateY(-0.5px);
+}
+
+.item-container-diagram {
+  height: 33.333%;
+  overflow:  auto;
+  padding: 0 15px;
+}
 
 /* DIFF VIEW */
 .diff-container {
@@ -1414,8 +1553,8 @@ body.modal-open { overflow: hidden; }
 }
 
 .split-left h3 {
-  /* margin-bottom: 15px; */
-  font-size: 20px;
+  margin-bottom: 10px;
+  font-size: 18px;
   font-weight: 500;
 }
 
