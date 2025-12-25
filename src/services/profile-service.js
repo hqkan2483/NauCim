@@ -53,7 +53,7 @@ function createProfile(projectId, payload) {
     createDate: new Date().toISOString(),
     modifyDate: new Date().toISOString(),
     legalState: payload.legalState || "project",
-    accessRight: payload. accessRight || "readWrite",
+    accessRights: payload.accessRights || "readWrite",
     rootPackages: [],
   };
 
