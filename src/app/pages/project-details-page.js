@@ -39,35 +39,43 @@ document.addEventListener("DOMContentLoaded", async () => {
 // EVENT BINDINGS
 // ============================================================
 function bindEvents() {
+// Go to projects button
+  // const goToProjectsBtn = document.getElementById("back-to-projects-btn");
+  // if (goToProjectsBtn) {
+  //   goToProjectsBtn.addEventListener("click", () => {
+  //     window.location.href = "projects.html";
+  //   });
+  // }
+
   // Delegated events on models list
-  const modelsListEl = document.getElementById("models-list");
-  if (modelsListEl) {
-    modelsListEl.addEventListener("click", (e) => {
-      const target = e.target instanceof HTMLElement ? e.target : null;
-      if (! target) return;
+const modelsListEl = document.getElementById("models-list");
+if (modelsListEl) {
+  modelsListEl.addEventListener("click", (e) => {
+    const target = e.target instanceof HTMLElement ? e.target : null;
+    if (!target) return;
 
-      const selectEl = target.closest(".tree-item");
-      if (selectEl) {
-        const modelId = selectEl.getAttribute("data-model-id");
-        if (modelId) selectModel(modelId);
-      }
-    });
-  }
+    const selectEl = target.closest(".list-item");
+    if (selectEl) {
+      const modelId = selectEl.getAttribute("data-model-id");
+      if (modelId) selectModel(modelId);
+    }
+  });
+}
 
-  // Delegated events on profiles list
-  const profilesListEl = document.getElementById("profiles-list");
-  if (profilesListEl) {
-    profilesListEl.addEventListener("click", (e) => {
-      const target = e.target instanceof HTMLElement ? e.target : null;
-      if (!target) return;
+// Delegated events on profiles list
+const profilesListEl = document.getElementById("profiles-list");
+if (profilesListEl) {
+  profilesListEl.addEventListener("click", (e) => {
+    const target = e.target instanceof HTMLElement ? e.target : null;
+    if (!target) return;
 
-      const selectEl = target.closest(".tree-item");
-      if (selectEl) {
-        const profileId = selectEl.getAttribute("data-profile-id");
-        if (profileId) selectProfile(profileId);
-      }
-    });
-  }
+    const selectEl = target.closest(".list-item");
+    if (selectEl) {
+      const profileId = selectEl.getAttribute("data-profile-id");
+      if (profileId) selectProfile(profileId);
+    }
+  });
+}
 }
 
 // ============================================================
@@ -133,7 +141,7 @@ function renderModelsContainer() {
     .map((m) => {
       const isSelected = selectedModelId === m.id;
       return `
-        <div class="tree-item ${isSelected ? "selected" : ""}" data-model-id="${m.id}">
+        <div class="list-item ${isSelected ? "selected" : ""}" data-model-id="${m.id}">
           📦 ${m.name}
         </div>
       `;
@@ -182,7 +190,7 @@ function renderProfilesContainer() {
     .map((p) => {
       const isSelected = selectedProfileId === p.id;
       return `
-        <div class="tree-item ${isSelected ? "selected" : ""}" data-profile-id="${p.id}">
+        <div class="list-item ${isSelected ? "selected" : ""}" data-profile-id="${p.id}">
           ⚙️ ${p.name}
         </div>
       `;

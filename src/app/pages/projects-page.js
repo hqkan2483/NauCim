@@ -8,16 +8,16 @@ import {
   deleteProject,
 } from "../../services/project-service.js";
 import { getCurrentProjectId, setCurrentProjectId } from "../../state/current-project-state.js";
-import { initModalSystem, bindModalTriggers } from "../../ui/modal.js";
+import { initModalSystem, bindModalTriggers, openModal, closeModal } from "../../ui/modal.js";
+import { loadModals } from "../../ui/modal-loader.js";
 import { initSidebarResize, initSidebarToggle, restoreSidebarState } from "../../ui/sidebar/index.js";
 import { initProjectsTree, renderProjectsTree } from "../../ui/sidebar/index.js";
 import { getModels, getModel } from "../../services/model-service.js";
 import { getProfiles, getProfile } from "../../services/profile-service.js";
-import { loadModals } from "../../ui/modal-loader.js"; // ✅ Импорт загрузчика модалок
 import { renderProjectCard } from "../../ui/renderers/project-card.js";
 import { initProjectModal, clearNewProjectModal, openEditProjectModal } from "../../ui/components/project-modal.js";
-import { getLegalStateValue, getAccessRightValue } from "../../enums/enums.js";
-import { formatDate } from "../../utils/date.js";
+import { renderModelDetails } from "../../ui/renderers/model-details-renderer.js";
+import { renderProfileDetails } from "../../ui/renderers/profile-details-renderer.js";
 
 // ============================================================
 // STATE
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 2. Load modals
   await loadModals(["new-project-modal", "edit-project-modal"]);
 
-// 3. Initialize UI systems
+  // 3. Initialize UI systems
   initModalSystem();
   bindModalTriggers(document);
 
@@ -70,10 +70,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     },
   });
 
-  // Bind page-specific events
+  // 4. Bind page-specific events
   bindEvents();
 
-  // Initial render
+  // 5. Initial render
   renderProjectsList();
   updateCurrentProjectDisplay();
 });
@@ -91,18 +91,6 @@ function bindEvents() {
     });
   }
 
-  // Create project
-  // const createBtn = document.getElementById("create-project-btn");
-  // if (createBtn) {
-  //   createBtn.addEventListener("click", handleCreateProject);
-  // }
-
-  // Save project edit
-  // const saveEditBtn = document.getElementById("save-project-edit-btn");
-  // if (saveEditBtn) {
-  //   saveEditBtn.addEventListener("click", handleSaveProjectEdit);
-  // }
-
   // Open current project
   const openProjectBtn = document.getElementById("open-current-project-btn");
   if (openProjectBtn) {
@@ -117,18 +105,6 @@ function bindEvents() {
     });
   }
 
-  // // Create model
-  // const createModelBtn = document.getElementById("create-model-btn");
-  // if (createModelBtn) {
-  //   createModelBtn.addEventListener("click", handleCreateModel);
-  // }
-
-  // // Save model edit
-  // const saveModelEditBtn = document.getElementById("save-model-edit-btn");
-  // if (saveModelEditBtn) {
-  //   saveModelEditBtn.addEventListener("click", handleSaveModelEdit);
-  // }
-
   // Clear modal forms on open
   document.addEventListener("modal:beforeopen", (e) => {
     const modalId = e.detail.modalId;
@@ -136,10 +112,6 @@ function bindEvents() {
     if (modalId === "new-project-modal") {
       clearNewProjectModal();
     }
-    // else if (modalId === "new-model-modal") {
-    //   clearNewModelModal();
-    // }
-    // Note: edit modals are NOT cleared (they're pre-filled)
   });
 
   // Delegated events on projects list (open, edit, delete, select)
@@ -185,71 +157,37 @@ function bindEvents() {
     });
   }
 
-  // Delegated events on models list (select, edit, delete)
-  const modelsListEl = document.getElementById("models-list");
-  if (modelsListEl) {
-    modelsListEl.addEventListener("click", (e) => {
-      const target = e.target instanceof HTMLElement ? e.target : null;
-      if (!target) return;
+ // Delegated events on models list (select)
+const modelsListEl = document.getElementById("models-list");
+if (modelsListEl) {
+  modelsListEl.addEventListener("click", (e) => {
+    const target = e.target instanceof HTMLElement ? e.target : null;
+    if (! target) return;
 
-      // // Delete model
-      // const deleteBtn = target.closest("[data-action='delete-model']");
-      // if (deleteBtn) {
-      //   const modelId = deleteBtn.getAttribute("data-model-id");
-      //   if (modelId) handleDeleteModel(modelId);
-      //   return;
-      // }
+    // ✅ Упрощаем:  клик на любой .list-item
+    const selectEl = target.closest(".list-item");
+    if (selectEl) {
+      const modelId = selectEl.getAttribute("data-model-id");
+      if (modelId) selectModel(modelId);
+    }
+  });
+}
 
-      // // Edit model
-      // const editBtn = target.closest("[data-action='edit-model']");
-      // if (editBtn) {
-      //   const modelId = editBtn.getAttribute("data-model-id");
-      //   if (modelId) handleEditModel(modelId);
-      //   return;
-      // }
+// Delegated events on profiles list (select)
+const profilesListEl = document.getElementById("profiles-list");
+if (profilesListEl) {
+  profilesListEl.addEventListener("click", (e) => {
+    const target = e.target instanceof HTMLElement ? e.target : null;
+    if (!target) return;
 
-      // Select model
-      const selectEl = target.closest("[data-action='select-model']");
-      if (selectEl) {
-        const modelId = selectEl.getAttribute("data-model-id");
-        if (modelId) selectModel(modelId);
-        return;
-      }
-    });
-  }
-
-   // Delegated events on models list (select, edit, delete)
-  const profilesListEl = document.getElementById("profiles-list");
-  if (profilesListEl) {
-    profilesListEl.addEventListener("click", (e) => {
-      const target = e.target instanceof HTMLElement ? e.target : null;
-      if (!target) return;
-
-      // // Delete model
-      // const deleteBtn = target.closest("[data-action='delete-model']");
-      // if (deleteBtn) {
-      //   const modelId = deleteBtn.getAttribute("data-model-id");
-      //   if (modelId) handleDeleteModel(modelId);
-      //   return;
-      // }
-
-      // // Edit model
-      // const editBtn = target.closest("[data-action='edit-model']");
-      // if (editBtn) {
-      //   const modelId = editBtn.getAttribute("data-model-id");
-      //   if (modelId) handleEditModel(modelId);
-      //   return;
-      // }
-
-      // Select model
-      const selectEl = target.closest("[data-action='select-profile']");
-      if (selectEl) {
-        const profileId = selectEl.getAttribute("data-profile-id");
-        if (profileId) selectProfile(profileId);
-        return;
-      }
-    });
-  }
+    // ✅ Упрощаем: клик на любой .list-item
+    const selectEl = target.closest(".list-item");
+    if (selectEl) {
+      const profileId = selectEl.getAttribute("data-profile-id");
+      if (profileId) selectProfile(profileId);
+    }
+  });
+}
 }
 
 // ============================================================
@@ -267,7 +205,7 @@ function renderProjectsList() {
     if (! searchQuery) return true;
     return (
       p.name.toLowerCase().includes(searchQuery) ||
-      (p.description && p.description. toLowerCase().includes(searchQuery))
+      (p.description && p.description.toLowerCase().includes(searchQuery))
     );
   });
 
@@ -277,13 +215,13 @@ function renderProjectsList() {
   }
 
   const html = filtered
-    . map((p) =>
+    .map((p) =>
       renderProjectCard(p, {
         showActions: true,
         showDescription: true,
         showMeta: true,
         showStats: true,
-        currentProjectId: currentProjectId,
+        currentProjectId:  currentProjectId,
         cardClickAction: "select",
       })
     )
@@ -339,29 +277,16 @@ function showProjectDetails(projectId) {
 
   // Show models
   const modelsContainer = document.getElementById("models-container");
-  const modelsList = document.getElementById("models-list");
-  if (modelsContainer && modelsList) {
+  if (modelsContainer) {
     modelsContainer.classList.remove("hidden");
-    renderModelsList();
+    renderModelsContainer(); // ✅ Обновлено
   }
 
   // Show profiles
   const profilesContainer = document.getElementById("profiles-container");
-  const profilesList = document.getElementById("profiles-list");
-  if (profilesContainer && profilesList) {
+  if (profilesContainer) {
     profilesContainer.classList.remove("hidden");
-    renderProfilesList();
-  }
-
-  // Clear details
-  const modelDetails = document.getElementById("model-details");
-  if (modelDetails) {
-    modelDetails.innerHTML = '<div class="text-center">Выберите модель для просмотра деталей</div>';
-  }
-
-  const profileDetails = document.getElementById("profile-details");
-  if (profileDetails) {
-    profileDetails.innerHTML = '<div class="text-center">Выберите профиль для просмотра деталей</div>';
+    renderProfilesContainer(); // ✅ Обновлено
   }
 }
 
@@ -416,8 +341,7 @@ function hideProjectsList() {
 // ============================================================
 // RENDER - MODELS
 // ============================================================
-function renderModelsList() {
-  console.log("Rendering models list...");
+function renderModelsContainer() {
   const projectId = getCurrentProjectId();
   if (!projectId) return;
 
@@ -427,7 +351,7 @@ function renderModelsList() {
   const models = getModels(projectId);
 
   if (! models || models.length === 0) {
-    modelsList.innerHTML = '<div class="no-data">Нет моделей</div>';
+    modelsList.innerHTML = '<div class="no-items text-muted">Нет моделей</div>';
     return;
   }
 
@@ -435,100 +359,44 @@ function renderModelsList() {
     .map((m) => {
       const isSelected = selectedModelId === m.id;
       return `
-      <div class="list-item ${isSelected ? "selected" : ""}"
-           data-action="select-model"
-           data-model-id="${m.id}">
-        <div class="list-item-header">
-          <div class="list-item-title"><span>📦 </span> <span>${m.name || "Модель без названия"}</span></div>
-          <!--
-          <div class="list-item-actions">
-            <button class="btn-icon btn-icon-small" data-action="edit-model" data-model-id="${m.id}" title="Редактировать">✏️</button>
-            <button class="btn-icon btn-icon-small" data-action="delete-model" data-model-id="${m.id}" title="Удалить">🗑️</button>
-          </div>
-          -->
+        <div class="list-item ${isSelected ? "selected" : ""}" data-model-id="${m.id}">
+          📦 ${m.name}
         </div>
-        <!-- ${m.description ? `<div class="list-item-description">${m.description}</div>` : ""}  -->
-      </div>
-    `;
+      `;
     })
     .join("");
 
   modelsList.innerHTML = html;
+
+  // Clear details if nothing selected
+  if (! selectedModelId) {
+    const modelDetails = document.getElementById("model-details");
+    if (modelDetails) {
+      modelDetails.innerHTML = '<div class="text-center">Выберите модель для просмотра деталей</div>';
+    }
+  }
 }
 
 function selectModel(modelId) {
   selectedModelId = modelId;
 
-  // Re-render models list to highlight selected
-  renderModelsList();
+  // Re-render list to highlight selected
+  renderModelsContainer();
 
-  // Render model details
-  renderModelDetails();
-}
-
-function renderModelDetails() {
+  // Render details
   const projectId = getCurrentProjectId();
-  const model = getModel(projectId, selectedModelId);
+  const model = getModel(projectId, modelId);
+  const modelDetails = document.getElementById("model-details");
 
-  const detailsContainer = document.getElementById("model-details");
-  if (!detailsContainer) return;
-
-  if (! model) {
-    detailsContainer.innerHTML = '<div class="text-center">Выберите модель для просмотра деталей</div>';
-    return;
+  if (modelDetails) {
+    modelDetails.innerHTML = renderModelDetails(model);
   }
-
-  const html = `
-    <div class="tabs">
-      <div class="tab active">Свойства</div>
-    </div>
-    <div class="tab-content active">
-      <table class="table model-details-table">
-        <colgroup>
-          <col style="width: 25%;"/>
-          <col style="width: 25%;"/>
-          <col style="width: 20%;"/>
-          <col style="width: 30%;"/>
-        </colgroup>
-        <tbody>
-          <tr>
-            <td colspan="1"><strong>Описание</strong></td>
-            <td colspan="3">${model.description || "—"}</td>
-          </tr>
-          <tr>
-            <td colspan="1"><strong>Используется в профилях</strong></td>
-            <td colspan="3">${
-              model.relatedProfiles && model.relatedProfiles.length > 0
-                ? model.relatedProfiles.map((p) => p.name).join(", ")
-                : "—"
-            }</td>
-          </tr>
-          <tr>
-            <td><strong>Дата создания: </strong></td>
-            <td>${formatDate(model.createDate)}</td>
-            <td><strong>Дата изменения:</strong></td>
-            <td>${formatDate(model.modifyDate)}</td>
-          </tr>
-          <tr>
-            <td><strong>Статус: </strong></td>
-            <td>${getLegalStateValue(model.legalState)}</td>
-            <td><strong>Права доступа:</strong></td>
-            <td>${getAccessRightValue(model.accessRights)}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  `;
-
-  detailsContainer.innerHTML = html;
 }
-
 
 // ============================================================
 // RENDER - PROFILES
 // ============================================================
-function renderProfilesList() {
-  console.log("Rendering profiles list...");
+function renderProfilesContainer() {
   const projectId = getCurrentProjectId();
   if (!projectId) return;
 
@@ -537,8 +405,8 @@ function renderProfilesList() {
 
   const profiles = getProfiles(projectId);
 
-  if (! profiles || profiles.length === 0) {
-    profilesList.innerHTML = '<div class="no-data">Нет профилей</div>';
+  if (!profiles || profiles.length === 0) {
+    profilesList.innerHTML = '<div class="no-items text-muted">Нет профилей</div>';
     return;
   }
 
@@ -546,156 +414,53 @@ function renderProfilesList() {
     .map((p) => {
       const isSelected = selectedProfileId === p.id;
       return `
-      <div class="list-item ${isSelected ? "selected" : ""}"
-           data-action="select-profile"
-           data-profile-id="${p.id}">
-        <div class="list-item-header">
-          <div class="list-item-title"><span>⚙️ </span> <span>${p.name || "Профиль без названия"}</span></div>
-          <!--
-          <div class="list-item-actions">
-            <button class="btn-icon btn-icon-small" data-action="edit-profile" data-profile-id="${p.id}" title="Редактировать">✏️</button>
-            <button class="btn-icon btn-icon-small" data-action="delete-profile" data-profile-id="${p.id}" title="Удалить">🗑️</button>
-          </div>
-          -->
+        <div class="list-item ${isSelected ?  "selected" : ""}" data-profile-id="${p.id}">
+          ⚙️ ${p.name}
         </div>
-        <!-- ${p.description ? `<div class="list-item-description">${p.description}</div>` : ""}  -->
-      </div>
-    `;
+      `;
     })
     .join("");
 
   profilesList.innerHTML = html;
+
+  // Clear details if nothing selected
+  if (! selectedProfileId) {
+    const profileDetails = document.getElementById("profile-details");
+    if (profileDetails) {
+      profileDetails.innerHTML = '<div class="text-center">Выберите профиль для просмотра деталей</div>';
+    }
+  }
 }
 
 function selectProfile(profileId) {
   selectedProfileId = profileId;
-  // Re-render profiles list to highlight selected
-  renderProfilesList();
 
-  // Render profile details
-  renderProfileDetails();
-}
+  // Re-render list to highlight selected
+  renderProfilesContainer();
 
-function renderProfileDetails() {
+  // Render details
   const projectId = getCurrentProjectId();
-  const profile = getProfile(projectId, selectedProfileId);
+  const profile = getProfile(projectId, profileId);
+  const profileDetails = document.getElementById("profile-details");
 
-  const detailsContainer = document.getElementById("profile-details");
-  if (!detailsContainer) return;
-
-  if (! profile) {
-    detailsContainer.innerHTML = '<div class="text-center">Выберите профиль для просмотра деталей</div>';
-    return;
+  if (profileDetails) {
+    profileDetails.innerHTML = renderProfileDetails(profile);
   }
-
-  const html = `
-    <div class="tabs">
-      <div class="tab active">Свойства</div>
-    </div>
-    <div class="tab-content active">
-      <table class="table profile-details-table">
-        <colgroup>
-          <col style="width: 25%;"/>
-          <col style="width: 25%;"/>
-          <col style="width: 20%;"/>
-          <col style="width: 30%;"/>
-        </colgroup>
-        <tbody>
-          <tr>
-            <td colspan="1"><strong>Описание</strong></td>
-            <td colspan="3">${profile.description || "—"}</td>
-          </tr>
-          <tr>
-            <td colspan="1"><strong>Используется в профилях</strong></td>
-            <td colspan="3">${
-              profile.relatedModels && profile.relatedModels.length > 0
-                ? profile.relatedModels.map((p) => p.name).join(", ")
-                : "—"
-            }</td>
-          </tr>
-          <tr>
-            <td><strong>Дата создания: </strong></td>
-            <td>${formatDate(profile.createDate)}</td>
-            <td><strong>Дата изменения:</strong></td>
-            <td>${formatDate(profile.modifyDate)}</td>
-          </tr>
-          <tr>
-            <td><strong>Статус: </strong></td>
-            <td>${getLegalStateValue(profile.legalState)}</td>
-            <td><strong>Права доступа:</strong></td>
-            <td>${getAccessRightValue(profile.accessRights)}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  `;
-
-  detailsContainer.innerHTML = html;
 }
 
-
+// ============================================================
+// CRUD HANDLERS - PROJECTS
+// ============================================================
 function handleEditProject(projectId) {
-  const project = getProjectById(projectId);
-  if (!project) return;
-
-  // Fill modal
-  const nameInput = document.getElementById("edit-project-name");
-  const descInput = document.getElementById("edit-project-desc");
-  const versionInput = document.getElementById("edit-project-version");
-
-  if (nameInput) nameInput.value = project.name;
-  if (descInput) descInput.value = project.description || "";
-  if (versionInput) versionInput.value = project.version || "1.0";
-
-  editingProjectId = projectId;
-
-  // Open modal
- openEditProjectModal(projectId);
+  openEditProjectModal(projectId);
 }
-
-// function handleSaveProjectEdit() {
-//   if (!editingProjectId) return;
-
-//   const nameInput = document.getElementById("edit-project-name");
-//   const descInput = document.getElementById("edit-project-desc");
-//   const versionInput = document.getElementById("edit-project-version");
-
-//   if (!nameInput) return;
-
-//   const name = nameInput.value.trim();
-//   if (!name) {
-//     alert("Введите название проекта");
-//     return;
-//   }
-
-//   const updates = {
-//     name,
-//     description: descInput ? descInput.value.trim() : "",
-//     version: versionInput ? versionInput.value.trim() : "1.0",
-//   };
-
-//   const updated = updateProject(editingProjectId, updates);
-
-//   if (updated) {
-//     // Close modal
-//     const modal = document.getElementById("edit-project-modal");
-//     if (modal) closeModal(modal);
-
-//     editingProjectId = null;
-
-//     // Re-render
-//     renderProjectsList();
-//     renderProjectsTree();
-//     updateCurrentProjectDisplay();
-//   }
-// }
 
 function handleDeleteProject(projectId) {
   const project = getProjectById(projectId);
-  if (!project) return;
+  if (! project) return;
 
   const confirmed = confirm(`Удалить проект "${project.name}"?`);
-  if (! confirmed) return;
+  if (!confirmed) return;
 
   deleteProject(projectId);
 
@@ -719,141 +484,5 @@ function handleOpenCurrentProject() {
 
   window.location.href = `project-details.html?id=${currentProjectId}`;
 }
-
-// ============================================================
-// CRUD HANDLERS - MODELS
-// ============================================================
-// function handleCreateModel() {
-//   const projectId = getCurrentProjectId();
-//   if (!projectId) {
-//     alert("Не выбран проект");
-//     return;
-//   }
-
-//   const nameInput = document.getElementById("model-name");
-//   const descInput = document.getElementById("model-desc");
-//   const typeSelect = document.getElementById("model-type");
-//   const legalStateSelect = document.getElementById("model-legal-state");
-//   const accessRightSelect = document.getElementById("model-access-right");
-
-//   if (!nameInput) return;
-
-//   const name = nameInput.value.trim();
-//   if (!name) {
-//     alert("Введите название модели");
-//     return;
-//   }
-
-//   const payload = {
-//     name,
-//     description: descInput ? descInput.value.trim() : "",
-//     type: typeSelect ? typeSelect.value : "CIM",
-//     legalState:  legalStateSelect ? legalStateSelect.value : "project",
-//     accessRight: accessRightSelect ? accessRightSelect.value :  "readWrite",
-//   };
-
-//   const newModel = createModel(projectId, payload);
-
-//   if (newModel) {
-//     // Close modal
-//     const modal = document.getElementById("new-model-modal");
-//     if (modal) closeModal(modal);
-
-//     // Re-render
-//     renderModelsList();
-
-//     // Select new model
-//     selectModel(newModel.id);
-//   }
-// }
-
-// function handleEditModel(modelId) {
-//   const projectId = getCurrentProjectId();
-//   const model = getModel(projectId, modelId);
-//   if (!model) return;
-
-//   // Fill modal
-//   const nameInput = document.getElementById("edit-model-name");
-//   const descInput = document.getElementById("edit-model-desc");
-//   const typeSelect = document.getElementById("edit-model-type");
-//   const legalStateSelect = document.getElementById("edit-model-legal-state");
-//   const accessRightSelect = document.getElementById("edit-model-access-right");
-
-//   if (nameInput) nameInput.value = model.name;
-//   if (descInput) descInput.value = model.description || "";
-//   if (typeSelect) typeSelect.value = model.type || "CIM";
-//   if (legalStateSelect) legalStateSelect.value = model.legalState || "project";
-//   if (accessRightSelect) accessRightSelect.value = model.accessRight || "readWrite";
-
-//   editingModelId = modelId;
-
-//   // Open modal
-//   const modal = document.getElementById("edit-model-modal");
-//   if (modal) openModal(modal);
-// }
-
-// function handleSaveModelEdit() {
-//   const projectId = getCurrentProjectId();
-//   if (!projectId || !editingModelId) return;
-
-//   const nameInput = document.getElementById("edit-model-name");
-//   const descInput = document.getElementById("edit-model-desc");
-//   const typeSelect = document.getElementById("edit-model-type");
-//   const legalStateSelect = document.getElementById("edit-model-legal-state");
-//   const accessRightSelect = document.getElementById("edit-model-access-right");
-
-//   if (!nameInput) return;
-
-//   const name = nameInput.value.trim();
-//   if (!name) {
-//     alert("Введите название модели");
-//     return;
-//   }
-
-//   const updates = {
-//     name,
-//     description: descInput ? descInput.value.trim() : "",
-//     type: typeSelect ? typeSelect.value : "CIM",
-//     legalState: legalStateSelect ? legalStateSelect.value : "project",
-//     accessRight: accessRightSelect ? accessRightSelect.value : "readWrite",
-//   };
-
-//   const updated = updateModel(projectId, editingModelId, updates);
-
-//   if (updated) {
-//     // Close modal
-//     const modal = document.getElementById("edit-model-modal");
-//     if (modal) closeModal(modal);
-
-//     editingModelId = null;
-
-//     // Re-render
-//     renderModelsList();
-//     renderModelDetails();
-//   }
-// }
-
-// function handleDeleteModel(modelId) {
-//   const projectId = getCurrentProjectId();
-//   const model = getModel(projectId, modelId);
-//   if (!model) return;
-
-//   const confirmed = confirm(`Удалить модель "${model.name}"?`);
-//   if (!confirmed) return;
-
-//   deleteModel(projectId, modelId);
-
-//   // Re-render
-//   renderModelsList();
-
-//   // Clear details if deleted model was selected
-//   if (selectedModelId === modelId) {
-//     selectedModelId = null;
-//     const detailsContainer = document.getElementById("model-details");
-//     if (detailsContainer) {
-//       detailsContainer.innerHTML = '<div class="text-center">Выберите модель для просмотра деталей</div>';
-//     }
-//   }
-// }
 
 console.log("Projects Page Module Loaded");
