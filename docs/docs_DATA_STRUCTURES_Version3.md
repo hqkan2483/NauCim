@@ -28,6 +28,7 @@ interface Project {
   version: string;               // Версия проекта (например, "1.0", "2.3.1")
   createDate: string;             // Дата создания (ISO 8601: "2025-01-15T10:30:00.000Z")
   modifyDate: string;             // Дата последнего изменения (ISO 8601)
+  accessRights: AccessRights;      // Права доступа (см. Enums)
   models: Model[];               // Массив моделей проекта
   profiles: Profile[];           // Массив профилей проекта
 }
@@ -65,7 +66,7 @@ interface Model {
   modifyDate: string;            // Дата последнего изменения (ISO 8601)
   legalState: LegalState;        // Статус разработки (см.  Enums)
   legalAct: string;              // нормативный акт, которым утверждена модель
-  accessRight: AccessRight;      // Права доступа (см. Enums)
+  accessRights: AccessRights;      // Права доступа (см. Enums)
   relatedProfiles: ProfileRef[]; // Профили, использующие эту модель
   rootPackages: ModelRootPackage[]; // корневой пакет модели
   // packages: Package[];           // Пакеты (иерархическая структура)
@@ -113,7 +114,7 @@ interface Profile {
   modifyDate: string;            // Дата последнего изменения (ISO 8601)
   legalState: LegalState;        // Статус разработки
   legalAct: string;              // нормативный акт, которым утвержден профиль
-  accessRight: AccessRight;      // Права доступа
+  accessRights: AccessRights;      // Права доступа
   rootPackages: ProfileRootPackage[]; // корневой пакет профиля
 }
 ```
@@ -385,16 +386,17 @@ type LegalState = "project";
 
 ---
 
-### AccessRight
+### AccessRights
 
 Права доступа. 
 
 ```typescript
-type AccessRight = "readOnly" | "readWrite";
+type AccessRights = "readOnly" | "readWrite" | "custom";
 ```
 
 - `readOnly` — Только чтение
 - `readWrite` — Чтение и запись
+- `custom` — различны для различных компонентов проекта
 
 ---
 

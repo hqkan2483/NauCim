@@ -38,12 +38,12 @@ function openModal(modalEl, options = {}) {
   });
   modal.dispatchEvent(event);
 
-  modal.classList. add(cfg.activeClass);
+  modal.classList.add(cfg.activeClass);
   syncBodyScrollLock(cfg);
 }
 
 function closeModal(modalEl, options = {}) {
-  const cfg = { ... DEFAULTS, ...options };
+  const cfg = { ...DEFAULTS, ...options };
   const modal = assertModalEl(modalEl);
 
   modal.classList.remove(cfg.activeClass);
@@ -65,13 +65,13 @@ function closeModal(modalEl, options = {}) {
  */
 function initModalSystem(options = {}) {
   if (modalSystemInitialized) return;
-  const cfg = { ...DEFAULTS, ... options };
+  const cfg = { ...DEFAULTS, ...options };
 
   if (cfg.closeOnEsc) {
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape") return;
 
-      const open = getActiveModals(cfg. activeClass);
+      const open = getActiveModals(cfg.activeClass);
       const top = open[open.length - 1];
       if (! top) return;
 
@@ -80,7 +80,7 @@ function initModalSystem(options = {}) {
     });
   }
 
-  if (cfg. closeOnOverlayClick) {
+  if (cfg.closeOnOverlayClick) {
     document.addEventListener("click", (e) => {
       const target = e.target instanceof HTMLElement ? e.target : null;
       if (! target) return;
@@ -88,7 +88,7 @@ function initModalSystem(options = {}) {
       const modal = target.closest(".modal");
       if (! modal) return;
 
-      // Only overlay click (not inside . modal-content)
+      // Only overlay click (not inside .modal-content)
       if (target !== modal) return;
 
       // default:  do NOT close unless modal has [data-overlay-close]
@@ -108,7 +108,7 @@ function initModalSystem(options = {}) {
  * Optional: data-attribute bindings (HTMLElement-only).
  * Supports:
  * - [data-modal-open="modal-id"] (auto-prefixes # if plain id)
- * - [data-modal-open="#custom-selector"] or [data-modal-open=". class"]
+ * - [data-modal-open="#custom-selector"] or [data-modal-open=".class"]
  * - [data-modal-close] closes nearest modal
  * - [data-modal-close="modal-id"] closes targeted modal
  */
@@ -125,7 +125,7 @@ function bindModalTriggers(root = document, options = {}) {
       if (!value) return;
 
       // Auto-prefix # if it's a plain id (not a CSS selector)
-      const selector = value.startsWith("#") || value.startsWith(". ") || value.startsWith("[")
+      const selector = value.startsWith("#") || value.startsWith(".") || value.startsWith("[")
         ? value
         : `#${value}`;
 
@@ -141,7 +141,7 @@ function bindModalTriggers(root = document, options = {}) {
 
       if (value) {
         // Auto-prefix # if plain id
-        const selector = value. startsWith("#") || value.startsWith(".") || value.startsWith("[")
+        const selector = value.startsWith("#") || value.startsWith(".") || value.startsWith("[")
           ? value
           : `#${value}`;
 

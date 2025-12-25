@@ -45,6 +45,7 @@ async function loadTestData() {
       version: "2.0",
       createDate: "2024-09-15",
       modifyDate: "",
+      accessRights: "custom",
       models: [
         // первая модель
         {
@@ -57,7 +58,7 @@ async function loadTestData() {
           modifyDate: null,
           legalState: "project",
           legalAct: "",
-          accessRight: "readOnly",
+          accessRights: "readOnly",
           relatedProfiles: [],
           rootPackages: CIM100Model,
         },
@@ -94,7 +95,7 @@ async function loadTestData() {
           modifyDate: "2025-10-10",
           legalState: "project",
           legalAct: "",
-          accessRight: "readWrite",
+          accessRights: "readWrite",
           rootPackages: GOST_X_2_profile,
         },
         {
@@ -109,7 +110,7 @@ async function loadTestData() {
           modifyDate: "2025-10-10",
           legalState: "project",
           legalAct: "",
-          accessRight: "readWrite",
+          accessRights: "readWrite",
           rootPackages: GOST_X_1_profile,
         },
       ],
@@ -121,6 +122,7 @@ async function loadTestData() {
       version: "1.5",
       createDate: "2024-10-01",
       modifyDate: "",
+      accessRights: "readWrite",
       models: [
         {
           id: "7",
@@ -132,7 +134,7 @@ async function loadTestData() {
           modifyDate: "2025-09-10",
           legalState: "project",
           legalAct: "",
-          accessRight: "readWrite",
+          accessRights: "readWrite",
           relatedProfiles: [{ id: "8", name: "MeterProfile" }],
           rootPackages: CIM16Model,
         },
@@ -151,7 +153,7 @@ async function loadTestData() {
           modifyDate: "2025-09-10",
           legalState: "project",
           legalAct: "",
-          accessRight: "readWrite",
+          accessRights: "readWrite",
           rootPackages: [],
         },
       ],
@@ -163,6 +165,7 @@ async function loadTestData() {
       version: "1.0",
       createDate: "2025-10-01",
       modifyDate: "",
+      accessRights: "readWrite",
       models: [
         {
           id: "10",
@@ -194,7 +197,7 @@ async function loadTestData() {
           modifyDate: "2025-09-11",
           legalState: "project",
           legalAct: "",
-          accessRight: "readWrite",
+          accessRights: "readWrite",
           rootPackages: [],
         },
       ],

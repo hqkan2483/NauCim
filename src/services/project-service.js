@@ -58,23 +58,35 @@ function createProject(payload) {
     return null;
   }
 
+  const trimmedName = payload.name.trim();
+
+  // Validate name length
+  if (trimmedName.length < 3) {
+    console.error("[createProject] Name must be at least 3 characters");
+    return null;
+  }
+
+  // Validate name uniqueness
+  if (!isProjectNameUnique(trimmedName)) {
+    console.error(`[createProject] Project name "${trimmedName}" already exists`);
+    return null;
+  }
+
   const newProject = {
-    id:  generateUUID(),
-    name: payload.name.trim(),
-    description: payload. description ?  payload.description.trim() : "",
-    version: payload.version ?  payload.version.trim() : "1.0",
-    models: [],
-    profiles: [],
+    id: generateUUID(),
+    name: trimmedName,
+    description: payload.description ?  payload.description.trim() : "",
+    version: payload.version ?  payload.version.trim() : "0.1",
     createDate: new Date().toISOString(),
     modifyDate: new Date().toISOString(),
+    accessRights: "readWrite",
+    models: [],
+    profiles: [],
   };
 
   MemoryStore.addProject(newProject);
+  console.log(`✅ Project created:  ${newProject.name} (id: ${newProject.id})`);
 
-  // Auto-select new project as current
-  setCurrentProjectId(newProject.id);
-
-  console.log(`✅ Project created: ${newProject.name} (id: ${newProject.id})`);
   return newProject;
 }
 
@@ -90,30 +102,40 @@ function updateProject(projectId, updates) {
     return null;
   }
 
-  const project = getProjectById(projectId);
+  const project = MemoryStore.getProjectById(String(projectId));
   if (!project) {
     console.error(`[updateProject] Project not found: ${projectId}`);
     return null;
   }
 
-  // Merge updates
-  const updated = {
+  // Validate name if provided
+  if (updates.name !== undefined) {
+    const trimmedName = updates.name.trim();
+
+    if (trimmedName.length < 3) {
+      console.error("[updateProject] Name must be at least 3 characters");
+      return null;
+    }
+
+    if (!isProjectNameUnique(trimmedName, projectId)) {
+      console.error(`[updateProject] Project name "${trimmedName}" already exists`);
+      return null;
+    }
+
+    updates.name = trimmedName;
+  }
+
+  const updatedProject = {
     ...project,
-    ... updates,
-    id: project.id, // ID cannot be changed
+    ...updates,
+    id: project.id,
     modifyDate: new Date().toISOString(),
   };
 
-  // Validate name
-  if (updated.name && ! updated.name.trim()) {
-    console.error("[updateProject] Name cannot be empty");
-    return null;
-  }
+  MemoryStore.updateProject(String(projectId), updatedProject);
+  console.log(`✅ Project updated: ${updatedProject.name} (id: ${projectId})`);
 
-  MemoryStore.updateProject(projectId, updated);
-
-  console.log(`✅ Project updated: ${updated.name} (id: ${projectId})`);
-  return updated;
+  return updatedProject;
 }
 
 /**
@@ -146,6 +168,25 @@ function deleteProject(projectId) {
 
   console.log(`✅ Project deleted: ${project.name} (id: ${projectId})`);
   return true;
+}
+
+/**
+ * Check if project name is unique
+ * @param {string} name - Project name to check
+ * @param {string} excludeId - Project ID to exclude from check (for edit)
+ * @returns {boolean} - true if name is unique
+ */
+export function isProjectNameUnique(name, excludeId = null) {
+  const projects = MemoryStore.getAllProjects();
+  const trimmedName = name.trim().toLowerCase();
+
+  return !projects.some((p) => {
+    // Skip the project being edited
+    if (excludeId && String(p.id) === String(excludeId)) {
+      return false;
+    }
+    return p.name.trim().toLowerCase() === trimmedName;
+  });
 }
 
 // Exported functions

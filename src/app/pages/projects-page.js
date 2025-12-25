@@ -8,17 +8,21 @@ import {
   deleteProject,
 } from "../../services/project-service.js";
 import { getCurrentProjectId, setCurrentProjectId } from "../../state/current-project-state.js";
-import { initModalSystem, bindModalTriggers, openModal, closeModal } from "../../ui/modal.js";
+import { initModalSystem, bindModalTriggers } from "../../ui/modal.js";
 import { initSidebarResize, initSidebarToggle, restoreSidebarState } from "../../ui/sidebar/index.js";
 import { initProjectsTree, renderProjectsTree } from "../../ui/sidebar/index.js";
 import { getModels, getModel } from "../../services/model-service.js";
 import { getProfiles, getProfile } from "../../services/profile-service.js";
+import { loadModals } from "../../ui/modal-loader.js"; // ✅ Импорт загрузчика модалок
+import { renderProjectCard } from "../../ui/renderers/project-card.js";
+import { initProjectModal, clearNewProjectModal, openEditProjectModal } from "../../ui/components/project-modal.js";
+import { getLegalStateValue, getAccessRightValue } from "../../enums/enums.js";
+import { formatDate } from "../../utils/date.js";
 
 // ============================================================
 // STATE
 // ============================================================
 let editingProjectId = null;
-let editingModelId = null;
 let selectedModelId = null;
 let selectedProfileId = null;
 let searchQuery = "";
@@ -30,7 +34,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 1. Initialize data
   await appDataInit();
 
-  // 2. Initialize UI systems
+  // 2. Load modals
+  await loadModals(["new-project-modal", "edit-project-modal"]);
+
+// 3. Initialize UI systems
   initModalSystem();
   bindModalTriggers(document);
 
@@ -49,10 +56,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     },
   });
 
-  // 3. Bind page-specific events
+  // Initialize project modal
+  initProjectModal({
+    onCreate: (newProject) => {
+      renderProjectsList();
+      renderProjectsTree();
+      selectProject(newProject.id);
+    },
+    onUpdate: () => {
+      renderProjectsList();
+      renderProjectsTree();
+      updateCurrentProjectDisplay();
+    },
+  });
+
+  // Bind page-specific events
   bindEvents();
 
-  // 4. Initial render
+  // Initial render
   renderProjectsList();
   updateCurrentProjectDisplay();
 });
@@ -65,22 +86,22 @@ function bindEvents() {
   const searchInput = document.getElementById("search-projects");
   if (searchInput) {
     searchInput.addEventListener("input", (e) => {
-      searchQuery = e.target.value. toLowerCase();
+      searchQuery = e.target.value.toLowerCase();
       renderProjectsList();
     });
   }
 
   // Create project
-  const createBtn = document.getElementById("create-project-btn");
-  if (createBtn) {
-    createBtn.addEventListener("click", handleCreateProject);
-  }
+  // const createBtn = document.getElementById("create-project-btn");
+  // if (createBtn) {
+  //   createBtn.addEventListener("click", handleCreateProject);
+  // }
 
   // Save project edit
-  const saveEditBtn = document.getElementById("save-project-edit-btn");
-  if (saveEditBtn) {
-    saveEditBtn.addEventListener("click", handleSaveProjectEdit);
-  }
+  // const saveEditBtn = document.getElementById("save-project-edit-btn");
+  // if (saveEditBtn) {
+  //   saveEditBtn.addEventListener("click", handleSaveProjectEdit);
+  // }
 
   // Open current project
   const openProjectBtn = document.getElementById("open-current-project-btn");
@@ -133,7 +154,7 @@ function bindEvents() {
       if (openBtn) {
         const projectId = openBtn.getAttribute("data-project-id");
         if (projectId) {
-          window.location.href = `project-details. html?id=${projectId}`;
+          window.location.href = `project-details.html?id=${projectId}`;
         }
         return;
       }
@@ -243,7 +264,7 @@ function renderProjectsList() {
 
   // Filter
   const filtered = projects.filter((p) => {
-    if (!searchQuery) return true;
+    if (! searchQuery) return true;
     return (
       p.name.toLowerCase().includes(searchQuery) ||
       (p.description && p.description. toLowerCase().includes(searchQuery))
@@ -256,55 +277,16 @@ function renderProjectsList() {
   }
 
   const html = filtered
-    .map((p) => {
-      const isActive = p.id === currentProjectId;
-      return `
-      <div class="project-card ${isActive ? "active" : ""}" data-project-id="${
-        p.id
-      }">
-      <div class="project-card-content">
-        <div class="project-card-header">
-          <div class="project-card-title"
-             data-action="select-project"
-             data-project-id="${p.id}">
-             ${p.name}
-        </div>
-        </div>
-        ${
-          p.description
-            ? `<div class="project-card-description">${p.description}</div>`
-            : ""
-        }
-        <div class="project-card-meta">
-        <div class="project-card-meta_item">
-          <span>📌 Версия: ${p.version || "—"}</span>
-          <span>📅 Создан: ${
-            p.createDate ? new Date(p.createDate).toLocaleDateString() : "—"
-          }</span>
-          </div>
-        <div class="project-card-meta_item">
-          <span>📋 Моделей: ${p.models ? p.models.length : 0}</span>
-          <span>⚙️ Профилей: ${p.profiles ? p.profiles.length : 0}</span>
-          </div>
-        </div>
-
-      </div>
-      <div class="project-card-actions">
-        <button class="btn btn-secondary btn-small" data-action="edit-project" data-project-id="${
-          p.id
-        }">✏️ Редактировать</button>
-        <button class="btn btn-secondary btn-small" data-action="delete-project" data-project-id="${
-          p.id
-        }">🗑️ Удалить</button>
-        <button class="btn btn-primary btn-small" data-action="open-project-details" data-project-id="${
-          p.id
-        }" title="Открыть">📂 Открыть проект</button>
-
-      </div>
-
-    </div>
-    `;
-    })
+    . map((p) =>
+      renderProjectCard(p, {
+        showActions: true,
+        showDescription: true,
+        showMeta: true,
+        showStats: true,
+        currentProjectId: currentProjectId,
+        cardClickAction: "select",
+      })
+    )
     .join("");
 
   container.innerHTML = html;
@@ -379,7 +361,7 @@ function showProjectDetails(projectId) {
 
   const profileDetails = document.getElementById("profile-details");
   if (profileDetails) {
-    profileDetails. innerHTML = '<div class="text-center">Выберите профиль для просмотра деталей</div>';
+    profileDetails.innerHTML = '<div class="text-center">Выберите профиль для просмотра деталей</div>';
   }
 }
 
@@ -392,12 +374,12 @@ function showProjectsList() {
 
   const backNav = document.getElementById("back-navigation");
   if (backNav) {
-    backNav.classList. add("hidden");
+    backNav.classList.add("hidden");
   }
 
   const searchBox = document.getElementById("search-box");
   if (searchBox) {
-    searchBox.classList. remove("hidden");
+    searchBox.classList.remove("hidden");
   }
 
   // Hide details
@@ -417,7 +399,7 @@ function showProjectsList() {
 function hideProjectsList() {
   const projectsListContainer = document.getElementById("projects-list");
   if (projectsListContainer) {
-    projectsListContainer.classList. add("hidden");
+    projectsListContainer.classList.add("hidden");
   }
 
   const backNav = document.getElementById("back-navigation");
@@ -427,7 +409,7 @@ function hideProjectsList() {
 
   const searchBox = document.getElementById("search-box");
   if (searchBox) {
-    searchBox.classList. add("hidden");
+    searchBox.classList.add("hidden");
   }
 }
 
@@ -455,7 +437,7 @@ function renderModelsList() {
       return `
       <div class="list-item ${isSelected ? "selected" : ""}"
            data-action="select-model"
-           data-model-id="${m. id}">
+           data-model-id="${m.id}">
         <div class="list-item-header">
           <div class="list-item-title"><span>📦 </span> <span>${m.name || "Модель без названия"}</span></div>
           <!--
@@ -517,7 +499,7 @@ function renderModelDetails() {
             <td colspan="1"><strong>Используется в профилях</strong></td>
             <td colspan="3">${
               model.relatedProfiles && model.relatedProfiles.length > 0
-                ? model. relatedProfiles.map((p) => p.name).join(", ")
+                ? model.relatedProfiles.map((p) => p.name).join(", ")
                 : "—"
             }</td>
           </tr>
@@ -531,7 +513,7 @@ function renderModelDetails() {
             <td><strong>Статус: </strong></td>
             <td>${getLegalStateValue(model.legalState)}</td>
             <td><strong>Права доступа:</strong></td>
-            <td>${getAccessRightValue(model.accessRight)}</td>
+            <td>${getAccessRightValue(model.accessRights)}</td>
           </tr>
         </tbody>
       </table>
@@ -641,7 +623,7 @@ function renderProfileDetails() {
             <td><strong>Статус: </strong></td>
             <td>${getLegalStateValue(profile.legalState)}</td>
             <td><strong>Права доступа:</strong></td>
-            <td>${getAccessRightValue(profile.accessRight)}</td>
+            <td>${getAccessRightValue(profile.accessRights)}</td>
           </tr>
         </tbody>
       </table>
@@ -651,70 +633,6 @@ function renderProfileDetails() {
   detailsContainer.innerHTML = html;
 }
 
-// ============================================================
-// MODAL HELPERS
-// ============================================================
-function clearNewProjectModal() {
-  const nameInput = document.getElementById("project-name");
-  const descInput = document.getElementById("project-desc");
-  const versionInput = document.getElementById("project-version");
-
-  if (nameInput) nameInput.value = "";
-  if (descInput) descInput.value = "";
-  if (versionInput) versionInput.value = "1.0";
-}
-
-// function clearNewModelModal() {
-//   const nameInput = document.getElementById("model-name");
-//   const descInput = document.getElementById("model-desc");
-//   const typeSelect = document.getElementById("model-type");
-//   const legalStateSelect = document.getElementById("model-legal-state");
-//   const accessRightSelect = document. getElementById("model-access-right");
-
-//   if (nameInput) nameInput.value = "";
-//   if (descInput) descInput.value = "";
-//   if (typeSelect) typeSelect.value = "CIM";
-//   if (legalStateSelect) legalStateSelect.value = "project";
-//   if (accessRightSelect) accessRightSelect.value = "readWrite";
-// }
-
-// ============================================================
-// CRUD HANDLERS - PROJECTS
-// ============================================================
-function handleCreateProject() {
-  const nameInput = document.getElementById("project-name");
-  const descInput = document.getElementById("project-desc");
-  const versionInput = document.getElementById("project-version");
-
-  if (! nameInput) return;
-
-  const name = nameInput.value.trim();
-  if (!name) {
-    alert("Введите название проекта");
-    return;
-  }
-
-  const payload = {
-    name,
-    description: descInput ?  descInput.value.trim() : "",
-    version: versionInput ?  versionInput.value. trim() : "1.0",
-  };
-
-  const newProject = createProject(payload);
-
-  if (newProject) {
-    // Close modal
-    const modal = document.getElementById("new-project-modal");
-    if (modal) closeModal(modal);
-
-    // Re-render
-    renderProjectsList();
-    renderProjectsTree();
-
-    // Select new project
-    selectProject(newProject.id);
-  }
-}
 
 function handleEditProject(projectId) {
   const project = getProjectById(projectId);
@@ -732,46 +650,45 @@ function handleEditProject(projectId) {
   editingProjectId = projectId;
 
   // Open modal
-  const modal = document. getElementById("edit-project-modal");
-  if (modal) openModal(modal);
+ openEditProjectModal(projectId);
 }
 
-function handleSaveProjectEdit() {
-  if (!editingProjectId) return;
+// function handleSaveProjectEdit() {
+//   if (!editingProjectId) return;
 
-  const nameInput = document.getElementById("edit-project-name");
-  const descInput = document.getElementById("edit-project-desc");
-  const versionInput = document.getElementById("edit-project-version");
+//   const nameInput = document.getElementById("edit-project-name");
+//   const descInput = document.getElementById("edit-project-desc");
+//   const versionInput = document.getElementById("edit-project-version");
 
-  if (!nameInput) return;
+//   if (!nameInput) return;
 
-  const name = nameInput.value. trim();
-  if (!name) {
-    alert("Введите название проекта");
-    return;
-  }
+//   const name = nameInput.value.trim();
+//   if (!name) {
+//     alert("Введите название проекта");
+//     return;
+//   }
 
-  const updates = {
-    name,
-    description: descInput ? descInput. value.trim() : "",
-    version: versionInput ? versionInput.value.trim() : "1.0",
-  };
+//   const updates = {
+//     name,
+//     description: descInput ? descInput.value.trim() : "",
+//     version: versionInput ? versionInput.value.trim() : "1.0",
+//   };
 
-  const updated = updateProject(editingProjectId, updates);
+//   const updated = updateProject(editingProjectId, updates);
 
-  if (updated) {
-    // Close modal
-    const modal = document.getElementById("edit-project-modal");
-    if (modal) closeModal(modal);
+//   if (updated) {
+//     // Close modal
+//     const modal = document.getElementById("edit-project-modal");
+//     if (modal) closeModal(modal);
 
-    editingProjectId = null;
+//     editingProjectId = null;
 
-    // Re-render
-    renderProjectsList();
-    renderProjectsTree();
-    updateCurrentProjectDisplay();
-  }
-}
+//     // Re-render
+//     renderProjectsList();
+//     renderProjectsTree();
+//     updateCurrentProjectDisplay();
+//   }
+// }
 
 function handleDeleteProject(projectId) {
   const project = getProjectById(projectId);
@@ -815,8 +732,8 @@ function handleOpenCurrentProject() {
 
 //   const nameInput = document.getElementById("model-name");
 //   const descInput = document.getElementById("model-desc");
-//   const typeSelect = document. getElementById("model-type");
-//   const legalStateSelect = document. getElementById("model-legal-state");
+//   const typeSelect = document.getElementById("model-type");
+//   const legalStateSelect = document.getElementById("model-legal-state");
 //   const accessRightSelect = document.getElementById("model-access-right");
 
 //   if (!nameInput) return;
@@ -839,7 +756,7 @@ function handleOpenCurrentProject() {
 
 //   if (newModel) {
 //     // Close modal
-//     const modal = document. getElementById("new-model-modal");
+//     const modal = document.getElementById("new-model-modal");
 //     if (modal) closeModal(modal);
 
 //     // Re-render
@@ -879,9 +796,9 @@ function handleOpenCurrentProject() {
 //   const projectId = getCurrentProjectId();
 //   if (!projectId || !editingModelId) return;
 
-//   const nameInput = document. getElementById("edit-model-name");
-//   const descInput = document. getElementById("edit-model-desc");
-//   const typeSelect = document. getElementById("edit-model-type");
+//   const nameInput = document.getElementById("edit-model-name");
+//   const descInput = document.getElementById("edit-model-desc");
+//   const typeSelect = document.getElementById("edit-model-type");
 //   const legalStateSelect = document.getElementById("edit-model-legal-state");
 //   const accessRightSelect = document.getElementById("edit-model-access-right");
 
@@ -938,39 +855,5 @@ function handleOpenCurrentProject() {
 //     }
 //   }
 // }
-
-// ============================================================
-// HELPERS
-// ============================================================
-function getLegalStateValue(key) {
-  const legalStateList = [{ project: "В разработке" }];
-  if (! key) return "—";
-  for (const item of legalStateList) {
-    if (item[key]) return item[key];
-  }
-  return "—";
-}
-
-function getAccessRightValue(key) {
-  const accessRightList = [
-    { readOnly: "Только чтение" },
-    { readWrite: "Чтение и запись" },
-  ];
-  if (!key) return "—";
-  for (const item of accessRightList) {
-    if (item[key]) return item[key];
-  }
-  return "—";
-}
-
-function formatDate(dateString) {
-  if (!dateString) return "—";
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU");
-  } catch {
-    return dateString;
-  }
-}
 
 console.log("Projects Page Module Loaded");
