@@ -60,13 +60,13 @@ function createProject(payload) {
 
   const newProject = {
     id:  generateUUID(),
-    name: payload.name. trim(),
+    name: payload.name.trim(),
     description: payload. description ?  payload.description.trim() : "",
     version: payload.version ?  payload.version.trim() : "1.0",
     models: [],
     profiles: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createDate: new Date().toISOString(),
+    modifyDate: new Date().toISOString(),
   };
 
   MemoryStore.addProject(newProject);
@@ -101,7 +101,7 @@ function updateProject(projectId, updates) {
     ...project,
     ... updates,
     id: project.id, // ID cannot be changed
-    updatedAt: new Date().toISOString(),
+    modifyDate: new Date().toISOString(),
   };
 
   // Validate name
