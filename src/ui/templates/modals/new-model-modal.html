@@ -1,1 +1,49 @@
- 
+<div id="new-model-modal" class="modal">
+  <div class="modal-content">
+    <button
+        class="modal-close"
+        data-modal-close
+        aria-label="Закрыть"
+      >
+        ×
+    </button>
+    <div class="modal-title">Добавить модель в проект</div>
+
+    <div class="form-group">
+      <label class="form-label">Название модели *</label>
+      <input
+        type="text"
+        id="model-name"
+        class="form-input"
+        placeholder="Например: TC57CIM, IEC61970"
+        required
+        minlength="3"
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Описание</label>
+      <textarea
+        id="model-desc"
+        class="form-textarea"
+        placeholder="Описание модели"
+      ></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Версия</label>
+      <input
+        type="text"
+        id="model-version"
+        class="form-input"
+        value="0.1"
+        required
+      />
+    </div>
+
+    <div class="modal-buttons">
+      <button class="btn btn-secondary" data-modal-close>Отмена</button>
+      <button class="btn btn-primary" id="create-model-btn">Добавить</button>
+    </div>
+  </div>
+</div>

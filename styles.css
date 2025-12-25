@@ -426,7 +426,7 @@ body.modal-open { overflow: hidden; }
 
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
   gap: 15px;
   margin-bottom: 30px;
 }
@@ -555,6 +555,18 @@ body.modal-open { overflow: hidden; }
   transition: background 0.15s;
 }
 
+.list-item-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex:  1;
+  min-width: 0;
+}
+
+.list-item-icon {
+  flex-shrink: 0;
+}
+
 .list-item:hover {
   /* border-color: var(--primary-color); */
    background: rgba(74, 174, 247, 0.1);
@@ -565,7 +577,6 @@ body.modal-open { overflow: hidden; }
   border-left: 3px solid var(--main-color);
 }
 
-
 .list-item-title {
   font-size: 16px;
   font-weight: 400;
@@ -574,10 +585,31 @@ body.modal-open { overflow: hidden; }
   margin-bottom: 4px; */
 }
 
+.list-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .list-item-description {
   font-size:  13px;
   color: var(--text-secondary);
   line-height: 1.4;
+}
+
+.list-item-actions {
+  display: none;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.list-item:hover .list-item-actions {
+  display: flex;
+}
+
+.list-item.selected .list-item-actions {
+  display: flex;
 }
 
 /* NO DATA MESSAGE */

@@ -27,9 +27,29 @@ function getModel(projectId, modelId) {
 }
 
 /**
+ * Check if model name is unique within project
+ * @param {string} projectId
+ * @param {string} name - Model name to check
+ * @param {string} excludeId - Model ID to exclude from check (for edit)
+ * @returns {boolean} - true if name is unique
+ */
+function isModelNameUnique(projectId, name, excludeId = null) {
+  const models = getModels(projectId);
+  const trimmedName = name.trim().toLowerCase();
+
+  return !models.some((m) => {
+    // Skip the model being edited
+    if (excludeId && String(m.id) === String(excludeId)) {
+      return false;
+    }
+    return m.name.trim().toLowerCase() === trimmedName;
+  });
+}
+
+/**
  * Create new model
  * @param {string} projectId
- * @param {object} payload - { name, description, type, legalState, accessRight }
+ * @param {object} payload - { name, description, version }
  * @returns {object|null} - Created model or null
  */
 function createModel(projectId, payload) {
@@ -44,17 +64,29 @@ function createModel(projectId, payload) {
     return null;
   }
 
+  const trimmedName = payload.name.trim();
+
+  // Validate name length
+  if (trimmedName.length < 3) {
+    console.error("[createModel] Name must be at least 3 characters");
+    return null;
+  }
+
+  // Validate name uniqueness
+  if (! isModelNameUnique(projectId, trimmedName)) {
+    console.error(`[createModel] Model name "${trimmedName}" already exists in this project`);
+    return null;
+  }
+
   const newModel = {
-    id: generateUUID(),
-    name: payload.name.trim(),
+    id:  generateUUID(),
+    name: trimmedName,
     description: payload.description ?  payload.description.trim() : "",
-    type: payload.type ? payload.type : "Custom",
-    version: payload.version || "0.1",
+    version: payload.version ?  payload.version.trim() : "0.1",
     createDate: new Date().toISOString(),
     modifyDate: new Date().toISOString(),
-    legalState: payload.legalState || "project",
-    legalAct: payload.legalAct || "",
-    accessRight: payload.accessRight || "readWrite",
+    legalState: "project",
+    accessRight: "readWrite",
     relatedProfiles: [],
     rootPackages: [],
   };
@@ -95,10 +127,21 @@ function updateModel(projectId, modelId, updates) {
     return null;
   }
 
-  // Validate name
-  if (updates.name && ! updates.name.trim()) {
-    console.error("[updateModel] Name cannot be empty");
-    return null;
+  // Validate name if provided
+  if (updates.name !== undefined) {
+    const trimmedName = updates.name.trim();
+
+    if (trimmedName.length < 3) {
+      console.error("[updateModel] Name must be at least 3 characters");
+      return null;
+    }
+
+    if (! isModelNameUnique(projectId, trimmedName, modelId)) {
+      console.error(`[updateModel] Model name "${trimmedName}" already exists in this project`);
+      return null;
+    }
+
+    updates.name = trimmedName;
   }
 
   project.models[modelIndex] = {
@@ -109,8 +152,8 @@ function updateModel(projectId, modelId, updates) {
   };
 
   MemoryStore.updateProject(String(projectId), project);
-
   console.log(`✅ Model updated: ${project.models[modelIndex].name} (id: ${modelId})`);
+
   return project.models[modelIndex];
 }
 
@@ -145,5 +188,4 @@ function deleteModel(projectId, modelId) {
   return false;
 }
 
-
-export { getModels, getModel, createModel, updateModel, deleteModel };
+export { getModels, getModel, createModel, updateModel, deleteModel, isModelNameUnique };
