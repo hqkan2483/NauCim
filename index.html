@@ -10,16 +10,14 @@
     <div class="app-container">
       <!-- SIDEBAR -->
       <div class="sidebar" id="sidebar">
-        <button
-          class="sidebar-toggle sidebar-open"
-          onclick="toggleSidebar()"
-          aria-label="Toggle sidebar"
-        >
+        <button class="sidebar-toggle sidebar-open" aria-label="Toggle sidebar">
           <span class="toggle-icon">☰</span>
         </button>
+
         <div class="sidebar-header">
           <span>Nautilus.CIM</span>
         </div>
+
         <div class="sidebar-nav">
           <a href="projects.html" class="nav-item">📁 Проекты</a>
 
@@ -29,7 +27,7 @@
           </div>
 
           <div class="nav-section-title">Действия</div>
-          <div class="nav-item" onclick="openModal('new-project-modal')">
+          <div class="nav-item" data-modal-open="new-project-modal">
             + Новый проект
           </div>
 
@@ -43,7 +41,7 @@
         <div class="toolbar">
           <div class="toolbar-title">Главная</div>
           <div class="toolbar-actions">
-            <button class="btn btn-primary" onclick="location.reload()">
+            <button class="btn btn-primary" id="refresh-btn">
               🔄 Обновить
             </button>
           </div>
@@ -55,10 +53,7 @@
 
           <h3 class="section-title mt-30">Быстрые действия</h3>
           <div class="quick-actions">
-            <button
-              class="btn btn-primary"
-              onclick="window.location.href='projects.html'"
-            >
+            <button class="btn btn-primary" id="go-to-projects-btn">
               Перейти к проектам
             </button>
           </div>
@@ -66,60 +61,6 @@
       </div>
     </div>
 
-    <div id="new-project-modal" class="modal">
-      <div class="modal-content">
-        <button
-          class="modal-close"
-          onclick="closeModal('new-project-modal')"
-          aria-label="Закрыть"
-        >
-          ×
-        </button>
-        <div class="modal-title">Создать новый проект</div>
-
-        <div class="form-group">
-          <label class="form-label">Название проекта *</label>
-          <input
-            type="text"
-            id="project-name"
-            class="form-input"
-            placeholder="Введите название"
-          />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Описание</label>
-          <textarea
-            id="project-desc"
-            class="form-textarea"
-            placeholder="Описание проекта"
-          ></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Версия</label>
-          <input
-            type="text"
-            id="project-version"
-            class="form-input"
-            value="1.0"
-          />
-        </div>
-        <div class="modal-buttons">
-          <button
-            class="btn btn-secondary"
-            onclick="closeModal('new-project-modal')"
-          >
-            Отмена
-          </button>
-          <button class="btn btn-primary" onclick="createProject()">
-            Создать
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <script src="data.js"></script>
-    <script src="sidebar.js"></script>
-    <script src="script.js"></script>
     <script type="module" src="./src/app/pages/index-page.js"></script>
   </body>
 </html>
