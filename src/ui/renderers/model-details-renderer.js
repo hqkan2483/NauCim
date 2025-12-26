@@ -12,7 +12,7 @@ import { formatDate } from "../../utils/date.js";
  * @param {Object} options - Rendering options
  * @returns {string} HTML string
  */
-export function renderModelDetails(model, options = {}) {
+function renderModelDetails(model, options = {}) {
   const {
     showTabs = true,
     activeTab = 'properties',
@@ -79,3 +79,37 @@ export function renderModelDetails(model, options = {}) {
 
   return html;
 }
+
+function renderModelControls(model) {
+
+  if (!model) {
+    return ;
+  }
+
+  let html = '';
+
+  if (model.accessRights === 'readWrite') {
+    html += `
+      <button class="btn btn-primary" data-action="edit-model" data-model-id="${model.id}">✏️ Редактировать описание</button>
+    `;
+  } else html += `<button class="btn btn-secondary" disabled>✏️ Редактировать описание</button>`;
+
+  if (model.accessRights === 'readWrite') {
+    html += `
+      <button class="btn btn-primary" data-action="import-model"data-model-id="${model.id}">📥 Импорт</button>
+    `;
+  } else html += `<button class="btn btn-secondary" disabled>📥 Импорт</button>`;
+
+  html += ` <button class="btn btn-primary" data-action="export-model" data-model-id="${model.id}">📤 Экспорт</button>
+   <button class="btn btn-primary" data-action="check-model" data-model-id="${model.id}">✓ Проверка</button>`;
+
+  if (model.accessRights === 'readWrite') {
+    html += `
+      <button class="btn btn-primary" data-action="delete-model" data-model-id="${model.id}">🗑️ Удалить</button>
+    `;
+  } else html += `<button class="btn btn-secondary" disabled>🗑️ Удалить</button>`;
+
+  return html;
+}
+
+export { renderModelDetails, renderModelControls };

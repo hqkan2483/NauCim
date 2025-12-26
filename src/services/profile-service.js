@@ -12,7 +12,7 @@ import { generateUUID } from "../utils/uuid.js";
  */
 function getProfiles(projectId) {
   const project = MemoryStore.getProjectById(String(projectId));
-  return project ?  project.profiles || [] : [];
+  return project ? project.profiles || [] : [];
 }
 
 /**
@@ -27,9 +27,29 @@ function getProfile(projectId, profileId) {
 }
 
 /**
- * Create new Profile
+ * Check if profile name is unique within project
  * @param {string} projectId
- * @param {object} payload - { name, description, version, legalState, accessRight }
+ * @param {string} name - Profile name to check
+ * @param {string} excludeId - Profile ID to exclude from check (for edit)
+ * @returns {boolean} - true if name is unique
+ */
+function isProfileNameUnique(projectId, name, excludeId = null) {
+  const profiles = getProfiles(projectId);
+  const trimmedName = name.trim().toLowerCase();
+
+  return !profiles.some((p) => {
+    // Skip the profile being edited
+    if (excludeId && String(p.id) === String(excludeId)) {
+      return false;
+    }
+    return p.name.trim().toLowerCase() === trimmedName;
+  });
+}
+
+/**
+ * Create new profile
+ * @param {string} projectId
+ * @param {object} payload - { name, description, version }
  * @returns {object|null} - Created profile or null
  */
 function createProfile(projectId, payload) {
@@ -44,27 +64,41 @@ function createProfile(projectId, payload) {
     return null;
   }
 
+  const trimmedName = payload.name.trim();
+
+  // Validate name length
+  if (trimmedName.length < 3) {
+    console.error("[createProfile] Name must be at least 3 characters");
+    return null;
+  }
+
+  // Validate name uniqueness
+  if (!isProfileNameUnique(projectId, trimmedName)) {
+    console.error(`[createProfile] Profile name "${trimmedName}" already exists in this project`);
+    return null;
+  }
+
   const newProfile = {
     id: generateUUID(),
-    name: payload.name.trim(),
+    name: trimmedName,
     description: payload.description ?  payload.description.trim() : "",
-    version: payload.version || "0.1",
-    relatedModels: [],
+    version: payload.version ?  payload.version.trim() : "0.1",
     createDate: new Date().toISOString(),
     modifyDate: new Date().toISOString(),
-    legalState: payload.legalState || "project",
-    accessRights: payload.accessRights || "readWrite",
+    legalState: "project",
+    accessRight: "readWrite",
+    relatedModels: [],
     rootPackages: [],
   };
 
-  if (! project.profiles) {
+  if (!project.profiles) {
     project.profiles = [];
   }
 
   project.profiles.push(newProfile);
   MemoryStore.updateProject(String(projectId), project);
 
-  console.log(`✅ Profile created:  ${newProfile.name} (id: ${newProfile.id})`);
+  console.log(`✅ Profile created: ${newProfile.name} (id: ${newProfile.id})`);
   return newProfile;
 }
 
@@ -83,7 +117,7 @@ function updateProfile(projectId, profileId, updates) {
 
   const project = MemoryStore.getProjectById(String(projectId));
   if (!project) {
-    console.error(`[updateProfile] Project not found: ${projectId}`);
+    console.error(`[updateProfile] Project not found:  ${projectId}`);
     return null;
   }
 
@@ -93,10 +127,21 @@ function updateProfile(projectId, profileId, updates) {
     return null;
   }
 
-  // Validate name
-  if (updates.name && ! updates.name.trim()) {
-    console.error("[updateProfile] Name cannot be empty");
-    return null;
+  // Validate name if provided
+  if (updates.name !== undefined) {
+    const trimmedName = updates.name.trim();
+
+    if (trimmedName.length < 3) {
+      console.error("[updateProfile] Name must be at least 3 characters");
+      return null;
+    }
+
+    if (!isProfileNameUnique(projectId, trimmedName, profileId)) {
+      console.error(`[updateProfile] Profile name "${trimmedName}" already exists in this project`);
+      return null;
+    }
+
+    updates.name = trimmedName;
   }
 
   project.profiles[profileIndex] = {
@@ -107,8 +152,8 @@ function updateProfile(projectId, profileId, updates) {
   };
 
   MemoryStore.updateProject(String(projectId), project);
-
   console.log(`✅ Profile updated: ${project.profiles[profileIndex].name} (id: ${profileId})`);
+
   return project.profiles[profileIndex];
 }
 
@@ -139,9 +184,8 @@ function deleteProfile(projectId, profileId) {
     return true;
   }
 
-  console.error(`[deleteProfile] Profile not found: ${profileId}`);
+  console.error(`[deleteProfile] Profile not found:  ${profileId}`);
   return false;
 }
 
-
-export { getProfiles, getProfile, createProfile, updateProfile, deleteProfile };
+export { getProfiles, getProfile, createProfile, updateProfile, deleteProfile, isProfileNameUnique };
