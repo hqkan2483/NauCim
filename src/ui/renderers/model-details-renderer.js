@@ -12,7 +12,7 @@ import { formatDate } from "../../utils/date.js";
  * @param {Object} options - Rendering options
  * @returns {string} HTML string
  */
-export function renderModelDetails(model, options = {}) {
+function renderModelDetails(model, options = {}) {
   const {
     showTabs = true,
     activeTab = 'properties',
@@ -79,3 +79,5 @@ export function renderModelDetails(model, options = {}) {
 
   return html;
 }
+
+export { renderModelDetails };
