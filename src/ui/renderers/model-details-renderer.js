@@ -3,7 +3,7 @@
  * Renders model details with tabs and tables
  */
 
-import { getAccessRightValue, getLegalStateValue } from "../../enums/enums.js";
+import { getAccessRightsValue, getLegalStateValue } from "../../enums/enums.js";
 import { formatDate } from "../../utils/date.js";
 
 /**
@@ -39,7 +39,7 @@ function renderModelDetails(model, options = {}) {
       <table class="table model-details-table">
         <colgroup>
           <col style="width: 25%;"/>
-          <col style="width:  25%;"/>
+          <col style="width: 25%;"/>
           <col style="width: 20%;"/>
           <col style="width: 30%;"/>
         </colgroup>
@@ -63,14 +63,14 @@ function renderModelDetails(model, options = {}) {
           <tr>
             <td><strong>Дата создания: </strong></td>
             <td>${formatDate(model.createDate)}</td>
-            <td><strong>Дата изменения:</strong></td>
+            <td><strong>Дата изменения: </strong></td>
             <td>${formatDate(model.modifyDate)}</td>
           </tr>
           <tr>
             <td><strong>Статус: </strong></td>
             <td>${getLegalStateValue(model.legalState)}</td>
-            <td><strong>Права доступа:</strong></td>
-            <td>${getAccessRightValue(model.accessRights)}</td>
+            <td><strong>Права доступа: </strong></td>
+            <td>${getAccessRightsValue(model.accessRights)}</td>
           </tr>
         </tbody>
       </table>
@@ -80,6 +80,11 @@ function renderModelDetails(model, options = {}) {
   return html;
 }
 
+/**
+ * Render model controls (action buttons)
+ * @param {Object} model - Model object
+ * @returns {string} HTML string
+ */
 function renderModelControls(model) {
 
   if (!model) {

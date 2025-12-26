@@ -11,7 +11,7 @@ const STORAGE_KEY_EXPANDED = "cim.expandedTreeItems";
  * @param {string} projectId - Project ID
  * @returns {string} HTML string
  */
-export function renderProjectTree(project, projectId) {
+function renderProjectTree(project, projectId) {
   if (!project) return '<div class="no-items text-muted">Проект не найден</div>';
 
   const expandedProjects = JSON.parse(localStorage.getItem("cim.expandedProjects") || "{}");
@@ -23,7 +23,7 @@ export function renderProjectTree(project, projectId) {
         <button class="project-expand-btn"
                 data-project-id="${projectId}"
                 data-action="toggle-project"
-                aria-expanded="${isExpanded ?  "true" : "false"}">
+                aria-expanded="${isExpanded ?   "true" : "false"}">
           <span class="expand-icon">${isExpanded ? "▼" : "▶"}</span>
         </button>
         <span class="project-name" title="${project.name}">
@@ -97,7 +97,13 @@ function renderModelTree(model, projectId, index) {
   const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
   const itemId = `model-${projectId}-${index}`;
   const isExpanded = expandedItems[itemId];
-  const hasChildren = model.rootPackages && model.rootPackages.length > 0;
+
+  // ✅ Проверяем наличие rootPackages и packages внутри
+  const hasChildren =
+    model.rootPackages &&
+    model.rootPackages.length > 0 &&
+    model.rootPackages[0].packages &&
+    model.rootPackages[0].packages.length > 0;
 
   let html = `
     <div class="tree-structure-item">
@@ -109,7 +115,7 @@ function renderModelTree(model, projectId, index) {
     <button class="tree-expand-btn"
             data-item-id="${itemId}"
             data-action="toggle-tree-item"
-            aria-expanded="${isExpanded ? "true" : "false"}">
+            aria-expanded="${isExpanded ?  "true" : "false"}">
       <span class="tree-expand-icon">${isExpanded ? "▼" : "▶"}</span>
     </button>
   `;
@@ -124,12 +130,18 @@ function renderModelTree(model, projectId, index) {
       </div>
   `;
 
-  // Render children if expanded
+  // ✅ Render children if expanded (iterate through rootPackages[0].packages)
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
-    model.rootPackages.forEach((rootPkg, idx) => {
-      html += renderPackageTree(rootPkg, `${itemId}-pkg-${idx}`, model.id);
-    });
+
+    // rootPackages is an array with one element containing packages array
+    const rootPackage = model.rootPackages[0];
+    if (rootPackage.packages) {
+      rootPackage.packages.forEach((pkg, idx) => {
+        html += renderPackageTree(pkg, `${itemId}-pkg-${idx}`, model.id);
+      });
+    }
+
     html += `</div>`;
   }
 
@@ -148,7 +160,13 @@ function renderProfileTree(profile, projectId, index) {
   const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
   const itemId = `profile-${projectId}-${index}`;
   const isExpanded = expandedItems[itemId];
-  const hasChildren = profile.rootPackages && profile.rootPackages.length > 0;
+
+  // ✅ Проверяем наличие rootPackages и packages внутри
+  const hasChildren =
+    profile.rootPackages &&
+    profile.rootPackages.length > 0 &&
+    profile.rootPackages[0].packages &&
+    profile.rootPackages[0].packages.length > 0;
 
   let html = `
     <div class="tree-structure-item">
@@ -175,12 +193,18 @@ function renderProfileTree(profile, projectId, index) {
       </div>
   `;
 
-  // Render children if expanded
+  // ✅ Render children if expanded
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
-    profile.rootPackages.forEach((rootPkg, idx) => {
-      html += renderPackageTree(rootPkg, `${itemId}-pkg-${idx}`, null, profile.id);
-    });
+
+    // rootPackages is an array with one element containing packages array
+    const rootPackage = profile.rootPackages[0];
+    if (rootPackage.packages) {
+      rootPackage.packages.forEach((pkg, idx) => {
+        html += renderPackageTree(pkg, `${itemId}-pkg-${idx}`, null, profile.id);
+      });
+    }
+
     html += `</div>`;
   }
 
@@ -225,7 +249,8 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
   html += `
         <span class="tree-structure-name"
               data-type="package"
-              data-package-id="${pkg.id || ""}">
+              data-package-id="${pkg.id || ""}"
+              title="${pkg.documentation || pkg.name || ''}">
           📦 ${pkg.name || "Пакет без названия"}
         </span>
       </div>
@@ -269,6 +294,20 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
   const isExpanded = expandedItems[itemId];
   const hasChildren = cls.attributes && cls.attributes.length > 0;
 
+  // ✅ Определяем иконку по типу класса
+  let classIcon = "📄";
+  if (cls.type === "Enumeration") {
+    classIcon = "🔢";
+  } else if (cls.isAbstract) {
+    classIcon = "📋";
+  }
+
+  // ✅ Добавляем стереотип к имени класса (если есть)
+  let className = cls.name || "Класс без названия";
+  if (cls.stereotype) {
+    className = `«${cls.stereotype}» ${className}`;
+  }
+
   let html = `
     <div class="tree-structure-item">
       <div class="tree-structure-header">
@@ -293,8 +332,9 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
               data-type="class"
               data-class-id="${cls.id || ""}"
               data-model-id="${modelId || ""}"
-              data-profile-id="${profileId || ""}">
-          📄 ${cls.name || "Класс без названия"}
+              data-profile-id="${profileId || ""}"
+              title="${cls.documentation || cls.name || ''}">
+          ${classIcon} ${className}
         </span>
       </div>
   `;
@@ -319,14 +359,27 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
  * @returns {string} HTML string
  */
 function renderAttributeTree(attr, itemId) {
+  // ✅ Добавляем стереотип к имени атрибута (если есть)
+  let attrName = attr.name || "Атрибут";
+  if (attr.stereotype) {
+    attrName = `«${attr.stereotype}» ${attrName}`;
+  }
+
+  // ✅ Показываем multiplicity если есть
+  let multiplicityStr = "";
+  if (attr.multiplicity && attr.multiplicity !== "1") {
+    multiplicityStr = ` [${attr.multiplicity}]`;
+  }
+
   return `
     <div class="tree-structure-item">
       <div class="tree-structure-header">
         <span class="tree-expand-spacer"></span>
         <span class="tree-structure-name"
               data-type="attribute"
-              data-attr-id="${attr.id || ""}">
-          🔹 ${attr.name || "Атрибут"}:  ${attr.dataType || "—"}
+              data-attr-id="${attr.id || ""}"
+              title="${attr.documentation || attr.name || ''}">
+          🔹 ${attrName}:  ${attr.dataType || "—"}${multiplicityStr}
         </span>
       </div>
     </div>
@@ -337,7 +390,7 @@ function renderAttributeTree(attr, itemId) {
  * Toggle tree item (expand/collapse)
  * @param {string} itemId - Item ID to toggle
  */
-export function toggleTreeItem(itemId) {
+function toggleTreeItem(itemId) {
   const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
 
   if (expandedItems[itemId]) {
@@ -353,7 +406,7 @@ export function toggleTreeItem(itemId) {
  * Toggle project (expand/collapse)
  * @param {string} projectId - Project ID to toggle
  */
-export function toggleProject(projectId) {
+function toggleProject(projectId) {
   const expandedProjects = JSON.parse(localStorage.getItem("cim.expandedProjects") || "{}");
 
   if (expandedProjects[projectId]) {
@@ -364,3 +417,5 @@ export function toggleProject(projectId) {
 
   localStorage.setItem("cim.expandedProjects", JSON.stringify(expandedProjects));
 }
+
+export { renderProjectTree, toggleTreeItem, toggleProject };

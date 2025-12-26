@@ -3,7 +3,7 @@
  * Renders profile details with tabs and tables
  */
 
-import { getAccessRightValue, getLegalStateValue } from "../../enums/enums.js";
+import { getAccessRightsValue, getLegalStateValue } from "../../enums/enums.js";
 import { formatDate } from "../../utils/date.js";
 
 /**
@@ -39,9 +39,9 @@ function renderProfileDetails(profile, options = {}) {
       <table class="table profile-details-table">
         <colgroup>
           <col style="width: 25%;"/>
-          <col style="width:  25%;"/>
+          <col style="width: 25%;"/>
           <col style="width: 20%;"/>
-          <col style="width:  30%;"/>
+          <col style="width: 30%;"/>
         </colgroup>
         <tbody>
           <tr>
@@ -61,16 +61,16 @@ function renderProfileDetails(profile, options = {}) {
             }</td>
           </tr>
           <tr>
-            <td><strong>Дата создания:</strong></td>
+            <td><strong>Дата создания: </strong></td>
             <td>${formatDate(profile.createDate)}</td>
-            <td><strong>Дата изменения:</strong></td>
+            <td><strong>Дата изменения: </strong></td>
             <td>${formatDate(profile.modifyDate)}</td>
           </tr>
           <tr>
-            <td><strong>Статус:</strong></td>
+            <td><strong>Статус: </strong></td>
             <td>${getLegalStateValue(profile.legalState)}</td>
-            <td><strong>Права доступа:</strong></td>
-            <td>${getAccessRightValue(profile.accessRights)}</td>
+            <td><strong>Права доступа: </strong></td>
+            <td>${getAccessRightsValue(profile.accessRights)}</td>
           </tr>
         </tbody>
       </table>
@@ -79,6 +79,7 @@ function renderProfileDetails(profile, options = {}) {
 
   return html;
 }
+
 
 function renderProfileControls(profile) {
 

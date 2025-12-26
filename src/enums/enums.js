@@ -1,5 +1,13 @@
+/**
+ * Helper:  Get legal state value
+ */
 function getLegalStateValue(key) {
-  const legalStateList = [{ project: "В разработке" }];
+  const legalStateList = [
+    { project: "В разработке" },
+    { draft: "Черновик" },
+    { approved: "Утверждено" },
+    { deprecated: "Устарело" }
+  ];
   if (! key) return "—";
   for (const item of legalStateList) {
     if (item[key]) return item[key];
@@ -7,16 +15,20 @@ function getLegalStateValue(key) {
   return "—";
 }
 
-function getAccessRightValue(key) {
-  const accessRightList = [
+/**
+ * Helper: Get access rights value (updated for accessRights)
+ */
+function getAccessRightsValue(key) {
+  const accessRightsList = [
     { readOnly: "Только чтение" },
     { readWrite: "Чтение и запись" },
-    { custom: "Различный для объектов" },
+    { custom: "Настраиваемые" }
   ];
   if (!key) return "—";
-  for (const item of accessRightList) {
+  for (const item of accessRightsList) {
     if (item[key]) return item[key];
   }
   return "—";
 }
-export { getLegalStateValue, getAccessRightValue };
+
+export { getLegalStateValue, getAccessRightsValue };

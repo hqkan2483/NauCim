@@ -1,4 +1,4 @@
-import { getAccessRightValue } from "../../enums/enums.js";
+import { getAccessRightsValue } from "../../enums/enums.js";
 import { formatDate } from "../../utils/date.js";
 /**
  * Universal Project Card Renderer
@@ -67,7 +67,7 @@ function renderMeta(project) {
         <span>📌 Версия:  ${project.version || '—'}</span>
         <span>📅 Создан: ${formatDate(project.createDate)}</span>
         <span>🛠️ Изменен: ${formatDate(project.modifyDate)}</span>
-        <span>🔑 Доступ: ${getAccessRightValue(project.accessRights)}</span>
+        <span>🔑 Доступ: ${getAccessRightsValue(project.accessRights)}</span>
       </div>
   `;
 }
