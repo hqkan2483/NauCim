@@ -1,14 +1,6 @@
 [
   {
-    "id": "EAPK_EFB117DF_186E_4a3e_82CB_3C1F526B8DD8",
-    "name": "Model",
-    "type": "Package",
-    "documentation": null,
-    "documentationRu": "",
-    "details": "",
-    "elementCount": 0,
-    "elements": [],
-    "children": [
+    "packages": [
       {
         "id": "EAPK_CBA62ACE_C037_412f_A61C_18E969E7B9D1",
         "name": "GOSTRExtension",
@@ -17,8 +9,8 @@
         "documentationRu": "",
         "details": "",
         "elementCount": 0,
-        "elements": [],
-        "children": [
+        "classes": [],
+        "subPackages": [
           {
             "id": "EAPK_06EBFDC4_01D9_44a8_AF38_347E8F4751A8",
             "name": "AssetInfo",
@@ -27,7 +19,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 14,
-            "elements": [
+            "classes": [
               {
                 "id": "ab347f47-fc4e-4cc0-9e36-6261e6f58c47",
                 "name": "AsynchronousMachineInfo",
@@ -1642,7 +1634,7 @@
                 "modelItemId": "EAID_F74BC831_BD98_4f4f_B364_9429620EDFAF"
               }
             ],
-            "children": []
+            "subPackages": []
           },
           {
             "id": "EAPK_C7240E2E_AE77_457a_B415_A6CB16ECF3CC",
@@ -1652,7 +1644,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 6,
-            "elements": [
+            "classes": [
               {
                 "id": "0fffcbdc-f638-4012-bdd8-a886962ab10e",
                 "name": "ExcitationVoltage",
@@ -1953,7 +1945,7 @@
                 "modelItemId": "EAID_B886207A_D886_466f_A70F_2D2B2BBF6A55"
               }
             ],
-            "children": []
+            "subPackages": []
           },
           {
             "id": "EAPK_C3B68E00_6E31_44a4_96DD_97C5E8001FD2",
@@ -1963,7 +1955,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 9,
-            "elements": [
+            "classes": [
               {
                 "id": "45b20c7a-9256-4be1-8e03-21514d50a52a",
                 "name": "StabilizingWinding",
@@ -2740,7 +2732,7 @@
                 "modelItemId": "EAID_66D89558_2AB9_4218_8194_9664F69CC4F8"
               }
             ],
-            "children": []
+            "subPackages": []
           }
         ]
       },
@@ -2752,8 +2744,8 @@
         "documentationRu": "",
         "details": "",
         "elementCount": 0,
-        "elements": [],
-        "children": [
+        "classes": [],
+        "subPackages": [
           {
             "id": "EAPK_566B73D4_ED02_4d03_B450_704BD1F935D5",
             "name": "IEC61970",
@@ -2762,8 +2754,8 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 1,
-            "elements": [],
-            "children": [
+            "classes": [],
+            "subPackages": [
               {
                 "id": "EAPK_F4A98993_8222_43a4_8E1E_B9BDC365F1F9",
                 "name": "Base",
@@ -2772,8 +2764,8 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 0,
-                "elements": [],
-                "children": [
+                "classes": [],
+                "subPackages": [
                   {
                     "id": "EAPK_206781BC_D83E_42bf_8043_1814D42B842D",
                     "name": "Domain",
@@ -2782,7 +2774,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 45,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "33386bd0-b256-4569-8f1b-9fe74ffd658c",
                         "name": "ActivePower",
@@ -6047,7 +6039,7 @@
                         "modelItemId": "EAID_157FF307_0C5D_4c09_A480_5EBB085B0E02"
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_CE9851B0_8E38_4b48_8F62_E78E9C31767A",
@@ -6057,7 +6049,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 24,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "8571581e-bf85-41c3-a098-293210285a45",
                         "name": " PowerSystemResource",
@@ -9080,7 +9072,7 @@
                         "modelItemId": "EAID_9898CE4F_F279_4ad9_87BC_3CDC3EA2C2D4"
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_38D068F1_7EB3_431f_AC75_50C618E48644",
@@ -9090,7 +9082,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 70,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "becf5d5b-8d32-4d7d-b1f4-9a1ac0d41f54",
                         "name": "ACLineSegment",
@@ -14326,7 +14318,7 @@
                         "modelItemId": "EAID_893D85E1_3E9A_4789_BFBD_666456E9AAC4"
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_8659D928_50B5_43b5_B1EB_DABFA4899FC4",
@@ -14336,8 +14328,8 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 0,
-                    "elements": [],
-                    "children": [
+                    "classes": [],
+                    "subPackages": [
                       {
                         "id": "EAPK_3BDC9BFB_D60A_4684_B1D8_9D18AE75A873",
                         "name": "GenerationTrainingSimulation",
@@ -14346,7 +14338,7 @@
                         "documentationRu": "",
                         "details": "",
                         "elementCount": 13,
-                        "elements": [
+                        "classes": [
                           {
                             "id": "3953f177-7a00-4f43-85b6-b313725a4abb",
                             "name": "BWRSteamSupply",
@@ -15025,7 +15017,7 @@
                             "modelItemId": "EAID_9018AA9E_7D41_425e_962C_E0E5A280A368"
                           }
                         ],
-                        "children": []
+                        "subPackages": []
                       },
                       {
                         "id": "EAPK_68FE3402_033D_4c98_B74E_7F2AFA031B2E",
@@ -15035,7 +15027,7 @@
                         "documentationRu": "",
                         "details": "",
                         "elementCount": 15,
-                        "elements": [
+                        "classes": [
                           {
                             "id": "ae925b71-dd99-47ca-ab16-8cbeb2dd8bd2",
                             "name": "CogenerationPlant",
@@ -16028,7 +16020,7 @@
                             "modelItemId": "EAID_1E223764_174F_4194_AB6A_B5D1492D7354"
                           }
                         ],
-                        "children": []
+                        "subPackages": []
                       }
                     ]
                   },
@@ -16040,7 +16032,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 7,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "5efda586-a798-488a-9481-9e2cbd26f537",
                         "name": "ActivePowerLimit",
@@ -16498,7 +16490,7 @@
                         "modelItemId": "EAID_F1F86AB3_FE99_42b5_AEFB_EF769F442076"
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   }
                 ]
               }
@@ -16512,8 +16504,8 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 0,
-            "elements": [],
-            "children": [
+            "classes": [],
+            "subPackages": [
               {
                 "id": "EAPK_9B1FE3BD_046D_4260_82C3_EDBBA5920DFB",
                 "name": "Common",
@@ -16522,7 +16514,7 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 17,
-                "elements": [
+                "classes": [
                   {
                     "id": "876bfbc1-8200-4b11-91b0-c4bf0072fbd5",
                     "name": "ActivityRecord",
@@ -18205,7 +18197,7 @@
                     "modelItemId": "EAID_D5CD6178_2C8C_4551_BBA3_D1D2534ED8E3"
                   }
                 ],
-                "children": []
+                "subPackages": []
               },
               {
                 "id": "EAPK_8AFF4DFD_7F8F_4f2e_B561_745682847779",
@@ -18215,7 +18207,7 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 22,
-                "elements": [
+                "classes": [
                   {
                     "id": "68caba61-f086-45bc-b33d-3e6366a4957e",
                     "name": "Asset",
@@ -20209,7 +20201,7 @@
                     "modelItemId": "EAID_1813F390_5542_44f4_A8F6_792D0D66F036"
                   }
                 ],
-                "children": []
+                "subPackages": []
               }
             ]
           }

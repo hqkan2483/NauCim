@@ -1,14 +1,6 @@
 [
   {
-    "id": "EAPK_EFB117DF_186E_4a3e_82CB_3C1F526B8DD8",
-    "name": "Model",
-    "type": "Package",
-    "documentation": null,
-    "documentationRu": "",
-    "details": "",
-    "elementCount": 0,
-    "elements": [],
-    "children": [
+    "packages": [
       {
         "id": "EAPK_CBA62ACE_C037_412f_A61C_18E969E7B9D1",
         "name": "GOSTRExtension",
@@ -17,8 +9,8 @@
         "documentationRu": "",
         "details": "",
         "elementCount": 0,
-        "elements": [],
-        "children": [
+        "classes": [],
+        "subPackages": [
           {
             "id": "EAPK_06EBFDC4_01D9_44a8_AF38_347E8F4751A8",
             "name": "AssetInfo",
@@ -27,7 +19,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 14,
-            "elements": [
+            "classes": [
               {
                 "id": "EAID_66166C32_9054_466e_9DE4_4CF8EDCA46C5",
                 "name": "AsynchronousMachineInfo",
@@ -1642,7 +1634,7 @@
                 "modelItemId": null
               }
             ],
-            "children": []
+            "subPackages": []
           },
           {
             "id": "EAPK_A53C2BD2_554E_4e43_A7F3_79306B77AB17",
@@ -1652,7 +1644,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 1,
-            "elements": [
+            "classes": [
               {
                 "id": "EAID_9A4F1243_5579_4da3_9DAD_D4CBAB29CC65",
                 "name": "BusArrangement",
@@ -1685,7 +1677,7 @@
                 "modelItemId": null
               }
             ],
-            "children": []
+            "subPackages": []
           },
           {
             "id": "EAPK_C7240E2E_AE77_457a_B415_A6CB16ECF3CC",
@@ -1695,7 +1687,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 6,
-            "elements": [
+            "classes": [
               {
                 "id": "EAID_4ED14E3D_9B20_49aa_B829_C47AD7F47DAD",
                 "name": "ExcitationVoltage",
@@ -1996,7 +1988,7 @@
                 "modelItemId": null
               }
             ],
-            "children": []
+            "subPackages": []
           },
           {
             "id": "EAPK_32DCF8E0_A4AC_4a72_A60A_7D199DF2713C",
@@ -2006,7 +1998,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 2,
-            "elements": [
+            "classes": [
               {
                 "id": "EAID_0A436A16_18DD_4730_8675_DB6DB9368C06",
                 "name": "ExcitationControl",
@@ -2309,7 +2301,7 @@
                 "modelItemId": null
               }
             ],
-            "children": []
+            "subPackages": []
           },
           {
             "id": "EAPK_DB1598D9_CE75_4e5f_A043_A04C0235604D",
@@ -2319,7 +2311,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 1,
-            "elements": [
+            "classes": [
               {
                 "id": "EAID_DB078152_FA6B_46ad_93FF_4C1A1ABA959A",
                 "name": "CapacityConfiguration",
@@ -2387,7 +2379,7 @@
                 "modelItemId": null
               }
             ],
-            "children": [
+            "subPackages": [
               {
                 "id": "EAPK_03A764A2_1301_4630_9116_2FC3156D3C24",
                 "name": "GenerationTrainingSimulation",
@@ -2396,7 +2388,7 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 1,
-                "elements": [
+                "classes": [
                   {
                     "id": "EAID_621BC72F_63AB_446e_9B6C_A26A4A80830D",
                     "name": "WindTurbine",
@@ -2429,7 +2421,7 @@
                     "modelItemId": null
                   }
                 ],
-                "children": []
+                "subPackages": []
               }
             ]
           },
@@ -2441,7 +2433,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 3,
-            "elements": [
+            "classes": [
               {
                 "id": "EAID_6590E618_F73E_412b_9DF5_40F125201ED3",
                 "name": "FrequencyLimit",
@@ -2608,7 +2600,7 @@
                 "modelItemId": null
               }
             ],
-            "children": []
+            "subPackages": []
           },
           {
             "id": "EAPK_C3B68E00_6E31_44a4_96DD_97C5E8001FD2",
@@ -2618,7 +2610,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 9,
-            "elements": [
+            "classes": [
               {
                 "id": "EAID_9AE572C9_D4B5_4e76_9C50_57DFF2B04DAC",
                 "name": "StabilizingWinding",
@@ -3395,7 +3387,7 @@
                 "modelItemId": null
               }
             ],
-            "children": []
+            "subPackages": []
           }
         ]
       },
@@ -3407,8 +3399,8 @@
         "documentationRu": "",
         "details": "",
         "elementCount": 0,
-        "elements": [],
-        "children": [
+        "classes": [],
+        "subPackages": [
           {
             "id": "EAPK_566B73D4_ED02_4d03_B450_704BD1F935D5",
             "name": "IEC61970",
@@ -3417,7 +3409,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 1,
-            "elements": [
+            "classes": [
               {
                 "id": "EAID_7641C32E_1DFC_4700_8F2F_933250768AA4",
                 "name": "IEC61970CIMVersion",
@@ -3463,7 +3455,7 @@
                 "modelItemId": null
               }
             ],
-            "children": [
+            "subPackages": [
               {
                 "id": "EAPK_F4A98993_8222_43a4_8E1E_B9BDC365F1F9",
                 "name": "Base",
@@ -3472,8 +3464,8 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 0,
-                "elements": [],
-                "children": [
+                "classes": [],
+                "subPackages": [
                   {
                     "id": "EAPK_206781BC_D83E_42bf_8043_1814D42B842D",
                     "name": "Domain",
@@ -3482,7 +3474,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 45,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_7B1D2B24_5A8E_4fb9_B5F3_EA0025B03A1B",
                         "name": "ActivePower",
@@ -6747,7 +6739,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_CE9851B0_8E38_4b48_8F62_E78E9C31767A",
@@ -6757,7 +6749,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 24,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
                         "name": " PowerSystemResource",
@@ -9780,7 +9772,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_38D068F1_7EB3_431f_AC75_50C618E48644",
@@ -9790,7 +9782,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 70,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_DB1BE59A_9417_4a12_9A53_17007675EEA5",
                         "name": "ACLineSegment",
@@ -15026,7 +15018,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_8659D928_50B5_43b5_B1EB_DABFA4899FC4",
@@ -15036,8 +15028,8 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 0,
-                    "elements": [],
-                    "children": [
+                    "classes": [],
+                    "subPackages": [
                       {
                         "id": "EAPK_3BDC9BFB_D60A_4684_B1D8_9D18AE75A873",
                         "name": "GenerationTrainingSimulation",
@@ -15046,7 +15038,7 @@
                         "documentationRu": "",
                         "details": "",
                         "elementCount": 13,
-                        "elements": [
+                        "classes": [
                           {
                             "id": "EAID_667873FB_BB4F_411d_8BAA_5179780AA931",
                             "name": "BWRSteamSupply",
@@ -15725,7 +15717,7 @@
                             "modelItemId": null
                           }
                         ],
-                        "children": []
+                        "subPackages": []
                       },
                       {
                         "id": "EAPK_68FE3402_033D_4c98_B74E_7F2AFA031B2E",
@@ -15735,7 +15727,7 @@
                         "documentationRu": "",
                         "details": "",
                         "elementCount": 15,
-                        "elements": [
+                        "classes": [
                           {
                             "id": "EAID_D52805C0_7B60_4eed_9E50_C45B9740D321",
                             "name": "CogenerationPlant",
@@ -16728,7 +16720,7 @@
                             "modelItemId": null
                           }
                         ],
-                        "children": []
+                        "subPackages": []
                       }
                     ]
                   },
@@ -16740,7 +16732,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 7,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_CF03CD61_F041_4283_B70F_26BC6E5145B9",
                         "name": "ACDCConverterDCTerminal",
@@ -17074,7 +17066,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_65E5A898_AC32_4995_988C_019914A0B486",
@@ -17084,7 +17076,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 7,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_3241CF1E_03C4_4c0e_8DCD_16E1599521E3",
                         "name": "AuxiliaryEquipment",
@@ -17502,7 +17494,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_4B28D31E_2F0C_4852_9DDD_880A2788D403",
@@ -17512,7 +17504,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 7,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_E1B6715E_ED21_4947_9D0F_83461F11C1A8",
                         "name": "Analog",
@@ -18037,7 +18029,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_714F431C_39A8_410f_AFB1_A48CF07A3CEB",
@@ -18047,7 +18039,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 7,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_87BC6777_7063_498b_B08F_21A17D983FF2",
                         "name": "ActivePowerLimit",
@@ -18505,7 +18497,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   }
                 ]
               },
@@ -18517,8 +18509,8 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 0,
-                "elements": [],
-                "children": [
+                "classes": [],
+                "subPackages": [
                   {
                     "id": "EAPK_4ACAE5DA_46EC_4985_ABB7_5A5FFE74A402",
                     "name": "StandardModels",
@@ -18527,7 +18519,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 2,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_8B3BD000_AE25_43c2_93BC_26321D1BD615",
                         "name": "DynamicsFunctionBlock",
@@ -18638,7 +18630,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": [
+                    "subPackages": [
                       {
                         "id": "EAPK_3164D9B9_BE74_48fe_8EAC_AE8B5BF1F0C2",
                         "name": "SynchronousMachineDynamics",
@@ -18647,7 +18639,7 @@
                         "documentationRu": "",
                         "details": "",
                         "elementCount": 6,
-                        "elements": [
+                        "classes": [
                           {
                             "id": "EAID_38F05237_1EF4_4050_815E_66853D139D0F",
                             "name": "SynchronousMachineDetailed",
@@ -19026,7 +19018,7 @@
                             "modelItemId": null
                           }
                         ],
-                        "children": []
+                        "subPackages": []
                       }
                     ]
                   }
@@ -19040,8 +19032,8 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 0,
-                "elements": [],
-                "children": [
+                "classes": [],
+                "subPackages": [
                   {
                     "id": "EAPK_84E7DF43_B55B_4dfe_82A0_21E3F4D0F16F",
                     "name": "InfOperationalLimits",
@@ -19050,7 +19042,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 5,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_CA204F03_315B_4961_BC03_D6B59F9E149B",
                         "name": "EnvironmentalDependentLimit",
@@ -19345,7 +19337,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   }
                 ]
               }
@@ -19359,7 +19351,7 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 1,
-            "elements": [
+            "classes": [
               {
                 "id": "EAID_421FE0F5_637F_4d59_8483_619A82FA3FB6",
                 "name": "IEC61968CIMVersion",
@@ -19405,7 +19397,7 @@
                 "modelItemId": null
               }
             ],
-            "children": [
+            "subPackages": [
               {
                 "id": "EAPK_B566F0C3_27CA_4e61_B16F_54AC3A86094A",
                 "name": "LoadControl",
@@ -19414,7 +19406,7 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 2,
-                "elements": [
+                "classes": [
                   {
                     "id": "EAID_60F6FA16_E95D_453f_B107_048EACEB8131",
                     "name": "ConnectDisconnectFunction",
@@ -19708,7 +19700,7 @@
                     "modelItemId": null
                   }
                 ],
-                "children": []
+                "subPackages": []
               },
               {
                 "id": "EAPK_E1CF8707_303E_43fd_9E2C_7BABF3B7D04A",
@@ -19718,7 +19710,7 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 2,
-                "elements": [
+                "classes": [
                   {
                     "id": "EAID_44A5D512_F2E6_40ab_8A83_2097FAD74BA9",
                     "name": "ServiceSupplier",
@@ -19843,7 +19835,7 @@
                     "modelItemId": null
                   }
                 ],
-                "children": []
+                "subPackages": []
               },
               {
                 "id": "EAPK_9B1FE3BD_046D_4260_82C3_EDBBA5920DFB",
@@ -19853,7 +19845,7 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 17,
-                "elements": [
+                "classes": [
                   {
                     "id": "EAID_4EF90816_0389_4160_B8DE_57660EDF608F",
                     "name": "ActivityRecord",
@@ -21536,7 +21528,7 @@
                     "modelItemId": null
                   }
                 ],
-                "children": []
+                "subPackages": []
               },
               {
                 "id": "EAPK_8AFF4DFD_7F8F_4f2e_B561_745682847779",
@@ -21546,7 +21538,7 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 22,
-                "elements": [
+                "classes": [
                   {
                     "id": "EAID_F9A5606C_0571_43e1_A21A_7691F2583BC6",
                     "name": "Asset",
@@ -23540,7 +23532,7 @@
                     "modelItemId": null
                   }
                 ],
-                "children": []
+                "subPackages": []
               },
               {
                 "id": "EAPK_D94DB670_AA3B_44f1_98DA_4B3E53F409CC",
@@ -23550,7 +23542,7 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 22,
-                "elements": [
+                "classes": [
                   {
                     "id": "EAID_C93559CA_082B_4e4e_BFE7_0DCCF011B3F0",
                     "name": "BusbarSectionInfo",
@@ -25590,7 +25582,7 @@
                     "modelItemId": null
                   }
                 ],
-                "children": []
+                "subPackages": []
               },
               {
                 "id": "EAPK_FD7D275F_B62E_47c4_BAA7_0ACE98580013",
@@ -25600,7 +25592,7 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 7,
-                "elements": [
+                "classes": [
                   {
                     "id": "EAID_A37AC418_ED0C_4c2a_9093_86577661CE1F",
                     "name": "Customer",
@@ -26216,7 +26208,7 @@
                     "modelItemId": null
                   }
                 ],
-                "children": []
+                "subPackages": []
               },
               {
                 "id": "EAPK_00CC6185_D562_4605_942E_EF2FA3BB8E54",
@@ -26226,7 +26218,7 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 37,
-                "elements": [
+                "classes": [
                   {
                     "id": "EAID_753D3DEA_22C1_40e3_AB9F_329BB2BE405D",
                     "name": "BaseReading",
@@ -29594,7 +29586,7 @@
                     "modelItemId": null
                   }
                 ],
-                "children": []
+                "subPackages": []
               },
               {
                 "id": "EAPK_768F936C_129C_48d0_B762_0B07D97DA2BA",
@@ -29604,8 +29596,8 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 0,
-                "elements": [],
-                "children": [
+                "classes": [],
+                "subPackages": [
                   {
                     "id": "EAPK_94FB7462_43A1_4334_B899_194EBCADF5E9",
                     "name": "InfAssetInfo",
@@ -29614,7 +29606,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 5,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_8276D4E6_8C63_4168_A302_5D6E747E6B41",
                         "name": "BreakerInfo",
@@ -30020,7 +30012,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_AD4BE917_69ED_45a5_A820_1167DAD1C057",
@@ -30030,7 +30022,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 6,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_85D22C02_D9DD_49d6_B125_4217B0DAB0BD",
                         "name": "Tower",
@@ -30325,7 +30317,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_9BF712E1_8910_4e0b_B1F0_BE9964BA88AC",
@@ -30335,7 +30327,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 1,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "EAID_5563478B_1933_4e56_9D04_E1F01136216A",
                         "name": "Ratio",
@@ -30381,7 +30373,7 @@
                         "modelItemId": null
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   }
                 ]
               }

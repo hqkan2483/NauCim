@@ -1,14 +1,6 @@
 [
   {
-    "id": "EAPK_EFB117DF_186E_4a3e_82CB_3C1F526B8DD8",
-    "name": "Model",
-    "type": "Package",
-    "documentation": null,
-    "documentationRu": "",
-    "details": "",
-    "elementCount": 0,
-    "elements": [],
-    "children": [
+    "packages": [
       {
         "id": "EAPK_3A110153_F6A3_4221_B366_4739C56265BE",
         "name": "TC57CIM",
@@ -17,8 +9,8 @@
         "documentationRu": "",
         "details": "",
         "elementCount": 0,
-        "elements": [],
-        "children": [
+        "classes": [],
+        "subPackages": [
           {
             "id": "EAPK_566B73D4_ED02_4d03_B450_704BD1F935D5",
             "name": "IEC61970",
@@ -27,8 +19,8 @@
             "documentationRu": "",
             "details": "",
             "elementCount": 1,
-            "elements": [],
-            "children": [
+            "classes": [],
+            "subPackages": [
               {
                 "id": "EAPK_F4A98993_8222_43a4_8E1E_B9BDC365F1F9",
                 "name": "Base",
@@ -37,8 +29,8 @@
                 "documentationRu": "",
                 "details": "",
                 "elementCount": 0,
-                "elements": [],
-                "children": [
+                "classes": [],
+                "subPackages": [
                   {
                     "id": "EAPK_206781BC_D83E_42bf_8043_1814D42B842D",
                     "name": "Domain",
@@ -47,7 +39,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 45,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "5dfc8efa-f319-428e-ad8e-0c660e999b8a",
                         "name": "ActivePower",
@@ -3312,7 +3304,7 @@
                         "modelItemId": "EAID_157FF307_0C5D_4c09_A480_5EBB085B0E02"
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   },
                   {
                     "id": "EAPK_CE9851B0_8E38_4b48_8F62_E78E9C31767A",
@@ -3322,7 +3314,7 @@
                     "documentationRu": "",
                     "details": "",
                     "elementCount": 24,
-                    "elements": [
+                    "classes": [
                       {
                         "id": "83ca5929-9a56-4bec-9b1c-8377290f8931",
                         "name": " PowerSystemResource",
@@ -6345,7 +6337,7 @@
                         "modelItemId": "EAID_9898CE4F_F279_4ad9_87BC_3CDC3EA2C2D4"
                       }
                     ],
-                    "children": []
+                    "subPackages": []
                   }
                 ]
               }
