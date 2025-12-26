@@ -73,7 +73,7 @@ async function loadTestData() {
           modifyDate: "2025-10-10",
           legalState: "project",
           legalAct: "",
-          accessRight: "readWrite",
+          accessRights: "readWrite",
           relatedProfiles: [
             { id: "4", name: "GOST-XXXXX.2" },
             { id: "5", name: "Проект ГОСТ-XXXXX.Х" },

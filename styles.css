@@ -253,6 +253,11 @@ body.modal-open { overflow: hidden; }
   font-weight: 500;
 }
 
+.btn[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .btn.btn-toolbar,
 .btn.btn-table {
   margin-bottom: 0;
@@ -272,6 +277,7 @@ body.modal-open { overflow: hidden; }
 
 .btn-secondary {
   background: rgba(94, 82, 64, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
 }
 
@@ -599,7 +605,7 @@ body.modal-open { overflow: hidden; }
   line-height: 1.4;
 }
 
-.list-item-actions {
+/* .list-item-actions {
   display: none;
   gap: 4px;
   flex-shrink: 0;
@@ -610,7 +616,7 @@ body.modal-open { overflow: hidden; }
 
 .list-item.selected .list-item-actions {
   display: flex;
-}
+} */
 
 /* NO DATA MESSAGE */
 .no-data {
@@ -842,15 +848,31 @@ body.modal-open { overflow: hidden; }
 }
 
 .split-left {
+  display: flex;
+  flex-direction: column;
   width: 300px;
   border-right: 1px solid var(--border-color);
   overflow-y: auto;
   padding-right: 15px;
 }
 
+.split-left_list {
+  margin-bottom: 10px;
+}
+
+.split-left_control {
+  margin-top: auto;
+}
+
 .split-right {
   flex: 1;
   overflow-y: auto;
+}
+
+.split-right_control {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 /* SEARCH */

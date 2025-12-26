@@ -1,14 +1,34 @@
 import { getProjectById, appDataInit } from "../../services/project-service.js";
-import { getModels, getModel, deleteModel } from "../../services/model-service.js";
-import { getProfiles, getProfile, deleteProfile } from "../../services/profile-service.js";
+import {
+  getModels,
+  getModel,
+  deleteModel,
+} from "../../services/model-service.js";
+import {
+  getProfiles,
+  getProfile,
+  deleteProfile,
+} from "../../services/profile-service.js";
 import { getQueryParam } from "../../utils/url-helper.js";
 import { initModalSystem, bindModalTriggers } from "../../ui/modal.js";
 import { loadModals } from "../../ui/modal-loader.js";
-import { initSidebarResize, initSidebarToggle, restoreSidebarState } from "../../ui/sidebar/index.js";
-import { renderModelDetails } from "../../ui/renderers/model-details-renderer.js";
-import { renderProfileDetails } from "../../ui/renderers/profile-details-renderer.js";
-import { initModelModal, clearNewModelModal, openEditModelModal } from "../../ui/components/model-modal.js";
-import { initProfileModal, clearNewProfileModal, openEditProfileModal } from "../../ui/components/profile-modal.js";
+import {
+  initSidebarResize,
+  initSidebarToggle,
+  restoreSidebarState,
+} from "../../ui/sidebar/index.js";
+import { renderModelDetails, renderModelControls } from "../../ui/renderers/model-details-renderer.js";
+import { renderProfileDetails, renderProfileControls } from "../../ui/renderers/profile-details-renderer.js";
+import {
+  initModelModal,
+  clearNewModelModal,
+  openEditModelModal,
+} from "../../ui/components/model-modal.js";
+import {
+  initProfileModal,
+  clearNewProfileModal,
+  openEditProfileModal,
+} from "../../ui/components/profile-modal.js";
 
 // ============================================================
 // STATE
@@ -69,7 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderProfilesContainer();
         selectProfile(newProfile.id);
       },
-      onUpdate:  () => {
+      onUpdate: () => {
         renderProfilesContainer();
         if (selectedProfileId) {
           // Re-render details for updated profile
@@ -118,7 +138,23 @@ function bindEvents() {
   if (modelsListEl) {
     modelsListEl.addEventListener("click", (e) => {
       const target = e.target instanceof HTMLElement ? e.target : null;
-      if (! target) return;
+      if (!target) return;
+
+      // Select model
+      const selectEl = target.closest(".list-item");
+      if (selectEl) {
+        const modelId = selectEl.getAttribute("data-model-id");
+        if (modelId) selectModel(modelId);
+      }
+    });
+  }
+
+  // Delegated events on models control
+  const modelControlEl = document.getElementById("model-details-control");
+  if (modelControlEl) {
+    modelControlEl.addEventListener("click", (e) => {
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      if (!target) return;
 
       // Edit model
       const editBtn = target.closest("[data-action='edit-model']");
@@ -128,19 +164,36 @@ function bindEvents() {
         return;
       }
 
+      // Import model
+      const importBtn = target.closest("[data-action='import-model']");
+      if (importBtn) {
+        const modelId = importBtn.getAttribute("data-model-id");
+        if (modelId) handleImportModel(modelId);
+        return;
+      }
+
+      // Export model
+      const exportBtn = target.closest("[data-action='export-model']");
+      if (exportBtn) {
+        const modelId = exportBtn.getAttribute("data-model-id");
+        if (modelId) handleExportModel(modelId);
+        return;
+      }
+
+      // Check model
+      const checkBtn = target.closest("[data-action='check-model']");
+      if (checkBtn) {
+        const modelId = checkBtn.getAttribute("data-model-id");
+        if (modelId) handleCheckModel(modelId);
+        return;
+      }
+
       // Delete model
       const deleteBtn = target.closest("[data-action='delete-model']");
       if (deleteBtn) {
         const modelId = deleteBtn.getAttribute("data-model-id");
         if (modelId) handleDeleteModel(modelId);
         return;
-      }
-
-      // Select model
-      const selectEl = target.closest(".list-item");
-      if (selectEl) {
-        const modelId = selectEl.getAttribute("data-model-id");
-        if (modelId) selectModel(modelId);
       }
     });
   }
@@ -152,11 +205,67 @@ function bindEvents() {
       const target = e.target instanceof HTMLElement ? e.target : null;
       if (!target) return;
 
+      // // Edit profile
+      // const editBtn = target.closest("[data-action='edit-profile']");
+      // if (editBtn) {
+      //   const profileId = editBtn.getAttribute("data-profile-id");
+      //   if (profileId) handleEditProfile(profileId);
+      //   return;
+      // }
+
+      // // Delete profile
+      // const deleteBtn = target.closest("[data-action='delete-profile']");
+      // if (deleteBtn) {
+      //   const profileId = deleteBtn.getAttribute("data-profile-id");
+      //   if (profileId) handleDeleteProfile(profileId);
+      //   return;
+      // }
+
+      // Select profile
+      const selectEl = target.closest(".list-item");
+      if (selectEl) {
+        const profileId = selectEl.getAttribute("data-profile-id");
+        if (profileId) selectProfile(profileId);
+      }
+    });
+  }
+
+  // Delegated events on profile control
+  const profileControlEl = document.getElementById("profile-details-control");
+  if (profileControlEl) {
+    profileControlEl.addEventListener("click", (e) => {
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      if (!target) return;
+
       // Edit profile
       const editBtn = target.closest("[data-action='edit-profile']");
       if (editBtn) {
         const profileId = editBtn.getAttribute("data-profile-id");
         if (profileId) handleEditProfile(profileId);
+        return;
+      }
+
+      // Import profile
+      const importBtn = target.closest("[data-action='import-profile']");
+      if (importBtn) {
+        const profileId = importBtn.getAttribute("data-profile-id");
+        if (profileId) handleImportProfile(profileId);
+        return;
+      }
+
+      // Export profile
+      const exportBtn = target.closest("[data-action='export-profile']");
+      if (exportBtn) {
+        const profileId = exportBtn.getAttribute("data-profile-id");
+        if (profileId) handleExportProfile(profileId);
+        return;
+      }
+
+      // Check profile
+      const checkBtn = target.closest("[data-action='check-profile']");
+      if (checkBtn) {
+        const profileId = checkBtn.getAttribute("data-profile-id");
+        if (profileId) handleCheckProfile(profileId);
         return;
       }
 
@@ -166,13 +275,6 @@ function bindEvents() {
         const profileId = deleteBtn.getAttribute("data-profile-id");
         if (profileId) handleDeleteProfile(profileId);
         return;
-      }
-
-      // Select profile
-      const selectEl = target.closest(".list-item");
-      if (selectEl) {
-        const profileId = selectEl.getAttribute("data-profile-id");
-        if (profileId) selectProfile(profileId);
       }
     });
   }
@@ -232,7 +334,7 @@ function renderModelsContainer() {
 
   const models = getModels(currentProjectId);
 
-  if (! models || models.length === 0) {
+  if (!models || models.length === 0) {
     modelsList.innerHTML = '<div class="no-items text-muted">Нет моделей</div>';
     return;
   }
@@ -241,14 +343,12 @@ function renderModelsContainer() {
     .map((m) => {
       const isSelected = selectedModelId === m.id;
       return `
-        <div class="list-item ${isSelected ? "selected" : ""}" data-model-id="${m.id}">
+        <div class="list-item ${isSelected ? "selected" : ""}" data-model-id="${
+        m.id
+      }">
           <div class="list-item-content">
             <span class="list-item-icon">📦</span>
             <span class="list-item-name">${m.name}</span>
-          </div>
-          <div class="list-item-actions">
-            <button class="btn-icon btn-icon-small" data-action="edit-model" data-model-id="${m.id}" title="Редактировать">✏️</button>
-            <button class="btn-icon btn-icon-small" data-action="delete-model" data-model-id="${m.id}" title="Удалить">🗑️</button>
           </div>
         </div>
       `;
@@ -261,7 +361,8 @@ function renderModelsContainer() {
   if (!selectedModelId) {
     const modelDetails = document.getElementById("model-details");
     if (modelDetails) {
-      modelDetails.innerHTML = '<div class="text-center">Выберите модель для просмотра деталей</div>';
+      modelDetails.innerHTML =
+        '<div class="text-center">Выберите модель для просмотра деталей</div>';
     }
   }
 }
@@ -275,9 +376,14 @@ function selectModel(modelId) {
   // Render details
   const model = getModel(currentProjectId, modelId);
   const modelDetails = document.getElementById("model-details");
+  const modelDetailsControl = document.getElementById("model-details-control");
 
   if (modelDetails) {
     modelDetails.innerHTML = renderModelDetails(model);
+  }
+
+  if (modelDetailsControl) {
+    modelDetailsControl.innerHTML = renderModelControls(model);
   }
 }
 
@@ -291,7 +397,8 @@ function renderProfilesContainer() {
   const profiles = getProfiles(currentProjectId);
 
   if (!profiles || profiles.length === 0) {
-    profilesList.innerHTML = '<div class="no-items text-muted">Нет профилей</div>';
+    profilesList.innerHTML =
+      '<div class="no-items text-muted">Нет профилей</div>';
     return;
   }
 
@@ -299,14 +406,12 @@ function renderProfilesContainer() {
     .map((p) => {
       const isSelected = selectedProfileId === p.id;
       return `
-        <div class="list-item ${isSelected ? "selected" : ""}" data-profile-id="${p.id}">
+        <div class="list-item ${
+          isSelected ? "selected" : ""
+        }" data-profile-id="${p.id}">
           <div class="list-item-content">
             <span class="list-item-icon">⚙️</span>
             <span class="list-item-name">${p.name}</span>
-          </div>
-          <div class="list-item-actions">
-            <button class="btn-icon btn-icon-small" data-action="edit-profile" data-profile-id="${p.id}" title="Редактировать">✏️</button>
-            <button class="btn-icon btn-icon-small" data-action="delete-profile" data-profile-id="${p.id}" title="Удалить">🗑️</button>
           </div>
         </div>
       `;
@@ -319,7 +424,8 @@ function renderProfilesContainer() {
   if (!selectedProfileId) {
     const profileDetails = document.getElementById("profile-details");
     if (profileDetails) {
-      profileDetails.innerHTML = '<div class="text-center">Выберите профиль для просмотра деталей</div>';
+      profileDetails.innerHTML =
+        '<div class="text-center">Выберите профиль для просмотра деталей</div>';
     }
   }
 }
@@ -333,10 +439,18 @@ function selectProfile(profileId) {
   // Render details
   const profile = getProfile(currentProjectId, profileId);
   const profileDetails = document.getElementById("profile-details");
+  const profileDetailsControl = document.getElementById(
+    "profile-details-control"
+  );
 
   if (profileDetails) {
     profileDetails.innerHTML = renderProfileDetails(profile);
   }
+
+  if (profileDetailsControl) {
+    profileDetailsControl.innerHTML = renderProfileControls(profile);
+  }
+
 }
 
 // ============================================================
@@ -344,6 +458,18 @@ function selectProfile(profileId) {
 // ============================================================
 function handleEditModel(modelId) {
   openEditModelModal(modelId);
+}
+
+function handleImportModel(modelId) {
+  alert("Функция импорта в разработке");
+}
+
+function handleExportModel(modelId) {
+  alert("Функция экспорта в разработке");
+}
+
+function handleCheckModel(modelId) {
+  alert("Функция проверки в разработке");
 }
 
 function handleDeleteModel(modelId) {
@@ -369,6 +495,18 @@ function handleDeleteModel(modelId) {
 // ============================================================
 function handleEditProfile(profileId) {
   openEditProfileModal(profileId);
+}
+
+function handleImportProfile(profileId) {
+  alert("Функция импорта в разработке");
+}
+
+function handleExportProfile(profileId) {
+  alert("Функция экспорта в разработке");
+}
+
+function handleCheckProfile(profileId) {
+  alert("Функция проверки в разработке");
 }
 
 function handleDeleteProfile(profileId) {
