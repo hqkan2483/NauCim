@@ -1,0 +1,2 @@
+python "C:/pdp/MyProjects/GitHub/NauCim-1/scripts/rename_attribute_type.py" "C:/pdp/MyProjects/GitHub/NauCim-1/models-data/CIM16-model.json" "C:/pdp/MyProjects/GitHub/NauCim-1/models-data/CIM100-model.json" "C:/pdp/MyProjects/GitHub/NauCim-1/models-data/focl-model.json" "C:/pdp/MyProjects/GitHub/NauCim-1/models-data/GOSTRExt-model.json"
+
