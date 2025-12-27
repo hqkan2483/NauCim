@@ -22,7 +22,7 @@ function getAccessRightsValue(key) {
   const accessRightsList = [
     { readOnly: "Только чтение" },
     { readWrite: "Чтение и запись" },
-    { custom: "Настраиваемые" }
+    { custom: "Различный по объектам" }
   ];
   if (!key) return "—";
   for (const item of accessRightsList) {

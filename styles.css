@@ -442,7 +442,7 @@ body.modal-open { overflow: hidden; }
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 10px;
+  gap: 20px;
 
   width: 100%;
   background-color: #f5f7fa;
@@ -457,7 +457,7 @@ body.modal-open { overflow: hidden; }
 }
 
 .project-card-content {
-  /* flex: 1; */
+  flex: 1;
 }
 
 .project-card.active {
@@ -1466,15 +1466,7 @@ body.modal-open { overflow: hidden; }
   cursor: pointer;
 }
 
-.project-tree-header:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
 
-.project-tree-header.active {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  font-weight: 500;
-}
 
 /* .project-tree-header.active .project-name:hover {
     background: var(--sidebar-secondary);
@@ -1519,38 +1511,36 @@ body.modal-open { overflow: hidden; }
     color: var(--primary-color);
 } */
 
-.project-tree-header.active .project-name:hover {
-  color: var(--sidebar-bg);
-}
 
-.project-structure {
+
+/* .project-structure {
   background: rgba(0, 0, 0, 0.1);
   padding: 10px 15px;
   margin-left: 20px;
   border-left: 2px solid var(--primary-color);
   font-size: 0.85rem;
-}
+} */
 
-.structure-section {
+/* .structure-section {
   margin-bottom: 10px;
-}
+} */
 
-.structure-section:last-child {
+/* .structure-section:last-child {
   margin-bottom: 0;
 }
-
-.structure-title {
+/* */
+/* .structure-title {
   color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
   margin-bottom: 5px;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
+} */
 
-.structure-items {
+/* .structure-items {
   padding-left: 10px;
-}
+} */
 
 .structure-item {
 
@@ -1657,20 +1647,20 @@ body.modal-open { overflow: hidden; }
   margin: 2px 0;
 }
 
-.tree-structure-header {
+/* .tree-structure-header {
   display: flex;
   align-items: center;
   padding: 4px 0;
   cursor: pointer;
   user-select: none;
-}
+} */
 
-.tree-structure-header:hover {
+/* .tree-structure-header:hover {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 3px;
-}
+} */
 
-.tree-expand-btn {
+/* .tree-expand-btn {
   width: 14px;
   height: 14px;
   background: none;
@@ -1684,47 +1674,44 @@ body.modal-open { overflow: hidden; }
   justify-content: center;
   flex-shrink: 0;
   /* width: 20px;
-  height: 20px; */
+  height: 20px;
   border-radius: 2px;
   transition: background 0.15s ease;
-}
+} */
 
-.tree-expand-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
 
-.tree-expand-icon {
+/* .tree-expand-icon {
   font-size: 9px;
   display: inline-block;
   transition: transform 0.15s ease;
-}
+} */
 
-.tree-expand-btn-empty {
+/* .tree-expand-btn-empty {
   display: inline-block;
   width: 20px;
   height: 20px;
-}
+} */
 
 
-.tree-structure-children {
+/* .tree-structure-children {
   margin-top: 2px;
-}
+} */
 
-.tree-expand-spacer {
+/* .tree-expand-spacer {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
-}
+} */
 
 /* Tree item selection */
-.tree-structure-name.selected {
+/* .tree-structure-name.selected {
   background: var(--primary-color);
   color: white;
   padding: 2px 6px;
   border-radius: 3px;
-}
+} */
 
-.tree-structure-name {
+/* .tree-structure-name {
   font-size: 13px;
   color: var(--sidebar-text);
   white-space: nowrap;
@@ -1739,29 +1726,29 @@ body.modal-open { overflow: hidden; }
 .tree-structure-name:hover {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 1);
-}
+} */
 
 /* Different types styling */
-.tree-structure-name[data-type="model"] {
+/* .tree-structure-name[data-type="model"] {
   font-weight: 500;
-}
+} */
 
-.tree-structure-name[data-type="profile"] {
+/* .tree-structure-name[data-type="profile"] {
   font-weight: 500;
-}
+} */
 
-.tree-structure-name[data-type="package"] {
+/* .tree-structure-name[data-type="package"] {
   color: rgba(255, 255, 255, 0.75);
-}
+} */
 
-.tree-structure-name[data-type="class"] {
+/* .tree-structure-name[data-type="class"] {
   color: rgba(255, 255, 255, 0.8);
-}
+} */
 
-.tree-structure-name[data-type="attribute"] {
+/* .tree-structure-name[data-type="attribute"] {
   color: rgba(255, 255, 255, 0.65);
   font-size: 12px;
-}
+} */
 
 /* Profile list styles */
 .no-items {
@@ -1900,4 +1887,254 @@ body.modal-open { overflow: hidden; }
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+
+/* Новое!! */
+/* ============================================================
+   PROJECT TREE SIDEBAR
+   ============================================================ */
+
+/* Project Tree Container */
+.project-structure-nav {
+  padding: 0;
+}
+
+/* Project Tree Item (root) */
+.project-tree-item {
+  margin-bottom: 10px;
+}
+
+.project-tree-header {
+  display: flex;
+  align-items: center;
+  padding:  8px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+  gap: 6px;
+}
+
+.project-tree-header:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.project-tree-header.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-weight: 500;
+}
+
+.project-tree-header.active .project-name:hover {
+  color: var(--sidebar-bg);
+}
+
+
+
+.project-expand-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.expand-icon {
+  font-size: 10px;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.project-name {
+  font-size: 14px;
+  font-weight:  500;
+  color: rgba(255, 255, 255, 0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Project Structure */
+.project-structure {
+  padding-top: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  margin-left: 20px;
+  border-left: 2px solid var(--main-color);
+  font-size: 13px;
+
+
+  /* margin-top: 5px; */
+}
+
+.structure-section {
+  margin-bottom: 10px;
+  margin-left: 5px;
+}
+
+.structure-section:last-child {
+  margin-bottom: 0;
+}
+
+.structure-title {
+  margin-bottom: 5px;
+  padding:  0 10px;
+  font-size: 12px;
+  font-weight:  500;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.structure-items {
+  margin-left: 15px;
+  padding-left: 10px;
+   /* ✅ Отступ для секции Models/Profiles */
+}
+
+.structure-empty {
+  padding: 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Tree Structure Item */
+.tree-structure-item {
+  margin-bottom: 2px;
+}
+
+.tree-structure-header {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.2s;
+  gap: 4px;
+  min-height: 28px;
+}
+
+.tree-structure-header:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tree-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.tree-expand-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tree-expand-icon {
+  font-size: 13px;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.tree-expand-spacer {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.tree-structure-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius:  3px;
+  transition: background 0.2s;
+
+}
+
+.tree-structure-name:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 1);
+}
+
+/* ✅ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Отступы для вложенности */
+.tree-structure-children {
+  padding-left: 10px; /* 10px отступ для каждого уровня */
+  margin-top: 2px;
+}
+
+/* Different types styling */
+/* .tree-structure-name[data-type="model"] {
+  font-weight: 500;
+} */
+
+/* .tree-structure-name[data-type="profile"] {
+  font-weight: 500;
+} */
+
+/* .tree-structure-name[data-type="package"] {
+  color: rgba(255, 255, 255, 0.75);
+} */
+
+/* .tree-structure-name[data-type="class"] {
+  color: rgba(255, 255, 255, 0.8);
+} */
+
+/* .tree-structure-name[data-type="attribute"] {
+  color: rgba(255, 255, 255, 0.65);
+   font-size: 12px;
+} */
+
+/* ✅ Иконки разных типов (как на скриншоте) */
+.tree-structure-name[data-type="model"]::before {
+  content: "🔷";
+  /* margin-right: 4px; */
+}
+
+.tree-structure-name[data-type="profile"]::before {
+  content: "⚙️";
+  /* margin-right: 4px; */
+}
+
+.tree-structure-name[data-type="package"]::before {
+  content: "📦";
+  /* margin-right: 4px; */
+}
+
+.tree-structure-name[data-type="class"]::before {
+  content: "📄";
+  /* margin-right: 4px; */
+}
+
+.tree-structure-name[data-type="class"][data-is-enumeration="true"]::before {
+  content: "🔢";
+}
+
+.tree-structure-name[data-type="class"][data-is-abstract="true"]::before {
+  content: "📋";
+}
+
+.tree-structure-name[data-type="attribute"]::before {
+  content: "🔹";
+  /* margin-right: 4px; */
 }

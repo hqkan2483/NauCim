@@ -56,7 +56,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_C0D6CB05_04B0_441b_B934_E5D59F55AE59",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -68,7 +69,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_B58B5469_417B_443c_9CEA_C5D92FB792D9",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -80,7 +82,8 @@
                           {
                             "name": "value",
                             "id": "EAID_7D800AA8_BDB0_478a_9288_A74551563212",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -112,7 +115,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_0BF20795_B629_46ba_A715_4B814A662652",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -124,7 +128,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_90E999EA_F16D_4995_9911_E89A7D3687A7",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -136,7 +141,8 @@
                           {
                             "name": "value",
                             "id": "EAID_498074A0_9A5D_47b0_AB1B_AC17BC953CD8",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -168,7 +174,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_99F5D806_3ACE_4608_BD4D_B846D1D07137",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -180,7 +187,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_3D51F70A_0131_496a_97FC_40B1C9EF4D8E",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -192,7 +200,8 @@
                           {
                             "name": "value",
                             "id": "EAID_112C6B43_3AFF_4b33_A1E7_A1713867813B",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -224,7 +233,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_14225054_0C99_4616_B480_C18E04BC01EF",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -236,7 +246,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_7839505B_7D07_4fff_AA71_24CF2FC8D1E2",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -248,7 +259,8 @@
                           {
                             "name": "value",
                             "id": "EAID_9F318FA5_4E33_4b9e_A614_CAC1BF8B0E26",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -280,7 +292,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_EFC5E666_8204_4211_89B9_26B5A73A5D02",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -292,7 +305,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_8E6D6BAA_F761_482a_8ADC_30B2C346D627",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -304,7 +318,8 @@
                           {
                             "name": "value",
                             "id": "EAID_29471FEC_4DC7_4276_8759_12189EA80003",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -355,7 +370,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_BF93C1F1_29F0_4130_BD89_7F206F185BBC",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -367,7 +383,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_B0E5A702_D00C_41cd_9D50_182D4298B442",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -379,7 +396,8 @@
                           {
                             "name": "value",
                             "id": "EAID_2D927C11_B9E9_4f94_AC6D_81B17502DF2B",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -411,7 +429,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_8B73AA2C_7079_4a27_93D2_69D2FB3D2DD4",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -423,7 +442,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_A65EB06C_6FE6_4f02_AFEE_D8645930D467",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -435,7 +455,8 @@
                           {
                             "name": "value",
                             "id": "EAID_6E8A8024_91E6_418a_90BB_0E141AB06AF1",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -467,7 +488,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_F886F942_C626_449f_917C_05ED5EC40AB0",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -479,7 +501,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_FA5DC13E_D84B_47ea_8E17_BF63A6B8C259",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -491,7 +514,8 @@
                           {
                             "name": "value",
                             "id": "EAID_30CC967C_E95A_4b0e_BFFE_C8F972890BE4",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -523,7 +547,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_56F42FCD_91AA_4a9d_B70C_6FB3B650F450",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -535,7 +560,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_1A97CC12_0DB2_468c_9A99_3AD319D36685",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -547,7 +573,8 @@
                           {
                             "name": "value",
                             "id": "EAID_2B9608AA_A9F9_4279_9EF8_8DDFBE95E9F0",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -617,7 +644,8 @@
                           {
                             "name": "end",
                             "id": "EAID_DDCAD63B_32E0_441b_A0B0_28E24C439BCA",
-                            "type": "DateTime",
+                            "dataType": "DateTime",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Дата и время конца.",
                             "documentationRu": "",
@@ -629,7 +657,8 @@
                           {
                             "name": "start",
                             "id": "EAID_2A7BFFEC_7F0D_49f0_8C5F_867893ABE73A",
-                            "type": "DateTime",
+                            "dataType": "DateTime",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Дата и время начала.",
                             "documentationRu": "",
@@ -661,7 +690,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_4DD58D5A_ABBA_42f6_A2B9_1A3B0B39B0CC",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -673,7 +703,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_6589DBAF_3B98_4e18_887B_AA244D3D57B8",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -685,7 +716,8 @@
                           {
                             "name": "value",
                             "id": "EAID_8F66BE57_151A_4215_9137_D96CC4BE3F50",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -736,7 +768,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_E4746171_C030_4c82_B010_C3FAD1B00FD8",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -748,7 +781,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_838E749C_78FB_4b22_8F29_46657CF17299",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -760,7 +794,8 @@
                           {
                             "name": "value",
                             "id": "EAID_B60AAAD3_C97D_4564_9FC9_D181C4C1EF69",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -792,7 +827,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_AC0B605E_16E2_40b6_ADFC_C9750CD92706",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -804,7 +840,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_706A9172_1AB9_477e_9F5F_AF526F705B5E",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -816,7 +853,8 @@
                           {
                             "name": "value",
                             "id": "EAID_6195D06A_98A7_47e3_83E9_6DFFA8EFE306",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -848,7 +886,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_2E22F689_6CBC_4ae6_95AD_A1B0B716BBC5",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -860,7 +899,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_3066D7F1_EFC8_4be7_AE16_6F16F35A33E8",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -872,7 +912,8 @@
                           {
                             "name": "value",
                             "id": "EAID_0DC2EF23_A56D_491a_B889_BCF98B671C33",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -923,7 +964,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_641839F5_483C_4d87_ABA6_D0427A7C62B1",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -935,7 +977,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_00A743FF_DEF7_468c_BED0_5033033AEDB8",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -947,7 +990,8 @@
                           {
                             "name": "value",
                             "id": "EAID_1CC53F47_7854_412f_91D9_159E26BD8E61",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -979,7 +1023,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_0B969113_437C_48c2_8C2E_AF65B9882341",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -991,7 +1036,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_314011FA_D492_41a0_B31F_813918487E2E",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1003,7 +1049,8 @@
                           {
                             "name": "value",
                             "id": "EAID_89B1139A_E4F1_4fab_9BEA_AAA396E869CB",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1035,7 +1082,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_DE71BDCC_CDA5_48d1_8901_84BCF3747B4B",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1047,7 +1095,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_E831576E_EEEF_44b2_A46A_69A057AF0F5D",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1059,7 +1108,8 @@
                           {
                             "name": "value",
                             "id": "EAID_249BC0D4_E04A_435f_8921_BBD131D02BED",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1091,7 +1141,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_4B4300FF_4948_424d_8520_837B734B1946",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1103,7 +1154,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_92915287_D421_4fc9_982E_73CBD73F4686",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1115,7 +1167,8 @@
                           {
                             "name": "value",
                             "id": "EAID_319905FB_54C9_4517_96B5_B064D5D25935",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1147,7 +1200,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_76EA1D89_AFAE_4a93_B307_5F1C14CF5681",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1159,7 +1213,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_827A3D18_AE64_455d_9277_F2FF0436C5E3",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1171,7 +1226,8 @@
                           {
                             "name": "value",
                             "id": "EAID_9F8C718E_3AEB_411f_AF91_867606994CA0",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1203,7 +1259,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_381D20D1_1B62_493f_AD46_58E13924D519",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1215,7 +1272,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_B4F6C14D_DCCD_40f1_9953_9029B8458A04",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1227,7 +1285,8 @@
                           {
                             "name": "value",
                             "id": "EAID_48FFAB32_EACE_4b66_8DBC_894F235C2C60",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1259,7 +1318,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_4367D740_4C01_4c57_AE1A_E444EDEB9247",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1271,7 +1331,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_8F62923F_49D4_4326_BBEE_08D87CA6B8F6",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1283,7 +1344,8 @@
                           {
                             "name": "value",
                             "id": "EAID_B554A002_3FDF_4ad9_AEB8_B127B321EE71",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1315,7 +1377,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_817BF190_9AFE_4a2b_8D3B_79705E2588B6",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1327,7 +1390,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_2DB3BB9C_89C4_4e27_AB43_9B8238C45D9C",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1339,7 +1403,8 @@
                           {
                             "name": "value",
                             "id": "EAID_E854A85B_3F2B_4b88_BB6C_621FE1334D08",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1371,7 +1436,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_018D3917_90EB_47b5_9499_E255B0308746",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1383,7 +1449,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_E0286ED9_8448_469f_819C_E7892F1D6CF6",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1395,7 +1462,8 @@
                           {
                             "name": "value",
                             "id": "EAID_041A2F18_2B34_4bfe_B5AE_4ABDFA998A74",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1427,7 +1495,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_4035B1DE_CBB4_4d8c_928A_E8EC0DFD0FE5",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1439,7 +1508,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_6530A3D3_037B_487c_9E4E_0AF6F54B26CF",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1451,7 +1521,8 @@
                           {
                             "name": "value",
                             "id": "EAID_C2E3336E_B3F1_4599_AEE4_4C283BBB19AD",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1483,7 +1554,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_5E4E878E_F9B0_44f0_AC0D_333353FAACFC",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1495,7 +1567,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_B3291CC3_700C_4513_9721_806AB16D6D6A",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1507,7 +1580,8 @@
                           {
                             "name": "value",
                             "id": "EAID_41237532_F04F_458f_B863_E43955422C8B",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1539,7 +1613,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_1512FE41_F482_4a71_96C1_41DB82AA3F0B",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1551,7 +1626,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_9E3B64F2_32A0_49e1_BE7F_2AC6C55E5051",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1563,7 +1639,8 @@
                           {
                             "name": "value",
                             "id": "EAID_D8528725_C17B_454f_8924_A5F136A43A2D",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1595,7 +1672,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_A103E68E_9382_46a1_AC12_F1BA5B8B3C31",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1607,7 +1685,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_2D89EA2B_B09C_4cc3_9963_40D6B1017CC7",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1619,7 +1698,8 @@
                           {
                             "name": "value",
                             "id": "EAID_6118889A_3799_4018_9D5F_97C906F578C0",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1670,7 +1750,8 @@
                           {
                             "name": "value",
                             "id": "EAID_01CB0FD4_A3CF_4f31_954C_37587CCCDF5C",
-                            "type": "String",
+                            "dataType": "String",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Значение.",
                             "documentationRu": "",
@@ -1702,7 +1783,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_D29E9830_6DA1_47a6_854F_2D12B1F24BD7",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1714,7 +1796,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_5083D9FE_1585_449a_B3E3_1922C0BBD083",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1726,7 +1809,8 @@
                           {
                             "name": "value",
                             "id": "EAID_DA1AE626_6F42_4ca9_8043_58603B52E1AF",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1758,7 +1842,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_E1B2B397_05BC_4f0a_9558_1E826B52D5BF",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1770,7 +1855,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_A928C630_DC3A_496f_B222_F555B3D0B9E8",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1782,7 +1868,8 @@
                           {
                             "name": "value",
                             "id": "EAID_5D982BDB_0D35_43db_A082_BCFB786A724A",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1814,7 +1901,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_DB294B79_6F46_42e1_BF43_10C6550C2293",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1826,7 +1914,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_BA08CD02_48EB_4c85_BEC1_FDEE3CD54719",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1838,7 +1927,8 @@
                           {
                             "name": "value",
                             "id": "EAID_E05DB725_8617_4123_A937_66C1F04BB9AF",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1889,7 +1979,8 @@
                           {
                             "name": "end",
                             "id": "EAID_C2005FA2_972C_4882_B17D_0D1F777C7ABE",
-                            "type": "Time",
+                            "dataType": "Time",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Время окончания интервала.",
                             "documentationRu": "",
@@ -1901,7 +1992,8 @@
                           {
                             "name": "start",
                             "id": "EAID_2855AD1C_BEF3_419a_A52B_F8FFADFBD6DA",
-                            "type": "Time",
+                            "dataType": "Time",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Время начала интервала.",
                             "documentationRu": "",
@@ -1933,7 +2025,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_DC512B3F_A800_4044_BA29_78B242A23D8C",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1945,7 +2038,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_F8B97D31_19D9_440d_B06A_38D7F7543733",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1957,7 +2051,8 @@
                           {
                             "name": "value",
                             "id": "EAID_9BF6BEA2_FF2F_418b_BEA0_524EAD8C0407",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1989,7 +2084,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_FCDC8322_31A1_455d_B67F_BA6365D0E7B4",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2001,7 +2097,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_758155E1_AF84_426c_8B7B_E0CA326B3285",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2013,7 +2110,8 @@
                           {
                             "name": "value",
                             "id": "EAID_BBF56DFB_B82A_4dd5_AB2D_06718F708984",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2045,7 +2143,8 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_D8663DB6_550A_45d1_8805_71A83D1274A4",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2057,7 +2156,8 @@
                           {
                             "name": "unit",
                             "id": "EAID_0F412E53_82F2_4b40_8190_F2E75248964D",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2069,7 +2169,8 @@
                           {
                             "name": "value",
                             "id": "EAID_5544463F_A098_471f_B613_C202CB556AE7",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -3527,7 +3628,8 @@
                           {
                             "name": "sequenceNumber",
                             "id": "EAID_072872B9_5944_4de2_9CA9_AA9811B248DA",
-                            "type": "Integer",
+                            "dataType": "Integer",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Порядковый номер полюса электропроводящего оборудования",
                             "documentationRu": "",
@@ -3615,7 +3717,8 @@
                           {
                             "name": "isDC",
                             "id": "EAID_69874E3F_DF3B_4165_849F_0425403CFE20",
-                            "type": "Boolean",
+                            "dataType": "Boolean",
+                            "dataTypeId": "",
                             "stereotype": "rf",
                             "documentation": "Признак того, что значение номинального напряжения является напряжением постоянного тока.",
                             "documentationRu": "",
@@ -3627,7 +3730,8 @@
                           {
                             "name": "nominalVoltage",
                             "id": "EAID_4C2EFD32_0A16_4615_AA50_5DBC1F6E38EC",
-                            "type": "Voltage",
+                            "dataType": "Voltage",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Значение номинального напряжения, кВ.",
                             "documentationRu": "",
@@ -3715,7 +3819,8 @@
                           {
                             "name": "breakerConfiguration",
                             "id": "EAID_5B522A2A_CBB6_488f_ACD2_CE8DD85D7C5C",
-                            "type": "BreakerConfiguration",
+                            "dataType": "BreakerConfiguration",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Конфигурация соединения выключателей.",
                             "documentationRu": "",
@@ -3727,7 +3832,8 @@
                           {
                             "name": "busBarConfiguration",
                             "id": "EAID_495496FC_4B49_42da_9C46_81385E5400C2",
-                            "type": "BusbarConfiguration",
+                            "dataType": "BusbarConfiguration",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Конфигурация шин присоединения.",
                             "documentationRu": "",
@@ -3782,7 +3888,8 @@
                           {
                             "name": "isThreePhaseEquipment",
                             "id": "EAID_4C7C89A6_0E84_4013_82D8_5F4F4EB7C4A9",
-                            "type": "Boolean",
+                            "dataType": "Boolean",
+                            "dataTypeId": "",
                             "stereotype": "rf",
                             "documentation": "Трехфазное исполнение оборудования.",
                             "documentationRu": "",
@@ -4075,7 +4182,8 @@
                           {
                             "name": "curveStyle",
                             "id": "EAID_2E355384_9027_4c4b_A27A_5D4B8B3F432F",
-                            "type": "CurveStyle",
+                            "dataType": "CurveStyle",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Тип кривой.",
                             "documentationRu": "",
@@ -4087,7 +4195,8 @@
                           {
                             "name": "xMultiplier",
                             "id": "EAID_C2C81A0F_B128_4073_B497_0AD15FDB4976",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Множитель по оси X.",
                             "documentationRu": "",
@@ -4099,7 +4208,8 @@
                           {
                             "name": "xUnit",
                             "id": "EAID_4AD7D615_16B2_41f4_B5CE_B82CF3FBF091",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Единица измерения по оси X.",
                             "documentationRu": "",
@@ -4111,7 +4221,8 @@
                           {
                             "name": "y1Multiplier",
                             "id": "EAID_6D21E0EC_D22B_4943_B9B9_0E3708CE0F2C",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Множитель по оси Y1.",
                             "documentationRu": "",
@@ -4123,7 +4234,8 @@
                           {
                             "name": "y1Unit",
                             "id": "EAID_9C356759_CB26_431c_9874_6A5233E9F290",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Единица измерения по оси Y1.",
                             "documentationRu": "",
@@ -4135,7 +4247,8 @@
                           {
                             "name": "y2Multiplier",
                             "id": "EAID_547F7298_1D03_47a5_AA7E_D2A08552C1D5",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Множитель по оси Y2.",
                             "documentationRu": "",
@@ -4147,7 +4260,8 @@
                           {
                             "name": "y2Unit",
                             "id": "EAID_5B64BD83_C12A_47ef_84D4_277ECAB6A4B3",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Единица измерения по оси Y2.",
                             "documentationRu": "",
@@ -4159,7 +4273,8 @@
                           {
                             "name": "y3Multiplier",
                             "id": "EAID_91E8D41F_F9E2_49a8_B190_671806D27D22",
-                            "type": "UnitMultiplier",
+                            "dataType": "UnitMultiplier",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Множитель по оси Y3.",
                             "documentationRu": "",
@@ -4171,7 +4286,8 @@
                           {
                             "name": "y3Unit",
                             "id": "EAID_01E54DD6_6DF6_492f_9379_953A1C61BC86",
-                            "type": "UnitSymbol",
+                            "dataType": "UnitSymbol",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Единица измерения по оси Y3.",
                             "documentationRu": "",
@@ -4281,7 +4397,8 @@
                           {
                             "name": "xvalue",
                             "id": "EAID_5465BBF0_020F_49d3_9AE7_438067085226",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Значение по оси X.",
                             "documentationRu": "",
@@ -4293,7 +4410,8 @@
                           {
                             "name": "y1value",
                             "id": "EAID_E76590BB_A908_4c60_959E_264A64FACC1F",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Значение по оси Y1.",
                             "documentationRu": "",
@@ -4305,7 +4423,8 @@
                           {
                             "name": "y2value",
                             "id": "EAID_ACEBD1AE_66BB_4424_AA08_10138C31D387",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Значение по оси Y2.",
                             "documentationRu": "",
@@ -4317,7 +4436,8 @@
                           {
                             "name": "y3value",
                             "id": "EAID_0933A1B9_B12C_4a93_92DA_FF7A4730CCD5",
-                            "type": "Float",
+                            "dataType": "Float",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Значение по оси Y3.",
                             "documentationRu": "",
@@ -4361,7 +4481,8 @@
                           {
                             "name": "normallyInService",
                             "id": "EAID_C69C0E05_5BE2_40dd_8D8A_9B748A24B721",
-                            "type": "Boolean",
+                            "dataType": "Boolean",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Если присвоено значение &#171;Истина&#187;, оборудование находится в работе.",
                             "documentationRu": "",
@@ -4841,7 +4962,8 @@
                           {
                             "name": "aliasName",
                             "id": "EAID_C9E4C6E3_C6A3_41bd_8DFF_15C5C74A5D1D",
-                            "type": "String",
+                            "dataType": "String",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Дополнительное наименование идентифицируемого объекта.",
                             "documentationRu": "",
@@ -4853,7 +4975,8 @@
                           {
                             "name": "description",
                             "id": "EAID_8620B859_38E1_4d47_A501_8BB171EE4D44",
-                            "type": "String",
+                            "dataType": "String",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Описание объекта информационной модели.",
                             "documentationRu": "",
@@ -4865,7 +4988,8 @@
                           {
                             "name": "mRID",
                             "id": "EAID_323F503C_A681_4181_9183_1E420D4A68F9",
-                            "type": "UUID",
+                            "dataType": "UUID",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Глобальный уникальный идентификатор объекта информационной модели.",
                             "documentationRu": "",
@@ -4877,7 +5001,8 @@
                           {
                             "name": "name",
                             "id": "EAID_D4A7A0F9_74F7_4479_A881_1929EA4CF14A",
-                            "type": "String",
+                            "dataType": "String",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Наименование объекта информационной модели.",
                             "documentationRu": "",
@@ -5636,7 +5761,8 @@
                           {
                             "name": "name",
                             "id": "EAID_7B777FB6_8D2E_42de_AF78_8438D7B64AF3",
-                            "type": "String",
+                            "dataType": "String",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Типизированное дополнительное наименование объекта информационной модели.",
                             "documentationRu": "",
@@ -5691,7 +5817,8 @@
                           {
                             "name": "description",
                             "id": "EAID_36CB07DC_9CC1_46c3_8083_5D852EB8478F",
-                            "type": "String",
+                            "dataType": "String",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Описатель типа наименования.",
                             "documentationRu": "",
@@ -5703,7 +5830,8 @@
                           {
                             "name": "name",
                             "id": "EAID_8FBBB7E1_F5DE_478e_8FED_E1264CF725EC",
-                            "type": "String",
+                            "dataType": "String",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Тип наименования.",
                             "documentationRu": "",
@@ -5939,7 +6067,8 @@
                           {
                             "name": "phases",
                             "id": "EAID_E8342278_89AC_4a2c_8E62_2FC6375A431C",
-                            "type": "PhaseCode",
+                            "dataType": "PhaseCode",
+                            "dataTypeId": "",
                             "stereotype": "",
                             "documentation": "Код фазы терминала.",
                             "documentationRu": "",

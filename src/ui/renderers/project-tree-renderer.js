@@ -98,7 +98,6 @@ function renderModelTree(model, projectId, index) {
   const itemId = `model-${projectId}-${index}`;
   const isExpanded = expandedItems[itemId];
 
-  // ✅ Проверяем наличие rootPackages и packages внутри
   const hasChildren =
     model.rootPackages &&
     model.rootPackages.length > 0 &&
@@ -108,33 +107,25 @@ function renderModelTree(model, projectId, index) {
   let html = `
     <div class="tree-structure-item">
       <div class="tree-structure-header">
-  `;
-
-  // Expand button (always show for models)
-  html += `
-    <button class="tree-expand-btn"
-            data-item-id="${itemId}"
-            data-action="toggle-tree-item"
-            aria-expanded="${isExpanded ?  "true" : "false"}">
-      <span class="tree-expand-icon">${isExpanded ? "▼" : "▶"}</span>
-    </button>
-  `;
-
-  html += `
+        <button class="tree-expand-btn"
+                data-item-id="${itemId}"
+                data-action="toggle-tree-item"
+                aria-expanded="${isExpanded ?  "true" : "false"}">
+          <span class="tree-expand-icon">${isExpanded ? "▼" : "▶"}</span>
+        </button>
         <span class="tree-structure-name"
               data-type="model"
               data-model-id="${model.id}"
-              data-action="select-model">
-          🔷 ${model.name || "Модель без названия"}
+              data-action="select-model"
+              title="${model.description || model.name || ''}">
+          ${model.name || "Модель без названия"}
         </span>
       </div>
   `;
 
-  // ✅ Render children if expanded (iterate through rootPackages[0].packages)
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
 
-    // rootPackages is an array with one element containing packages array
     const rootPackage = model.rootPackages[0];
     if (rootPackage.packages) {
       rootPackage.packages.forEach((pkg, idx) => {
@@ -161,7 +152,6 @@ function renderProfileTree(profile, projectId, index) {
   const itemId = `profile-${projectId}-${index}`;
   const isExpanded = expandedItems[itemId];
 
-  // ✅ Проверяем наличие rootPackages и packages внутри
   const hasChildren =
     profile.rootPackages &&
     profile.rootPackages.length > 0 &&
@@ -171,33 +161,25 @@ function renderProfileTree(profile, projectId, index) {
   let html = `
     <div class="tree-structure-item">
       <div class="tree-structure-header">
-  `;
-
-  // Expand button
-  html += `
-    <button class="tree-expand-btn"
-            data-item-id="${itemId}"
-            data-action="toggle-tree-item"
-            aria-expanded="${isExpanded ? "true" : "false"}">
-      <span class="tree-expand-icon">${isExpanded ? "▼" : "▶"}</span>
-    </button>
-  `;
-
-  html += `
+        <button class="tree-expand-btn"
+                data-item-id="${itemId}"
+                data-action="toggle-tree-item"
+                aria-expanded="${isExpanded ? "true" : "false"}">
+          <span class="tree-expand-icon">${isExpanded ? "▼" : "▶"}</span>
+        </button>
         <span class="tree-structure-name"
               data-type="profile"
               data-profile-id="${profile.id}"
-              data-action="select-profile">
-          ⚙️ ${profile.name || "Профиль без названия"}
+              data-action="select-profile"
+              title="${profile.description || profile.name || ''}">
+          ${profile.name || "Профиль без названия"}
         </span>
       </div>
   `;
 
-  // ✅ Render children if expanded
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
 
-    // rootPackages is an array with one element containing packages array
     const rootPackage = profile.rootPackages[0];
     if (rootPackage.packages) {
       rootPackage.packages.forEach((pkg, idx) => {
@@ -232,7 +214,6 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
       <div class="tree-structure-header">
   `;
 
-  // Expand button (only if has children)
   if (hasChildren) {
     html += `
       <button class="tree-expand-btn"
@@ -251,23 +232,22 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
               data-type="package"
               data-package-id="${pkg.id || ""}"
               title="${pkg.documentation || pkg.name || ''}">
-          📦 ${pkg.name || "Пакет без названия"}
+          ${pkg.name || "Пакет без названия"}
         </span>
       </div>
   `;
 
-  // Render children if expanded
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
 
-    // Render subpackages
+    // Render subpackages first
     if (pkg.subPackages && pkg.subPackages.length > 0) {
       pkg.subPackages.forEach((subPkg, idx) => {
         html += renderPackageTree(subPkg, `${itemId}-sub-${idx}`, modelId, profileId);
       });
     }
 
-    // Render classes
+    // Then render classes
     if (pkg.classes && pkg.classes.length > 0) {
       pkg.classes.forEach((cls, idx) => {
         html += renderClassTree(cls, `${itemId}-cls-${idx}`, modelId, profileId);
@@ -294,15 +274,11 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
   const isExpanded = expandedItems[itemId];
   const hasChildren = cls.attributes && cls.attributes.length > 0;
 
-  // ✅ Определяем иконку по типу класса
-  let classIcon = "📄";
-  if (cls.type === "Enumeration") {
-    classIcon = "🔢";
-  } else if (cls.isAbstract) {
-    classIcon = "📋";
-  }
+  // Определяем data-атрибуты для CSS
+  const isEnumeration = cls.type === "Enumeration";
+  const isAbstract = cls.isAbstract;
 
-  // ✅ Добавляем стереотип к имени класса (если есть)
+  // Добавляем стереотип к имени класса
   let className = cls.name || "Класс без названия";
   if (cls.stereotype) {
     className = `«${cls.stereotype}» ${className}`;
@@ -313,13 +289,12 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
       <div class="tree-structure-header">
   `;
 
-  // Expand button (only if has attributes)
   if (hasChildren) {
     html += `
       <button class="tree-expand-btn"
               data-item-id="${itemId}"
               data-action="toggle-tree-item"
-              aria-expanded="${isExpanded ? "true" : "false"}">
+              aria-expanded="${isExpanded ? "true" :  "false"}">
         <span class="tree-expand-icon">${isExpanded ? "▼" : "▶"}</span>
       </button>
     `;
@@ -332,14 +307,17 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
               data-type="class"
               data-class-id="${cls.id || ""}"
               data-model-id="${modelId || ""}"
+              data-ref-model-id="${cls.modelItemId || ""}"
+              data-ref-model-item-id="${cls.modelItemId || ""}"
               data-profile-id="${profileId || ""}"
+              data-is-enumeration="${isEnumeration}"
+              data-is-abstract="${isAbstract}"
               title="${cls.documentation || cls.name || ''}">
-          ${classIcon} ${className}
+          ${className}
         </span>
       </div>
   `;
 
-  // Render attributes if expanded
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
     cls.attributes.forEach((attr, idx) => {
@@ -359,13 +337,11 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
  * @returns {string} HTML string
  */
 function renderAttributeTree(attr, itemId) {
-  // ✅ Добавляем стереотип к имени атрибута (если есть)
   let attrName = attr.name || "Атрибут";
   if (attr.stereotype) {
     attrName = `«${attr.stereotype}» ${attrName}`;
   }
 
-  // ✅ Показываем multiplicity если есть
   let multiplicityStr = "";
   if (attr.multiplicity && attr.multiplicity !== "1") {
     multiplicityStr = ` [${attr.multiplicity}]`;
@@ -379,13 +355,12 @@ function renderAttributeTree(attr, itemId) {
               data-type="attribute"
               data-attr-id="${attr.id || ""}"
               title="${attr.documentation || attr.name || ''}">
-          🔹 ${attrName}:  ${attr.dataType || "—"}${multiplicityStr}
+          ${attrName}:  ${attr.dataType || "—"}${multiplicityStr}
         </span>
       </div>
     </div>
   `;
 }
-
 /**
  * Toggle tree item (expand/collapse)
  * @param {string} itemId - Item ID to toggle
