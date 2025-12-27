@@ -31,4 +31,17 @@ function getAccessRightsValue(key) {
   return "—";
 }
 
-export { getLegalStateValue, getAccessRightsValue };
+function getRoleLabel(role) {
+  const roleMap = {
+    'child': 'Потомок (наследуется от целевого класса)',
+    'parent': 'Родитель (является базовым для целевого класса)',
+    'unspecified': 'Неопределённая',
+    'source': 'Источник',
+    'target': 'Цель'
+  };
+  
+  return roleMap[role] || role || "—";
+}
+
+
+export { getLegalStateValue, getAccessRightsValue, getRoleLabel};

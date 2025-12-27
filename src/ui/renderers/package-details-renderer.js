@@ -1,10 +1,10 @@
 /**
  * Package Details Renderer
- * Renders package details
+ * Renders editable package form
  */
 
 /**
- * Render package details HTML
+ * Render package details HTML (editable form)
  * @param {Object} pkg - Package object
  * @returns {string} HTML string
  */
@@ -16,50 +16,75 @@ function renderPackageDetails(pkg) {
   let html = `
     <div class="item-details">
       <div class="item-header">
-        <h2 class="item-title">📦 ${pkg.name || "Пакет без названия"}</h2>
+        <h2 class="item-title">📦 Редактирование пакета</h2>
         <span class="item-type-badge">Package</span>
       </div>
       
-      <div class="item-properties">
-        <div class="property-group">
-          <div class="property-label">Тип: </div>
-          <div class="property-value">${pkg.type || "—"}</div>
+      <form class="item-form" id="package-form" data-package-id="${pkg.id}">
+        <div class="form-section">
+          <h3 class="form-section-title">Основные свойства</h3>
+          
+          <div class="form-group">
+            <label class="form-label" for="pkg-name">Название пакета *</label>
+            <input 
+              type="text" 
+              id="pkg-name" 
+              class="form-input" 
+              value="${pkg.name || ''}"
+              required
+            />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="pkg-type">Тип</label>
+            <input 
+              type="text" 
+              id="pkg-type" 
+              class="form-input" 
+              value="${pkg.type || 'Package'}"
+              readonly
+            />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="pkg-documentation">Описание</label>
+            <textarea 
+              id="pkg-documentation" 
+              class="form-textarea"
+              rows="3"
+            >${pkg.documentation || ''}</textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="pkg-documentationRu">Описание (RU)</label>
+            <textarea 
+              id="pkg-documentationRu" 
+              class="form-textarea"
+              rows="3"
+            >${pkg.documentationRu || ''}</textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="pkg-details">Детали</label>
+            <textarea 
+              id="pkg-details" 
+              class="form-textarea"
+              rows="4"
+            >${pkg.details || ''}</textarea>
+          </div>
         </div>
         
-        ${pkg.documentation ? `
-          <div class="property-group">
-            <div class="property-label">Описание:</div>
-            <div class="property-value">${pkg.documentation}</div>
-          </div>
-        ` : ''}
-        
-        ${pkg.documentationRu ? `
-          <div class="property-group">
-            <div class="property-label">Описание (RU):</div>
-            <div class="property-value">${pkg.documentationRu}</div>
-          </div>
-        ` : ''}
-        
-        ${pkg.details ? `
-          <div class="property-group">
-            <div class="property-label">Детали:</div>
-            <div class="property-value">${pkg.details}</div>
-          </div>
-        ` : ''}
-        
-        <div class="property-group">
-          <div class="property-label">Классов:</div>
-          <div class="property-value">${pkg.classes ? pkg.classes.length : 0}</div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            💾 Сохранить изменения
+          </button>
+          <button type="button" class="btn btn-secondary" id="pkg-cancel-btn">
+            ↩️ Отмена
+          </button>
         </div>
-        
-        <div class="property-group">
-          <div class="property-label">Подпакетов:</div>
-          <div class="property-value">${pkg.subPackages ? pkg.subPackages.length : 0}</div>
-        </div>
-      </div>
+      </form>
       
-      ${renderPackageClasses(pkg)}
-      ${renderPackageSubPackages(pkg)}
+      ${renderPackageContents(pkg)}
     </div>
   `;
 
@@ -67,67 +92,74 @@ function renderPackageDetails(pkg) {
 }
 
 /**
- * Render package classes list
+ * Render package contents (subpackages and classes)
  */
-function renderPackageClasses(pkg) {
-  if (!pkg.classes || pkg.classes.length === 0) {
-    return '';
-  }
-
+function renderPackageContents(pkg) {
   let html = `
     <div class="item-section">
-      <h3 class="section-title">Классы (${pkg.classes.length})</h3>
-      <div class="classes-list">
+      <h3 class="section-title">Содержимое пакета</h3>
   `;
 
-  pkg.classes.forEach(cls => {
-    const icon = cls.type === 'Enumeration' ?  '🔢' : (cls.isAbstract ? '📋' : '📄');
+  // Subpackages
+  if (pkg.subPackages && pkg.subPackages.length > 0) {
     html += `
-      <div class="class-item">
-        <span class="class-icon">${icon}</span>
-        <span class="class-name">${cls.name}</span>
-        ${cls.stereotype ? `<span class="class-stereotype">«${cls.stereotype}»</span>` : ''}
+      <div class="content-group">
+        <h4 class="content-group-title">Подпакеты (${pkg.subPackages.length})</h4>
+        <div class="subpackages-list">
+    `;
+
+    pkg.subPackages.forEach(subPkg => {
+      html += `
+        <div class="subpackage-item">
+          <span class="subpackage-icon">📦</span>
+          <span class="subpackage-name">${subPkg.name}</span>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
       </div>
     `;
-  });
+  }
 
-  html += `
+  // Classes
+  if (pkg.classes && pkg.classes.length > 0) {
+    html += `
+      <div class="content-group">
+        <h4 class="content-group-title">Классы (${pkg.classes.length})</h4>
+        <div class="classes-list">
+    `;
+
+    pkg.classes.forEach(cls => {
+      const icon = cls.type === 'Enumeration' ? '🔢' : (cls.isAbstract ? '📋' : '📄');
+      html += `
+        <div class="class-item">
+          <span class="class-icon">${icon}</span>
+          <span class="class-name">${cls.name}</span>
+          ${cls.stereotype ? `<span class="class-stereotype">«${cls.stereotype}»</span>` : ''}
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
       </div>
-    </div>
-  `;
+    `;
+  }
 
+  // Empty state
+  if ((! pkg.subPackages || pkg.subPackages.length === 0) && 
+      (!pkg.classes || pkg.classes.length === 0)) {
+    html += `
+      <div class="no-content">
+        <p>Пакет пуст (нет подпакетов и классов)</p>
+      </div>
+    `;
+  }
+
+  html += `</div>`;
   return html;
 }
 
-/**
- * Render package subpackages list
- */
-function renderPackageSubPackages(pkg) {
-  if (!pkg.subPackages || pkg.subPackages.length === 0) {
-    return '';
-  }
-
-  let html = `
-    <div class="item-section">
-      <h3 class="section-title">Подпакеты (${pkg.subPackages.length})</h3>
-      <div class="subpackages-list">
-  `;
-
-  pkg.subPackages.forEach(subPkg => {
-    html += `
-      <div class="subpackage-item">
-        <span class="subpackage-icon">📦</span>
-        <span class="subpackage-name">${subPkg.name}</span>
-      </div>
-    `;
-  });
-
-  html += `
-      </div>
-    </div>
-  `;
-
-  return html;
-}
-
-export {renderPackageDetails};
+export { renderPackageDetails };

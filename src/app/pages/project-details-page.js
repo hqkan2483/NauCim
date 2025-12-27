@@ -45,6 +45,7 @@ import { renderLinkDetails } from "../../ui/renderers/link-details-renderer.js";
 let currentProjectId = null;
 let selectedModelId = null;
 let selectedProfileId = null;
+let originalItemData = null; // ✅ Для хранения исходных данных при редактировании
 
 // ============================================================
 // INIT
@@ -340,6 +341,14 @@ function bindEvents() {
       }
     });
   }
+  
+  // ✅ Delegated events on item-details-content
+  const itemDetailsContent = document.getElementById("item-details-content");
+  if (itemDetailsContent) {
+    itemDetailsContent.addEventListener("click", handleItemDetailsClick);
+    itemDetailsContent.addEventListener("submit", handleItemDetailsSubmit);
+  }
+
 }
 
 // ============================================================
@@ -550,18 +559,22 @@ function hideItemContainer() {
 /**
  * Handle select package from tree
  */
+/**
+ * Handle select package from tree
+ */
 function handleSelectPackage(packageId) {
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
-  // Find package in project structure
   const pkg = findPackageById(project, packageId);
   if (!pkg) {
     console.warn(`Package not found: ${packageId}`);
     return;
   }
 
-  // Render package details
+  // ✅ Store original for cancel
+  originalItemData = JSON.parse(JSON.stringify(pkg));
+
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
     itemDetailsContent.innerHTML = renderPackageDetails(pkg);
@@ -570,6 +583,7 @@ function handleSelectPackage(packageId) {
   showItemContainer();
 }
 
+
 /**
  * Handle select class from tree
  */
@@ -577,14 +591,15 @@ function handleSelectClass(classId) {
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
-  // Find class in project structure
   const cls = findClassById(project, classId);
   if (!cls) {
     console.warn(`Class not found: ${classId}`);
     return;
   }
 
-  // Render class details
+  // ✅ Store original for cancel
+  originalItemData = JSON.parse(JSON.stringify(cls));
+
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
     itemDetailsContent.innerHTML = renderClassDetails(cls);
@@ -600,14 +615,313 @@ function handleSelectAttribute(attrId) {
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
-  // Find attribute in project structure
   const attr = findAttributeById(project, attrId);
   if (!attr) {
     console.warn(`Attribute not found: ${attrId}`);
     return;
   }
 
-  // Render attribute details
+  // ✅ Store original for cancel
+  originalItemData = JSON.parse(JSON.stringify(attr));
+
+  const itemDetailsContent = document.getElementById("item-details-content");
+  if (itemDetailsContent) {
+    itemDetailsContent.innerHTML = renderAttributeDetails(attr);
+  }
+
+  showItemContainer();
+}
+
+
+/**
+ * Handle select link from tree
+ */
+function handleSelectLink(linkId) {
+  const project = getProjectById(currentProjectId);
+  if (!project) return;
+
+  const link = findLinkById(project, linkId);
+  if (!link) {
+    console.warn(`Link not found: ${linkId}`);
+    return;
+  }
+
+  // ✅ Store original for cancel
+  originalItemData = JSON.parse(JSON.stringify(link));
+
+  const itemDetailsContent = document.getElementById("item-details-content");
+  if (itemDetailsContent) {
+    itemDetailsContent.innerHTML = renderLinkDetails(link);
+  }
+
+  showItemContainer();
+}
+
+/**
+ * ✅ Handle clicks in item details (NEW)
+ */
+function handleItemDetailsClick(e) {
+  const target = e.target instanceof HTMLElement ? e.target : null;
+  if (! target) return;
+
+  // Package form cancel
+  const pkgCancelBtn = target.closest("#pkg-cancel-btn");
+  if (pkgCancelBtn) {
+    handleCancelPackageEdit();
+    return;
+  }
+
+  // Class form cancel
+  const clsCancelBtn = target.closest("#cls-cancel-btn");
+  if (clsCancelBtn) {
+    handleCancelClassEdit();
+    return;
+  }
+
+  // Attribute form cancel
+  const attrCancelBtn = target.closest("#attr-cancel-btn");
+  if (attrCancelBtn) {
+    handleCancelAttributeEdit();
+    return;
+  }
+
+  // Link form cancel
+  const linkCancelBtn = target.closest("#link-cancel-btn");
+  if (linkCancelBtn) {
+    handleCancelLinkEdit();
+    return;
+  }
+
+  // Add attribute button
+  const addAttrBtn = target.closest("#add-attribute-btn");
+  if (addAttrBtn) {
+    const classId = addAttrBtn.getAttribute("data-class-id");
+    handleAddAttribute(classId);
+    return;
+  }
+
+  // Add link button
+  const addLinkBtn = target.closest("#add-link-btn");
+  if (addLinkBtn) {
+    const classId = addLinkBtn.getAttribute("data-class-id");
+    handleAddLink(classId);
+    return;
+  }
+
+  // Add literal button
+  const addLiteralBtn = target.closest("#add-literal-btn");
+  if (addLiteralBtn) {
+    const classId = addLiteralBtn.getAttribute("data-class-id");
+    handleAddLiteral(classId);
+    return;
+  }
+
+  // Edit attribute
+  const editAttrBtn = target.closest("[data-action='edit-attribute']");
+  if (editAttrBtn) {
+    const attrId = editAttrBtn.getAttribute("data-attr-id");
+    handleEditAttribute(attrId);
+    return;
+  }
+
+  // Delete attribute
+  const deleteAttrBtn = target.closest("[data-action='delete-attribute']");
+  if (deleteAttrBtn) {
+    const attrId = deleteAttrBtn.getAttribute("data-attr-id");
+    handleDeleteAttribute(attrId);
+    return;
+  }
+
+  // Edit link
+  const editLinkBtn = target.closest("[data-action='edit-link']");
+  if (editLinkBtn) {
+    const linkId = editLinkBtn.getAttribute("data-link-id");
+    handleEditLink(linkId);
+    return;
+  }
+
+  // Delete link
+  const deleteLinkBtn = target.closest("[data-action='delete-link']");
+  if (deleteLinkBtn) {
+    const linkId = deleteLinkBtn.getAttribute("data-link-id");
+    handleDeleteLink(linkId);
+    return;
+  }
+
+  // Edit literal
+  const editLiteralBtn = target.closest("[data-action='edit-literal']");
+  if (editLiteralBtn) {
+    const literalId = editLiteralBtn.getAttribute("data-literal-id");
+    handleEditLiteral(literalId);
+    return;
+  }
+
+  // Delete literal
+  const deleteLiteralBtn = target.closest("[data-action='delete-literal']");
+  if (deleteLiteralBtn) {
+    const literalId = deleteLiteralBtn.getAttribute("data-literal-id");
+    handleDeleteLiteral(literalId);
+    return;
+  }
+}
+
+/**
+ * ✅ Handle form submissions in item details (NEW)
+ */
+function handleItemDetailsSubmit(e) {
+  e.preventDefault();
+
+  const form = e.target;
+
+  // Package form
+  if (form.id === "package-form") {
+    handleSavePackage(form);
+    return;
+  }
+
+  // Class form
+  if (form.id === "class-form") {
+    handleSaveClass(form);
+    return;
+  }
+
+  // Attribute form
+  if (form.id === "attribute-form") {
+    handleSaveAttribute(form);
+    return;
+  }
+
+  // Link form
+  if (form.id === "link-form") {
+    handleSaveLink(form);
+    return;
+  }
+}
+
+// ============================================================
+// ✅ PACKAGE HANDLERS (NEW)
+// ============================================================
+
+/**
+ * Save package changes
+ */
+function handleSavePackage(form) {
+  const packageId = form.getAttribute("data-package-id");
+  
+  const updatedData = {
+    name: document.getElementById("pkg-name").value.trim(),
+    type: document.getElementById("pkg-type").value.trim(),
+    documentation: document.getElementById("pkg-documentation").value.trim(),
+    documentationRu: document.getElementById("pkg-documentationRu").value.trim(),
+    details: document.getElementById("pkg-details").value.trim(),
+  };
+
+  console.log("💾 Сохранение пакета:", packageId, updatedData);
+  alert("Функция сохранения пакета в разработке");
+  
+  // TODO: Call service to update package
+  // updatePackage(currentProjectId, packageId, updatedData);
+  // renderProjectTreeSidebar();
+}
+
+/**
+ * Cancel package edit (restore original)
+ */
+function handleCancelPackageEdit() {
+  if (! originalItemData) return;
+  
+  const confirmed = confirm("Отменить изменения?   Несохранённые данные будут потеряны.");
+  if (!confirmed) return;
+
+  // Re-render with original data
+  const itemDetailsContent = document.getElementById("item-details-content");
+  if (itemDetailsContent) {
+    itemDetailsContent.innerHTML = renderPackageDetails(originalItemData);
+  }
+  
+  console.log("↩️ Отмена редактирования пакета");
+}
+
+// ============================================================
+// ✅ CLASS HANDLERS (NEW)
+// ============================================================
+
+/**
+ * Save class changes
+ */
+function handleSaveClass(form) {
+  const classId = form.getAttribute("data-class-id");
+  
+  const updatedData = {
+    name: document.getElementById("cls-name").value.trim(),
+    stereotype: document.getElementById("cls-stereotype").value.trim(),
+    type: document.getElementById("cls-type").value,
+    isAbstract: document.getElementById("cls-isAbstract").checked,
+    documentation: document.getElementById("cls-documentation").value.trim(),
+    documentationRu: document.getElementById("cls-documentationRu").value.trim(),
+    details: document.getElementById("cls-details").value.trim(),
+  };
+
+  console.log("💾 Сохранение класса:", classId, updatedData);
+  alert("Функция сохранения класса в разработке");
+  
+  // TODO: Call service to update class
+  // updateClass(currentProjectId, classId, updatedData);
+  // renderProjectTreeSidebar();
+}
+
+/**
+ * Cancel class edit (restore original)
+ */
+function handleCancelClassEdit() {
+  if (!originalItemData) return;
+  
+  const confirmed = confirm("Отменить изменения?  Несохранённые данные будут потеряны.");
+  if (!confirmed) return;
+
+  // Re-render with original data
+  const itemDetailsContent = document.getElementById("item-details-content");
+  if (itemDetailsContent) {
+    itemDetailsContent.innerHTML = renderClassDetails(originalItemData);
+  }
+  
+  console.log("↩️ Отмена редактирования класса");
+}
+
+// ============================================================
+// ✅ ATTRIBUTE HANDLERS (NEW)
+// ============================================================
+
+/**
+ * Add new attribute
+ */
+function handleAddAttribute(classId) {
+  console.log("➕ Добавление атрибута для класса:", classId);
+  alert("Функция добавления атрибута в разработке");
+  
+  // TODO: Open modal or inline form to create attribute
+  // createAttribute(currentProjectId, classId, attributeData);
+}
+
+/**
+ * Edit attribute
+ */
+function handleEditAttribute(attrId) {
+  console.log("✏️ Редактирование атрибута:", attrId);
+  
+  const project = getProjectById(currentProjectId);
+  if (!project) return;
+
+  const attr = findAttributeById(project, attrId);
+  if (!attr) {
+    console.warn(`Attribute not found: ${attrId}`);
+    return;
+  }
+
+  // Store original for cancel
+  originalItemData = JSON.parse(JSON.stringify(attr));
+
+  // Render attribute edit form
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
     itemDetailsContent.innerHTML = renderAttributeDetails(attr);
@@ -617,20 +931,99 @@ function handleSelectAttribute(attrId) {
 }
 
 /**
- * Handle select link from tree
+ * Delete attribute
  */
-function handleSelectLink(linkId) {
+function handleDeleteAttribute(attrId) {
+  console.log("🗑️ Удаление атрибута:", attrId);
+  
+  const confirmed = confirm("Удалить атрибут?");
+  if (!confirmed) return;
+
+  alert("Функция удаления атрибута в разработке");
+  
+  // TODO: Call service to delete attribute
+  // deleteAttribute(currentProjectId, classId, attrId);
+  // Re-render class details
+}
+
+/**
+ * Save attribute changes
+ */
+function handleSaveAttribute(form) {
+  const attrId = form.getAttribute("data-attr-id");
+  
+  const updatedData = {
+    name: document.getElementById("attr-name").value.trim(),
+    dataType: document.getElementById("attr-dataType").value.trim(),
+    multiplicity: document.getElementById("attr-multiplicity").value.trim(),
+    stereotype: document.getElementById("attr-stereotype").value.trim(),
+    visibility: document.getElementById("attr-visibility").value,
+    initialValue: document.getElementById("attr-initialValue").value.trim(),
+    dataTypeId: document.getElementById("attr-dataTypeId").value.trim(),
+    documentation: document.getElementById("attr-documentation").value.trim(),
+    documentationRu: document.getElementById("attr-documentationRu").value.trim(),
+    details: document.getElementById("attr-details").value.trim(),
+  };
+
+  console.log("💾 Сохранение атрибута:", attrId, updatedData);
+  alert("Функция сохранения атрибута в разработке");
+  
+  // TODO: Call service to update attribute
+  // updateAttribute(currentProjectId, classId, attrId, updatedData);
+}
+
+/**
+ * Cancel attribute edit
+ */
+function handleCancelAttributeEdit() {
+  if (!originalItemData) return;
+  
+  const confirmed = confirm("Отменить изменения?  Несохранённые данные будут потеряны.");
+  if (!confirmed) return;
+
+  // Re-render with original data
+  const itemDetailsContent = document.getElementById("item-details-content");
+  if (itemDetailsContent) {
+    itemDetailsContent.innerHTML = renderAttributeDetails(originalItemData);
+  }
+  
+  console.log("↩️ Отмена редактирования атрибута");
+}
+
+// ============================================================
+// ✅ LINK HANDLERS (NEW)
+// ============================================================
+
+/**
+ * Add new link
+ */
+function handleAddLink(classId) {
+  console.log("➕ Добавление связи для класса:", classId);
+  alert("Функция добавления связи в разработке");
+  
+  // TODO: Open modal or inline form to create link
+  // createLink(currentProjectId, classId, linkData);
+}
+
+/**
+ * Edit link
+ */
+function handleEditLink(linkId) {
+  console.log("✏️ Редактирование связи:", linkId);
+  
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
-  // Find link in project structure
   const link = findLinkById(project, linkId);
   if (!link) {
     console.warn(`Link not found: ${linkId}`);
     return;
   }
 
-  // Render link details
+  // Store original for cancel
+  originalItemData = JSON.parse(JSON.stringify(link));
+
+  // Render link edit form
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
     itemDetailsContent.innerHTML = renderLinkDetails(link);
@@ -638,6 +1031,105 @@ function handleSelectLink(linkId) {
 
   showItemContainer();
 }
+
+/**
+ * Delete link
+ */
+function handleDeleteLink(linkId) {
+  console.log("🗑️ Удаление связи:", linkId);
+  
+  const confirmed = confirm("Удалить связь?");
+  if (!confirmed) return;
+
+  alert("Функция удаления связи в разработке");
+  
+  // TODO: Call service to delete link
+  // deleteLink(currentProjectId, classId, linkId);
+  // Re-render class details
+}
+
+/**
+ * Save link changes
+ */
+function handleSaveLink(form) {
+  const linkId = form.getAttribute("data-link-id");
+  
+  const updatedData = {
+    relationKind: document.getElementById("link-relationKind").value,
+    role: document.getElementById("link-role").value,
+    targetClassName: document.getElementById("link-targetClassName").value.trim(),
+    targetClassId:  document.getElementById("link-targetClassId").value.trim(),
+    multiplicity: document.getElementById("link-multiplicity").value.trim(),
+    targetClassRoleName: document.getElementById("link-targetClassRoleName").value.trim(),
+    srcClassRoleName: document.getElementById("link-srcClassRoleName").value.trim(),
+    targetDescription: document.getElementById("link-targetDescription").value.trim(),
+  };
+
+  console.log("💾 Сохранение связи:", linkId, updatedData);
+  alert("Функция сохранения связи в разработке");
+  
+  // TODO: Call service to update link
+  // updateLink(currentProjectId, classId, linkId, updatedData);
+}
+
+/**
+ * Cancel link edit
+ */
+function handleCancelLinkEdit() {
+  if (!originalItemData) return;
+  
+  const confirmed = confirm("Отменить изменения? Несохранённые данные будут потеряны.");
+  if (!confirmed) return;
+
+  // Re-render with original data
+  const itemDetailsContent = document.getElementById("item-details-content");
+  if (itemDetailsContent) {
+    itemDetailsContent.innerHTML = renderLinkDetails(originalItemData);
+  }
+  
+  console.log("↩️ Отмена редактирования связи");
+}
+
+// ============================================================
+// ✅ LITERAL HANDLERS (NEW)
+// ============================================================
+
+/**
+ * Add new literal
+ */
+function handleAddLiteral(classId) {
+  console.log("➕ Добавление значения перечисления для класса:", classId);
+  alert("Функция добавления значения в разработке");
+  
+  // TODO: Open modal or inline form to create literal
+  // createLiteral(currentProjectId, classId, literalData);
+}
+
+/**
+ * Edit literal
+ */
+function handleEditLiteral(literalId) {
+  console.log("✏️ Редактирование значения перечисления:", literalId);
+  alert("Функция редактирования значения в разработке");
+  
+  // TODO: Open modal or inline form to edit literal
+}
+
+/**
+ * Delete literal
+ */
+function handleDeleteLiteral(literalId) {
+  console.log("🗑️ Удаление значения перечисления:", literalId);
+  
+  const confirmed = confirm("Удалить значение? ");
+  if (!confirmed) return;
+
+  alert("Функция удаления значения в разработке");
+  
+  // TODO: Call service to delete literal
+  // deleteLiteral(currentProjectId, classId, literalId);
+}
+
 
 // ============================================================
 // ✅ HELPER FUNCTIONS TO FIND ITEMS (NEW)

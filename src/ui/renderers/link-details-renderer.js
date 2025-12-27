@@ -1,10 +1,10 @@
 /**
  * Link Details Renderer
- * Renders class link (relationship) details
+ * Renders editable link (relationship) form
  */
 
 /**
- * Render link details HTML
+ * Render link details HTML (editable form)
  * @param {Object} link - ClassLink object
  * @returns {string} HTML string
  */
@@ -14,128 +14,121 @@ function renderLinkDetails(link) {
   }
 
   const linkIcon = link.relationKind === 'Generalization' ? '⬆️' : '↔️';
-  const linkColor = link.relationKind === 'Generalization' ? '#add8e6' : '#90ee90';
 
   let html = `
     <div class="item-details">
       <div class="item-header">
-        <h2 class="item-title" style="color: ${linkColor}">
-          ${linkIcon} ${link.relationKind || "Связь"}
-        </h2>
-        <span class="item-type-badge">${link.relationKind || "Link"}</span>
+        <h2 class="item-title">${linkIcon} Редактирование связи</h2>
+        <span class="item-type-badge">${link.relationKind || 'Link'}</span>
       </div>
       
-      <div class="item-properties">
-        <div class="property-group">
-          <div class="property-label">Тип связи:</div>
-          <div class="property-value">${link.relationKind || "—"}</div>
+      <form class="item-form" id="link-form" data-link-id="${link.linkId}">
+        <div class="form-section">
+          <h3 class="form-section-title">Свойства связи</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="link-relationKind">Тип связи *</label>
+              <select id="link-relationKind" class="form-select" required>
+                <option value="Generalization" ${link.relationKind === 'Generalization' ? 'selected' : ''}>Generalization (Наследование)</option>
+                <option value="Association" ${link.relationKind === 'Association' ? 'selected' : ''}>Association (Ассоциация)</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="link-role">Роль</label>
+              <select id="link-role" class="form-select">
+                <option value="child" ${link.role === 'child' ? 'selected' : ''}>child (Потомок)</option>
+                <option value="parent" ${link.role === 'parent' ? 'selected' : ''}>parent (Родитель)</option>
+                <option value="unspecified" ${link.role === 'unspecified' ? 'selected' : ''}>unspecified</option>
+                <option value="source" ${link.role === 'source' ? 'selected' :  ''}>source</option>
+                <option value="target" ${link.role === 'target' ? 'selected' : ''}>target</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="link-targetClassName">Целевой класс *</label>
+              <input 
+                type="text" 
+                id="link-targetClassName" 
+                class="form-input" 
+                value="${link.targetClassName || ''}"
+                required
+                placeholder="Название целевого класса"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="link-targetClassId">ID целевого класса</label>
+              <input 
+                type="text" 
+                id="link-targetClassId" 
+                class="form-input" 
+                value="${link.targetClassId || ''}"
+              />
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="link-multiplicity">Multiplicity</label>
+              <input 
+                type="text" 
+                id="link-multiplicity" 
+                class="form-input" 
+                value="${link.multiplicity || '1'}"
+                placeholder="Например:  1, 0..1, 0..*"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="link-targetClassRoleName">Имя роли (target)</label>
+              <input 
+                type="text" 
+                id="link-targetClassRoleName" 
+                class="form-input" 
+                value="${link.targetClassRoleName || ''}"
+                placeholder="Название роли целевого класса"
+              />
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="link-srcClassRoleName">Имя роли (source)</label>
+            <input 
+              type="text" 
+              id="link-srcClassRoleName" 
+              class="form-input" 
+              value="${link.srcClassRoleName || ''}"
+              placeholder="Название роли класса-источника"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="link-targetDescription">Описание</label>
+            <textarea 
+              id="link-targetDescription" 
+              class="form-textarea"
+              rows="3"
+            >${link.targetDescription || ''}</textarea>
+          </div>
         </div>
         
-        <div class="property-group">
-          <div class="property-label">Роль:</div>
-          <div class="property-value">${getRoleLabel(link.role)}</div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            💾 Сохранить изменения
+          </button>
+          <button type="button" class="btn btn-secondary" id="link-cancel-btn">
+            ↩️ Отмена
+          </button>
         </div>
-        
-        <div class="property-group">
-          <div class="property-label">Целевой класс:</div>
-          <div class="property-value"><strong>${link.targetClassName || "—"}</strong></div>
-        </div>
-        
-        ${link.targetClassId ? `
-          <div class="property-group">
-            <div class="property-label">ID целевого класса:</div>
-            <div class="property-value"><code>${link.targetClassId}</code></div>
-          </div>
-        ` : ''}
-        
-        <div class="property-group">
-          <div class="property-label">Multiplicity:</div>
-          <div class="property-value">${link.multiplicity || "—"}</div>
-        </div>
-        
-        ${link.targetClassRoleName ? `
-          <div class="property-group">
-            <div class="property-label">Имя роли (target):</div>
-            <div class="property-value">${link.targetClassRoleName}</div>
-          </div>
-        ` : ''}
-        
-        ${link.srcClassRoleName ? `
-          <div class="property-group">
-            <div class="property-label">Имя роли (source):</div>
-            <div class="property-value">${link.srcClassRoleName}</div>
-          </div>
-        ` : ''}
-        
-        ${link.targetDescription ? `
-          <div class="property-group full-width">
-            <div class="property-label">Описание:</div>
-            <div class="property-value">${link.targetDescription}</div>
-          </div>
-        ` : ''}
-      </div>
-      
-      ${renderLinkDiagram(link)}
+      </form>
     </div>
   `;
 
   return html;
-}
-
-/**
- * Get human-readable role label
- */
-function getRoleLabel(role) {
-  const roleMap = {
-    'child': 'Потомок (наследуется от целевого класса)',
-    'parent': 'Родитель (является базовым для целевого класса)',
-    'unspecified': 'Неопределённая',
-    'source': 'Источник',
-    'target': 'Цель'
-  };
-  
-  return roleMap[role] || role || "—";
-}
-
-/**
- * Render simple ASCII diagram for link
- */
-function renderLinkDiagram(link) {
-  let diagram = '';
-  
-  if (link.relationKind === 'Generalization') {
-    // Inheritance diagram
-    diagram = `
-      <div class="link-diagram">
-        <div class="diagram-title">Диаграмма наследования: </div>
-        <pre class="diagram-content">
-    ${link.role === 'child' ? 'Текущий класс' : link.targetClassName}
-           │
-           │ (наследует)
-           ▼
-    ${link.role === 'child' ? link.targetClassName : 'Текущий класс'}
-        </pre>
-      </div>
-    `;
-  } else if (link.relationKind === 'Association') {
-    // Association diagram
-    const srcRole = link.srcClassRoleName || 'source';
-    const targetRole = link.targetClassRoleName || 'target';
-    const multiplicity = link.multiplicity || '*';
-    
-    diagram = `
-      <div class="link-diagram">
-        <div class="diagram-title">Диаграмма ассоциации: </div>
-        <pre class="diagram-content">
-    Текущий класс ──────────── ${link.targetClassName}
-         (${srcRole})              (${targetRole})
-                               [${multiplicity}]
-        </pre>
-      </div>
-    `;
-  }
-  
-  return diagram;
 }
 
 export { renderLinkDetails };
