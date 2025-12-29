@@ -211,6 +211,11 @@ body.modal-open { overflow: hidden; }
   background: var(--border-color);
 }
 
+.divider-white {
+  height: 1px;
+  background: var(--bg-primary);
+}
+
 .toolbar {
   height: 50px;
   padding: 10px 20px;
@@ -1767,12 +1772,12 @@ body.modal-open { overflow: hidden; }
 
 
 /* Item details container */
-.item-details {
+/* .item-details {
   padding: 10px 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
+} */
 
 /* .item-details h2 {
   font-size: 24px;
@@ -2077,33 +2082,19 @@ body.modal-open { overflow: hidden; }
   color: rgba(255, 255, 255, 1);
 }
 
+.tree-structure-name.selected {
+  background: var(--primary-color);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
 /* ✅ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Отступы для вложенности */
 .tree-structure-children {
   padding-left: 10px; /* 10px отступ для каждого уровня */
   margin-top: 2px;
 }
 
-/* Different types styling */
-/* .tree-structure-name[data-type="model"] {
-  font-weight: 500;
-} */
-
-/* .tree-structure-name[data-type="profile"] {
-  font-weight: 500;
-} */
-
-/* .tree-structure-name[data-type="package"] {
-  color: rgba(255, 255, 255, 0.75);
-} */
-
-/* .tree-structure-name[data-type="class"] {
-  color: rgba(255, 255, 255, 0.8);
-} */
-
-/* .tree-structure-name[data-type="attribute"] {
-  color: rgba(255, 255, 255, 0.65);
-   font-size: 12px;
-} */
 
 /* ✅ Иконки разных типов (как на скриншоте) */
 .tree-structure-name[data-type="model"]::before {
@@ -2173,19 +2164,23 @@ body.modal-open { overflow: hidden; }
    ============================================================ */
 
 #item-container {
-  margin-top: 30px;
+  /* margin-top: 30px; */
 }
 
 #item-container .item-details-wrapper {
   background:  var(--bg-primary);
-  border-radius: 8px;
-  padding: 20px;
-  border: 1px solid var(--border-color);
+  /* border-radius: 8px; */
+  /* padding: 20px; */
+  /* border: 1px solid var(--border-color); */
 }
 
 /* Item Details */
  #item-container * .item-details {
   max-width: 100%;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
  #item-container * .item-header {
@@ -2475,20 +2470,35 @@ body.modal-open { overflow: hidden; }
 }
 
 #item-container * .form-section-title {
-  font-size:  16px;
-  font-weight:  600;
   margin:  0 0 20px 0;
   color:  var(--text-primary);
-  padding-bottom: 10px;
+  padding-bottom: 15px;
   border-bottom: 2px solid var(--border-color);
 }
 
 #item-container * .form-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 40px;
   margin-bottom: 15px;
 }
+
+#item-container * .form-row:last-child {
+  margin-bottom: 0;
+}
+
+#item-container * .form-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#item-container * .form-cell__line {
+  /* display: flex; */
+  flex-direction: row;
+  gap: 20px;
+}
+
 
 #item-container * .form-group {
   display: flex;
@@ -2496,22 +2506,47 @@ body.modal-open { overflow: hidden; }
   gap: 6px;
 }
 
+#item-container .form-group__line {
+  /* display: flex; */
+  flex-direction: row;
+  gap: 20px;
+}
+
 #item-container * .form-label {
-  font-weight: 600;
+  /* min-width: 15%; */
+  flex-shrink: 0;
+  font-weight: 400;
   font-size: 14px;
-  color: var(--text-secondary);
+  /* color: var(--text-secondary); */
+}
+
+#item-container * .form-label__title {
+  min-width:  0;
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+
+#item-container .form-group__line .form-label {
+align-self: center;
 }
 
 
 #item-container * .form-input,
 #item-container * .form-textarea,
 #item-container * .form-select {
-  padding: 10px 12px;
+  padding: 5px 12px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#item-container * .form-input__short {
+  width: 400px;
 }
 
 #item-container * .form-input:focus,
@@ -2542,7 +2577,7 @@ body.modal-open { overflow: hidden; }
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  padding: 10px 0;
+  padding: 5px 0;
 }
 
 #item-container * .form-checkbox {
@@ -2554,11 +2589,11 @@ body.modal-open { overflow: hidden; }
 #item-container * .form-actions {
   display: flex;
   gap: 12px;
-  padding:  20px;
+  /* padding:  20px;
   background: rgba(0, 0, 0, 0.02);
   border-radius: 8px;
   border-top: 2px solid var(--border-color);
-  margin-top: 20px;
+  margin-top: 20px; */
 }
 
 /* Section Header with Actions */

@@ -18,89 +18,95 @@ function renderClassDetails(cls) {
 
   let html = `
     <div class="item-details">
-      <div class="item-header">
-        <h2 class="item-title">${icon} Редактирование класса</h2>
-        <span class="item-type-badge">${typeName}</span>
-      </div>
-      
       <form class="item-form" id="class-form" data-class-id="${cls.id}">
         <div class="form-section">
-          <h3 class="form-section-title">Основные свойства</h3>
-          
+          <div class="form-section-title">
+            <div class="form-row">
+              <div class="form-cell">
+                <div class="form-group form-group__line">
+                    <label class="form-label form-label__title" for="cls-name">Класс *</label>
+                    <input
+                      type="text"
+                      id="cls-name"
+                      class="form-input form-input__short"
+                      value="${cls.name || ''}"
+                      required
+                    />
+                </div>
+              </div>
+
+              <div class="form-group form-group__line">
+                <div class="form-cell form-cell__line">
+                 <div class="form-group">
+                  <label class="form-checkbox-label">
+                    <span>Абстрактный класс</span>
+                    <input
+                      type="checkbox"
+                      id="cls-isAbstract"
+                      class="form-checkbox"
+                      ${cls.isAbstract ? 'checked' : ''}
+                    />
+
+                  </label>
+                  </div>
+                  <div class="form-group form-group__line">
+                    <label class="form-label" for="cls-stereotype">Стереотип</label>
+                    <input
+                      type="text"
+                      id="cls-stereotype"
+                      class="form-input"
+                      value="${cls.stereotype || ''}"
+                      placeholder="Например: rs, rf"
+                    />
+                  </div>
+
+
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+
           <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="cls-name">Название класса *</label>
-              <input 
-                type="text" 
-                id="cls-name" 
-                class="form-input" 
-                value="${cls.name || ''}"
-                required
-              />
+             <div class="form-cell">
+              <div class="form-group">
+                <label class="form-label" for="cls-documentation">Описание</label>
+                <textarea
+                  id="cls-documentation"
+                  class="form-textarea"
+                  rows="3"
+                >${cls.documentation || ''}</textarea>
+              </div>
             </div>
-            
-            <div class="form-group">
-              <label class="form-label" for="cls-stereotype">Стереотип</label>
-              <input 
-                type="text" 
-                id="cls-stereotype" 
-                class="form-input" 
-                value="${cls.stereotype || ''}"
-                placeholder="Например: rs, rf"
-              />
+
+            <div class="form-cell">
+              <div class="form-group">
+                <label class="form-label" for="cls-documentationRu">Описание (RU)</label>
+                <textarea
+                  id="cls-documentationRu"
+                  class="form-textarea"
+                  rows="3"
+                >${cls.documentationRu || ''}</textarea>
+              </div>
             </div>
           </div>
-          
+
           <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="cls-type">Тип</label>
-              <select id="cls-type" class="form-select">
-                <option value="Class" ${cls.type === 'Class' ? 'selected' : ''}>Class</option>
-                <option value="Enumeration" ${cls.type === 'Enumeration' ? 'selected' : ''}>Enumeration</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-checkbox-label">
-                <input 
-                  type="checkbox" 
-                  id="cls-isAbstract" 
-                  class="form-checkbox"
-                  ${cls.isAbstract ? 'checked' : ''}
-                />
-                <span>Абстрактный класс</span>
-              </label>
+             <div class="form-cell">
+              <div class="form-group">
+                <label class="form-label" for="cls-details">Детали</label>
+                <textarea
+                  id="cls-details"
+                  class="form-textarea"
+                  rows="4"
+                >${cls.details || ''}</textarea>
+              </div>
             </div>
           </div>
           
-          <div class="form-group">
-            <label class="form-label" for="cls-documentation">Описание</label>
-            <textarea 
-              id="cls-documentation" 
-              class="form-textarea"
-              rows="3"
-            >${cls.documentation || ''}</textarea>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="cls-documentationRu">Описание (RU)</label>
-            <textarea 
-              id="cls-documentationRu" 
-              class="form-textarea"
-              rows="3"
-            >${cls.documentationRu || ''}</textarea>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="cls-details">Детали</label>
-            <textarea 
-              id="cls-details" 
-              class="form-textarea"
-              rows="4"
-            >${cls.details || ''}</textarea>
-          </div>
         </div>
-        
+
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">
             💾 Сохранить изменения
@@ -110,7 +116,7 @@ function renderClassDetails(cls) {
           </button>
         </div>
       </form>
-      
+
       ${renderClassAttributes(cls)}
       ${renderClassLinks(cls)}
       ${cls.type === 'Enumeration' ? renderClassLiterals(cls) : ''}
@@ -166,14 +172,14 @@ function renderClassAttributes(cls) {
           <td class="text-truncate" title="${attr.documentation || ''}">${attr.documentation || '—'}</td>
           <td>
             <div class="table-actions">
-              <button class="btn-icon" 
-                      data-action="edit-attribute" 
+              <button class="btn-icon"
+                      data-action="edit-attribute"
                       data-attr-id="${attr.id}"
                       title="Редактировать">
                 ✏️
               </button>
-              <button class="btn-icon btn-icon-danger" 
-                      data-action="delete-attribute" 
+              <button class="btn-icon btn-icon-danger"
+                      data-action="delete-attribute"
                       data-attr-id="${attr.id}"
                       title="Удалить">
                 🗑️
@@ -245,14 +251,14 @@ function renderClassLinks(cls) {
           <td class="text-truncate" title="${link.targetDescription || ''}">${link.targetDescription || '—'}</td>
           <td>
             <div class="table-actions">
-              <button class="btn-icon" 
-                      data-action="edit-link" 
+              <button class="btn-icon"
+                      data-action="edit-link"
                       data-link-id="${link.linkId}"
                       title="Редактировать">
                 ✏️
               </button>
-              <button class="btn-icon btn-icon-danger" 
-                      data-action="delete-link" 
+              <button class="btn-icon btn-icon-danger"
+                      data-action="delete-link"
                       data-link-id="${link.linkId}"
                       title="Удалить">
                 🗑️
@@ -315,14 +321,14 @@ function renderClassLiterals(cls) {
           <td>${lit.initialValue || '—'}</td>
           <td>
             <div class="table-actions">
-              <button class="btn-icon" 
-                      data-action="edit-literal" 
+              <button class="btn-icon"
+                      data-action="edit-literal"
                       data-literal-id="${lit.id}"
                       title="Редактировать">
                 ✏️
               </button>
-              <button class="btn-icon btn-icon-danger" 
-                      data-action="delete-literal" 
+              <button class="btn-icon btn-icon-danger"
+                      data-action="delete-literal"
                       data-literal-id="${lit.id}"
                       title="Удалить">
                 🗑️

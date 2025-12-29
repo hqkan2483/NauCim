@@ -29,10 +29,10 @@ import {
   clearNewProfileModal,
   openEditProfileModal,
 } from "../../ui/components/profile-modal.js";
-import { 
-  renderProjectTree, 
-  toggleTreeItem, 
-  toggleProject 
+import {
+  renderProjectTree,
+  toggleTreeItem,
+  toggleProject
 } from "../../ui/renderers/project-tree-renderer.js";
 import { renderPackageDetails } from "../../ui/renderers/package-details-renderer.js"; // ✅ NEW
 import { renderClassDetails } from "../../ui/renderers/class-details-renderer.js"; // ✅ NEW
@@ -163,7 +163,7 @@ function bindEvents() {
         return;
       }
 
-      // Toggle tree item 
+      // Toggle tree item
       const toggleItemBtn = target.closest("[data-action='toggle-tree-item']");
       if (toggleItemBtn) {
         const itemId = toggleItemBtn.getAttribute("data-item-id");
@@ -177,6 +177,7 @@ function bindEvents() {
       // Select model from tree
       const selectModelEl = target.closest("[data-action='select-model']");
       if (selectModelEl) {
+        setSelectedTreeItem(selectModelEl);
         const modelId = selectModelEl.getAttribute("data-model-id");
         if (modelId) selectModel(modelId);
         return;
@@ -185,6 +186,7 @@ function bindEvents() {
       // Select profile from tree
       const selectProfileEl = target.closest("[data-action='select-profile']");
       if (selectProfileEl) {
+        setSelectedTreeItem(selectProfileEl);
         const profileId = selectProfileEl.getAttribute("data-profile-id");
         if (profileId) selectProfile(profileId);
         return;
@@ -193,6 +195,7 @@ function bindEvents() {
       // ✅ Select package from tree (NEW)
       const selectPackageEl = target.closest("[data-action='select-package']");
       if (selectPackageEl) {
+        setSelectedTreeItem(selectPackageEl);
         const packageId = selectPackageEl.getAttribute("data-package-id");
         if (packageId) handleSelectPackage(packageId);
         return;
@@ -201,6 +204,7 @@ function bindEvents() {
       // ✅ Select class from tree (NEW)
       const selectClassEl = target.closest("[data-action='select-class']");
       if (selectClassEl) {
+        setSelectedTreeItem(selectClassEl);
         const classId = selectClassEl.getAttribute("data-class-id");
         if (classId) handleSelectClass(classId);
         return;
@@ -341,7 +345,7 @@ function bindEvents() {
       }
     });
   }
-  
+
   // ✅ Delegated events on item-details-content
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
@@ -470,6 +474,8 @@ function selectModel(modelId) {
 
   // ✅ Hide item-container when selecting model
   hideItemContainer();
+  showModelContainer();
+  showProfileContainer();
 }
 
 // ============================================================
@@ -530,6 +536,8 @@ function selectProfile(profileId) {
 
   // ✅ Hide item-container when selecting profile
   hideItemContainer();
+  showModelContainer();
+  showProfileContainer();
 }
 
 // ============================================================
@@ -556,9 +564,41 @@ function hideItemContainer() {
   }
 }
 
+function showModelContainer() {
+  const modelContainer = document.getElementById("models-container");
+  if (modelContainer) {
+    modelContainer.classList.remove("hidden");
+  }
+}
+
 /**
- * Handle select package from tree
+ * Hide model container
  */
+function hideModelContainer() {
+  const modelContainer = document.getElementById("models-container");
+  if (modelContainer) {
+    modelContainer.classList.add("hidden");
+  }
+}
+
+
+function showProfileContainer() {
+  const profileContainer = document.getElementById("profiles-container");
+  if (profileContainer) {
+    profileContainer.classList.remove("hidden");
+  }
+}
+
+/**
+ * Hide profile container
+ */
+function hideProfileContainer() {
+  const profileContainer = document.getElementById("profiles-container");
+  if (profileContainer) {
+    profileContainer.classList.add("hidden");
+  }
+}
+
 /**
  * Handle select package from tree
  */
@@ -581,6 +621,8 @@ function handleSelectPackage(packageId) {
   }
 
   showItemContainer();
+  hideModelContainer();
+  hideProfileContainer();
 }
 
 
@@ -606,6 +648,8 @@ function handleSelectClass(classId) {
   }
 
   showItemContainer();
+  hideModelContainer();
+  hideProfileContainer();
 }
 
 /**
@@ -630,6 +674,8 @@ function handleSelectAttribute(attrId) {
   }
 
   showItemContainer();
+  hideModelContainer();
+  hideProfileContainer();
 }
 
 
@@ -655,6 +701,8 @@ function handleSelectLink(linkId) {
   }
 
   showItemContainer();
+  hideModelContainer();
+  hideProfileContainer();
 }
 
 /**
@@ -807,7 +855,7 @@ function handleItemDetailsSubmit(e) {
  */
 function handleSavePackage(form) {
   const packageId = form.getAttribute("data-package-id");
-  
+
   const updatedData = {
     name: document.getElementById("pkg-name").value.trim(),
     type: document.getElementById("pkg-type").value.trim(),
@@ -818,7 +866,7 @@ function handleSavePackage(form) {
 
   console.log("💾 Сохранение пакета:", packageId, updatedData);
   alert("Функция сохранения пакета в разработке");
-  
+
   // TODO: Call service to update package
   // updatePackage(currentProjectId, packageId, updatedData);
   // renderProjectTreeSidebar();
@@ -829,7 +877,7 @@ function handleSavePackage(form) {
  */
 function handleCancelPackageEdit() {
   if (! originalItemData) return;
-  
+
   const confirmed = confirm("Отменить изменения?   Несохранённые данные будут потеряны.");
   if (!confirmed) return;
 
@@ -838,7 +886,7 @@ function handleCancelPackageEdit() {
   if (itemDetailsContent) {
     itemDetailsContent.innerHTML = renderPackageDetails(originalItemData);
   }
-  
+
   console.log("↩️ Отмена редактирования пакета");
 }
 
@@ -851,7 +899,7 @@ function handleCancelPackageEdit() {
  */
 function handleSaveClass(form) {
   const classId = form.getAttribute("data-class-id");
-  
+
   const updatedData = {
     name: document.getElementById("cls-name").value.trim(),
     stereotype: document.getElementById("cls-stereotype").value.trim(),
@@ -864,7 +912,7 @@ function handleSaveClass(form) {
 
   console.log("💾 Сохранение класса:", classId, updatedData);
   alert("Функция сохранения класса в разработке");
-  
+
   // TODO: Call service to update class
   // updateClass(currentProjectId, classId, updatedData);
   // renderProjectTreeSidebar();
@@ -875,7 +923,7 @@ function handleSaveClass(form) {
  */
 function handleCancelClassEdit() {
   if (!originalItemData) return;
-  
+
   const confirmed = confirm("Отменить изменения?  Несохранённые данные будут потеряны.");
   if (!confirmed) return;
 
@@ -884,7 +932,7 @@ function handleCancelClassEdit() {
   if (itemDetailsContent) {
     itemDetailsContent.innerHTML = renderClassDetails(originalItemData);
   }
-  
+
   console.log("↩️ Отмена редактирования класса");
 }
 
@@ -898,7 +946,7 @@ function handleCancelClassEdit() {
 function handleAddAttribute(classId) {
   console.log("➕ Добавление атрибута для класса:", classId);
   alert("Функция добавления атрибута в разработке");
-  
+
   // TODO: Open modal or inline form to create attribute
   // createAttribute(currentProjectId, classId, attributeData);
 }
@@ -908,7 +956,7 @@ function handleAddAttribute(classId) {
  */
 function handleEditAttribute(attrId) {
   console.log("✏️ Редактирование атрибута:", attrId);
-  
+
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
@@ -928,6 +976,8 @@ function handleEditAttribute(attrId) {
   }
 
   showItemContainer();
+  hideModelContainer();
+  hideProfileContainer();
 }
 
 /**
@@ -935,12 +985,12 @@ function handleEditAttribute(attrId) {
  */
 function handleDeleteAttribute(attrId) {
   console.log("🗑️ Удаление атрибута:", attrId);
-  
+
   const confirmed = confirm("Удалить атрибут?");
   if (!confirmed) return;
 
   alert("Функция удаления атрибута в разработке");
-  
+
   // TODO: Call service to delete attribute
   // deleteAttribute(currentProjectId, classId, attrId);
   // Re-render class details
@@ -951,7 +1001,7 @@ function handleDeleteAttribute(attrId) {
  */
 function handleSaveAttribute(form) {
   const attrId = form.getAttribute("data-attr-id");
-  
+
   const updatedData = {
     name: document.getElementById("attr-name").value.trim(),
     dataType: document.getElementById("attr-dataType").value.trim(),
@@ -967,7 +1017,7 @@ function handleSaveAttribute(form) {
 
   console.log("💾 Сохранение атрибута:", attrId, updatedData);
   alert("Функция сохранения атрибута в разработке");
-  
+
   // TODO: Call service to update attribute
   // updateAttribute(currentProjectId, classId, attrId, updatedData);
 }
@@ -977,7 +1027,7 @@ function handleSaveAttribute(form) {
  */
 function handleCancelAttributeEdit() {
   if (!originalItemData) return;
-  
+
   const confirmed = confirm("Отменить изменения?  Несохранённые данные будут потеряны.");
   if (!confirmed) return;
 
@@ -986,7 +1036,7 @@ function handleCancelAttributeEdit() {
   if (itemDetailsContent) {
     itemDetailsContent.innerHTML = renderAttributeDetails(originalItemData);
   }
-  
+
   console.log("↩️ Отмена редактирования атрибута");
 }
 
@@ -1000,7 +1050,7 @@ function handleCancelAttributeEdit() {
 function handleAddLink(classId) {
   console.log("➕ Добавление связи для класса:", classId);
   alert("Функция добавления связи в разработке");
-  
+
   // TODO: Open modal or inline form to create link
   // createLink(currentProjectId, classId, linkData);
 }
@@ -1010,7 +1060,7 @@ function handleAddLink(classId) {
  */
 function handleEditLink(linkId) {
   console.log("✏️ Редактирование связи:", linkId);
-  
+
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
@@ -1030,6 +1080,8 @@ function handleEditLink(linkId) {
   }
 
   showItemContainer();
+  hideModelContainer();
+  hideProfileContainer();
 }
 
 /**
@@ -1037,12 +1089,12 @@ function handleEditLink(linkId) {
  */
 function handleDeleteLink(linkId) {
   console.log("🗑️ Удаление связи:", linkId);
-  
+
   const confirmed = confirm("Удалить связь?");
   if (!confirmed) return;
 
   alert("Функция удаления связи в разработке");
-  
+
   // TODO: Call service to delete link
   // deleteLink(currentProjectId, classId, linkId);
   // Re-render class details
@@ -1053,7 +1105,7 @@ function handleDeleteLink(linkId) {
  */
 function handleSaveLink(form) {
   const linkId = form.getAttribute("data-link-id");
-  
+
   const updatedData = {
     relationKind: document.getElementById("link-relationKind").value,
     role: document.getElementById("link-role").value,
@@ -1067,7 +1119,7 @@ function handleSaveLink(form) {
 
   console.log("💾 Сохранение связи:", linkId, updatedData);
   alert("Функция сохранения связи в разработке");
-  
+
   // TODO: Call service to update link
   // updateLink(currentProjectId, classId, linkId, updatedData);
 }
@@ -1077,7 +1129,7 @@ function handleSaveLink(form) {
  */
 function handleCancelLinkEdit() {
   if (!originalItemData) return;
-  
+
   const confirmed = confirm("Отменить изменения? Несохранённые данные будут потеряны.");
   if (!confirmed) return;
 
@@ -1086,7 +1138,7 @@ function handleCancelLinkEdit() {
   if (itemDetailsContent) {
     itemDetailsContent.innerHTML = renderLinkDetails(originalItemData);
   }
-  
+
   console.log("↩️ Отмена редактирования связи");
 }
 
@@ -1100,7 +1152,7 @@ function handleCancelLinkEdit() {
 function handleAddLiteral(classId) {
   console.log("➕ Добавление значения перечисления для класса:", classId);
   alert("Функция добавления значения в разработке");
-  
+
   // TODO: Open modal or inline form to create literal
   // createLiteral(currentProjectId, classId, literalData);
 }
@@ -1111,7 +1163,7 @@ function handleAddLiteral(classId) {
 function handleEditLiteral(literalId) {
   console.log("✏️ Редактирование значения перечисления:", literalId);
   alert("Функция редактирования значения в разработке");
-  
+
   // TODO: Open modal or inline form to edit literal
 }
 
@@ -1120,12 +1172,12 @@ function handleEditLiteral(literalId) {
  */
 function handleDeleteLiteral(literalId) {
   console.log("🗑️ Удаление значения перечисления:", literalId);
-  
+
   const confirmed = confirm("Удалить значение? ");
   if (!confirmed) return;
 
   alert("Функция удаления значения в разработке");
-  
+
   // TODO: Call service to delete literal
   // deleteLiteral(currentProjectId, classId, literalId);
 }
@@ -1382,6 +1434,17 @@ function handleDeleteProfile(profileId) {
   if (selectedProfileId === profileId) {
     selectedProfileId = null;
   }
+}
+
+function setSelectedTreeItem(el) {
+  const previouslySelected = document.querySelector(".project-tree-item * .tree-structure-name.selected");
+  if (previouslySelected) {
+    previouslySelected.classList.remove("selected");
+  }
+  if (el) {
+    el.classList.add("selected");
+  }
+  console.log("Selected tree item set", `${el ? el.textContent : "none"}`);
 }
 
 console.log("Project Details Page Module Loaded");
