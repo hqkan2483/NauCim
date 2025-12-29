@@ -13,8 +13,8 @@ function renderClassDetails(cls) {
     return '<div class="text-center">Выберите класс для просмотра деталей</div>';
   }
 
-  const icon = cls.type === 'Enumeration' ? '🔢' : (cls.isAbstract ? '📋' : '📄');
-  const typeName = cls.type === 'Enumeration' ?  'Enumeration' : (cls.isAbstract ? 'Abstract Class' : 'Class');
+  // const icon = cls.type === 'Enumeration' ? '🔢' : (cls.isAbstract ? '📋' : '📄');
+  // const typeName = cls.type === 'Enumeration' ?  'Enumeration' : (cls.isAbstract ? 'Abstract Class' : 'Class');
 
   let html = `
     <div class="item-details">
@@ -104,7 +104,7 @@ function renderClassDetails(cls) {
               </div>
             </div>
           </div>
-          
+
         </div>
 
         <div class="form-actions">
@@ -116,29 +116,53 @@ function renderClassDetails(cls) {
           </button>
         </div>
       </form>
-
-      ${renderClassAttributes(cls)}
-      ${renderClassLinks(cls)}
+      ${renderClassTabs(cls)}
+      ${cls.type === 'Enumeration' && cls.attributes.length > 0 ? renderClassAttributes(cls) : ''}
+      ${cls.type === 'Enumeration' && cls.links.length > 0 ? renderClassLinks(cls) : ''}
+      ${cls.type !== 'Enumeration' ? renderClassAttributes(cls) : ''}
+      ${cls.type !== 'Enumeration' ? renderClassLinks(cls) : ''}
       ${cls.type === 'Enumeration' ? renderClassLiterals(cls) : ''}
     </div>
   `;
+//  todo
+// вызов функций рендеринга секций атрибутов, связей и литералов класса надо переделать.  это должны быть не условия на Enumeration, а просто вызовы функций, которые внутри себя уже решают, что рендерить, а что нет. и единая функциЯ - она рендерит табы, в зависимости от типа класса.
+
 
   return html;
+}
+
+function renderClassTabs(cls) {
+
+  let html = `
+    <div class="item-section">
+      <div class="section-header">
+        <div class ="section-tabs">
+          <div class="section-title tab tab-mini active" data-section-tab="item-attributes">Атрибуты (${cls.attributes ?  cls.attributes.length : 0})</div>
+          <div class="section-title tab tab-mini active" data-section-tab="item-links">Связи (${cls.links ? cls.links.length : 0})</div>
+          <div class="section-title tab tab-mini active" data-section-tab="item-links">Значения перечисления (${cls.literals ? cls.literals.length : 0})</div>
+        </div>
+        <div class="section-tab-actions">
+          <button class="btn btn-primary btn-small" id="add-attribute-btn" data-class-id="${cls.id}">
+            ➕ Добавить атрибут
+          </button>
+          <button class="btn btn-primary btn-small" id="add-link-btn" data-class-id="${cls.id}">
+            ➕ Добавить связь
+          </button>
+          <button class="btn btn-primary btn-small" id="add-literal-btn" data-class-id="${cls.id}">
+            ➕ Добавить значение
+          </button>
+
+        </div>
+      </div>
+  `;
+return html;
 }
 
 /**
  * Render class attributes section with management buttons
  */
 function renderClassAttributes(cls) {
-  let html = `
-    <div class="item-section">
-      <div class="section-header">
-        <h3 class="section-title">Атрибуты (${cls.attributes ?  cls.attributes.length : 0})</h3>
-        <button class="btn btn-primary btn-small" id="add-attribute-btn" data-class-id="${cls.id}">
-          ➕ Добавить атрибут
-        </button>
-      </div>
-  `;
+  let html = ``;
 
   if (!cls.attributes || cls.attributes.length === 0) {
     html += `
@@ -149,14 +173,22 @@ function renderClassAttributes(cls) {
   } else {
     html += `
       <table class="table attributes-table">
+          <colgroup>
+            <col style="width: 15%;"/>
+            <col style="width: 15%;"/>
+            <col style="width: 8%;"/>
+            <col style="width: 10%;"/>
+            <col style="min-width: 44%;"/>
+            <col style="width: 8%;"/>
+          </colgroup>
         <thead>
           <tr>
-            <th style="width: 25%">Имя</th>
-            <th style="width:  15%">Тип данных</th>
-            <th style="width: 10%">Multiplicity</th>
-            <th style="width: 10%">Стереотип</th>
-            <th style="width: 25%">Описание</th>
-            <th style="width:  15%">Действия</th>
+            <th>Имя</th>
+            <th>Тип данных</th>
+            <th>Мн.</th>
+            <th>Стереотип</th>
+            <th>Описание</th>
+            <th> </th>
           </tr>
         </thead>
         <tbody>
@@ -169,7 +201,7 @@ function renderClassAttributes(cls) {
           <td>${attr.dataType || '—'}</td>
           <td>${attr.multiplicity || '—'}</td>
           <td>${attr.stereotype ?  `«${attr.stereotype}»` : '—'}</td>
-          <td class="text-truncate" title="${attr.documentation || ''}">${attr.documentation || '—'}</td>
+          <td>${attr.documentation || '—'}</td>
           <td>
             <div class="table-actions">
               <button class="btn-icon"
@@ -204,15 +236,7 @@ function renderClassAttributes(cls) {
  * Render class links section with management buttons
  */
 function renderClassLinks(cls) {
-  let html = `
-    <div class="item-section">
-      <div class="section-header">
-        <h3 class="section-title">Связи (${cls.links ? cls.links.length : 0})</h3>
-        <button class="btn btn-primary btn-small" id="add-link-btn" data-class-id="${cls.id}">
-          ➕ Добавить связь
-        </button>
-      </div>
-  `;
+  let html = ``;
 
   if (!cls.links || cls.links.length === 0) {
     html += `
@@ -223,15 +247,22 @@ function renderClassLinks(cls) {
   } else {
     html += `
       <table class="table links-table">
+        <colgroup>
+          <col style="width: 15%;"/>
+          <col style="width: 15%;"/>
+          <col style="min-width: 15%;"/>
+          <col style="width: 7%;"/>
+          <col style="max-width: 40%;"/>
+          <col style="width: 8%;"/>
+        </colgroup>
         <thead>
           <tr>
-            <th style="width: 15%">Тип связи</th>
-            <th style="width: 10%">Роль</th>
-            <th style="width: 20%">Целевой класс</th>
-            <th style="width: 15%">Имя роли</th>
-            <th style="width: 10%">Multiplicity</th>
-            <th style="width: 20%">Описание</th>
-            <th style="width:  10%">Действия</th>
+            <th>Имя роли</th>
+            <th>Тип связи</th>
+            <th>Класс назначения</th>
+            <th>Мн.</th>
+            <th>Описание</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -239,16 +270,15 @@ function renderClassLinks(cls) {
 
     cls.links.forEach(link => {
       const linkIcon = link.relationKind === 'Generalization' ? '⬆️' : '↔️';
-      const roleLabel = link.role === 'child' ? 'Потомок' : (link.role === 'parent' ? 'Родитель' : link.role || '—');
+      const roleLabel = link.role === 'child' ? '(потомок от)' : (link.role === 'parent' ? '(родитель для)' : (link.role === 'unspecified' ? '' : link.role || ''));
 
       html += `
         <tr data-link-id="${link.linkId}">
-          <td>${linkIcon} ${link.relationKind || '—'}</td>
-          <td>${roleLabel}</td>
-          <td><strong>${link.targetClassName || '—'}</strong></td>
-          <td>${link.targetClassRoleName || '—'}</td>
+          <td><strong>${link.targetClassRoleName || '—'}</strong></td>
+          <td>${linkIcon} ${link.relationKind || '—'} ${roleLabel}</td>
+          <td>${link.targetClassName || '—'}</td>
           <td>${link.multiplicity || '—'}</td>
-          <td class="text-truncate" title="${link.targetDescription || ''}">${link.targetDescription || '—'}</td>
+          <td>${link.targetDescription || '—'}</td>
           <td>
             <div class="table-actions">
               <button class="btn-icon"
@@ -283,15 +313,7 @@ function renderClassLinks(cls) {
  * Render class literals section (for Enumeration)
  */
 function renderClassLiterals(cls) {
-  let html = `
-    <div class="item-section">
-      <div class="section-header">
-        <h3 class="section-title">Значения перечисления (${cls.literals ? cls.literals.length : 0})</h3>
-        <button class="btn btn-primary btn-small" id="add-literal-btn" data-class-id="${cls.id}">
-          ➕ Добавить значение
-        </button>
-      </div>
-  `;
+  let html = ``;
 
   if (!cls.literals || cls.literals.length === 0) {
     html += `
@@ -304,10 +326,10 @@ function renderClassLiterals(cls) {
       <table class="table literals-table">
         <thead>
           <tr>
-            <th style="width:  30%">Имя</th>
+            <th style="width: 30%">Значение</th>
             <th style="width: 40%">Описание</th>
-            <th style="width: 15%">Значение</th>
-            <th style="width:  15%">Действия</th>
+            <th style="width: 15%">Доп. значение</th>
+            <th style="width: 15%"></th>
           </tr>
         </thead>
         <tbody>
