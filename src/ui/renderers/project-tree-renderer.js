@@ -23,7 +23,7 @@ function renderProjectTree(project, projectId) {
         <button class="project-expand-btn"
                 data-project-id="${projectId}"
                 data-action="toggle-project"
-                aria-expanded="${isExpanded ?   "true" : "false"}">
+                aria-expanded="${isExpanded ? "true" : "false"}">
           <span class="expand-icon">${isExpanded ? "▼" : "▶"}</span>
         </button>
         <span class="project-name" title="${project.name}">
@@ -97,11 +97,11 @@ function renderModelTree(model, projectId, index) {
   const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
   const itemId = `model-${projectId}-${index}`;
   const isExpanded = expandedItems[itemId];
-
-  const hasChildren =
-    model.rootPackages &&
-    model.rootPackages.length > 0 &&
-    model.rootPackages[0].packages &&
+  
+  const hasChildren = 
+    model.rootPackages && 
+    model.rootPackages.length > 0 && 
+    model.rootPackages[0].packages && 
     model.rootPackages[0].packages.length > 0;
 
   let html = `
@@ -110,7 +110,7 @@ function renderModelTree(model, projectId, index) {
         <button class="tree-expand-btn"
                 data-item-id="${itemId}"
                 data-action="toggle-tree-item"
-                aria-expanded="${isExpanded ?  "true" : "false"}">
+                aria-expanded="${isExpanded ? "true" : "false"}">
           <span class="tree-expand-icon">${isExpanded ? "▼" : "▶"}</span>
         </button>
         <span class="tree-structure-name"
@@ -125,14 +125,14 @@ function renderModelTree(model, projectId, index) {
 
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
-
+    
     const rootPackage = model.rootPackages[0];
     if (rootPackage.packages) {
       rootPackage.packages.forEach((pkg, idx) => {
         html += renderPackageTree(pkg, `${itemId}-pkg-${idx}`, model.id);
       });
     }
-
+    
     html += `</div>`;
   }
 
@@ -151,11 +151,11 @@ function renderProfileTree(profile, projectId, index) {
   const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
   const itemId = `profile-${projectId}-${index}`;
   const isExpanded = expandedItems[itemId];
-
-  const hasChildren =
-    profile.rootPackages &&
-    profile.rootPackages.length > 0 &&
-    profile.rootPackages[0].packages &&
+  
+  const hasChildren = 
+    profile.rootPackages && 
+    profile.rootPackages.length > 0 && 
+    profile.rootPackages[0].packages && 
     profile.rootPackages[0].packages.length > 0;
 
   let html = `
@@ -179,14 +179,14 @@ function renderProfileTree(profile, projectId, index) {
 
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
-
+    
     const rootPackage = profile.rootPackages[0];
     if (rootPackage.packages) {
       rootPackage.packages.forEach((pkg, idx) => {
         html += renderPackageTree(pkg, `${itemId}-pkg-${idx}`, null, profile.id);
       });
     }
-
+    
     html += `</div>`;
   }
 
@@ -231,6 +231,7 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
         <span class="tree-structure-name"
               data-type="package"
               data-package-id="${pkg.id || ""}"
+              data-action="select-package"
               title="${pkg.documentation || pkg.name || ''}">
           ${pkg.name || "Пакет без названия"}
         </span>
@@ -272,10 +273,14 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
 function renderClassTree(cls, itemId, modelId = null, profileId = null) {
   const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
   const isExpanded = expandedItems[itemId];
-  const hasChildren = cls.attributes && cls.attributes.length > 0;
+  
+  // ✅ Класс имеет детей, если есть атрибуты ИЛИ связи
+  const hasChildren = 
+    (cls.attributes && cls.attributes.length > 0) ||
+    (cls.links && cls.links.length > 0);
 
-  // Определяем data-атрибуты для CSS
-  const isEnumeration = cls.type === "Enumeration";
+    // Определяем data-атрибуты для CSS
+    const isEnumeration = cls.type === "Enumeration";
   const isAbstract = cls.isAbstract;
 
   // Добавляем стереотип к имени класса
@@ -312,6 +317,7 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
               data-profile-id="${profileId || ""}"
               data-is-enumeration="${isEnumeration}"
               data-is-abstract="${isAbstract}"
+              data-action="select-class"
               title="${cls.documentation || cls.name || ''}">
           ${className}
         </span>
@@ -320,9 +326,21 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
 
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
-    cls.attributes.forEach((attr, idx) => {
-      html += renderAttributeTree(attr, `${itemId}-attr-${idx}`);
-    });
+    
+    // ✅ Render attributes
+    if (cls.attributes && cls.attributes.length > 0) {
+      cls.attributes.forEach((attr, idx) => {
+        html += renderAttributeTree(attr, `${itemId}-attr-${idx}`);
+      });
+    }
+    
+    // ✅ Render links (NEW!)
+    if (cls.links && cls.links.length > 0) {
+      cls.links.forEach((link, idx) => {
+        html += renderLinkTree(link, `${itemId}-link-${idx}`);
+      });
+    }
+    
     html += `</div>`;
   }
 
@@ -354,6 +372,7 @@ function renderAttributeTree(attr, itemId) {
         <span class="tree-structure-name"
               data-type="attribute"
               data-attr-id="${attr.id || ""}"
+              data-action="select-attribute"
               title="${attr.documentation || attr.name || ''}">
           ${attrName}:  ${attr.dataType || "—"}${multiplicityStr}
         </span>
@@ -361,9 +380,64 @@ function renderAttributeTree(attr, itemId) {
     </div>
   `;
 }
+
+/**
+ * ✅ Render link tree (NEW!)
+ * @param {Object} link - ClassLink object
+ * @param {string} itemId - Unique item ID
+ * @returns {string} HTML string
+ */
+function renderLinkTree(link, itemId) {
+  // Определяем иконку по типу связи
+  let linkIcon = "🔗";
+  let linkPrefix = "";
+  
+  if (link.relationKind === "Generalization" && link.role === "child") {
+    linkIcon = "⬆️";
+    linkPrefix = "наследуется от";
+  } else if (link.relationKind === "Association") {
+    linkIcon = "↔️";
+    linkPrefix = "связан с";
+  } else if (link.relationKind === "Generalization" && link.role === "parent") {
+    linkIcon = "⬇️";
+    linkPrefix = "родитель для";
+  }
+
+  // Формируем название связи
+  let linkName = `${linkPrefix} ${link.targetClassName}`;
+  
+  // Добавляем multiplicity
+  let multiplicityStr = "";
+  if (link.multiplicity && link.multiplicity !== "1") {
+    multiplicityStr = ` [${link.multiplicity}]`;
+  }
+
+  // Добавляем роль целевого класса (если есть)
+  let roleInfo = "";
+  if (link.targetClassRoleName) {
+    roleInfo = ` → ${link.targetClassRoleName}`;
+  }
+
+  return `
+    <div class="tree-structure-item">
+      <div class="tree-structure-header">
+        <span class="tree-expand-spacer"></span>
+        <span class="tree-structure-name"
+              data-type="link"
+              data-link-id="${link.linkId || ""}"
+              data-link-kind="${link.relationKind || ""}"
+              data-target-class-id="${link.targetClassId || ""}"
+              data-action="select-link"
+              title="${link.targetDescription || linkName}">
+          ${linkIcon} ${linkName}${roleInfo}${multiplicityStr}
+        </span>
+      </div>
+    </div>
+  `;
+}
+
 /**
  * Toggle tree item (expand/collapse)
- * @param {string} itemId - Item ID to toggle
  */
 function toggleTreeItem(itemId) {
   const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
@@ -379,7 +453,6 @@ function toggleTreeItem(itemId) {
 
 /**
  * Toggle project (expand/collapse)
- * @param {string} projectId - Project ID to toggle
  */
 function toggleProject(projectId) {
   const expandedProjects = JSON.parse(localStorage.getItem("cim.expandedProjects") || "{}");
@@ -392,5 +465,4 @@ function toggleProject(projectId) {
 
   localStorage.setItem("cim.expandedProjects", JSON.stringify(expandedProjects));
 }
-
 export { renderProjectTree, toggleTreeItem, toggleProject };

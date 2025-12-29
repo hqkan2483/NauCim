@@ -41,7 +41,7 @@
                     "elementCount": 45,
                     "classes": [
                       {
-                        "id": "5dfc8efa-f319-428e-ad8e-0c660e999b8a",
+                        "id": "EAID_7B1D2B24_5A8E_4fb9_B5F3_EA0025B03A1B",
                         "name": "ActivePower",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -56,8 +56,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_C0D6CB05_04B0_441b_B934_E5D59F55AE59",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -69,8 +68,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_B58B5469_417B_443c_9CEA_C5D92FB792D9",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -82,8 +80,7 @@
                           {
                             "name": "value",
                             "id": "EAID_7D800AA8_BDB0_478a_9288_A74551563212",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -96,11 +93,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_7B1D2B24_5A8E_4fb9_B5F3_EA0025B03A1B"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "a63c64ef-86f0-424b-90be-b23604d249ed",
+                        "id": "EAID_A19BEF63_4709_404e_80B9_BFA86CC59688",
                         "name": "ActivePowerChangeRate",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -115,8 +112,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_0BF20795_B629_46ba_A715_4B814A662652",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -128,8 +124,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_90E999EA_F16D_4995_9911_E89A7D3687A7",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -141,8 +136,7 @@
                           {
                             "name": "value",
                             "id": "EAID_498074A0_9A5D_47b0_AB1B_AC17BC953CD8",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -155,11 +149,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_A19BEF63_4709_404e_80B9_BFA86CC59688"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "03f0d668-f7c1-4dd2-9144-6388f69a8502",
+                        "id": "EAID_D8333F0C_B805_4b59_879D_B951B82F152B",
                         "name": "AngleDegrees",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -174,8 +168,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_99F5D806_3ACE_4608_BD4D_B846D1D07137",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -187,8 +180,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_3D51F70A_0131_496a_97FC_40B1C9EF4D8E",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -200,8 +192,7 @@
                           {
                             "name": "value",
                             "id": "EAID_112C6B43_3AFF_4b33_A1E7_A1713867813B",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -214,11 +205,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_D8333F0C_B805_4b59_879D_B951B82F152B"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "51805ff7-cc5b-4d97-98e5-fed88cfb2578",
+                        "id": "EAID_AA027357_7C7B_499a_A807_3008ECA2B174",
                         "name": "ApparentPower",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -233,8 +224,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_14225054_0C99_4616_B480_C18E04BC01EF",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -246,8 +236,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_7839505B_7D07_4fff_AA71_24CF2FC8D1E2",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -259,8 +248,7 @@
                           {
                             "name": "value",
                             "id": "EAID_9F318FA5_4E33_4b9e_A614_CAC1BF8B0E26",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -273,11 +261,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_AA027357_7C7B_499a_A807_3008ECA2B174"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "75333a41-4e71-4088-8a56-599a738a22a3",
+                        "id": "EAID_81CCEF9A_6C27_43bc_9FA1_EAF926E17AD8",
                         "name": "Area",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -292,8 +280,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_EFC5E666_8204_4211_89B9_26B5A73A5D02",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -305,8 +292,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_8E6D6BAA_F761_482a_8ADC_30B2C346D627",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -318,8 +304,7 @@
                           {
                             "name": "value",
                             "id": "EAID_29471FEC_4DC7_4276_8759_12189EA80003",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -332,11 +317,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_81CCEF9A_6C27_43bc_9FA1_EAF926E17AD8"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "94b11227-0bbc-413a-a3c9-38df06e7af5a",
+                        "id": "EAID_18EC8DEC_494B_4284_B5B4_F9556DE47106",
                         "name": "Boolean",
                         "type": "Class",
                         "stereotype": "Primitive",
@@ -351,11 +336,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_18EC8DEC_494B_4284_B5B4_F9556DE47106"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "535b7fe4-6cf2-4fba-aeee-77f114fa0336",
+                        "id": "EAID_C2803C3A_71D3_4460_A2E4_D6221D8794F8",
                         "name": "Capacitance",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -370,8 +355,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_BF93C1F1_29F0_4130_BD89_7F206F185BBC",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -383,8 +367,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_B0E5A702_D00C_41cd_9D50_182D4298B442",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -396,8 +379,7 @@
                           {
                             "name": "value",
                             "id": "EAID_2D927C11_B9E9_4f94_AC6D_81B17502DF2B",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -410,11 +392,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_C2803C3A_71D3_4460_A2E4_D6221D8794F8"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "8781519c-7b94-4d8c-8b4b-5befca65ede6",
+                        "id": "EAID_9C83E6DC_502E_40dd_8DDD_61B13BBE6F2D",
                         "name": "Conductance",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -429,8 +411,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_8B73AA2C_7079_4a27_93D2_69D2FB3D2DD4",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -442,8 +423,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_A65EB06C_6FE6_4f02_AFEE_D8645930D467",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -455,8 +435,7 @@
                           {
                             "name": "value",
                             "id": "EAID_6E8A8024_91E6_418a_90BB_0E141AB06AF1",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -469,11 +448,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_9C83E6DC_502E_40dd_8DDD_61B13BBE6F2D"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "01c39d5e-fe02-47d2-a9bc-880928255189",
+                        "id": "EAID_769D60DF_36AB_447a_972A_B309E9601AF5",
                         "name": "ConductancePerLength",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -488,8 +467,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_F886F942_C626_449f_917C_05ED5EC40AB0",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -501,8 +479,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_FA5DC13E_D84B_47ea_8E17_BF63A6B8C259",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -514,8 +491,7 @@
                           {
                             "name": "value",
                             "id": "EAID_30CC967C_E95A_4b0e_BFFE_C8F972890BE4",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -528,11 +504,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_769D60DF_36AB_447a_972A_B309E9601AF5"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "216a3839-be29-4d01-9c27-8038fca0a320",
+                        "id": "EAID_237364E4_9827_43f2_9209_DE3C4512D3ED",
                         "name": "CurrentFlow",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -547,8 +523,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_56F42FCD_91AA_4a9d_B70C_6FB3B650F450",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -560,8 +535,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_1A97CC12_0DB2_468c_9A99_3AD319D36685",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -573,8 +547,7 @@
                           {
                             "name": "value",
                             "id": "EAID_2B9608AA_A9F9_4279_9EF8_8DDFBE95E9F0",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -587,11 +560,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_237364E4_9827_43f2_9209_DE3C4512D3ED"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "ee17cce7-2c76-45db-8bb3-88e6f7b21b6c",
+                        "id": "EAID_7AF5879D_3BCF_4926_A323_41C980EB14F2",
                         "name": "Date",
                         "type": "Class",
                         "stereotype": "Primitive",
@@ -606,11 +579,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_7AF5879D_3BCF_4926_A323_41C980EB14F2"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "ec8bbf53-e659-4b8c-b873-aeadc30c588f",
+                        "id": "EAID_7FC353C0_80E3_429f_9F4E_4F118A591A29",
                         "name": "DateTime",
                         "type": "Class",
                         "stereotype": "Primitive",
@@ -625,11 +598,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_7FC353C0_80E3_429f_9F4E_4F118A591A29"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "16efd40a-dd13-4647-8192-cbf3a1b63112",
+                        "id": "EAID_5F51F5DD_DA37_41f2_8838_DA9AD4AAEC01",
                         "name": "DateTimeInterval",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -644,8 +617,7 @@
                           {
                             "name": "end",
                             "id": "EAID_DDCAD63B_32E0_441b_A0B0_28E24C439BCA",
-                            "dataType": "DateTime",
-                            "dataTypeId": "",
+                            "type": "DateTime",
                             "stereotype": "",
                             "documentation": "Дата и время конца.",
                             "documentationRu": "",
@@ -657,8 +629,7 @@
                           {
                             "name": "start",
                             "id": "EAID_2A7BFFEC_7F0D_49f0_8C5F_867893ABE73A",
-                            "dataType": "DateTime",
-                            "dataTypeId": "",
+                            "type": "DateTime",
                             "stereotype": "",
                             "documentation": "Дата и время начала.",
                             "documentationRu": "",
@@ -671,11 +642,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_5F51F5DD_DA37_41f2_8838_DA9AD4AAEC01"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "e6fa7257-6d4d-434a-bc82-444783cadedf",
+                        "id": "EAID_E3F912B0_88F2_4972_A836_7F155E5906F1",
                         "name": "Displacement",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -690,8 +661,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_4DD58D5A_ABBA_42f6_A2B9_1A3B0B39B0CC",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -703,8 +673,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_6589DBAF_3B98_4e18_887B_AA244D3D57B8",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -716,8 +685,7 @@
                           {
                             "name": "value",
                             "id": "EAID_8F66BE57_151A_4215_9137_D96CC4BE3F50",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -730,11 +698,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_E3F912B0_88F2_4972_A836_7F155E5906F1"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "d3d30aee-6f54-4055-a582-0a71ce6f8a24",
+                        "id": "EAID_A7D30EF4_BE29_459f_8159_00D4E40B495D",
                         "name": "Float",
                         "type": "Class",
                         "stereotype": "Primitive",
@@ -749,11 +717,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_A7D30EF4_BE29_459f_8159_00D4E40B495D"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "ab992df5-d515-4536-a749-d787e3d5e9c7",
+                        "id": "EAID_02D1A835_EA10_4b39_8D79_9044F4012F35",
                         "name": "Frequency",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -768,8 +736,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_E4746171_C030_4c82_B010_C3FAD1B00FD8",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -781,8 +748,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_838E749C_78FB_4b22_8F29_46657CF17299",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -794,8 +760,7 @@
                           {
                             "name": "value",
                             "id": "EAID_B60AAAD3_C97D_4564_9FC9_D181C4C1EF69",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -808,11 +773,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_02D1A835_EA10_4b39_8D79_9044F4012F35"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "f43c0e8d-ee59-4729-91dd-93f394d729d2",
+                        "id": "EAID_D0EDB90A_1EFE_45e9_9FC0_9794160D6847",
                         "name": "HeatRate",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -827,8 +792,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_AC0B605E_16E2_40b6_ADFC_C9750CD92706",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -840,8 +804,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_706A9172_1AB9_477e_9F5F_AF526F705B5E",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -853,8 +816,7 @@
                           {
                             "name": "value",
                             "id": "EAID_6195D06A_98A7_47e3_83E9_6DFFA8EFE306",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -867,11 +829,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_D0EDB90A_1EFE_45e9_9FC0_9794160D6847"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "5ee9ae5b-5c5f-4cd5-9655-3a05ef62caf1",
+                        "id": "EAID_AEA277D6_2A15_4114_A60A_261855EB287F",
                         "name": "Inductance",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -886,8 +848,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_2E22F689_6CBC_4ae6_95AD_A1B0B716BBC5",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -899,8 +860,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_3066D7F1_EFC8_4be7_AE16_6F16F35A33E8",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -912,8 +872,7 @@
                           {
                             "name": "value",
                             "id": "EAID_0DC2EF23_A56D_491a_B889_BCF98B671C33",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -926,11 +885,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_AEA277D6_2A15_4114_A60A_261855EB287F"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "e0c0443e-9475-4522-9d71-413e9bc6cad6",
+                        "id": "EAID_1842260B_249C_426b_A3BC_BE36CC7ADEDE",
                         "name": "Integer",
                         "type": "Class",
                         "stereotype": "Primitive",
@@ -945,11 +904,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_1842260B_249C_426b_A3BC_BE36CC7ADEDE"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "f7460a24-6337-4c35-9475-6b13fd7bc30a",
+                        "id": "EAID_BBB48725_119E_4ebf_ACBA_8F8EE0DF95CF",
                         "name": "KiloActivePower",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -964,8 +923,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_641839F5_483C_4d87_ABA6_D0427A7C62B1",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -977,8 +935,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_00A743FF_DEF7_468c_BED0_5033033AEDB8",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -990,8 +947,7 @@
                           {
                             "name": "value",
                             "id": "EAID_1CC53F47_7854_412f_91D9_159E26BD8E61",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1004,11 +960,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_BBB48725_119E_4ebf_ACBA_8F8EE0DF95CF"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "e542ddbe-589d-4bbe-a390-afdbbc821934",
+                        "id": "EAID_B1A280A8_CFDD_4acc_B454_059DD68952E1",
                         "name": "Length",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1023,8 +979,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_0B969113_437C_48c2_8C2E_AF65B9882341",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1036,8 +991,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_314011FA_D492_41a0_B31F_813918487E2E",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1049,8 +1003,7 @@
                           {
                             "name": "value",
                             "id": "EAID_89B1139A_E4F1_4fab_9BEA_AAA396E869CB",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1063,11 +1016,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_B1A280A8_CFDD_4acc_B454_059DD68952E1"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "9f2d6946-b685-4f06-a0fe-9a9daaa47bf2",
+                        "id": "EAID_237B6DD4_28AF_4ec3_9F26_B27898395DF5",
                         "name": "Minutes",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1082,8 +1035,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_DE71BDCC_CDA5_48d1_8901_84BCF3747B4B",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1095,8 +1047,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_E831576E_EEEF_44b2_A46A_69A057AF0F5D",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1108,8 +1059,7 @@
                           {
                             "name": "value",
                             "id": "EAID_249BC0D4_E04A_435f_8921_BBD131D02BED",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1122,11 +1072,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_237B6DD4_28AF_4ec3_9F26_B27898395DF5"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "08da208b-9b76-438d-968d-b80e7f83ebaa",
+                        "id": "EAID_CB625E00_06CD_4d9c_BE86_45F8D0872CB5",
                         "name": "PerCent",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1141,8 +1091,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_4B4300FF_4948_424d_8520_837B734B1946",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1154,8 +1103,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_92915287_D421_4fc9_982E_73CBD73F4686",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1167,8 +1115,7 @@
                           {
                             "name": "value",
                             "id": "EAID_319905FB_54C9_4517_96B5_B064D5D25935",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1181,11 +1128,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_CB625E00_06CD_4d9c_BE86_45F8D0872CB5"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "4a04e022-0620-4bc1-b56b-295c5ce8b183",
+                        "id": "EAID_5B127243_FA32_47fb_B9B2_E85CD4D45368",
                         "name": "PU",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1200,8 +1147,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_76EA1D89_AFAE_4a93_B307_5F1C14CF5681",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1213,8 +1159,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_827A3D18_AE64_455d_9277_F2FF0436C5E3",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1226,8 +1171,7 @@
                           {
                             "name": "value",
                             "id": "EAID_9F8C718E_3AEB_411f_AF91_867606994CA0",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1240,11 +1184,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_5B127243_FA32_47fb_B9B2_E85CD4D45368"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "c73a5f6f-3ca7-4166-8b9e-b85010f90732",
+                        "id": "EAID_5F653D50_27E9_45cd_AA18_FFCA0AD6AA5D",
                         "name": "Reactance",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1259,8 +1203,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_381D20D1_1B62_493f_AD46_58E13924D519",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1272,8 +1215,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_B4F6C14D_DCCD_40f1_9953_9029B8458A04",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1285,8 +1227,7 @@
                           {
                             "name": "value",
                             "id": "EAID_48FFAB32_EACE_4b66_8DBC_894F235C2C60",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1299,11 +1240,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_5F653D50_27E9_45cd_AA18_FFCA0AD6AA5D"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "b221b4df-ebee-47cc-9ddf-9f2cbcab5970",
+                        "id": "EAID_019561E2_70BA_4c2a_92C7_0C0D32E1B12D",
                         "name": "ReactancePerLength",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1318,8 +1259,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_4367D740_4C01_4c57_AE1A_E444EDEB9247",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1331,8 +1271,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_8F62923F_49D4_4326_BBEE_08D87CA6B8F6",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1344,8 +1283,7 @@
                           {
                             "name": "value",
                             "id": "EAID_B554A002_3FDF_4ad9_AEB8_B127B321EE71",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1358,11 +1296,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_019561E2_70BA_4c2a_92C7_0C0D32E1B12D"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "9c14d969-460f-4c98-916a-d85ca406e198",
+                        "id": "EAID_E1F3A7E9_BC8C_4e5a_91C0_8DD9453AD693",
                         "name": "ReactivePower",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1377,8 +1315,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_817BF190_9AFE_4a2b_8D3B_79705E2588B6",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1390,8 +1327,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_2DB3BB9C_89C4_4e27_AB43_9B8238C45D9C",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1403,8 +1339,7 @@
                           {
                             "name": "value",
                             "id": "EAID_E854A85B_3F2B_4b88_BB6C_621FE1334D08",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1417,11 +1352,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_E1F3A7E9_BC8C_4e5a_91C0_8DD9453AD693"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "3e02efdf-b26a-4929-8df8-c1f50749f921",
+                        "id": "EAID_002D13B0_D983_4674_8F00_DE95E66C6A5B",
                         "name": "RealEnergy",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1436,8 +1371,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_018D3917_90EB_47b5_9499_E255B0308746",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1449,8 +1383,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_E0286ED9_8448_469f_819C_E7892F1D6CF6",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1462,8 +1395,7 @@
                           {
                             "name": "value",
                             "id": "EAID_041A2F18_2B34_4bfe_B5AE_4ABDFA998A74",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1476,11 +1408,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_002D13B0_D983_4674_8F00_DE95E66C6A5B"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "1f0d1c01-7886-4e51-9216-b4c3b21294cd",
+                        "id": "EAID_86BDFF34_A304_47ff_97A2_B682358C13AB",
                         "name": "Resistance",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1495,8 +1427,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_4035B1DE_CBB4_4d8c_928A_E8EC0DFD0FE5",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1508,8 +1439,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_6530A3D3_037B_487c_9E4E_0AF6F54B26CF",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1521,8 +1451,7 @@
                           {
                             "name": "value",
                             "id": "EAID_C2E3336E_B3F1_4599_AEE4_4C283BBB19AD",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1535,11 +1464,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_86BDFF34_A304_47ff_97A2_B682358C13AB"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "a63996af-0fb3-49db-ac70-d45ef84633ed",
+                        "id": "EAID_B7218304_007B_40f7_BB2A_4993B06F47AD",
                         "name": "ResistancePerLength",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1554,8 +1483,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_5E4E878E_F9B0_44f0_AC0D_333353FAACFC",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1567,8 +1495,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_B3291CC3_700C_4513_9721_806AB16D6D6A",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1580,8 +1507,7 @@
                           {
                             "name": "value",
                             "id": "EAID_41237532_F04F_458f_B863_E43955422C8B",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1594,11 +1520,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_B7218304_007B_40f7_BB2A_4993B06F47AD"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "361d6beb-5bd1-4121-851e-2b6000bb4f21",
+                        "id": "EAID_BB719107_54B8_4999_AAA5_52984E890390",
                         "name": "RotationSpeed",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1613,8 +1539,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_1512FE41_F482_4a71_96C1_41DB82AA3F0B",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1626,8 +1551,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_9E3B64F2_32A0_49e1_BE7F_2AC6C55E5051",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1639,8 +1563,7 @@
                           {
                             "name": "value",
                             "id": "EAID_D8528725_C17B_454f_8924_A5F136A43A2D",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1653,11 +1576,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_BB719107_54B8_4999_AAA5_52984E890390"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "e5cf9855-5a9a-43af-80a1-50fe5fbb400f",
+                        "id": "EAID_7E808C28_5620_4c8b_9BDE_089A28352705",
                         "name": "Seconds",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1672,8 +1595,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_A103E68E_9382_46a1_AC12_F1BA5B8B3C31",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1685,8 +1607,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_2D89EA2B_B09C_4cc3_9963_40D6B1017CC7",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1698,8 +1619,7 @@
                           {
                             "name": "value",
                             "id": "EAID_6118889A_3799_4018_9D5F_97C906F578C0",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1712,11 +1632,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_7E808C28_5620_4c8b_9BDE_089A28352705"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "71a19b49-fdd9-4516-b65d-c9401341979a",
+                        "id": "EAID_8E807839_8E82_4166_8B01_F0633C95DAA7",
                         "name": "String",
                         "type": "Class",
                         "stereotype": "Primitive",
@@ -1731,11 +1651,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_8E807839_8E82_4166_8B01_F0633C95DAA7"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "64745a24-efd6-45f6-ace6-8c720b3afc30",
+                        "id": "EAID_B2FBB90D_F67B_49b8_9874_EFA78620CF98",
                         "name": "StringQuantity",
                         "type": "Class",
                         "stereotype": "Compound",
@@ -1750,8 +1670,7 @@
                           {
                             "name": "value",
                             "id": "EAID_01CB0FD4_A3CF_4f31_954C_37587CCCDF5C",
-                            "dataType": "String",
-                            "dataTypeId": "",
+                            "type": "String",
                             "stereotype": "",
                             "documentation": "Значение.",
                             "documentationRu": "",
@@ -1764,11 +1683,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_B2FBB90D_F67B_49b8_9874_EFA78620CF98"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "ae3fdfee-d9d8-408f-94e0-900fdf9a228d",
+                        "id": "EAID_3A2E8466_31F8_40f1_83A3_3891F78068E7",
                         "name": "Susceptance",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1783,8 +1702,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_D29E9830_6DA1_47a6_854F_2D12B1F24BD7",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1796,8 +1714,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_5083D9FE_1585_449a_B3E3_1922C0BBD083",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1809,8 +1726,7 @@
                           {
                             "name": "value",
                             "id": "EAID_DA1AE626_6F42_4ca9_8043_58603B52E1AF",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1823,11 +1739,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_3A2E8466_31F8_40f1_83A3_3891F78068E7"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "dcd7fa20-070d-4005-9c65-a8e491f43baf",
+                        "id": "EAID_A4E8D392_A7E8_44f0_97DE_DC100EE23900",
                         "name": "SusceptancePerLength",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1842,8 +1758,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_E1B2B397_05BC_4f0a_9558_1E826B52D5BF",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1855,8 +1770,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_A928C630_DC3A_496f_B222_F555B3D0B9E8",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1868,8 +1782,7 @@
                           {
                             "name": "value",
                             "id": "EAID_5D982BDB_0D35_43db_A082_BCFB786A724A",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1882,11 +1795,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_A4E8D392_A7E8_44f0_97DE_DC100EE23900"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "3d381a66-35c7-4ce2-942a-6be33da3da91",
+                        "id": "EAID_4EDB2F90_6320_4710_BDC5_3CA3EC86638A",
                         "name": "Temperature",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -1901,8 +1814,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_DB294B79_6F46_42e1_BF43_10C6550C2293",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1914,8 +1826,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_BA08CD02_48EB_4c85_BEC1_FDEE3CD54719",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1927,8 +1838,7 @@
                           {
                             "name": "value",
                             "id": "EAID_E05DB725_8617_4123_A937_66C1F04BB9AF",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -1941,11 +1851,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_4EDB2F90_6320_4710_BDC5_3CA3EC86638A"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "d2330ad3-67d7-41c4-824e-d337cd93aeda",
+                        "id": "EAID_41D67601_2A84_4755_A81D_22FD9B83F105",
                         "name": "Time",
                         "type": "Class",
                         "stereotype": "Primitive",
@@ -1960,11 +1870,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_41D67601_2A84_4755_A81D_22FD9B83F105"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "275ba5be-69ef-46bd-b0d1-0edee63acfc4",
+                        "id": "EAID_F33474D0_DA62_48e6_A654_F68AA5AA0B37",
                         "name": "TimeInterval",
                         "type": "Class",
                         "stereotype": "Compound",
@@ -1979,8 +1889,7 @@
                           {
                             "name": "end",
                             "id": "EAID_C2005FA2_972C_4882_B17D_0D1F777C7ABE",
-                            "dataType": "Time",
-                            "dataTypeId": "",
+                            "type": "Time",
                             "stereotype": "",
                             "documentation": "Время окончания интервала.",
                             "documentationRu": "",
@@ -1992,8 +1901,7 @@
                           {
                             "name": "start",
                             "id": "EAID_2855AD1C_BEF3_419a_A52B_F8FFADFBD6DA",
-                            "dataType": "Time",
-                            "dataTypeId": "",
+                            "type": "Time",
                             "stereotype": "",
                             "documentation": "Время начала интервала.",
                             "documentationRu": "",
@@ -2006,11 +1914,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_F33474D0_DA62_48e6_A654_F68AA5AA0B37"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "e454e031-d197-4f6a-8e60-b9e801d6551f",
+                        "id": "EAID_0D1A3F95_D504_46dd_ADC4_FE40461D5C1B",
                         "name": "Voltage",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -2025,8 +1933,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_DC512B3F_A800_4044_BA29_78B242A23D8C",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2038,8 +1945,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_F8B97D31_19D9_440d_B06A_38D7F7543733",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2051,8 +1957,7 @@
                           {
                             "name": "value",
                             "id": "EAID_9BF6BEA2_FF2F_418b_BEA0_524EAD8C0407",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2065,11 +1970,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_0D1A3F95_D504_46dd_ADC4_FE40461D5C1B"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "c5a37781-cb94-4eb9-8241-c486c4d988cf",
+                        "id": "EAID_62B78F4C_F1C7_4ef1_9365_BF5BA5CCF5A2",
                         "name": "VoltagePerReactivePower",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -2084,8 +1989,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_FCDC8322_31A1_455d_B67F_BA6365D0E7B4",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2097,8 +2001,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_758155E1_AF84_426c_8B7B_E0CA326B3285",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2110,8 +2013,7 @@
                           {
                             "name": "value",
                             "id": "EAID_BBF56DFB_B82A_4dd5_AB2D_06718F708984",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2124,11 +2026,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_62B78F4C_F1C7_4ef1_9365_BF5BA5CCF5A2"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "5d49c972-6f34-44cd-8e17-94812c86267a",
+                        "id": "EAID_ED69F9E1_51B1_4cfd_BB76_14E0B84C7BED",
                         "name": "VolumeFlowRate",
                         "type": "Class",
                         "stereotype": "CIMDatatype",
@@ -2143,8 +2045,7 @@
                           {
                             "name": "multiplier",
                             "id": "EAID_D8663DB6_550A_45d1_8805_71A83D1274A4",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2156,8 +2057,7 @@
                           {
                             "name": "unit",
                             "id": "EAID_0F412E53_82F2_4b40_8190_F2E75248964D",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2169,8 +2069,7 @@
                           {
                             "name": "value",
                             "id": "EAID_5544463F_A098_471f_B613_C202CB556AE7",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": null,
                             "documentationRu": "",
@@ -2183,11 +2082,11 @@
                         "links": [],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_ED69F9E1_51B1_4cfd_BB76_14E0B84C7BED"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "cb252c0b-06c2-4a65-8d7a-e1537369497c",
+                        "id": "EAID_A7D1F17C_1CF9_4265_92BD_972F2183EFE2",
                         "name": "UnitMultiplier",
                         "type": "Enumeration",
                         "stereotype": "",
@@ -2233,11 +2132,11 @@
                           }
                         ],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_A7D1F17C_1CF9_4265_92BD_972F2183EFE2"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "d9a04952-b1df-4a62-a7fa-f1a967819872",
+                        "id": "EAID_1821E692_DFA2_4c1b_B5CE_FB85374E0704",
                         "name": "UnitSymbol",
                         "type": "Enumeration",
                         "stereotype": "",
@@ -2415,11 +2314,11 @@
                           }
                         ],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_1821E692_DFA2_4c1b_B5CE_FB85374E0704"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "06536131-0d38-468d-b149-43a157bf424b",
+                        "id": "EAID_157FF307_0C5D_4c09_A480_5EBB085B0E02",
                         "name": "Currency",
                         "type": "Enumeration",
                         "stereotype": "",
@@ -3401,8 +3300,8 @@
                           }
                         ],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_157FF307_0C5D_4c09_A480_5EBB085B0E02"
+                        "modelId": null,
+                        "modelItemId": null
                       }
                     ],
                     "subPackages": []
@@ -3417,7 +3316,7 @@
                     "elementCount": 24,
                     "classes": [
                       {
-                        "id": "83ca5929-9a56-4bec-9b1c-8377290f8931",
+                        "id": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
                         "name": " PowerSystemResource",
                         "type": "Class",
                         "stereotype": "",
@@ -3609,11 +3508,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "701841a2-3030-4019-9a41-b4ca5357d7be",
+                        "id": "EAID_54896FF0_3E97_4762_8929_9BAB337953B0",
                         "name": "ACDCTerminal",
                         "type": "Class",
                         "stereotype": "",
@@ -3628,8 +3527,7 @@
                           {
                             "name": "sequenceNumber",
                             "id": "EAID_072872B9_5944_4de2_9CA9_AA9811B248DA",
-                            "dataType": "Integer",
-                            "dataTypeId": "",
+                            "type": "Integer",
                             "stereotype": "",
                             "documentation": "Порядковый номер полюса электропроводящего оборудования",
                             "documentationRu": "",
@@ -3698,11 +3596,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_54896FF0_3E97_4762_8929_9BAB337953B0"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "f5ac812f-3f7b-499e-927a-48de9aca6cf8",
+                        "id": "EAID_A40E5870_2CE1_4630_B472_C63241F9603D",
                         "name": "BaseVoltage",
                         "type": "Class",
                         "stereotype": "",
@@ -3717,8 +3615,7 @@
                           {
                             "name": "isDC",
                             "id": "EAID_69874E3F_DF3B_4165_849F_0425403CFE20",
-                            "dataType": "Boolean",
-                            "dataTypeId": "",
+                            "type": "Boolean",
                             "stereotype": "rf",
                             "documentation": "Признак того, что значение номинального напряжения является напряжением постоянного тока.",
                             "documentationRu": "",
@@ -3730,8 +3627,7 @@
                           {
                             "name": "nominalVoltage",
                             "id": "EAID_4C2EFD32_0A16_4615_AA50_5DBC1F6E38EC",
-                            "dataType": "Voltage",
-                            "dataTypeId": "",
+                            "type": "Voltage",
                             "stereotype": "",
                             "documentation": "Значение номинального напряжения, кВ.",
                             "documentationRu": "",
@@ -3800,11 +3696,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_A40E5870_2CE1_4630_B472_C63241F9603D"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "8829b43c-f82b-4081-a95e-cdfd83e30328",
+                        "id": "EAID_47E8E46F_3163_4ab0_995E_F6E2F40491B1",
                         "name": "Bay",
                         "type": "Class",
                         "stereotype": "",
@@ -3819,8 +3715,7 @@
                           {
                             "name": "breakerConfiguration",
                             "id": "EAID_5B522A2A_CBB6_488f_ACD2_CE8DD85D7C5C",
-                            "dataType": "BreakerConfiguration",
-                            "dataTypeId": "",
+                            "type": "BreakerConfiguration",
                             "stereotype": "",
                             "documentation": "Конфигурация соединения выключателей.",
                             "documentationRu": "",
@@ -3832,8 +3727,7 @@
                           {
                             "name": "busBarConfiguration",
                             "id": "EAID_495496FC_4B49_42da_9C46_81385E5400C2",
-                            "dataType": "BusbarConfiguration",
-                            "dataTypeId": "",
+                            "type": "BusbarConfiguration",
                             "stereotype": "",
                             "documentation": "Конфигурация шин присоединения.",
                             "documentationRu": "",
@@ -3869,11 +3763,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_47E8E46F_3163_4ab0_995E_F6E2F40491B1"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "885066d9-6695-4d54-bfb8-bb40e2aa4bfd",
+                        "id": "EAID_EB534BB1_4810_421d_8CAB_CC1D40CA4015",
                         "name": "ConductingEquipment",
                         "type": "Class",
                         "stereotype": "",
@@ -3888,8 +3782,7 @@
                           {
                             "name": "isThreePhaseEquipment",
                             "id": "EAID_4C7C89A6_0E84_4013_82D8_5F4F4EB7C4A9",
-                            "dataType": "Boolean",
-                            "dataTypeId": "",
+                            "type": "Boolean",
                             "stereotype": "rf",
                             "documentation": "Трехфазное исполнение оборудования.",
                             "documentationRu": "",
@@ -4046,11 +3939,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_EB534BB1_4810_421d_8CAB_CC1D40CA4015"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "e70d212b-e206-4770-a6d2-0998d268c4c8",
+                        "id": "EAID_5603AB56_6444_444d_81B2_852EB45BF787",
                         "name": "ConnectivityNode",
                         "type": "Class",
                         "stereotype": "",
@@ -4110,11 +4003,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_5603AB56_6444_444d_81B2_852EB45BF787"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "e296653c-9173-4bb3-9e97-84e36dc558c3",
+                        "id": "EAID_3372AC7E_617A_41c6_8566_51E7A6DAD1FD",
                         "name": "ConnectivityNodeContainer",
                         "type": "Class",
                         "stereotype": "",
@@ -4163,11 +4056,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_3372AC7E_617A_41c6_8566_51E7A6DAD1FD"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "ca22e538-83fb-4e53-97fc-d1eb0c3c95ce",
+                        "id": "EAID_FAF0FCFF_C374_4b0c_95BF_955CE7014669",
                         "name": "Curve",
                         "type": "Class",
                         "stereotype": "",
@@ -4182,8 +4075,7 @@
                           {
                             "name": "curveStyle",
                             "id": "EAID_2E355384_9027_4c4b_A27A_5D4B8B3F432F",
-                            "dataType": "CurveStyle",
-                            "dataTypeId": "",
+                            "type": "CurveStyle",
                             "stereotype": "",
                             "documentation": "Тип кривой.",
                             "documentationRu": "",
@@ -4195,8 +4087,7 @@
                           {
                             "name": "xMultiplier",
                             "id": "EAID_C2C81A0F_B128_4073_B497_0AD15FDB4976",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": "Множитель по оси X.",
                             "documentationRu": "",
@@ -4208,8 +4099,7 @@
                           {
                             "name": "xUnit",
                             "id": "EAID_4AD7D615_16B2_41f4_B5CE_B82CF3FBF091",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": "Единица измерения по оси X.",
                             "documentationRu": "",
@@ -4221,8 +4111,7 @@
                           {
                             "name": "y1Multiplier",
                             "id": "EAID_6D21E0EC_D22B_4943_B9B9_0E3708CE0F2C",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": "Множитель по оси Y1.",
                             "documentationRu": "",
@@ -4234,8 +4123,7 @@
                           {
                             "name": "y1Unit",
                             "id": "EAID_9C356759_CB26_431c_9874_6A5233E9F290",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": "Единица измерения по оси Y1.",
                             "documentationRu": "",
@@ -4247,8 +4135,7 @@
                           {
                             "name": "y2Multiplier",
                             "id": "EAID_547F7298_1D03_47a5_AA7E_D2A08552C1D5",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": "Множитель по оси Y2.",
                             "documentationRu": "",
@@ -4260,8 +4147,7 @@
                           {
                             "name": "y2Unit",
                             "id": "EAID_5B64BD83_C12A_47ef_84D4_277ECAB6A4B3",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": "Единица измерения по оси Y2.",
                             "documentationRu": "",
@@ -4273,8 +4159,7 @@
                           {
                             "name": "y3Multiplier",
                             "id": "EAID_91E8D41F_F9E2_49a8_B190_671806D27D22",
-                            "dataType": "UnitMultiplier",
-                            "dataTypeId": "",
+                            "type": "UnitMultiplier",
                             "stereotype": "",
                             "documentation": "Множитель по оси Y3.",
                             "documentationRu": "",
@@ -4286,8 +4171,7 @@
                           {
                             "name": "y3Unit",
                             "id": "EAID_01E54DD6_6DF6_492f_9379_953A1C61BC86",
-                            "dataType": "UnitSymbol",
-                            "dataTypeId": "",
+                            "type": "UnitSymbol",
                             "stereotype": "",
                             "documentation": "Единица измерения по оси Y3.",
                             "documentationRu": "",
@@ -4378,11 +4262,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_FAF0FCFF_C374_4b0c_95BF_955CE7014669"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "b70f60f7-18d6-4d76-98c6-1a01c051e53f",
+                        "id": "EAID_8FBF3044_5901_4e60_829A_C60E97DA1722",
                         "name": "CurveData",
                         "type": "Class",
                         "stereotype": "",
@@ -4397,8 +4281,7 @@
                           {
                             "name": "xvalue",
                             "id": "EAID_5465BBF0_020F_49d3_9AE7_438067085226",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": "Значение по оси X.",
                             "documentationRu": "",
@@ -4410,8 +4293,7 @@
                           {
                             "name": "y1value",
                             "id": "EAID_E76590BB_A908_4c60_959E_264A64FACC1F",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": "Значение по оси Y1.",
                             "documentationRu": "",
@@ -4423,8 +4305,7 @@
                           {
                             "name": "y2value",
                             "id": "EAID_ACEBD1AE_66BB_4424_AA08_10138C31D387",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": "Значение по оси Y2.",
                             "documentationRu": "",
@@ -4436,8 +4317,7 @@
                           {
                             "name": "y3value",
                             "id": "EAID_0933A1B9_B12C_4a93_92DA_FF7A4730CCD5",
-                            "dataType": "Float",
-                            "dataTypeId": "",
+                            "type": "Float",
                             "stereotype": "",
                             "documentation": "Значение по оси Y3.",
                             "documentationRu": "",
@@ -4462,11 +4342,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_8FBF3044_5901_4e60_829A_C60E97DA1722"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "588d1799-a369-41bc-b192-8e508500b46e",
+                        "id": "EAID_B0D067B5_E753_4031_B99B_C972759B988B",
                         "name": "Equipment",
                         "type": "Class",
                         "stereotype": "",
@@ -4481,8 +4361,7 @@
                           {
                             "name": "normallyInService",
                             "id": "EAID_C69C0E05_5BE2_40dd_8D8A_9B748A24B721",
-                            "dataType": "Boolean",
-                            "dataTypeId": "",
+                            "type": "Boolean",
                             "stereotype": "",
                             "documentation": "Если присвоено значение &#171;Истина&#187;, оборудование находится в работе.",
                             "documentationRu": "",
@@ -4683,11 +4562,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_B0D067B5_E753_4031_B99B_C972759B988B"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "25ca3c1e-cb62-4530-afcd-68b9f3dc55f4",
+                        "id": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
                         "name": "EquipmentContainer",
                         "type": "Class",
                         "stereotype": "",
@@ -4901,11 +4780,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "9fc94897-5e57-4ece-ab0e-bc79bfbe0579",
+                        "id": "EAID_AF88AE9A_8474_45e2_8E4E_A2BA73E3B946",
                         "name": "GeographicalRegion",
                         "type": "Class",
                         "stereotype": "",
@@ -4943,11 +4822,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_AF88AE9A_8474_45e2_8E4E_A2BA73E3B946"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "6c028ccf-4331-4e05-a892-cdc1e7151925",
+                        "id": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
                         "name": "IdentifiedObject",
                         "type": "Class",
                         "stereotype": "",
@@ -4962,8 +4841,7 @@
                           {
                             "name": "aliasName",
                             "id": "EAID_C9E4C6E3_C6A3_41bd_8DFF_15C5C74A5D1D",
-                            "dataType": "String",
-                            "dataTypeId": "",
+                            "type": "String",
                             "stereotype": "",
                             "documentation": "Дополнительное наименование идентифицируемого объекта.",
                             "documentationRu": "",
@@ -4975,8 +4853,7 @@
                           {
                             "name": "description",
                             "id": "EAID_8620B859_38E1_4d47_A501_8BB171EE4D44",
-                            "dataType": "String",
-                            "dataTypeId": "",
+                            "type": "String",
                             "stereotype": "",
                             "documentation": "Описание объекта информационной модели.",
                             "documentationRu": "",
@@ -4988,8 +4865,7 @@
                           {
                             "name": "mRID",
                             "id": "EAID_323F503C_A681_4181_9183_1E420D4A68F9",
-                            "dataType": "UUID",
-                            "dataTypeId": "",
+                            "type": "UUID",
                             "stereotype": "",
                             "documentation": "Глобальный уникальный идентификатор объекта информационной модели.",
                             "documentationRu": "",
@@ -5001,8 +4877,7 @@
                           {
                             "name": "name",
                             "id": "EAID_D4A7A0F9_74F7_4479_A881_1929EA4CF14A",
-                            "dataType": "String",
-                            "dataTypeId": "",
+                            "type": "String",
                             "stereotype": "",
                             "documentation": "Наименование объекта информационной модели.",
                             "documentationRu": "",
@@ -5742,11 +5617,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_69526261_F2D9_4f06_86B3_638695E07849"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "762ea19e-af5d-4856-b9c4-9e9b927bf990",
+                        "id": "EAID_17DF665F_3E3F_4999_9173_E12F817803D8",
                         "name": "Name",
                         "type": "Class",
                         "stereotype": "",
@@ -5761,8 +5636,7 @@
                           {
                             "name": "name",
                             "id": "EAID_7B777FB6_8D2E_42de_AF78_8438D7B64AF3",
-                            "dataType": "String",
-                            "dataTypeId": "",
+                            "type": "String",
                             "stereotype": "",
                             "documentation": "Типизированное дополнительное наименование объекта информационной модели.",
                             "documentationRu": "",
@@ -5798,11 +5672,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_17DF665F_3E3F_4999_9173_E12F817803D8"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "70922628-36c4-4533-9dde-a6b84ea5fc52",
+                        "id": "EAID_57E4C9DC_A35F_444a_8AA3_AAA670FA4A97",
                         "name": "NameType",
                         "type": "Class",
                         "stereotype": "",
@@ -5817,8 +5691,7 @@
                           {
                             "name": "description",
                             "id": "EAID_36CB07DC_9CC1_46c3_8083_5D852EB8478F",
-                            "dataType": "String",
-                            "dataTypeId": "",
+                            "type": "String",
                             "stereotype": "",
                             "documentation": "Описатель типа наименования.",
                             "documentationRu": "",
@@ -5830,8 +5703,7 @@
                           {
                             "name": "name",
                             "id": "EAID_8FBBB7E1_F5DE_478e_8FED_E1264CF725EC",
-                            "dataType": "String",
-                            "dataTypeId": "",
+                            "type": "String",
                             "stereotype": "",
                             "documentation": "Тип наименования.",
                             "documentationRu": "",
@@ -5856,11 +5728,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_57E4C9DC_A35F_444a_8AA3_AAA670FA4A97"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "0d111fea-e16e-42be-ab98-e34a3423ce62",
+                        "id": "EAID_4B0D8650_9FAB_4469_B419_929D38AB2EF7",
                         "name": "PSRType",
                         "type": "Class",
                         "stereotype": "",
@@ -5898,11 +5770,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_4B0D8650_9FAB_4469_B419_929D38AB2EF7"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "139ab3cc-621d-4687-8973-8c7372fc1240",
+                        "id": "EAID_BCBBA501_B5C8_46ec_B213_4814693DCFC8",
                         "name": "SubGeographicalRegion",
                         "type": "Class",
                         "stereotype": "",
@@ -5984,11 +5856,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_BCBBA501_B5C8_46ec_B213_4814693DCFC8"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "ac218cf1-476b-4bc7-829b-2675dfdf1a66",
+                        "id": "EAID_547155F8_978F_4487_84C9_548E94483ADE",
                         "name": "Substation",
                         "type": "Class",
                         "stereotype": "",
@@ -6048,11 +5920,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_547155F8_978F_4487_84C9_548E94483ADE"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "6dabf347-04dd-41d3-a662-6d71c3004bed",
+                        "id": "EAID_41429F07_2146_43df_8E7E_CD57103ACADE",
                         "name": "Terminal",
                         "type": "Class",
                         "stereotype": "",
@@ -6067,8 +5939,7 @@
                           {
                             "name": "phases",
                             "id": "EAID_E8342278_89AC_4a2c_8E62_2FC6375A431C",
-                            "dataType": "PhaseCode",
-                            "dataTypeId": "",
+                            "type": "PhaseCode",
                             "stereotype": "",
                             "documentation": "Код фазы терминала.",
                             "documentationRu": "",
@@ -6192,11 +6063,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_41429F07_2146_43df_8E7E_CD57103ACADE"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "96c99552-8c6e-47ee-a5aa-f608bdcba61b",
+                        "id": "EAID_F911C51B_57D4_4433_BE3D_63CB46669482",
                         "name": "VoltageLevel",
                         "type": "Class",
                         "stereotype": "",
@@ -6256,11 +6127,11 @@
                         ],
                         "literals": [],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_F911C51B_57D4_4433_BE3D_63CB46669482"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "453750fc-b258-4367-87b9-e8c7ea8439f9",
+                        "id": "EAID_93E96222_F562_43d1_AAE5_02803B96BC03",
                         "name": "BreakerConfiguration",
                         "type": "Enumeration",
                         "stereotype": "",
@@ -6306,11 +6177,11 @@
                           }
                         ],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_93E96222_F562_43d1_AAE5_02803B96BC03"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "04ed2c38-51cd-4641-a6a7-d3cb961711e1",
+                        "id": "EAID_CF3EBAB8_566D_4599_A60D_59A242E0D635",
                         "name": "BusbarConfiguration",
                         "type": "Enumeration",
                         "stereotype": "",
@@ -6362,11 +6233,11 @@
                           }
                         ],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_CF3EBAB8_566D_4599_A60D_59A242E0D635"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "043a5d74-96f7-43bb-bcbe-c133a3ede44a",
+                        "id": "EAID_9A4D87AC_6A7E_4edd_B6BD_F9DFF979CCE9",
                         "name": "CurveStyle",
                         "type": "Enumeration",
                         "stereotype": "",
@@ -6394,11 +6265,11 @@
                           }
                         ],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_9A4D87AC_6A7E_4edd_B6BD_F9DFF979CCE9"
+                        "modelId": null,
+                        "modelItemId": null
                       },
                       {
-                        "id": "3a5047e8-5f07-4259-a0fb-cca34fdd4b8f",
+                        "id": "EAID_9898CE4F_F279_4ad9_87BC_3CDC3EA2C2D4",
                         "name": "PhaseCode",
                         "type": "Enumeration",
                         "stereotype": "",
@@ -6462,8 +6333,8 @@
                           }
                         ],
                         "profileRelations": [],
-                        "modelId": "2",
-                        "modelItemId": "EAID_9898CE4F_F279_4ad9_87BC_3CDC3EA2C2D4"
+                        "modelId": null,
+                        "modelItemId": null
                       }
                     ],
                     "subPackages": []
