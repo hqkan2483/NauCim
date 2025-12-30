@@ -2329,6 +2329,7 @@ body.modal-open { overflow: hidden; }
 #item-container * .class-item {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 10px 12px;
   background: rgba(0, 0, 0, 0.02);
@@ -2394,7 +2395,7 @@ body.modal-open { overflow: hidden; }
   color: var(--text-primary);
 }
 
-/* Link Diagram */
+/* Link Diagram
 #item-container * .link-diagram {
   margin-top: 20px;
   padding:  15px;
@@ -2419,7 +2420,7 @@ body.modal-open { overflow: hidden; }
   overflow-x: auto;
   margin:  0;
   white-space: pre;
-}
+} */
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -2701,4 +2702,32 @@ align-self: center;
   #item-container * .table-actions {
     flex-direction: column;
   }
+}
+
+#item-container * .tab-mini:hover {
+  background: rgba(0, 90, 155, 0.1);
+  color: var(--text-primary);
+}
+
+#item-container * .section-tab-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#item-container * .tab-action-btn.hidden {
+  display: none;
+}
+
+/* Tab Content Sections */
+#item-container * .tabs-content {
+  margin-top: 0;
+}
+
+#item-container * .tab-content-section {
+  display: none;
+}
+
+#item-container * .tab-content-section.active {
+  display: block;
 }

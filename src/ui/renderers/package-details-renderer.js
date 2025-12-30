@@ -15,65 +15,65 @@ function renderPackageDetails(pkg) {
 
   let html = `
     <div class="item-details">
-      <div class="item-header">
-        <h2 class="item-title">📦 Редактирование пакета</h2>
-        <span class="item-type-badge">Package</span>
-      </div>
-      
       <form class="item-form" id="package-form" data-package-id="${pkg.id}">
         <div class="form-section">
-          <h3 class="form-section-title">Основные свойства</h3>
-          
-          <div class="form-group">
-            <label class="form-label" for="pkg-name">Название пакета *</label>
-            <input 
-              type="text" 
-              id="pkg-name" 
-              class="form-input" 
-              value="${pkg.name || ''}"
-              required
-            />
+          <div class="form-section-title">
+            <div class="form-row">
+              <div class="form-cell">
+                <div class="form-group form-group__line">
+                  <label class="form-label form-label__title" for="pkg-name">Пакет *</label>
+                    <input
+                      type="text"
+                      id="pkg-name"
+                      class="form-input form-input__short"
+                      value="${pkg.name || ''}"
+                      required
+                    />
+                </div>
+              </div>
+              <div class="form-cell form-cell__line">
+                <div class="form-group">
+                </div>
+              </div>
+            </div>
           </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="pkg-type">Тип</label>
-            <input 
-              type="text" 
-              id="pkg-type" 
-              class="form-input" 
-              value="${pkg.type || 'Package'}"
-              readonly
-            />
+
+            <div class="form-row">
+              <div class="form-cell">
+                <div class="form-group">
+                  <label class="form-label" for="pkg-documentation">Описание</label>
+                  <textarea
+                    id="pkg-documentation"
+                    class="form-textarea"
+                    rows="3"
+                  >${pkg.documentation || ''}</textarea>
+                </div>
+              </div>
+              <div class="form-cell">
+                <div class="form-group">
+                  <label class="form-label" for="pkg-documentationRu">Описание (RU)</label>
+                  <textarea
+                    id="pkg-documentationRu"
+                    class="form-textarea"
+                    rows="3"
+                  >${pkg.documentationRu || ''}</textarea>
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-cell">
+                <div class="form-group">
+                  <label class="form-label" for="pkg-details">Детали</label>
+                  <textarea
+                    id="pkg-details"
+                    class="form-textarea"
+                    rows="4"
+                  >${pkg.details || ''}</textarea>
+                </div>
+              </div>
+            </div>
           </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="pkg-documentation">Описание</label>
-            <textarea 
-              id="pkg-documentation" 
-              class="form-textarea"
-              rows="3"
-            >${pkg.documentation || ''}</textarea>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="pkg-documentationRu">Описание (RU)</label>
-            <textarea 
-              id="pkg-documentationRu" 
-              class="form-textarea"
-              rows="3"
-            >${pkg.documentationRu || ''}</textarea>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="pkg-details">Детали</label>
-            <textarea 
-              id="pkg-details" 
-              class="form-textarea"
-              rows="4"
-            >${pkg.details || ''}</textarea>
-          </div>
-        </div>
-        
+
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">
             💾 Сохранить изменения
@@ -83,7 +83,7 @@ function renderPackageDetails(pkg) {
           </button>
         </div>
       </form>
-      
+
       ${renderPackageContents(pkg)}
     </div>
   `;
@@ -104,7 +104,7 @@ function renderPackageContents(pkg) {
   if (pkg.subPackages && pkg.subPackages.length > 0) {
     html += `
       <div class="content-group">
-        <h4 class="content-group-title">Подпакеты (${pkg.subPackages.length})</h4>
+        <h4 class="content-group-title">Вложенные пакеты (${pkg.subPackages.length})</h4>
         <div class="subpackages-list">
     `;
 
@@ -112,7 +112,7 @@ function renderPackageContents(pkg) {
       html += `
         <div class="subpackage-item">
           <span class="subpackage-icon">📦</span>
-          <span class="subpackage-name">${subPkg.name}</span>
+          <span class="subpackage-name" data-model-id="${subPkg.modelId}" data-profile-id="${subPkg.profileId}" data-package-id="${subPkg.id}" title="${subPkg.documentation || subPkg.name || ''}">${subPkg.name}</span>
         </div>
       `;
     });
@@ -136,7 +136,7 @@ function renderPackageContents(pkg) {
       html += `
         <div class="class-item">
           <span class="class-icon">${icon}</span>
-          <span class="class-name">${cls.name}</span>
+          <span class="class-name" data-model-id="${cls.modelId}" data-profile-id="${cls.profileId}" data-ref-model-id="${cls.refModelId}" data-ref-model-item-id="${cls.refModelItemId}" data-class-id="${cls.id}" title="${cls.documentation || cls.name || ''}">${cls.name}</span>
           ${cls.stereotype ? `<span class="class-stereotype">«${cls.stereotype}»</span>` : ''}
         </div>
       `;
@@ -149,7 +149,7 @@ function renderPackageContents(pkg) {
   }
 
   // Empty state
-  if ((! pkg.subPackages || pkg.subPackages.length === 0) && 
+  if ((! pkg.subPackages || pkg.subPackages.length === 0) &&
       (!pkg.classes || pkg.classes.length === 0)) {
     html += `
       <div class="no-content">

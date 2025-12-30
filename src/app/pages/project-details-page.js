@@ -710,7 +710,15 @@ function handleSelectLink(linkId) {
  */
 function handleItemDetailsClick(e) {
   const target = e.target instanceof HTMLElement ? e.target : null;
-  if (! target) return;
+  if (!target) return;
+
+  // ✅ Tab switching (NEW)
+  const tabBtn = target.closest("[data-section-tab]");
+  if (tabBtn) {
+    handleTabSwitch(tabBtn);
+    return;
+  }
+
 
   // Package form cancel
   const pkgCancelBtn = target.closest("#pkg-cancel-btn");
@@ -811,6 +819,43 @@ function handleItemDetailsClick(e) {
     handleDeleteLiteral(literalId);
     return;
   }
+}
+
+/**
+ * ✅ Handle tab switching (NEW)
+ */
+function handleTabSwitch(tabBtn) {
+  const tabName = tabBtn.getAttribute("data-section-tab");
+  const classId = tabBtn.getAttribute("data-class-id");
+
+  // Remove active class from all tabs
+  const allTabs = document.querySelectorAll("[data-section-tab]");
+  allTabs.forEach(tab => tab.classList.remove("active"));
+
+  // Add active class to clicked tab
+  tabBtn.classList.add("active");
+
+  // Hide all tab content sections
+  const allContent = document.querySelectorAll("[data-tab-content]");
+  allContent.forEach(content => content.classList.remove("active"));
+
+  // Show selected tab content
+  const selectedContent = document.querySelector(`[data-tab-content="${tabName}"]`);
+  if (selectedContent) {
+    selectedContent.classList.add("active");
+  }
+
+  // Hide all action buttons
+  const allActionBtns = document.querySelectorAll(".tab-action-btn");
+  allActionBtns.forEach(btn => btn.classList.add("hidden"));
+
+  // Show corresponding action button
+  const selectedActionBtn = document.querySelector(`[data-tab="${tabName}"]`);
+  if (selectedActionBtn) {
+    selectedActionBtn.classList.remove("hidden");
+  }
+
+  console.log(`📑 Переключение на таб: ${tabName}`);
 }
 
 /**

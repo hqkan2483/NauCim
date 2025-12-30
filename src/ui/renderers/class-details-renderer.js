@@ -13,9 +13,6 @@ function renderClassDetails(cls) {
     return '<div class="text-center">Выберите класс для просмотра деталей</div>';
   }
 
-  // const icon = cls.type === 'Enumeration' ? '🔢' : (cls.isAbstract ? '📋' : '📄');
-  // const typeName = cls.type === 'Enumeration' ?  'Enumeration' : (cls.isAbstract ? 'Abstract Class' : 'Class');
-
   let html = `
     <div class="item-details">
       <form class="item-form" id="class-form" data-class-id="${cls.id}">
@@ -34,9 +31,7 @@ function renderClassDetails(cls) {
                     />
                 </div>
               </div>
-
-              <div class="form-group form-group__line">
-                <div class="form-cell form-cell__line">
+              <div class="form-cell form-cell__line">
                  <div class="form-group">
                   <label class="form-checkbox-label">
                     <span>Абстрактный класс</span>
@@ -46,7 +41,6 @@ function renderClassDetails(cls) {
                       class="form-checkbox"
                       ${cls.isAbstract ? 'checked' : ''}
                     />
-
                   </label>
                   </div>
                   <div class="form-group form-group__line">
@@ -59,14 +53,10 @@ function renderClassDetails(cls) {
                       placeholder="Например: rs, rf"
                     />
                   </div>
-
-
                 </div>
-
               </div>
             </div>
           </div>
-
 
           <div class="form-row">
              <div class="form-cell">
@@ -116,46 +106,131 @@ function renderClassDetails(cls) {
           </button>
         </div>
       </form>
+
       ${renderClassTabs(cls)}
-      ${cls.type === 'Enumeration' && cls.attributes.length > 0 ? renderClassAttributes(cls) : ''}
-      ${cls.type === 'Enumeration' && cls.links.length > 0 ? renderClassLinks(cls) : ''}
-      ${cls.type !== 'Enumeration' ? renderClassAttributes(cls) : ''}
-      ${cls.type !== 'Enumeration' ? renderClassLinks(cls) : ''}
-      ${cls.type === 'Enumeration' ? renderClassLiterals(cls) : ''}
+
+      <div class="tabs-content">
+        ${renderTabContent(cls)}
+      </div>
     </div>
   `;
-//  todo
-// вызов функций рендеринга секций атрибутов, связей и литералов класса надо переделать.  это должны быть не условия на Enumeration, а просто вызовы функций, которые внутри себя уже решают, что рендерить, а что нет. и единая функциЯ - она рендерит табы, в зависимости от типа класса.
-
 
   return html;
 }
 
+/**
+ * Render class tabs header with buttons
+ */
 function renderClassTabs(cls) {
+  const isEnumeration = cls.type === 'Enumeration';
 
   let html = `
     <div class="item-section">
       <div class="section-header">
-        <div class ="section-tabs">
-          <div class="section-title tab tab-mini active" data-section-tab="item-attributes">Атрибуты (${cls.attributes ?  cls.attributes.length : 0})</div>
-          <div class="section-title tab tab-mini active" data-section-tab="item-links">Связи (${cls.links ? cls.links.length : 0})</div>
-          <div class="section-title tab tab-mini active" data-section-tab="item-links">Значения перечисления (${cls.literals ? cls.literals.length : 0})</div>
+        <div class="section-tabs">
+  `;
+
+  // ✅ Для обычного класса:  Атрибуты и Связи
+  if (! isEnumeration) {
+    html += `
+      <div class="section-title tab tab-mini active"
+           data-section-tab="item-attributes"
+           data-class-id="${cls.id}">
+        Атрибуты (${cls.attributes ?  cls.attributes.length : 0})
+      </div>
+      <div class="section-title tab tab-mini"
+           data-section-tab="item-links"
+           data-class-id="${cls.id}">
+        Связи (${cls.links ? cls.links.length :  0})
+      </div>
+    `;
+  }
+
+  // ✅ Для Enumeration:  только Значения перечисления
+  if (isEnumeration) {
+    html += `
+      <div class="section-title tab tab-mini active"
+           data-section-tab="item-literals"
+           data-class-id="${cls.id}">
+        Значения перечисления (${cls.literals ? cls.literals.length : 0})
+      </div>
+    `;
+  }
+
+  html += `
         </div>
         <div class="section-tab-actions">
-          <button class="btn btn-primary btn-small" id="add-attribute-btn" data-class-id="${cls.id}">
-            ➕ Добавить атрибут
-          </button>
-          <button class="btn btn-primary btn-small" id="add-link-btn" data-class-id="${cls.id}">
-            ➕ Добавить связь
-          </button>
-          <button class="btn btn-primary btn-small" id="add-literal-btn" data-class-id="${cls.id}">
-            ➕ Добавить значение
-          </button>
+  `;
 
+  // ✅ Кнопки для обычного класса
+  if (! isEnumeration) {
+    html += `
+      <button class="btn btn-primary btn-small tab-action-btn"
+              id="add-attribute-btn"
+              data-class-id="${cls.id}"
+              data-tab="item-attributes">
+        ➕ Добавить атрибут
+      </button>
+      <button class="btn btn-primary btn-small tab-action-btn hidden"
+              id="add-link-btn"
+              data-class-id="${cls.id}"
+              data-tab="item-links">
+        ➕ Добавить связь
+      </button>
+    `;
+  }
+
+  // ✅ Кнопка для Enumeration
+  if (isEnumeration) {
+    html += `
+      <button class="btn btn-primary btn-small tab-action-btn"
+              id="add-literal-btn"
+              data-class-id="${cls.id}"
+              data-tab="item-literals">
+        ➕ Добавить значение
+      </button>
+    `;
+  }
+
+  html += `
         </div>
       </div>
+    </div>
   `;
-return html;
+
+  return html;
+}
+
+/**
+ * Render tab content (all tabs, visibility controlled by CSS)
+ */
+function renderTabContent(cls) {
+  const isEnumeration = cls.type === 'Enumeration';
+
+  let html = '';
+
+  // ✅ Для обычного класса: Атрибуты и Связи
+  if (!isEnumeration) {
+    html += `
+      <div class="tab-content-section active" data-tab-content="item-attributes">
+        ${renderClassAttributes(cls)}
+      </div>
+      <div class="tab-content-section" data-tab-content="item-links">
+        ${renderClassLinks(cls)}
+      </div>
+    `;
+  }
+
+  // ✅ Для Enumeration:  только Литералы
+  if (isEnumeration) {
+    html += `
+      <div class="tab-content-section active" data-tab-content="item-literals">
+        ${renderClassLiterals(cls)}
+      </div>
+    `;
+  }
+
+  return html;
 }
 
 /**
@@ -167,7 +242,7 @@ function renderClassAttributes(cls) {
   if (!cls.attributes || cls.attributes.length === 0) {
     html += `
       <div class="no-content">
-        <p>Нет атрибутов.  Нажмите "Добавить атрибут" для создания. </p>
+        <p>Нет атрибутов. Нажмите "Добавить атрибут" для создания. </p>
       </div>
     `;
   } else {
@@ -228,7 +303,6 @@ function renderClassAttributes(cls) {
     `;
   }
 
-  html += `</div>`;
   return html;
 }
 
@@ -275,7 +349,7 @@ function renderClassLinks(cls) {
       html += `
         <tr data-link-id="${link.linkId}">
           <td><strong>${link.targetClassRoleName || '—'}</strong></td>
-          <td>${linkIcon} ${link.relationKind || '—'} ${roleLabel}</td>
+          <td>${linkIcon} ${link.relationKind || '—'} <br> ${roleLabel}</td>
           <td>${link.targetClassName || '—'}</td>
           <td>${link.multiplicity || '—'}</td>
           <td>${link.targetDescription || '—'}</td>
@@ -305,7 +379,6 @@ function renderClassLinks(cls) {
     `;
   }
 
-  html += `</div>`;
   return html;
 }
 
@@ -367,7 +440,6 @@ function renderClassLiterals(cls) {
     `;
   }
 
-  html += `</div>`;
   return html;
 }
 
