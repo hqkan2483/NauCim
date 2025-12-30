@@ -97,11 +97,11 @@ function renderModelTree(model, projectId, index) {
   const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
   const itemId = `model-${projectId}-${index}`;
   const isExpanded = expandedItems[itemId];
-  
-  const hasChildren = 
-    model.rootPackages && 
-    model.rootPackages.length > 0 && 
-    model.rootPackages[0].packages && 
+
+  const hasChildren =
+    model.rootPackages &&
+    model.rootPackages.length > 0 &&
+    model.rootPackages[0].packages &&
     model.rootPackages[0].packages.length > 0;
 
   let html = `
@@ -125,14 +125,14 @@ function renderModelTree(model, projectId, index) {
 
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
-    
+
     const rootPackage = model.rootPackages[0];
     if (rootPackage.packages) {
       rootPackage.packages.forEach((pkg, idx) => {
         html += renderPackageTree(pkg, `${itemId}-pkg-${idx}`, model.id);
       });
     }
-    
+
     html += `</div>`;
   }
 
@@ -151,11 +151,11 @@ function renderProfileTree(profile, projectId, index) {
   const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
   const itemId = `profile-${projectId}-${index}`;
   const isExpanded = expandedItems[itemId];
-  
-  const hasChildren = 
-    profile.rootPackages && 
-    profile.rootPackages.length > 0 && 
-    profile.rootPackages[0].packages && 
+
+  const hasChildren =
+    profile.rootPackages &&
+    profile.rootPackages.length > 0 &&
+    profile.rootPackages[0].packages &&
     profile.rootPackages[0].packages.length > 0;
 
   let html = `
@@ -179,14 +179,14 @@ function renderProfileTree(profile, projectId, index) {
 
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
-    
+
     const rootPackage = profile.rootPackages[0];
     if (rootPackage.packages) {
       rootPackage.packages.forEach((pkg, idx) => {
         html += renderPackageTree(pkg, `${itemId}-pkg-${idx}`, null, profile.id);
       });
     }
-    
+
     html += `</div>`;
   }
 
@@ -231,6 +231,8 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
         <span class="tree-structure-name"
               data-type="package"
               data-package-id="${pkg.id || ""}"
+              data-model-id="${pkg.modelId || ""}"
+              data-profile-id="${pkg.profileId || ""}"
               data-action="select-package"
               title="${pkg.documentation || pkg.name || ''}">
           ${pkg.name || "Пакет без названия"}
@@ -273,9 +275,9 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
 function renderClassTree(cls, itemId, modelId = null, profileId = null) {
   const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
   const isExpanded = expandedItems[itemId];
-  
+
   // ✅ Класс имеет детей, если есть атрибуты ИЛИ связи
-  const hasChildren = 
+  const hasChildren =
     (cls.attributes && cls.attributes.length > 0) ||
     (cls.links && cls.links.length > 0);
 
@@ -312,9 +314,9 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
               data-type="class"
               data-class-id="${cls.id || ""}"
               data-model-id="${modelId || ""}"
-              data-ref-model-id="${cls.modelItemId || ""}"
-              data-ref-model-item-id="${cls.modelItemId || ""}"
-              data-profile-id="${profileId || ""}"
+              data-ref-model-id="${cls.refModelId || ""}"
+              data-ref-model-item-id="${cls.refModelItemId || ""}"
+              data-profile-id="${cls.profileId || ""}"
               data-is-enumeration="${isEnumeration}"
               data-is-abstract="${isAbstract}"
               data-action="select-class"
@@ -326,21 +328,21 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
 
   if (hasChildren && isExpanded) {
     html += `<div class="tree-structure-children">`;
-    
+
     // ✅ Render attributes
     if (cls.attributes && cls.attributes.length > 0) {
       cls.attributes.forEach((attr, idx) => {
         html += renderAttributeTree(attr, `${itemId}-attr-${idx}`);
       });
     }
-    
+
     // ✅ Render links (NEW!)
     if (cls.links && cls.links.length > 0) {
       cls.links.forEach((link, idx) => {
         html += renderLinkTree(link, `${itemId}-link-${idx}`);
       });
     }
-    
+
     html += `</div>`;
   }
 
@@ -391,7 +393,7 @@ function renderLinkTree(link, itemId) {
   // Определяем иконку по типу связи
   let linkIcon = "🔗";
   let linkPrefix = "";
-  
+
   if (link.relationKind === "Generalization" && link.role === "child") {
     linkIcon = "⬆️";
     linkPrefix = "наследуется от";
@@ -405,7 +407,7 @@ function renderLinkTree(link, itemId) {
 
   // Формируем название связи
   let linkName = `${linkPrefix} ${link.targetClassName}`;
-  
+
   // Добавляем multiplicity
   let multiplicityStr = "";
   if (link.multiplicity && link.multiplicity !== "1") {
