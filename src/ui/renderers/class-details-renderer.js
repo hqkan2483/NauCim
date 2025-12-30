@@ -31,9 +31,7 @@ function renderClassDetails(cls) {
                     />
                 </div>
               </div>
-
-              <div class="form-group form-group__line">
-                <div class="form-cell form-cell__line">
+              <div class="form-cell form-cell__line">
                  <div class="form-group">
                   <label class="form-checkbox-label">
                     <span>Абстрактный класс</span>

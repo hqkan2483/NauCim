@@ -2329,6 +2329,7 @@ body.modal-open { overflow: hidden; }
 #item-container * .class-item {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 10px 12px;
   background: rgba(0, 0, 0, 0.02);
@@ -2394,7 +2395,7 @@ body.modal-open { overflow: hidden; }
   color: var(--text-primary);
 }
 
-/* Link Diagram */
+/* Link Diagram
 #item-container * .link-diagram {
   margin-top: 20px;
   padding:  15px;
@@ -2419,7 +2420,7 @@ body.modal-open { overflow: hidden; }
   overflow-x: auto;
   margin:  0;
   white-space: pre;
-}
+} */
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
