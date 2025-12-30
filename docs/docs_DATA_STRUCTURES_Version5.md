@@ -161,8 +161,8 @@ interface RootPackage {
         "name": "IEC61970",
         "type": "Package",
         "documentation": "Пакет верхнего уровня для IEC 61970.",
-        "documentationRu": "",
-        "details": "",
+        "documentationRu": null,
+        "details": null,
         "elementCount": 1,
        "classes": [
             {
@@ -171,8 +171,8 @@ interface RootPackage {
               "type": "Class",
               "stereotype": "rf",
               "documentation": "Ошиновка.",
-              "documentationRu": "",
-              "details": "",
+              "documentationRu": null,
+              "details": null,
               "isAbstract": false,
               "attributes": [...],
               "links": [ ... ],
@@ -205,8 +205,8 @@ interface Package {
   documentation?: string;        // Описание пакета
   documentationRu?: string;      // Дополнительное описание на русском языке
   details?: string;               // Справочная и поясняющая информация
-  modelId:  string;                 //идентификатор модели, которой принадлежит пакет (заполняется, если пакет принадлежит модели)
-  profileId: string;              // идентификатор профиля, которому принадлежит пакет (заполняется, если пакет принадлежит профилю)
+  modelId?:  string;                 //идентификатор модели, которой принадлежит пакет (заполняется, если пакет принадлежит модели)
+  profileId?: string;              // идентификатор профиля, которому принадлежит пакет (заполняется, если пакет принадлежит профилю)
   classes: Class[];              // Массив классов, входящих в пакет
   subPackages: Package[];        // Вложенные пакеты
 }
@@ -221,8 +221,10 @@ interface Package {
   "name": "IEC61970",
   "type": "Package",
   "documentation": "Пакет верхнего уровня для IEC 61970.",
-  "documentationRu": "",
-  "details": "",
+  "documentationRu": null,
+  "details": null,
+  "modelId": null,
+  "profileId": null,
   "classes": [
     {
       "id": "EAID_9A4F1243_5579_4da3_9DAD_D4CBAB29CC65",
@@ -230,14 +232,14 @@ interface Package {
       "type": "Class",
       "stereotype": "rf",
       "documentation": "Ошиновка.",
-      "documentationRu": "",
-      "details": "",
+      "documentationRu": null,
+      "details": null,
       "isAbstract": false,
       "attributes": [...],
       "links": [ ... ],
       "literals": [],
       "profileRelations": [],
-      "modelId":  "",  
+      "modelId": "",  
       "profileId": "",
       "refModelId": null,
       "refModelItemId": null
@@ -249,8 +251,8 @@ interface Package {
         "name": "Domain",
         "type": "Package",
         "documentation": null,
-        "documentationRu": "",
-        "details": "",
+        "documentationRu": null,
+        "details": null,
         "elementCount": 6,
         "modelId":  "",  
         "profileId": "",
@@ -282,8 +284,8 @@ interface Class {
   links: ClassLink[];                 // перечень связей класса и их свойств
   literals: Literal[];              // Значения в перечислении. заполняется только при типе Enumeration
   profileRelations: ProfileItemRef[] //массив ссылок на объекты профиля, которые основаны на данной модели. Может быть заполнен только в классе в составе модели
-  modelId:string;                 //идентификатор модели,  которой принадлежит класс (заполняется, если класс принадлежит модели)
-  profileId: string;              // идентификатор профиля, которому принадлежит класс (заполняется, если класс принадлежит профилю)
+  modelId?:string;                 //идентификатор модели,  которой принадлежит класс (заполняется, если класс принадлежит модели)
+  profileId?: string;              // идентификатор профиля, которому принадлежит класс (заполняется, если класс принадлежит профилю)
   refModelId?: string;                //Идентификатор родительской модели.  Может быть заполнен только в классе в составе профиля 
   refModelItemId?: string;          // Идентификатор родительского класса. Может быть заполнен только в классе в составе профиля 
 }
@@ -300,8 +302,8 @@ interface Class {
   "type": "Class",
   "stereotype": "rf",
   "documentation": "Ошиновка.",
-  "documentationRu": "",
-  "details": "",
+  "documentationRu": null,
+  "details": null,
   "isAbstract": false,
   "attributes": [
     {
@@ -311,8 +313,8 @@ interface Class {
       "dataTypeId": "qwerty-1234567",
       "stereotype": "",
       "documentation": "Взаимное активное сопротивление нулевой последовательности, Ом.",
-      "documentationRu": "",
-      "details": "",
+      "documentationRu": null,
+      "details": null,
       "multiplicity": "0..1",
       "visibility": "public",
       "initialValue": ""
@@ -345,7 +347,9 @@ interface Class {
   "literals": [],
   "profileRelations": [],
   "modelId": null,
-  "modelItemId": null
+  "profileId": null,
+  "refModelId": null,
+  "refModelItemId": null
 }
 ```
 
@@ -380,8 +384,8 @@ interface Attribute {
   "dataTypeId": "qwerty-1234567",
   "stereotype": "",
   "documentation": "Взаимное активное сопротивление нулевой последовательности, Ом.",
-  "documentationRu": "",
-  "details": "",
+  "documentationRu": null,
+  "details": null,
   "multiplicity": "0..1",
   "visibility": "public",
   "initialValue": ""
@@ -449,9 +453,9 @@ interface GeneralizationLink {
     {
       "linkId": "EAID_E9FB4B7B_727E_4456_9697_0181F1285F2E",
       "linkType": "Generalization",
-      "documentation": "",
-      "documentationRu": "",
-      "details": "",
+      "documentation": null,
+      "documentationRu": null,
+      "details": null,
       "stereotype": "",
       "parent": {
         "classId": "EAID_64D19B75_EB20_49ee_80E2_53F98D5A15B6",
@@ -489,9 +493,9 @@ interface AssociationLink {
     {
       "linkId": "EAID_2B2408CF_541B_45f3_BD69_814D8BCB81FD",
       "linkType": "Association",
-      "documentation": "",
-      "documentationRu": "",
-      "details": "",
+      "documentation": null,
+      "documentationRu": null,
+      "details": null,
       "stereotype": "",
       "linkEnd": [
         {
@@ -500,8 +504,8 @@ interface AssociationLink {
           "linkEndClassId": "EAID_D396E6CF_BA6C_4c5c_84C4_058B7E88C5DC",
           "linkEndClassName": "ServiceCategory",
           "multiplicity": "0..*",
-          "documentation": "",
-          "documentationRu": "",
+          "documentation": null,
+          "documentationRu": null,
           "details": "",
           "stereotype": ""
         },
@@ -511,8 +515,8 @@ interface AssociationLink {
           "linkEndClassId": "EAID_C3FB2D2D_52D2_446e_9D18_B0B5091DC872",
           "linkEndClassName": "AuxiliaryAgreement",
           "multiplicity": "1..*",
-          "documentation": "",
-          "documentationRu": "",
+          "documentation": null,
+          "documentationRu": null,
           "details": "",
           "stereotype": ""
         }
@@ -550,9 +554,9 @@ interface AssociationLinkEnd {
     "linkEndClassId": "EAID_D396E6CF_BA6C_4c5c_84C4_058B7E88C5DC",
     "linkEndClassName": "ServiceCategory",
     "multiplicity": "0..*",
-    "documentation": "",
-    "documentationRu": "",
-    "details": "",
+    "documentation": null,
+    "documentationRu": null,
+    "details": null,
     "stereotype": ""
   }
 ```
@@ -633,8 +637,8 @@ interface ModelRef {
 interface Literal {
   name: string;                   //значение литерала
   id: string;                    // Уникальный идентификатор
-  documentation: string;        // Описание значения
-  initialValue: string;         // Значение по умолчанию
+  documentation?: string;        // Описание значения
+  initialValue?: string;         // Значение по умолчанию
   }
 ```
 
@@ -831,8 +835,8 @@ multiplicity: "0..1"
           "name": "IEC61970",
           "type": "Package",
           "documentation": "Пакет верхнего уровня для IEC 61970.",
-          "documentationRu": "",
-          "details": "",
+          "documentationRu": null,
+          "details": null,
           "elementCount": 1,
           "classes": [
               {
@@ -841,8 +845,8 @@ multiplicity: "0..1"
                 "type": "Class",
                 "stereotype": "rf",
                 "documentation": "Ошиновка.",
-                "documentationRu": "",
-                "details": "",
+                "documentationRu": null,
+                "details": null,
                 "isAbstract": false,
                 "attributes": [],
                 "links": [],
