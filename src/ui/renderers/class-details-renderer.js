@@ -56,7 +56,6 @@ function renderClassDetails(cls) {
                 </div>
               </div>
             </div>
-          </div>
 
           <div class="form-row">
              <div class="form-cell">
@@ -94,7 +93,6 @@ function renderClassDetails(cls) {
               </div>
             </div>
           </div>
-
         </div>
 
         <div class="form-actions">

@@ -3,7 +3,7 @@
  * Renders editable package form
  */
 
-import { buildTitleAttribute } from '../utils/title-attribute-builder.js';
+import { buildTitleAttribute } from '../../utils/title-attribute-builder.js';
 /**
  * Render package details HTML (editable form)
  * @param {Object} pkg - Package object
