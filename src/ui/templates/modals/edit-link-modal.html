@@ -1,0 +1,102 @@
+<div id="edit-link-modal" class="modal">
+  <div class="modal-content">
+    <button
+      class="modal-close"
+      data-modal-close
+      aria-label="Закрыть"
+    >
+      ×
+    </button>
+
+    <div class="modal-title">Редактирование связи</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="edit-link-relationKind">Тип связи *</label>
+        <select id="edit-link-relationKind" class="form-select" required>
+          <option value="Generalization">Generalization (Наследование)</option>
+          <option value="Association">Association (Ассоциация)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="edit-link-role">Роль</label>
+        <select id="edit-link-role" class="form-select">
+          <option value="child">child (Потомок)</option>
+          <option value="parent">parent (Родитель)</option>
+          <option value="unspecified">unspecified</option>
+          <option value="source">source</option>
+          <option value="target">target</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="edit-link-targetClassName">Целевой класс *</label>
+        <input
+          type="text"
+          id="edit-link-targetClassName"
+          class="form-input"
+          required
+          placeholder="Название целевого класса"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="edit-link-targetClassId">ID целевого класса</label>
+        <input
+          type="text"
+          id="edit-link-targetClassId"
+          class="form-input"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="edit-link-multiplicity">Multiplicity</label>
+        <input
+          type="text"
+          id="edit-link-multiplicity"
+          class="form-input"
+          placeholder="Например:  1, 0..1, 0..*"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="edit-link-targetClassRoleName">Имя роли (target)</label>
+        <input
+          type="text"
+          id="edit-link-targetClassRoleName"
+          class="form-input"
+          placeholder="Название роли целевого класса"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="edit-link-srcClassRoleName">Имя роли (source)</label>
+      <input
+        type="text"
+        id="edit-link-srcClassRoleName"
+        class="form-input"
+        placeholder="Название роли класса-источника"
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="edit-link-targetDescription">Описание</label>
+      <textarea
+        id="edit-link-targetDescription"
+        class="form-textarea"
+        rows="3"
+      ></textarea>
+    </div>
+
+    <div class="modal-buttons">
+      <button class="btn btn-secondary" data-modal-close>Отмена</button>
+      <button class="btn btn-primary" id="save-link-edit-btn">Сохранить</button>
+    </div>
+  </div>
+</div>
