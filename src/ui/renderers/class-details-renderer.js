@@ -195,7 +195,6 @@ function renderClassTabs(cls) {
       </div>
     </div>
   `;
-
   return html;
 }
 
@@ -235,12 +234,12 @@ function renderTabContent(cls) {
  * Render class attributes section with management buttons
  */
 function renderClassAttributes(cls) {
-  let html = ``;
+  let html = `<div class="tab-content" data-tab-content="item-attributes">`;
 
-  if (!cls.attributes || cls.attributes.length === 0) {
+  if (! cls.attributes || cls.attributes.length === 0) {
     html += `
       <div class="no-content">
-        <p>Нет атрибутов. Нажмите "Добавить атрибут" для создания. </p>
+        <p>Нет атрибутов.  Нажмите "Добавить атрибут" для создания. </p>
       </div>
     `;
   } else {
@@ -301,6 +300,7 @@ function renderClassAttributes(cls) {
     `;
   }
 
+  html += `</div>`;
   return html;
 }
 
@@ -308,12 +308,12 @@ function renderClassAttributes(cls) {
  * Render class links section with management buttons
  */
 function renderClassLinks(cls) {
-  let html = ``;
+  let html = `<div class="tab-content" data-tab-content="item-links">`;
 
   if (!cls.links || cls.links.length === 0) {
     html += `
       <div class="no-content">
-        <p>Нет связей. Нажмите "Добавить связь" для создания.</p>
+        <p>Нет связей.  Нажмите "Добавить связь" для создания. </p>
       </div>
     `;
   } else {
@@ -379,6 +379,7 @@ function renderClassLinks(cls) {
     `;
   }
 
+  html += `</div>`;
   return html;
 }
 
@@ -386,12 +387,12 @@ function renderClassLinks(cls) {
  * Render class literals section (for Enumeration)
  */
 function renderClassLiterals(cls) {
-  let html = ``;
+  let html = `<div class="tab-content" data-tab-content="item-literals">`;
 
   if (!cls.literals || cls.literals.length === 0) {
     html += `
       <div class="no-content">
-        <p>Нет значений. Нажмите "Добавить значение" для создания.</p>
+        <p>Нет значений.  Нажмите "Добавить значение" для создания.</p>
       </div>
     `;
   } else {
@@ -440,6 +441,7 @@ function renderClassLiterals(cls) {
     `;
   }
 
+ html += `</div>`;
   return html;
 }
 

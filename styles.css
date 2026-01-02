@@ -2283,6 +2283,23 @@ body.modal-open { overflow: hidden; }
   gap: 20px;
 }
 
+/* Tab navigation */
+.section-tabs .tab {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.section-tabs .tab:hover {
+  opacity: 0.8;
+}
+
+.section-tabs .tab.active {
+  opacity: 1;
+  font-weight: bold;
+  border-bottom: 2px solid var(--primary-color, #007bff);
+}
+
 /* Tables in Item Details */
 #item-container * .attributes-table,
 #item-container * .links-table,
@@ -2755,5 +2772,9 @@ align-self: center;
 }
 
 #item-container * .tab-content-section.active {
+  display: block;
+}
+
+#item-container * .tab-content-section.active .tab-content {
   display: block;
 }
