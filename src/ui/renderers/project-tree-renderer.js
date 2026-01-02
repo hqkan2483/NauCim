@@ -4,7 +4,7 @@
  * ALL nodes are rendered, visibility controlled by CSS
  */
 
-import { buildTitleAttribute } from '../utils/title-attribute-builder.js';
+import { buildTitleAttribute } from '../../utils/title-attribute-builder.js';
 
 const STORAGE_KEY_EXPANDED = "cim. expandedTreeItems";
 

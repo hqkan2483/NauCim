@@ -30,6 +30,14 @@ import {
   openEditProfileModal,
 } from "../../ui/components/profile-modal.js";
 import {
+  initAttributeModal,
+  openEditAttributeModal,
+} from "../../ui/components/attribute-modal.js";
+import {
+  initLinkModal,
+  openEditLinkModal,
+} from "../../ui/components/link-modal.js";
+import {
   renderProjectTree,
   toggleTreeItem,
   toggleProject
@@ -46,6 +54,7 @@ let currentProjectId = null;
 let selectedModelId = null;
 let selectedProfileId = null;
 let originalItemData = null;
+let lastClassTabName = null;
 
 // ============================================================
 // INIT
@@ -59,6 +68,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     "edit-model-modal",
     "new-profile-modal",
     "edit-profile-modal",
+    "edit-attribute-modal",
+    "edit-link-modal",
   ]);
 
   initModalSystem();
@@ -102,6 +113,46 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (profileDetails) {
             profileDetails.innerHTML = renderProfileDetails(profile);
           }
+        }
+      },
+    });
+
+    initAttributeModal(currentProjectId, {
+      onUpdate: (attrId, updates) => {
+        const project = getProjectById(currentProjectId);
+        if (!project) return;
+
+        const tabToRestore = getActiveClassTabName() || lastClassTabName;
+
+        const found = findAttributeWithParent(project, attrId);
+        if (!found) return;
+
+        Object.assign(found.attr, updates);
+
+        const itemDetailsContent = document.getElementById("item-details-content");
+        if (itemDetailsContent) {
+          itemDetailsContent.innerHTML = renderClassDetails(found.cls);
+          restoreClassTab(tabToRestore);
+        }
+      },
+    });
+
+    initLinkModal(currentProjectId, {
+      onUpdate: (linkId, classId, updates) => {
+        const project = getProjectById(currentProjectId);
+        if (!project) return;
+
+        const tabToRestore = getActiveClassTabName() || lastClassTabName;
+
+        const found = findLinkWithParent(project, classId, linkId);
+        if (!found) return;
+
+        Object.assign(found.link, updates);
+
+        const itemDetailsContent = document.getElementById("item-details-content");
+        if (itemDetailsContent) {
+          itemDetailsContent.innerHTML = renderClassDetails(found.cls);
+          restoreClassTab(tabToRestore);
         }
       },
     });
@@ -713,13 +764,13 @@ function handleItemDetailsClick(e) {
 
   const editLinkBtn = target.closest("[data-action='edit-link']");
   if (editLinkBtn) {
-    handleEditLink(editLinkBtn.getAttribute("data-link-id"));
+    handleEditLink(editLinkBtn.getAttribute("data-link-id"), editLinkBtn.getAttribute("data-class-id"));
     return;
   }
 
   const deleteLinkBtn = target.closest("[data-action='delete-link']");
   if (deleteLinkBtn) {
-    handleDeleteLink(deleteLinkBtn.getAttribute("data-link-id"));
+    handleDeleteLink(deleteLinkBtn.getAttribute("data-link-id"), deleteLinkBtn.getAttribute("data-class-id"));
     return;
   }
 
@@ -741,6 +792,7 @@ function handleItemDetailsClick(e) {
 // ============================================================
 function handleTabSwitch(tabBtn) {
   const tabName = tabBtn.getAttribute("data-section-tab");
+  lastClassTabName = tabName;
 
   document.querySelectorAll("[data-section-tab]").forEach(tab => tab.classList.remove("active"));
   tabBtn.classList.add("active");
@@ -752,6 +804,20 @@ function handleTabSwitch(tabBtn) {
   document.querySelectorAll(".tab-action-btn").forEach(btn => btn.classList.add("hidden"));
   const selectedActionBtn = document.querySelector(`[data-tab="${tabName}"]`);
   if (selectedActionBtn) selectedActionBtn.classList.remove("hidden");
+}
+
+function getActiveClassTabName() {
+  const activeTab = document.querySelector("[data-section-tab].active");
+  return activeTab ? activeTab.getAttribute("data-section-tab") : null;
+}
+
+function restoreClassTab(tabName) {
+  if (!tabName) return;
+
+  const tabEl = document.querySelector(`[data-section-tab="${tabName}"]`);
+  if (tabEl) {
+    handleTabSwitch(tabEl);
+  }
 }
 
 // ============================================================
@@ -1027,17 +1093,10 @@ function handleEditAttribute(attrId) {
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
-  const attr = findAttributeById(project, attrId);
-  if (!attr) return;
+  const found = findAttributeWithParent(project, attrId);
+  if (!found) return;
 
-  originalItemData = JSON.parse(JSON.stringify(attr));
-
-  const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) itemDetailsContent.innerHTML = renderAttributeDetails(attr);
-
-  showItemContainer();
-  hideModelContainer();
-  hideProfileContainer();
+  openEditAttributeModal(found.attr);
 }
 
 function handleDeleteAttribute(attrId) {
@@ -1079,26 +1138,38 @@ function handleAddLink(classId) {
   alert("Функция добавления связи в разработке");
 }
 
-function handleEditLink(linkId) {
+function handleEditLink(linkId, classId) {
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
-  const link = findLinkById(project, linkId);
-  if (!link) return;
+  const found = findLinkWithParent(project, classId, linkId);
+  if (!found) return;
 
-  originalItemData = JSON.parse(JSON.stringify(link));
-
-  const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) itemDetailsContent.innerHTML = renderLinkDetails(link);
-
-  showItemContainer();
-  hideModelContainer();
-  hideProfileContainer();
+  openEditLinkModal(found.link, found.cls.id);
 }
 
-function handleDeleteLink(linkId) {
+function handleDeleteLink(linkId, classId) {
   if (!confirm("Удалить связь?")) return;
-  alert("Функция удаления связи в разработке");
+
+  const project = getProjectById(currentProjectId);
+  if (!project) return;
+
+  const tabToRestore = getActiveClassTabName() || lastClassTabName;
+
+  const found = findLinkWithParent(project, classId, linkId);
+  if (!found) return;
+
+  if (!Array.isArray(found.cls.links)) return;
+  const idx = found.cls.links.findIndex(l => l.linkId === linkId);
+  if (idx < 0) return;
+
+  found.cls.links.splice(idx, 1);
+
+  const itemDetailsContent = document.getElementById("item-details-content");
+  if (itemDetailsContent) {
+    itemDetailsContent.innerHTML = renderClassDetails(found.cls);
+    restoreClassTab(tabToRestore);
+  }
 }
 
 function handleSaveLink(form) {
@@ -1246,6 +1317,46 @@ function findAttributeById(project, attrId) {
   return null;
 }
 
+function findAttributeWithParent(project, attrId) {
+  const searchInPackages = (packages) => {
+    for (const pkg of packages) {
+      if (pkg.classes) {
+        for (const cls of pkg.classes) {
+          if (cls.attributes) {
+            const attr = cls.attributes.find(a => a.id === attrId);
+            if (attr) return { attr, cls };
+          }
+        }
+      }
+      if (pkg.subPackages) {
+        const found = searchInPackages(pkg.subPackages);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  if (project.models) {
+    for (const model of project.models) {
+      if (model.rootPackages?.[0]?.packages) {
+        const found = searchInPackages(model.rootPackages[0].packages);
+        if (found) return found;
+      }
+    }
+  }
+
+  if (project.profiles) {
+    for (const profile of project.profiles) {
+      if (profile.rootPackages?.[0]?.packages) {
+        const found = searchInPackages(profile.rootPackages[0].packages);
+        if (found) return found;
+      }
+    }
+  }
+
+  return null;
+}
+
 function findLinkById(project, linkId) {
   const searchInPackages = (packages) => {
     for (const pkg of packages) {
@@ -1255,6 +1366,47 @@ function findLinkById(project, linkId) {
             const link = cls.links.find(l => l.linkId === linkId);
             if (link) return link;
           }
+        }
+      }
+      if (pkg.subPackages) {
+        const found = searchInPackages(pkg.subPackages);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  if (project.models) {
+    for (const model of project.models) {
+      if (model.rootPackages?.[0]?.packages) {
+        const found = searchInPackages(model.rootPackages[0].packages);
+        if (found) return found;
+      }
+    }
+  }
+
+  if (project.profiles) {
+    for (const profile of project.profiles) {
+      if (profile.rootPackages?.[0]?.packages) {
+        const found = searchInPackages(profile.rootPackages[0].packages);
+        if (found) return found;
+      }
+    }
+  }
+
+  return null;
+}
+
+function findLinkWithParent(project, classId, linkId) {
+  if (!classId || !linkId) return null;
+
+  const searchInPackages = (packages) => {
+    for (const pkg of packages) {
+      if (pkg.classes) {
+        const cls = pkg.classes.find(c => c.id === classId);
+        if (cls) {
+          const link = cls.links?.find(l => l.linkId === linkId);
+          if (link) return { link, cls };
         }
       }
       if (pkg.subPackages) {

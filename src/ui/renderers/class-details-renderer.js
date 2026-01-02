@@ -56,7 +56,6 @@ function renderClassDetails(cls) {
                 </div>
               </div>
             </div>
-          </div>
 
           <div class="form-row">
              <div class="form-cell">
@@ -94,7 +93,6 @@ function renderClassDetails(cls) {
               </div>
             </div>
           </div>
-
         </div>
 
         <div class="form-actions">
@@ -357,12 +355,14 @@ function renderClassLinks(cls) {
             <div class="table-actions">
               <button class="btn-icon"
                       data-action="edit-link"
+                      data-class-id="${cls.id}"
                       data-link-id="${link.linkId}"
                       title="Редактировать">
                 ✏️
               </button>
               <button class="btn-icon btn-icon-danger"
                       data-action="delete-link"
+                      data-class-id="${cls.id}"
                       data-link-id="${link.linkId}"
                       title="Удалить">
                 🗑️
