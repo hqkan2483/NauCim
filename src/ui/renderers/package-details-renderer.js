@@ -3,6 +3,7 @@
  * Renders editable package form
  */
 
+import { buildTitleAttribute } from '../utils/title-attribute-builder.js';
 /**
  * Render package details HTML (editable form)
  * @param {Object} pkg - Package object
@@ -115,7 +116,7 @@ function renderPackageContents(pkg) {
              data-package-id="${subPkg.id}"
              data-model-id="${subPkg.modelId || ''}"
              data-profile-id="${subPkg.profileId || ''}"
-             title="${subPkg.documentation || subPkg.name || ''}">
+             title="${buildTitleAttribute(subPkg.documentation, subPkg.documentationRu, subPkg.name)}">
           <span class="subpackage-icon">📦</span>
           <span class="subpackage-name">${subPkg.name}</span>
         </div>
@@ -146,7 +147,7 @@ function renderPackageContents(pkg) {
              data-profile-id="${cls.profileId || ''}"
              data-ref-model-id="${cls.refModelId || ''}"
              data-ref-model-item-id="${cls.refModelItemId || ''}"
-             title="${cls.documentation || cls.name || ''}">
+             title="${buildTitleAttribute(cls.documentation, cls.documentationRu, cls.name)}">
           <span class="class-icon">${icon}</span>
           <span class="class-name">${cls.name}</span>
           ${cls.stereotype ? `<span class="class-stereotype">«${cls.stereotype}»</span>` : ''}

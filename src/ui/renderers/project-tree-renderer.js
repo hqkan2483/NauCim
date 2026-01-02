@@ -4,6 +4,8 @@
  * ALL nodes are rendered, visibility controlled by CSS
  */
 
+import { buildTitleAttribute } from '../utils/title-attribute-builder.js';
+
 const STORAGE_KEY_EXPANDED = "cim. expandedTreeItems";
 
 /**
@@ -222,7 +224,7 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
               data-model-id="${pkg.modelId || ""}"
               data-profile-id="${pkg.profileId || ""}"
               data-action="select-package"
-              title="${pkg.documentation || pkg.name || ''}">
+              title="${buildTitleAttribute(pkg.documentation, pkg.documentationRu, pkg.name)}">
           ${pkg.name || "Пакет без названия"}
         </span>
       </div>
@@ -302,7 +304,7 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
               data-is-enumeration="${isEnumeration}"
               data-is-abstract="${isAbstract}"
               data-action="select-class"
-              title="${cls.documentation || cls.name || ''}">
+              title="${buildTitleAttribute(cls.documentation, cls.documentationRu, cls.name)}">
           ${className}
         </span>
       </div>
@@ -356,7 +358,7 @@ function renderAttributeTree(attr, itemId) {
               data-type="attribute"
               data-attr-id="${attr.id || ""}"
               data-action="select-attribute"
-              title="${attr.documentation || attr.name || ''}">
+              title="${buildTitleAttribute(attr.documentation, attr.documentationRu, attr.name)}">
           ${attrName}:  ${attr.dataType || "—"}${multiplicityStr}
         </span>
       </div>
