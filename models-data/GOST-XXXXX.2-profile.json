@@ -9,6 +9,8 @@
         "documentationRu": null,
         "details": null,
         "elementCount": 0,
+        "modelId": null,
+        "profileId": "4",
         "classes": [],
         "subPackages": [
           {
@@ -2944,6 +2946,8 @@
         "documentationRu": null,
         "details": null,
         "elementCount": 0,
+        "modelId": null,
+        "profileId": "4",
         "classes": [],
         "subPackages": [
           {
