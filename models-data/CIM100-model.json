@@ -18,7 +18,7 @@
             "name": "IEC61970",
             "type": "Package",
             "documentation": "Top package for IEC 61970.\n",
-            "documentationRu": null,
+            "documentationRu": "Обязательный корневой элемент для модели IEC 61970",
             "details": null,
             "elementCount": 1,
             "modelId": "2",
