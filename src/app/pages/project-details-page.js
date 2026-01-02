@@ -34,10 +34,10 @@ import {
   toggleTreeItem,
   toggleProject
 } from "../../ui/renderers/project-tree-renderer.js";
-import { renderPackageDetails } from "../../ui/renderers/package-details-renderer.js"; // ✅ NEW
-import { renderClassDetails } from "../../ui/renderers/class-details-renderer.js"; // ✅ NEW
-import { renderAttributeDetails } from "../../ui/renderers/attribute-details-renderer.js"; // ✅ NEW
-import { renderLinkDetails } from "../../ui/renderers/link-details-renderer.js"; // ✅ NEW
+import { renderPackageDetails } from "../../ui/renderers/package-details-renderer.js";
+import { renderClassDetails } from "../../ui/renderers/class-details-renderer.js";
+import { renderAttributeDetails } from "../../ui/renderers/attribute-details-renderer.js";
+import { renderLinkDetails } from "../../ui/renderers/link-details-renderer.js";
 
 // ============================================================
 // STATE
@@ -45,19 +45,15 @@ import { renderLinkDetails } from "../../ui/renderers/link-details-renderer.js";
 let currentProjectId = null;
 let selectedModelId = null;
 let selectedProfileId = null;
-let originalItemData = null; // ✅ Для хранения исходных данных при редактировании
+let originalItemData = null;
 
 // ============================================================
 // INIT
 // ============================================================
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1. Initialize data
   await appDataInit();
-
-  // 2. Get project ID from URL
   currentProjectId = getQueryParam("id");
 
-  // 3. Load modals
   await loadModals([
     "new-model-modal",
     "edit-model-modal",
@@ -65,15 +61,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     "edit-profile-modal",
   ]);
 
-  // 4. Initialize UI systems
   initModalSystem();
   bindModalTriggers(document);
-
   restoreSidebarState();
   initSidebarToggle();
   initSidebarResize();
 
-  // 5. Initialize model modal
   if (currentProjectId) {
     initModelModal(currentProjectId, {
       onCreate: (newModel) => {
@@ -94,7 +87,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
     });
 
-    // Initialize profile modal
     initProfileModal(currentProjectId, {
       onCreate: (newProfile) => {
         renderProfilesContainer();
@@ -115,10 +107,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // 6. Bind events
   bindEvents();
-
-  // 7. Check and render project
   checkProject();
 });
 
@@ -126,7 +115,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 // EVENT BINDINGS
 // ============================================================
 function bindEvents() {
-  // Go to projects button
   const goToProjectsBtn = document.getElementById("go-to-projects-btn");
   if (goToProjectsBtn) {
     goToProjectsBtn.addEventListener("click", () => {
@@ -134,10 +122,8 @@ function bindEvents() {
     });
   }
 
-  // Clear modal forms on open
-  document.addEventListener("modal:beforeopen", (e) => {
+  document.addEventListener("modal: beforeopen", (e) => {
     const modalId = e.detail.modalId;
-
     if (modalId === "new-model-modal") {
       clearNewModelModal();
     } else if (modalId === "new-profile-modal") {
@@ -145,7 +131,6 @@ function bindEvents() {
     }
   });
 
-  // ✅ Delegated events on project tree sidebar
   const projectStructureEl = document.getElementById("current-project-structure");
   if (projectStructureEl) {
     projectStructureEl.addEventListener("click", (e) => {
@@ -174,7 +159,7 @@ function bindEvents() {
         return;
       }
 
-      // Select model from tree
+      // Select model
       const selectModelEl = target.closest("[data-action='select-model']");
       if (selectModelEl) {
         setSelectedTreeItem(selectModelEl);
@@ -183,7 +168,7 @@ function bindEvents() {
         return;
       }
 
-      // Select profile from tree
+      // Select profile
       const selectProfileEl = target.closest("[data-action='select-profile']");
       if (selectProfileEl) {
         setSelectedTreeItem(selectProfileEl);
@@ -192,25 +177,29 @@ function bindEvents() {
         return;
       }
 
-      // ✅ Select package from tree (NEW)
+      // Select package
       const selectPackageEl = target.closest("[data-action='select-package']");
       if (selectPackageEl) {
         setSelectedTreeItem(selectPackageEl);
         const packageId = selectPackageEl.getAttribute("data-package-id");
-        if (packageId) handleSelectPackage(packageId);
+        const modelId = selectPackageEl.getAttribute("data-model-id");
+        const profileId = selectPackageEl.getAttribute("data-profile-id");
+        if (packageId) handleSelectPackage(packageId, modelId, profileId);
         return;
       }
 
-      // ✅ Select class from tree (NEW)
+      // Select class
       const selectClassEl = target.closest("[data-action='select-class']");
       if (selectClassEl) {
         setSelectedTreeItem(selectClassEl);
         const classId = selectClassEl.getAttribute("data-class-id");
-        if (classId) handleSelectClass(classId);
+        const modelId = selectClassEl.getAttribute("data-model-id");
+        const profileId = selectClassEl.getAttribute("data-profile-id");
+        if (classId) handleSelectClass(classId, modelId, profileId);
         return;
       }
 
-      // ✅ Select attribute from tree (NEW)
+      // Select attribute
       const selectAttributeEl = target.closest("[data-action='select-attribute']");
       if (selectAttributeEl) {
         const attrId = selectAttributeEl.getAttribute("data-attr-id");
@@ -218,7 +207,7 @@ function bindEvents() {
         return;
       }
 
-      // ✅ Select link from tree (NEW)
+      // Select link
       const selectLinkEl = target.closest("[data-action='select-link']");
       if (selectLinkEl) {
         const linkId = selectLinkEl.getAttribute("data-link-id");
@@ -228,13 +217,12 @@ function bindEvents() {
     });
   }
 
-  // Delegated events on models list
+  // Models list
   const modelsListEl = document.getElementById("models-list");
   if (modelsListEl) {
     modelsListEl.addEventListener("click", (e) => {
-      const target = e.target instanceof HTMLElement ? e.target : null;
+      const target = e.target instanceof HTMLElement ?  e.target : null;
       if (!target) return;
-
       const selectEl = target.closest(".list-item");
       if (selectEl) {
         const modelId = selectEl.getAttribute("data-model-id");
@@ -243,7 +231,7 @@ function bindEvents() {
     });
   }
 
-  // Delegated events on models control
+  // Model controls
   const modelControlEl = document.getElementById("model-details-control");
   if (modelControlEl) {
     modelControlEl.addEventListener("click", (e) => {
@@ -252,48 +240,42 @@ function bindEvents() {
 
       const editBtn = target.closest("[data-action='edit-model']");
       if (editBtn) {
-        const modelId = editBtn.getAttribute("data-model-id");
-        if (modelId) handleEditModel(modelId);
+        handleEditModel(editBtn.getAttribute("data-model-id"));
         return;
       }
 
       const importBtn = target.closest("[data-action='import-model']");
       if (importBtn) {
-        const modelId = importBtn.getAttribute("data-model-id");
-        if (modelId) handleImportModel(modelId);
+        handleImportModel(importBtn.getAttribute("data-model-id"));
         return;
       }
 
       const exportBtn = target.closest("[data-action='export-model']");
       if (exportBtn) {
-        const modelId = exportBtn.getAttribute("data-model-id");
-        if (modelId) handleExportModel(modelId);
+        handleExportModel(exportBtn.getAttribute("data-model-id"));
         return;
       }
 
       const checkBtn = target.closest("[data-action='check-model']");
       if (checkBtn) {
-        const modelId = checkBtn.getAttribute("data-model-id");
-        if (modelId) handleCheckModel(modelId);
+        handleCheckModel(checkBtn.getAttribute("data-model-id"));
         return;
       }
 
       const deleteBtn = target.closest("[data-action='delete-model']");
       if (deleteBtn) {
-        const modelId = deleteBtn.getAttribute("data-model-id");
-        if (modelId) handleDeleteModel(modelId);
+        handleDeleteModel(deleteBtn.getAttribute("data-model-id"));
         return;
       }
     });
   }
 
-  // Delegated events on profiles list
+  // Profiles list
   const profilesListEl = document.getElementById("profiles-list");
   if (profilesListEl) {
     profilesListEl.addEventListener("click", (e) => {
-      const target = e.target instanceof HTMLElement ? e.target : null;
+      const target = e.target instanceof HTMLElement ?  e.target : null;
       if (!target) return;
-
       const selectEl = target.closest(".list-item");
       if (selectEl) {
         const profileId = selectEl.getAttribute("data-profile-id");
@@ -302,7 +284,7 @@ function bindEvents() {
     });
   }
 
-  // Delegated events on profile control
+  // Profile controls
   const profileControlEl = document.getElementById("profile-details-control");
   if (profileControlEl) {
     profileControlEl.addEventListener("click", (e) => {
@@ -311,52 +293,46 @@ function bindEvents() {
 
       const editBtn = target.closest("[data-action='edit-profile']");
       if (editBtn) {
-        const profileId = editBtn.getAttribute("data-profile-id");
-        if (profileId) handleEditProfile(profileId);
+        handleEditProfile(editBtn.getAttribute("data-profile-id"));
         return;
       }
 
       const importBtn = target.closest("[data-action='import-profile']");
       if (importBtn) {
-        const profileId = importBtn.getAttribute("data-profile-id");
-        if (profileId) handleImportProfile(profileId);
+        handleImportProfile(importBtn.getAttribute("data-profile-id"));
         return;
       }
 
       const exportBtn = target.closest("[data-action='export-profile']");
       if (exportBtn) {
-        const profileId = exportBtn.getAttribute("data-profile-id");
-        if (profileId) handleExportProfile(profileId);
+        handleExportProfile(exportBtn.getAttribute("data-profile-id"));
         return;
       }
 
       const checkBtn = target.closest("[data-action='check-profile']");
       if (checkBtn) {
-        const profileId = checkBtn.getAttribute("data-profile-id");
-        if (profileId) handleCheckProfile(profileId);
+        handleCheckProfile(checkBtn.getAttribute("data-profile-id"));
         return;
       }
 
       const deleteBtn = target.closest("[data-action='delete-profile']");
       if (deleteBtn) {
-        const profileId = deleteBtn.getAttribute("data-profile-id");
-        if (profileId) handleDeleteProfile(profileId);
+        handleDeleteProfile(deleteBtn.getAttribute("data-profile-id"));
         return;
       }
     });
   }
 
-  // ✅ Delegated events on item-details-content
+  // Item details
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
     itemDetailsContent.addEventListener("click", handleItemDetailsClick);
     itemDetailsContent.addEventListener("submit", handleItemDetailsSubmit);
   }
-
 }
 
 // ============================================================
-// CHECK PROJECT
+// PROJECT
 // ============================================================
 function checkProject() {
   if (!currentProjectId) {
@@ -392,16 +368,12 @@ function hideNoProjectWarning() {
 
 function updatePageTitle(project) {
   const titleElement = document.getElementById("project-title");
-  if (titleElement) {
-    titleElement.textContent = project.name;
-  }
+  if (titleElement) titleElement.textContent = project.name;
 }
 
 function updateSidebarTitle(project) {
   const sidebarTitleElement = document.getElementById("sidebar-project-title");
-  if (sidebarTitleElement) {
-    sidebarTitleElement.textContent = project.name;
-  }
+  if (sidebarTitleElement) sidebarTitleElement.textContent = project.name;
 }
 
 function renderProjectTreeSidebar() {
@@ -418,7 +390,7 @@ function renderProjectTreeSidebar() {
 }
 
 // ============================================================
-// RENDER - MODELS
+// MODELS
 // ============================================================
 function renderModelsContainer() {
   const modelsList = document.getElementById("models-list");
@@ -426,7 +398,7 @@ function renderModelsContainer() {
 
   const models = getModels(currentProjectId);
 
-  if (!models || models.length === 0) {
+  if (! models || models.length === 0) {
     modelsList.innerHTML = '<div class="no-items text-muted">Нет моделей</div>';
     return;
   }
@@ -447,11 +419,10 @@ function renderModelsContainer() {
 
   modelsList.innerHTML = html;
 
-  if (!selectedModelId) {
+  if (! selectedModelId) {
     const modelDetails = document.getElementById("model-details");
     if (modelDetails) {
-      modelDetails.innerHTML =
-        '<div class="text-center">Выберите модель для просмотра деталей</div>';
+      modelDetails.innerHTML = '<div class="text-center">Выберите модель для просмотра деталей</div>';
     }
   }
 }
@@ -464,22 +435,16 @@ function selectModel(modelId) {
   const modelDetails = document.getElementById("model-details");
   const modelDetailsControl = document.getElementById("model-details-control");
 
-  if (modelDetails) {
-    modelDetails.innerHTML = renderModelDetails(model);
-  }
+  if (modelDetails) modelDetails.innerHTML = renderModelDetails(model);
+  if (modelDetailsControl) modelDetailsControl.innerHTML = renderModelControls(model);
 
-  if (modelDetailsControl) {
-    modelDetailsControl.innerHTML = renderModelControls(model);
-  }
-
-  // ✅ Hide item-container when selecting model
   hideItemContainer();
   showModelContainer();
   showProfileContainer();
 }
 
 // ============================================================
-// RENDER - PROFILES
+// PROFILES
 // ============================================================
 function renderProfilesContainer() {
   const profilesList = document.getElementById("profiles-list");
@@ -488,8 +453,7 @@ function renderProfilesContainer() {
   const profiles = getProfiles(currentProjectId);
 
   if (!profiles || profiles.length === 0) {
-    profilesList.innerHTML =
-      '<div class="no-items text-muted">Нет профилей</div>';
+    profilesList.innerHTML = '<div class="no-items text-muted">Нет профилей</div>';
     return;
   }
 
@@ -512,8 +476,7 @@ function renderProfilesContainer() {
   if (!selectedProfileId) {
     const profileDetails = document.getElementById("profile-details");
     if (profileDetails) {
-      profileDetails.innerHTML =
-        '<div class="text-center">Выберите профиль для просмотра деталей</div>';
+      profileDetails.innerHTML = '<div class="text-center">Выберите профиль для просмотра деталей</div>';
     }
   }
 }
@@ -526,135 +489,104 @@ function selectProfile(profileId) {
   const profileDetails = document.getElementById("profile-details");
   const profileDetailsControl = document.getElementById("profile-details-control");
 
-  if (profileDetails) {
-    profileDetails.innerHTML = renderProfileDetails(profile);
-  }
+  if (profileDetails) profileDetails.innerHTML = renderProfileDetails(profile);
+  if (profileDetailsControl) profileDetailsControl.innerHTML = renderProfileControls(profile);
 
-  if (profileDetailsControl) {
-    profileDetailsControl.innerHTML = renderProfileControls(profile);
-  }
-
-  // ✅ Hide item-container when selecting profile
   hideItemContainer();
   showModelContainer();
   showProfileContainer();
 }
 
 // ============================================================
-// ✅ ITEM DETAILS HANDLERS (NEW)
+// CONTAINERS VISIBILITY
 // ============================================================
-
-/**
- * Show item container
- */
 function showItemContainer() {
   const itemContainer = document.getElementById("item-container");
-  if (itemContainer) {
-    itemContainer.classList.remove("hidden");
-  }
+  if (itemContainer) itemContainer.classList.remove("hidden");
 }
 
-/**
- * Hide item container
- */
 function hideItemContainer() {
   const itemContainer = document.getElementById("item-container");
-  if (itemContainer) {
-    itemContainer.classList.add("hidden");
-  }
+  if (itemContainer) itemContainer.classList.add("hidden");
 }
 
 function showModelContainer() {
   const modelContainer = document.getElementById("models-container");
-  if (modelContainer) {
-    modelContainer.classList.remove("hidden");
-  }
+  if (modelContainer) modelContainer.classList.remove("hidden");
 }
 
-/**
- * Hide model container
- */
 function hideModelContainer() {
   const modelContainer = document.getElementById("models-container");
-  if (modelContainer) {
-    modelContainer.classList.add("hidden");
-  }
+  if (modelContainer) modelContainer.classList.add("hidden");
 }
-
 
 function showProfileContainer() {
   const profileContainer = document.getElementById("profiles-container");
-  if (profileContainer) {
-    profileContainer.classList.remove("hidden");
-  }
+  if (profileContainer) profileContainer.classList.remove("hidden");
 }
 
-/**
- * Hide profile container
- */
 function hideProfileContainer() {
   const profileContainer = document.getElementById("profiles-container");
-  if (profileContainer) {
-    profileContainer.classList.add("hidden");
-  }
+  if (profileContainer) profileContainer.classList.add("hidden");
 }
 
-/**
- * Handle select package from tree
- */
-function handleSelectPackage(packageId) {
+// ============================================================
+// SELECT HANDLERS
+// ============================================================
+function handleSelectPackage(packageId, modelId = "", profileId = "") {
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
-  const pkg = findPackageById(project, packageId);
-  if (!pkg) {
-    console.warn(`Package not found: ${packageId}`);
+  const context = modelId && modelId !== "" ? "model" : (profileId && profileId !== "" ?  "profile" : null);
+
+  if (! context) {
+    console.error("Package must belong to either a model or profile");
     return;
   }
 
-  // ✅ Store original for cancel
+  const pkg = findPackageById(project, packageId, modelId, profileId, context);
+  if (!pkg) {
+    console.warn(`Package not found:  ${packageId}`);
+    return;
+  }
+
   originalItemData = JSON.parse(JSON.stringify(pkg));
 
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderPackageDetails(pkg);
-  }
+  if (itemDetailsContent) itemDetailsContent.innerHTML = renderPackageDetails(pkg);
 
   showItemContainer();
   hideModelContainer();
   hideProfileContainer();
 }
 
-
-/**
- * Handle select class from tree
- */
-function handleSelectClass(classId) {
+function handleSelectClass(classId, modelId = "", profileId = "") {
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
-  const cls = findClassById(project, classId);
+  const context = modelId && modelId !== "" ? "model" : (profileId && profileId !== "" ? "profile" : null);
+
+  if (!context) {
+    console.error("Class must belong to either a model or profile");
+    return;
+  }
+
+  const cls = findClassById(project, classId, modelId, profileId, context);
   if (!cls) {
     console.warn(`Class not found: ${classId}`);
     return;
   }
 
-  // ✅ Store original for cancel
   originalItemData = JSON.parse(JSON.stringify(cls));
 
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderClassDetails(cls);
-  }
+  if (itemDetailsContent) itemDetailsContent.innerHTML = renderClassDetails(cls);
 
   showItemContainer();
   hideModelContainer();
   hideProfileContainer();
 }
 
-/**
- * Handle select attribute from tree
- */
 function handleSelectAttribute(attrId) {
   const project = getProjectById(currentProjectId);
   if (!project) return;
@@ -665,23 +597,16 @@ function handleSelectAttribute(attrId) {
     return;
   }
 
-  // ✅ Store original for cancel
   originalItemData = JSON.parse(JSON.stringify(attr));
 
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderAttributeDetails(attr);
-  }
+  if (itemDetailsContent) itemDetailsContent.innerHTML = renderAttributeDetails(attr);
 
   showItemContainer();
   hideModelContainer();
   hideProfileContainer();
 }
 
-
-/**
- * Handle select link from tree
- */
 function handleSelectLink(linkId) {
   const project = getProjectById(currentProjectId);
   if (!project) return;
@@ -692,218 +617,362 @@ function handleSelectLink(linkId) {
     return;
   }
 
-  // ✅ Store original for cancel
   originalItemData = JSON.parse(JSON.stringify(link));
 
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderLinkDetails(link);
-  }
+  if (itemDetailsContent) itemDetailsContent.innerHTML = renderLinkDetails(link);
 
   showItemContainer();
   hideModelContainer();
   hideProfileContainer();
 }
 
-/**
- * ✅ Handle clicks in item details (NEW)
- */
+// ============================================================
+// ITEM DETAILS CLICK HANDLER
+// ============================================================
 function handleItemDetailsClick(e) {
-  const target = e.target instanceof HTMLElement ? e.target : null;
+  const target = e.target instanceof HTMLElement ?  e.target : null;
   if (!target) return;
 
-  // ✅ Tab switching (NEW)
+  // Navigate to package
+  const navigateToPackageEl = target.closest("[data-action='navigate-to-package']");
+  if (navigateToPackageEl) {
+    const packageId = navigateToPackageEl.getAttribute("data-package-id");
+    const modelId = navigateToPackageEl.getAttribute("data-model-id");
+    const profileId = navigateToPackageEl.getAttribute("data-profile-id");
+    if (packageId) handleNavigateToPackage(packageId, modelId, profileId);
+    return;
+  }
+
+  // Navigate to class
+  const navigateToClassEl = target.closest("[data-action='navigate-to-class']");
+  if (navigateToClassEl) {
+    const classId = navigateToClassEl.getAttribute("data-class-id");
+    const modelId = navigateToClassEl.getAttribute("data-model-id");
+    const profileId = navigateToClassEl.getAttribute("data-profile-id");
+    if (classId) handleNavigateToClass(classId, modelId, profileId);
+    return;
+  }
+
+  // Tab switching
   const tabBtn = target.closest("[data-section-tab]");
   if (tabBtn) {
     handleTabSwitch(tabBtn);
     return;
   }
 
-
-  // Package form cancel
-  const pkgCancelBtn = target.closest("#pkg-cancel-btn");
-  if (pkgCancelBtn) {
+  // Cancel buttons
+  if (target.closest("#pkg-cancel-btn")) {
     handleCancelPackageEdit();
     return;
   }
-
-  // Class form cancel
-  const clsCancelBtn = target.closest("#cls-cancel-btn");
-  if (clsCancelBtn) {
+  if (target.closest("#cls-cancel-btn")) {
     handleCancelClassEdit();
     return;
   }
-
-  // Attribute form cancel
-  const attrCancelBtn = target.closest("#attr-cancel-btn");
-  if (attrCancelBtn) {
+  if (target.closest("#attr-cancel-btn")) {
     handleCancelAttributeEdit();
     return;
   }
-
-  // Link form cancel
-  const linkCancelBtn = target.closest("#link-cancel-btn");
-  if (linkCancelBtn) {
+  if (target.closest("#link-cancel-btn")) {
     handleCancelLinkEdit();
     return;
   }
 
-  // Add attribute button
+  // Add buttons
   const addAttrBtn = target.closest("#add-attribute-btn");
   if (addAttrBtn) {
-    const classId = addAttrBtn.getAttribute("data-class-id");
-    handleAddAttribute(classId);
+    handleAddAttribute(addAttrBtn.getAttribute("data-class-id"));
     return;
   }
 
-  // Add link button
   const addLinkBtn = target.closest("#add-link-btn");
   if (addLinkBtn) {
-    const classId = addLinkBtn.getAttribute("data-class-id");
-    handleAddLink(classId);
+    handleAddLink(addLinkBtn.getAttribute("data-class-id"));
     return;
   }
 
-  // Add literal button
   const addLiteralBtn = target.closest("#add-literal-btn");
   if (addLiteralBtn) {
-    const classId = addLiteralBtn.getAttribute("data-class-id");
-    handleAddLiteral(classId);
+    handleAddLiteral(addLiteralBtn.getAttribute("data-class-id"));
     return;
   }
 
-  // Edit attribute
+  // Edit/Delete buttons
   const editAttrBtn = target.closest("[data-action='edit-attribute']");
   if (editAttrBtn) {
-    const attrId = editAttrBtn.getAttribute("data-attr-id");
-    handleEditAttribute(attrId);
+    handleEditAttribute(editAttrBtn.getAttribute("data-attr-id"));
     return;
   }
 
-  // Delete attribute
   const deleteAttrBtn = target.closest("[data-action='delete-attribute']");
   if (deleteAttrBtn) {
-    const attrId = deleteAttrBtn.getAttribute("data-attr-id");
-    handleDeleteAttribute(attrId);
+    handleDeleteAttribute(deleteAttrBtn.getAttribute("data-attr-id"));
     return;
   }
 
-  // Edit link
   const editLinkBtn = target.closest("[data-action='edit-link']");
   if (editLinkBtn) {
-    const linkId = editLinkBtn.getAttribute("data-link-id");
-    handleEditLink(linkId);
+    handleEditLink(editLinkBtn.getAttribute("data-link-id"));
     return;
   }
 
-  // Delete link
   const deleteLinkBtn = target.closest("[data-action='delete-link']");
   if (deleteLinkBtn) {
-    const linkId = deleteLinkBtn.getAttribute("data-link-id");
-    handleDeleteLink(linkId);
+    handleDeleteLink(deleteLinkBtn.getAttribute("data-link-id"));
     return;
   }
 
-  // Edit literal
   const editLiteralBtn = target.closest("[data-action='edit-literal']");
   if (editLiteralBtn) {
-    const literalId = editLiteralBtn.getAttribute("data-literal-id");
-    handleEditLiteral(literalId);
+    handleEditLiteral(editLiteralBtn.getAttribute("data-literal-id"));
     return;
   }
 
-  // Delete literal
   const deleteLiteralBtn = target.closest("[data-action='delete-literal']");
   if (deleteLiteralBtn) {
-    const literalId = deleteLiteralBtn.getAttribute("data-literal-id");
-    handleDeleteLiteral(literalId);
+    handleDeleteLiteral(deleteLiteralBtn.getAttribute("data-literal-id"));
     return;
   }
 }
 
-/**
- * ✅ Handle tab switching (NEW)
- */
+// ============================================================
+// TAB SWITCHING
+// ============================================================
 function handleTabSwitch(tabBtn) {
   const tabName = tabBtn.getAttribute("data-section-tab");
-  const classId = tabBtn.getAttribute("data-class-id");
 
-  // Remove active class from all tabs
-  const allTabs = document.querySelectorAll("[data-section-tab]");
-  allTabs.forEach(tab => tab.classList.remove("active"));
-
-  // Add active class to clicked tab
+  document.querySelectorAll("[data-section-tab]").forEach(tab => tab.classList.remove("active"));
   tabBtn.classList.add("active");
 
-  // Hide all tab content sections
-  const allContent = document.querySelectorAll("[data-tab-content]");
-  allContent.forEach(content => content.classList.remove("active"));
-
-  // Show selected tab content
+  document.querySelectorAll("[data-tab-content]").forEach(content => content.classList.remove("active"));
   const selectedContent = document.querySelector(`[data-tab-content="${tabName}"]`);
-  if (selectedContent) {
-    selectedContent.classList.add("active");
-  }
+  if (selectedContent) selectedContent.classList.add("active");
 
-  // Hide all action buttons
-  const allActionBtns = document.querySelectorAll(".tab-action-btn");
-  allActionBtns.forEach(btn => btn.classList.add("hidden"));
-
-  // Show corresponding action button
+  document.querySelectorAll(".tab-action-btn").forEach(btn => btn.classList.add("hidden"));
   const selectedActionBtn = document.querySelector(`[data-tab="${tabName}"]`);
-  if (selectedActionBtn) {
-    selectedActionBtn.classList.remove("hidden");
-  }
-
-  console.log(`📑 Переключение на таб: ${tabName}`);
+  if (selectedActionBtn) selectedActionBtn.classList.remove("hidden");
 }
 
-/**
- * ✅ Handle form submissions in item details (NEW)
- */
+// ============================================================
+// NAVIGATION
+// ============================================================
+function handleNavigateToPackage(packageId, modelId = "", profileId = "") {
+  const context = modelId && modelId !== "" ? "model" : (profileId && profileId !== "" ? "profile" : null);
+  if (!context) return;
+
+  const project = getProjectById(currentProjectId);
+  if (!project) return;
+
+  const parentChain = findPackageParentChain(project, packageId, modelId, profileId, context);
+  if (!parentChain || parentChain.length === 0) return;
+
+  expandTreePath(parentChain);
+
+  requestAnimationFrame(() => {
+    const selector = context === "model"
+      ? `[data-type="package"][data-package-id="${packageId}"][data-model-id="${modelId}"]`
+      : `[data-type="package"][data-package-id="${packageId}"][data-profile-id="${profileId}"]`;
+
+    const packageEl = document.querySelector(selector);
+    if (packageEl) {
+      setSelectedTreeItem(packageEl);
+      packageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      handleSelectPackage(packageId, modelId, profileId);
+    }
+  });
+}
+
+function handleNavigateToClass(classId, modelId = "", profileId = "") {
+  const context = modelId && modelId !== "" ? "model" : (profileId && profileId !== "" ? "profile" : null);
+  if (!context) return;
+
+  const project = getProjectById(currentProjectId);
+  if (!project) return;
+
+  const parentChain = findClassParentChain(project, classId, modelId, profileId, context);
+  if (!parentChain || parentChain.length === 0) return;
+
+  expandTreePath(parentChain);
+
+  requestAnimationFrame(() => {
+    const selector = context === "model"
+      ? `[data-type="class"][data-class-id="${classId}"][data-model-id="${modelId}"]`
+      : `[data-type="class"][data-class-id="${classId}"][data-profile-id="${profileId}"]`;
+
+    const classEl = document.querySelector(selector);
+    if (classEl) {
+      setSelectedTreeItem(classEl);
+      classEl.scrollIntoView({ behavior: 'smooth', block:  'center' });
+      handleSelectClass(classId, modelId, profileId);
+    }
+  });
+}
+
+function expandTreePath(parentChain) {
+  const expandedProjects = JSON.parse(localStorage.getItem("cim.expandedProjects") || "{}");
+  expandedProjects[currentProjectId] = true;
+  localStorage.setItem("cim.expandedProjects", JSON.stringify(expandedProjects));
+
+  const expandedItems = JSON.parse(localStorage.getItem("cim.expandedTreeItems") || "{}");
+  parentChain.forEach(itemId => {
+    expandedItems[itemId] = true;
+  });
+  localStorage.setItem("cim.expandedTreeItems", JSON.stringify(expandedItems));
+
+  parentChain.forEach(itemId => expandTreeItem(itemId));
+}
+
+function expandTreeItem(itemId) {
+  const toggleBtn = document.querySelector(`[data-item-id="${itemId}"]`);
+  if (!toggleBtn) return;
+
+  toggleBtn.setAttribute('aria-expanded', 'true');
+
+  const icon = toggleBtn.querySelector('.tree-expand-icon, .expand-icon');
+  if (icon) icon.textContent = '▼';
+
+  const treeItem = toggleBtn.closest('.tree-structure-item, .project-tree-item');
+  if (! treeItem) return;
+
+  for (let child of treeItem.children) {
+    if (child.classList.contains('tree-structure-children') || child.classList.contains('project-structure')) {
+      child.classList.remove('hidden');
+      break;
+    }
+  }
+}
+
+// ============================================================
+// FIND PARENT CHAIN
+// ============================================================
+function findPackageParentChain(project, packageId, modelId, profileId, context) {
+  const searchInPackages = (packages, currentPath, isSubPackage = false) => {
+    for (let idx = 0; idx < packages.length; idx++) {
+      const pkg = packages[idx];
+      const prefix = isSubPackage ? 'sub' : 'pkg';
+      const pkgPath = [...currentPath, `${prefix}-${idx}`];
+
+      if (pkg.id === packageId) return pkgPath;
+
+      if (pkg.subPackages && pkg.subPackages.length > 0) {
+        const found = searchInPackages(pkg.subPackages, [...pkgPath], true);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  if (context === "model" && modelId && modelId !== "") {
+    const model = project.models?.find(m => m.id === modelId);
+    if (!model) return [];
+
+    const modelItemId = `model-${currentProjectId}-${modelId}`;
+    if (model.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(model.rootPackages[0].packages, [modelItemId], false);
+      if (found) {
+        return found.reduce((acc, part, i) => {
+          if (i === 0) return [part];
+          return [...acc, acc[acc.length - 1] + '-' + part];
+        }, []);
+      }
+    }
+  }
+
+  if (context === "profile" && profileId && profileId !== "") {
+    const profile = project.profiles?.find(p => p.id === profileId);
+    if (!profile) return [];
+
+    const profileItemId = `profile-${currentProjectId}-${profileId}`;
+    if (profile.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(profile.rootPackages[0].packages, [profileItemId], false);
+      if (found) {
+        return found.reduce((acc, part, i) => {
+          if (i === 0) return [part];
+          return [...acc, acc[acc.length - 1] + '-' + part];
+        }, []);
+      }
+    }
+  }
+
+  return [];
+}
+
+function findClassParentChain(project, classId, modelId, profileId, context) {
+  const searchInPackages = (packages, currentPath, isSubPackage = false) => {
+    for (let idx = 0; idx < packages.length; idx++) {
+      const pkg = packages[idx];
+      const prefix = isSubPackage ? 'sub' : 'pkg';
+      const pkgPath = [...currentPath, `${prefix}-${idx}`];
+
+      if (pkg.classes) {
+        const classIdx = pkg.classes.findIndex(c => c.id === classId);
+        if (classIdx !== -1) return pkgPath;
+      }
+
+      if (pkg.subPackages && pkg.subPackages.length > 0) {
+        const found = searchInPackages(pkg.subPackages, [...pkgPath], true);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  if (context === "model" && modelId && modelId !== "") {
+    const model = project.models?.find(m => m.id === modelId);
+    if (!model) return [];
+
+    const modelItemId = `model-${currentProjectId}-${modelId}`;
+    if (model.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(model.rootPackages[0].packages, [modelItemId], false);
+      if (found) {
+        return found.reduce((acc, part, i) => {
+          if (i === 0) return [part];
+          return [...acc, acc[acc.length - 1] + '-' + part];
+        }, []);
+      }
+    }
+  }
+
+  if (context === "profile" && profileId && profileId !== "") {
+    const profile = project.profiles?.find(p => p.id === profileId);
+    if (!profile) return [];
+
+    const profileItemId = `profile-${currentProjectId}-${profileId}`;
+    if (profile.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(profile.rootPackages[0].packages, [profileItemId], false);
+      if (found) {
+        return found.reduce((acc, part, i) => {
+          if (i === 0) return [part];
+          return [...acc, acc[acc.length - 1] + '-' + part];
+        }, []);
+      }
+    }
+  }
+
+  return [];
+}
+
+// ============================================================
+// FORM SUBMIT HANDLER
+// ============================================================
 function handleItemDetailsSubmit(e) {
   e.preventDefault();
-
   const form = e.target;
 
-  // Package form
-  if (form.id === "package-form") {
-    handleSavePackage(form);
-    return;
-  }
-
-  // Class form
-  if (form.id === "class-form") {
-    handleSaveClass(form);
-    return;
-  }
-
-  // Attribute form
-  if (form.id === "attribute-form") {
-    handleSaveAttribute(form);
-    return;
-  }
-
-  // Link form
-  if (form.id === "link-form") {
-    handleSaveLink(form);
-    return;
-  }
+  if (form.id === "package-form") handleSavePackage(form);
+  else if (form.id === "class-form") handleSaveClass(form);
+  else if (form.id === "attribute-form") handleSaveAttribute(form);
+  else if (form.id === "link-form") handleSaveLink(form);
 }
 
 // ============================================================
-// ✅ PACKAGE HANDLERS (NEW)
+// PACKAGE HANDLERS
 // ============================================================
-
-/**
- * Save package changes
- */
 function handleSavePackage(form) {
   const packageId = form.getAttribute("data-package-id");
-
   const updatedData = {
     name: document.getElementById("pkg-name").value.trim(),
-    type: document.getElementById("pkg-type").value.trim(),
     documentation: document.getElementById("pkg-documentation").value.trim(),
     documentationRu: document.getElementById("pkg-documentationRu").value.trim(),
     details: document.getElementById("pkg-details").value.trim(),
@@ -911,44 +980,24 @@ function handleSavePackage(form) {
 
   console.log("💾 Сохранение пакета:", packageId, updatedData);
   alert("Функция сохранения пакета в разработке");
-
-  // TODO: Call service to update package
-  // updatePackage(currentProjectId, packageId, updatedData);
-  // renderProjectTreeSidebar();
 }
 
-/**
- * Cancel package edit (restore original)
- */
 function handleCancelPackageEdit() {
   if (! originalItemData) return;
+  if (! confirm("Отменить изменения?  Несохранённые данные будут потеряны.")) return;
 
-  const confirmed = confirm("Отменить изменения?   Несохранённые данные будут потеряны.");
-  if (!confirmed) return;
-
-  // Re-render with original data
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderPackageDetails(originalItemData);
-  }
-
-  console.log("↩️ Отмена редактирования пакета");
+  if (itemDetailsContent) itemDetailsContent.innerHTML = renderPackageDetails(originalItemData);
 }
 
 // ============================================================
-// ✅ CLASS HANDLERS (NEW)
+// CLASS HANDLERS
 // ============================================================
-
-/**
- * Save class changes
- */
 function handleSaveClass(form) {
   const classId = form.getAttribute("data-class-id");
-
   const updatedData = {
-    name: document.getElementById("cls-name").value.trim(),
+    name:  document.getElementById("cls-name").value.trim(),
     stereotype: document.getElementById("cls-stereotype").value.trim(),
-    type: document.getElementById("cls-type").value,
     isAbstract: document.getElementById("cls-isAbstract").checked,
     documentation: document.getElementById("cls-documentation").value.trim(),
     documentationRu: document.getElementById("cls-documentationRu").value.trim(),
@@ -957,96 +1006,47 @@ function handleSaveClass(form) {
 
   console.log("💾 Сохранение класса:", classId, updatedData);
   alert("Функция сохранения класса в разработке");
-
-  // TODO: Call service to update class
-  // updateClass(currentProjectId, classId, updatedData);
-  // renderProjectTreeSidebar();
 }
 
-/**
- * Cancel class edit (restore original)
- */
 function handleCancelClassEdit() {
   if (!originalItemData) return;
+  if (!confirm("Отменить изменения? Несохранённые данные будут потеряны.")) return;
 
-  const confirmed = confirm("Отменить изменения?  Несохранённые данные будут потеряны.");
-  if (!confirmed) return;
-
-  // Re-render with original data
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderClassDetails(originalItemData);
-  }
-
-  console.log("↩️ Отмена редактирования класса");
+  if (itemDetailsContent) itemDetailsContent.innerHTML = renderClassDetails(originalItemData);
 }
 
 // ============================================================
-// ✅ ATTRIBUTE HANDLERS (NEW)
+// ATTRIBUTE HANDLERS
 // ============================================================
-
-/**
- * Add new attribute
- */
 function handleAddAttribute(classId) {
-  console.log("➕ Добавление атрибута для класса:", classId);
   alert("Функция добавления атрибута в разработке");
-
-  // TODO: Open modal or inline form to create attribute
-  // createAttribute(currentProjectId, classId, attributeData);
 }
 
-/**
- * Edit attribute
- */
 function handleEditAttribute(attrId) {
-  console.log("✏️ Редактирование атрибута:", attrId);
-
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
   const attr = findAttributeById(project, attrId);
-  if (!attr) {
-    console.warn(`Attribute not found: ${attrId}`);
-    return;
-  }
+  if (!attr) return;
 
-  // Store original for cancel
   originalItemData = JSON.parse(JSON.stringify(attr));
 
-  // Render attribute edit form
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderAttributeDetails(attr);
-  }
+  if (itemDetailsContent) itemDetailsContent.innerHTML = renderAttributeDetails(attr);
 
   showItemContainer();
   hideModelContainer();
   hideProfileContainer();
 }
 
-/**
- * Delete attribute
- */
 function handleDeleteAttribute(attrId) {
-  console.log("🗑️ Удаление атрибута:", attrId);
-
-  const confirmed = confirm("Удалить атрибут?");
-  if (!confirmed) return;
-
+  if (!confirm("Удалить атрибут?")) return;
   alert("Функция удаления атрибута в разработке");
-
-  // TODO: Call service to delete attribute
-  // deleteAttribute(currentProjectId, classId, attrId);
-  // Re-render class details
 }
 
-/**
- * Save attribute changes
- */
 function handleSaveAttribute(form) {
   const attrId = form.getAttribute("data-attr-id");
-
   const updatedData = {
     name: document.getElementById("attr-name").value.trim(),
     dataType: document.getElementById("attr-dataType").value.trim(),
@@ -1062,100 +1062,52 @@ function handleSaveAttribute(form) {
 
   console.log("💾 Сохранение атрибута:", attrId, updatedData);
   alert("Функция сохранения атрибута в разработке");
-
-  // TODO: Call service to update attribute
-  // updateAttribute(currentProjectId, classId, attrId, updatedData);
 }
 
-/**
- * Cancel attribute edit
- */
 function handleCancelAttributeEdit() {
   if (!originalItemData) return;
+  if (!confirm("Отменить изменения? Несохранённые данные будут потеряны.")) return;
 
-  const confirmed = confirm("Отменить изменения?  Несохранённые данные будут потеряны.");
-  if (!confirmed) return;
-
-  // Re-render with original data
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderAttributeDetails(originalItemData);
-  }
-
-  console.log("↩️ Отмена редактирования атрибута");
+  if (itemDetailsContent) itemDetailsContent.innerHTML = renderAttributeDetails(originalItemData);
 }
 
 // ============================================================
-// ✅ LINK HANDLERS (NEW)
+// LINK HANDLERS
 // ============================================================
-
-/**
- * Add new link
- */
 function handleAddLink(classId) {
-  console.log("➕ Добавление связи для класса:", classId);
   alert("Функция добавления связи в разработке");
-
-  // TODO: Open modal or inline form to create link
-  // createLink(currentProjectId, classId, linkData);
 }
 
-/**
- * Edit link
- */
 function handleEditLink(linkId) {
-  console.log("✏️ Редактирование связи:", linkId);
-
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
   const link = findLinkById(project, linkId);
-  if (!link) {
-    console.warn(`Link not found: ${linkId}`);
-    return;
-  }
+  if (!link) return;
 
-  // Store original for cancel
   originalItemData = JSON.parse(JSON.stringify(link));
 
-  // Render link edit form
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderLinkDetails(link);
-  }
+  if (itemDetailsContent) itemDetailsContent.innerHTML = renderLinkDetails(link);
 
   showItemContainer();
   hideModelContainer();
   hideProfileContainer();
 }
 
-/**
- * Delete link
- */
 function handleDeleteLink(linkId) {
-  console.log("🗑️ Удаление связи:", linkId);
-
-  const confirmed = confirm("Удалить связь?");
-  if (!confirmed) return;
-
+  if (!confirm("Удалить связь?")) return;
   alert("Функция удаления связи в разработке");
-
-  // TODO: Call service to delete link
-  // deleteLink(currentProjectId, classId, linkId);
-  // Re-render class details
 }
 
-/**
- * Save link changes
- */
 function handleSaveLink(form) {
   const linkId = form.getAttribute("data-link-id");
-
   const updatedData = {
     relationKind: document.getElementById("link-relationKind").value,
     role: document.getElementById("link-role").value,
     targetClassName: document.getElementById("link-targetClassName").value.trim(),
-    targetClassId:  document.getElementById("link-targetClassId").value.trim(),
+    targetClassId: document.getElementById("link-targetClassId").value.trim(),
     multiplicity: document.getElementById("link-multiplicity").value.trim(),
     targetClassRoleName: document.getElementById("link-targetClassRoleName").value.trim(),
     srcClassRoleName: document.getElementById("link-srcClassRoleName").value.trim(),
@@ -1164,78 +1116,36 @@ function handleSaveLink(form) {
 
   console.log("💾 Сохранение связи:", linkId, updatedData);
   alert("Функция сохранения связи в разработке");
-
-  // TODO: Call service to update link
-  // updateLink(currentProjectId, classId, linkId, updatedData);
 }
 
-/**
- * Cancel link edit
- */
 function handleCancelLinkEdit() {
   if (!originalItemData) return;
+  if (!confirm("Отменить изменения?  Несохранённые данные будут потеряны.")) return;
 
-  const confirmed = confirm("Отменить изменения? Несохранённые данные будут потеряны.");
-  if (!confirmed) return;
-
-  // Re-render with original data
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderLinkDetails(originalItemData);
-  }
-
-  console.log("↩️ Отмена редактирования связи");
+  if (itemDetailsContent) itemDetailsContent.innerHTML = renderLinkDetails(originalItemData);
 }
 
 // ============================================================
-// ✅ LITERAL HANDLERS (NEW)
+// LITERAL HANDLERS
 // ============================================================
-
-/**
- * Add new literal
- */
 function handleAddLiteral(classId) {
-  console.log("➕ Добавление значения перечисления для класса:", classId);
   alert("Функция добавления значения в разработке");
-
-  // TODO: Open modal or inline form to create literal
-  // createLiteral(currentProjectId, classId, literalData);
 }
 
-/**
- * Edit literal
- */
 function handleEditLiteral(literalId) {
-  console.log("✏️ Редактирование значения перечисления:", literalId);
   alert("Функция редактирования значения в разработке");
-
-  // TODO: Open modal or inline form to edit literal
 }
 
-/**
- * Delete literal
- */
 function handleDeleteLiteral(literalId) {
-  console.log("🗑️ Удаление значения перечисления:", literalId);
-
-  const confirmed = confirm("Удалить значение? ");
-  if (!confirmed) return;
-
+  if (!confirm("Удалить значение?")) return;
   alert("Функция удаления значения в разработке");
-
-  // TODO: Call service to delete literal
-  // deleteLiteral(currentProjectId, classId, literalId);
 }
 
-
 // ============================================================
-// ✅ HELPER FUNCTIONS TO FIND ITEMS (NEW)
+// FIND HELPERS
 // ============================================================
-
-/**
- * Find package by ID in project structure
- */
-function findPackageById(project, packageId) {
+function findPackageById(project, packageId, modelId = "", profileId = "", context = null) {
   const searchInPackages = (packages) => {
     for (const pkg of packages) {
       if (pkg.id === packageId) return pkg;
@@ -1247,33 +1157,24 @@ function findPackageById(project, packageId) {
     return null;
   };
 
-  // Search in models
-  if (project.models) {
-    for (const model of project.models) {
-      if (model.rootPackages && model.rootPackages[0] && model.rootPackages[0].packages) {
-        const found = searchInPackages(model.rootPackages[0].packages);
-        if (found) return found;
-      }
+  if (context === "model" && modelId && modelId !== "") {
+    const model = project.models?.find(m => m.id === modelId);
+    if (model?.rootPackages?.[0]?.packages) {
+      return searchInPackages(model.rootPackages[0].packages);
     }
   }
 
-  // Search in profiles
-  if (project.profiles) {
-    for (const profile of project.profiles) {
-      if (profile.rootPackages && profile.rootPackages[0] && profile.rootPackages[0].packages) {
-        const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found) return found;
-      }
+  if (context === "profile" && profileId && profileId !== "") {
+    const profile = project.profiles?.find(p => p.id === profileId);
+    if (profile?.rootPackages?.[0]?.packages) {
+      return searchInPackages(profile.rootPackages[0].packages);
     }
   }
 
   return null;
 }
 
-/**
- * Find class by ID in project structure
- */
-function findClassById(project, classId) {
+function findClassById(project, classId, modelId = "", profileId = "", context = null) {
   const searchInPackages = (packages) => {
     for (const pkg of packages) {
       if (pkg.classes) {
@@ -1288,45 +1189,31 @@ function findClassById(project, classId) {
     return null;
   };
 
-  // Search in models
-  if (project.models) {
-    for (const model of project.models) {
-      if (model.rootPackages && model.rootPackages[0] && model.rootPackages[0].packages) {
-        const found = searchInPackages(model.rootPackages[0].packages);
-        if (found) return found;
-      }
+  if (context === "model" && modelId && modelId !== "") {
+    const model = project.models?.find(m => m.id === modelId);
+    if (model?.rootPackages?.[0]?.packages) {
+      return searchInPackages(model.rootPackages[0].packages);
     }
   }
 
-  // Search in profiles
-  if (project.profiles) {
-    for (const profile of project.profiles) {
-      if (profile.rootPackages && profile.rootPackages[0] && profile.rootPackages[0].packages) {
-        const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found) return found;
-      }
+  if (context === "profile" && profileId && profileId !== "") {
+    const profile = project.profiles?.find(p => p.id === profileId);
+    if (profile?.rootPackages?.[0]?.packages) {
+      return searchInPackages(profile.rootPackages[0].packages);
     }
   }
 
   return null;
 }
 
-/**
- * Find attribute by ID in project structure
- */
 function findAttributeById(project, attrId) {
-  const cls = findClassByAttributeId(project, attrId);
-  if (!cls || !cls.attributes) return null;
-  return cls.attributes.find(attr => attr.id === attrId);
-}
-
-function findClassByAttributeId(project, attrId) {
   const searchInPackages = (packages) => {
     for (const pkg of packages) {
       if (pkg.classes) {
         for (const cls of pkg.classes) {
-          if (cls.attributes && cls.attributes.some(attr => attr.id === attrId)) {
-            return cls;
+          if (cls.attributes) {
+            const attr = cls.attributes.find(a => a.id === attrId);
+            if (attr) return attr;
           }
         }
       }
@@ -1338,20 +1225,18 @@ function findClassByAttributeId(project, attrId) {
     return null;
   };
 
-  // Search in models
   if (project.models) {
     for (const model of project.models) {
-      if (model.rootPackages && model.rootPackages[0] && model.rootPackages[0].packages) {
+      if (model.rootPackages?.[0]?.packages) {
         const found = searchInPackages(model.rootPackages[0].packages);
         if (found) return found;
       }
     }
   }
 
-  // Search in profiles
   if (project.profiles) {
     for (const profile of project.profiles) {
-      if (profile.rootPackages && profile.rootPackages[0] && profile.rootPackages[0].packages) {
+      if (profile.rootPackages?.[0]?.packages) {
         const found = searchInPackages(profile.rootPackages[0].packages);
         if (found) return found;
       }
@@ -1361,22 +1246,14 @@ function findClassByAttributeId(project, attrId) {
   return null;
 }
 
-/**
- * Find link by ID in project structure
- */
 function findLinkById(project, linkId) {
-  const cls = findClassByLinkId(project, linkId);
-  if (!cls || !cls.links) return null;
-  return cls.links.find(link => link.linkId === linkId);
-}
-
-function findClassByLinkId(project, linkId) {
   const searchInPackages = (packages) => {
     for (const pkg of packages) {
       if (pkg.classes) {
         for (const cls of pkg.classes) {
-          if (cls.links && cls.links.some(link => link.linkId === linkId)) {
-            return cls;
+          if (cls.links) {
+            const link = cls.links.find(l => l.linkId === linkId);
+            if (link) return link;
           }
         }
       }
@@ -1388,20 +1265,18 @@ function findClassByLinkId(project, linkId) {
     return null;
   };
 
-  // Search in models
   if (project.models) {
     for (const model of project.models) {
-      if (model.rootPackages && model.rootPackages[0] && model.rootPackages[0].packages) {
+      if (model.rootPackages?.[0]?.packages) {
         const found = searchInPackages(model.rootPackages[0].packages);
         if (found) return found;
       }
     }
   }
 
-  // Search in profiles
   if (project.profiles) {
     for (const profile of project.profiles) {
-      if (profile.rootPackages && profile.rootPackages[0] && profile.rootPackages[0].packages) {
+      if (profile.rootPackages?.[0]?.packages) {
         const found = searchInPackages(profile.rootPackages[0].packages);
         if (found) return found;
       }
@@ -1412,30 +1287,29 @@ function findClassByLinkId(project, linkId) {
 }
 
 // ============================================================
-// CRUD HANDLERS - MODELS
+// MODEL/PROFILE CRUD
 // ============================================================
 function handleEditModel(modelId) {
   openEditModelModal(modelId);
 }
 
-function handleImportModel(modelId) {
+function handleImportModel() {
   alert("Функция импорта в разработке");
 }
 
-function handleExportModel(modelId) {
+function handleExportModel() {
   alert("Функция экспорта в разработке");
 }
 
-function handleCheckModel(modelId) {
+function handleCheckModel() {
   alert("Функция проверки в разработке");
 }
 
 function handleDeleteModel(modelId) {
   const model = getModel(currentProjectId, modelId);
-  if (!model) return;
+  if (! model) return;
 
-  const confirmed = confirm(`Удалить модель "${model.name}"?`);
-  if (!confirmed) return;
+  if (!confirm(`Удалить модель "${model.name}"?`)) return;
 
   deleteModel(currentProjectId, modelId);
   renderModelsContainer();
@@ -1446,22 +1320,19 @@ function handleDeleteModel(modelId) {
   }
 }
 
-// ============================================================
-// CRUD HANDLERS - PROFILES
-// ============================================================
 function handleEditProfile(profileId) {
   openEditProfileModal(profileId);
 }
 
-function handleImportProfile(profileId) {
+function handleImportProfile() {
   alert("Функция импорта в разработке");
 }
 
-function handleExportProfile(profileId) {
+function handleExportProfile() {
   alert("Функция экспорта в разработке");
 }
 
-function handleCheckProfile(profileId) {
+function handleCheckProfile() {
   alert("Функция проверки в разработке");
 }
 
@@ -1469,8 +1340,7 @@ function handleDeleteProfile(profileId) {
   const profile = getProfile(currentProjectId, profileId);
   if (!profile) return;
 
-  const confirmed = confirm(`Удалить профиль "${profile.name}"?`);
-  if (!confirmed) return;
+  if (!confirm(`Удалить профиль "${profile.name}"?`)) return;
 
   deleteProfile(currentProjectId, profileId);
   renderProfilesContainer();
@@ -1481,15 +1351,13 @@ function handleDeleteProfile(profileId) {
   }
 }
 
+// ============================================================
+// UTILITY
+// ============================================================
 function setSelectedTreeItem(el) {
   const previouslySelected = document.querySelector(".project-tree-item * .tree-structure-name.selected");
-  if (previouslySelected) {
-    previouslySelected.classList.remove("selected");
-  }
-  if (el) {
-    el.classList.add("selected");
-  }
-  console.log("Selected tree item set", `${el ? el.textContent : "none"}`);
+  if (previouslySelected) previouslySelected.classList.remove("selected");
+  if (el) el.classList.add("selected");
 }
 
 console.log("Project Details Page Module Loaded");

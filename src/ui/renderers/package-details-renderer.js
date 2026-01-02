@@ -110,9 +110,14 @@ function renderPackageContents(pkg) {
 
     pkg.subPackages.forEach(subPkg => {
       html += `
-        <div class="subpackage-item">
+        <div class="subpackage-item"
+             data-action="navigate-to-package"
+             data-package-id="${subPkg.id}"
+             data-model-id="${subPkg.modelId || ''}"
+             data-profile-id="${subPkg.profileId || ''}"
+             title="${subPkg.documentation || subPkg.name || ''}">
           <span class="subpackage-icon">📦</span>
-          <span class="subpackage-name" data-model-id="${subPkg.modelId}" data-profile-id="${subPkg.profileId}" data-package-id="${subPkg.id}" title="${subPkg.documentation || subPkg.name || ''}">${subPkg.name}</span>
+          <span class="subpackage-name">${subPkg.name}</span>
         </div>
       `;
     });
@@ -134,9 +139,16 @@ function renderPackageContents(pkg) {
     pkg.classes.forEach(cls => {
       const icon = cls.type === 'Enumeration' ? '🔢' : (cls.isAbstract ? '📋' : '📄');
       html += `
-        <div class="class-item">
+        <div class="class-item"
+             data-action="navigate-to-class"
+             data-class-id="${cls.id}"
+             data-model-id="${cls.modelId || ''}"
+             data-profile-id="${cls.profileId || ''}"
+             data-ref-model-id="${cls.refModelId || ''}"
+             data-ref-model-item-id="${cls.refModelItemId || ''}"
+             title="${cls.documentation || cls.name || ''}">
           <span class="class-icon">${icon}</span>
-          <span class="class-name" data-model-id="${cls.modelId}" data-profile-id="${cls.profileId}" data-ref-model-id="${cls.refModelId}" data-ref-model-item-id="${cls.refModelItemId}" data-class-id="${cls.id}" title="${cls.documentation || cls.name || ''}">${cls.name}</span>
+          <span class="class-name">${cls.name}</span>
           ${cls.stereotype ? `<span class="class-stereotype">«${cls.stereotype}»</span>` : ''}
         </div>
       `;
