@@ -32,7 +32,7 @@ function initSidebarResize(options = {}) {
     startX = e.clientX;
     startWidth = document.getElementById(cfg.sidebarId).offsetWidth;
     document.body.style.userSelect = "none";
-    resizeHandle.style.backgroundColor = "var(--primary-color)";
+    resizeHandle.style.backgroundColor = "var(--hover)";
   });
 
   document.addEventListener("mousemove", (e) => {

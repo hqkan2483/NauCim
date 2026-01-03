@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nautilus.CIM - Сравнение</title>
+    <link rel="stylesheet" href="src/styles/00-fonts.css" />
+    <link rel="stylesheet" href="src/styles/01-tokens.css" />
+    <link rel="stylesheet" href="src/styles/02-body.css" />
+    <link rel="stylesheet" href="src/styles/03-app-container.css" />
+    <link rel="stylesheet" href="src/styles/04-utils.css" />
+    <link rel="stylesheet" href="src/styles/05-sidebar-nav.css" />
+    <link rel="stylesheet" href="src/styles/06-main-content.css" />
+    <link rel="stylesheet" href="src/styles/07-info-style.css" />
+    <link rel="stylesheet" href="src/styles/components/buttons.css" />
+    <link rel="stylesheet" href="src/styles/components/toolbar.css" />
+    <link rel="stylesheet" href="src/styles/components/quick-actions.css" />
+
+
+
+
     <link rel="stylesheet" href="styles.css" />
     <style>
       .editor-panel-content {
@@ -54,33 +69,27 @@
       }
     </style>
   </head>
-  <body>
+  <body class="page page-compare">
     <div class="app-container">
       <!-- SIDEBAR -->
       <div class="sidebar">
-        <div class="sidebar-header">
+        <div class="sidebar__header">
           <strong>Nautilus.CIM</strong>
         </div>
-        <div class="sidebar-nav">
-          <a href="index.html" class="nav-item">📊 Главная</a>
-          <a href="projects.html" class="nav-item">📁 Проекты</a>
-          <!-- <a href="models.html" class="nav-item">📋 Модели</a>
-                <a href="profiles.html" class="nav-item">⚙️ Профили</a> -->
+        <div class="sidebar__nav">
+          <a href="index.html" class="sidebar__nav-item">📊 Главная</a>
+          <a href="projects.html" class="sidebar__nav-item">📁 Проекты</a>
+          <!-- <a href="models.html" class="sidebar__nav-item">📋 Модели</a>
+                <a href="profiles.html" class="sidebar__nav-item">⚙️ Профили</a> -->
 
-          <div class="nav-section-title">Текущий проект</div>
+          <div class="sidebar__section-title">Текущий проект</div>
           <div
-            id="current-project"
-            style="
-              padding: 10px 15px;
-              font-size: 12px;
-              color: rgba(255, 255, 255, 0.7);
-            "
-          >
+            id="current-project" class="sidebar__section-info" >
             Нет проекта
           </div>
 
-          <div class="nav-section-title">Действия</div>
-          <div class="nav-item" onclick="openModal('new-project-modal')">
+          <div class="sidebar__section-title">Действия</div>
+          <div class="sidebar__nav-item" onclick="openModal('new-project-modal')">
             + Новый проект
           </div>
           <!-- <div class="nav-item" onclick="openModal('new-model-modal')">⬆️ Импорт модели</div>
@@ -89,17 +98,17 @@
       </div>
 
       <!-- MAIN CONTENT -->
-      <div class="main-content">
+      <div class="app-container__main-content main-content">
         <div class="toolbar">
-          <div class="toolbar-title">Сравнение</div>
-          <div class="toolbar-actions">
+          <div class="toolbar__title">Сравнение</div>
+          <div class="toolbar__actions">
             <button class="btn btn-primary" onclick="compareProfiles()">
               🔍 Сравнить
             </button>
           </div>
         </div>
 
-        <div class="content-area">
+        <div class="main-content__content-area content-area">
           <div id="compare-container" class="compare-container">
             <!-- Selection Area -->
             <div class="card" style="margin-bottom: 20px">
@@ -166,7 +175,7 @@
 
               <div class="divider mt-15 mb-10"></div>
 
-              <div class="quick-compare-actions">
+              <div class="quick-actions--compare">
                 <button class="btn btn-primary" onclick="compareProfiles()">
                   🔍 Сравнить
                 </button>
@@ -406,7 +415,7 @@
 
         const hasError = selectiveItemsWithErrors.has(itemKey);
         const errorIcon = hasError ? '<span class="tree-item-error-icon" title="Обнаружены различия">⚠️</span>' : '';
-        
+
         let html = `
           <div class="tree-item-with-checkbox" onclick="toggleSelectiveActive('${itemKey}', event)">
             <span class="tree-toggle" onclick="toggleSelectiveExpand('${itemKey}'); event.stopPropagation();">${hasChildren ? (isExpanded ? '▾' : '▸') : ''}</span>
@@ -521,7 +530,7 @@
 
         // Check compare mode
         const mode = document.querySelector('input[name="compareMode"]:checked')?.value || 'full';
-        
+
         if (mode === 'selective') {
           performSelectiveComparison(object1, object2);
         } else if (mode === 'analysis') {
@@ -576,10 +585,10 @@
         }
 
         const results = [];
-        
+
         // Clear previous error markers
         selectiveItemsWithErrors.clear();
-        
+
         // Process each selected item
         selectiveSelected.forEach(itemKey => {
           const itemData = resolveSelectiveItem(itemKey, object1);
@@ -587,7 +596,7 @@
 
           // Find corresponding item in object2
           const matchingItem = findMatchingItemInObject(itemData, object2);
-          
+
           if (!matchingItem) {
             results.push({
               itemKey: itemKey,
@@ -608,7 +617,7 @@
               differences: differences,
               message: differences.length === 0 ? 'Расхождений не обнаружено' : `Найдено расхождений: ${differences.length}`
             });
-            
+
             // Mark items with differences
             if (differences.length > 0 || differences.length === 0) {
               if (differences.length > 0) {
@@ -620,12 +629,12 @@
 
         // Store results globally for later display
         window.lastComparisonResults = { object1, object2, results };
-        
+
         // Re-render tree to show error icons
         if (currentSelectiveObject) {
           document.getElementById('compare-object-one-content').innerHTML = renderObjectTreePanel(currentSelectiveObject);
         }
-        
+
         // Show the "Show Results" button instead of displaying results immediately
         document.getElementById('show-results-btn').style.display = 'inline-block';
         document.getElementById('comparison-results').style.display = 'none';
@@ -635,16 +644,16 @@
       function resolveSelectiveItem(itemKey, sourceObject) {
         const parts = itemKey.split('-');
         // Format: sel-{type}-{id}-pkg-{idx}[-pkg-{idx}]*[-elem-{idx}]
-        
+
         let packages = sourceObject.rootPackages || [];
         let current = null;
         let itemType = 'package';
-        
+
         // Skip first 3 parts (sel-{type}-{id})
         for (let i = 3; i < parts.length; i += 2) {
           const token = parts[i];
           const idx = parseInt(parts[i + 1]);
-          
+
           if (token === 'pkg') {
             current = packages[idx];
             if (!current) return null;
@@ -657,9 +666,9 @@
             break;
           }
         }
-        
+
         if (!current) return null;
-        
+
         return {
           name: current.name || current.className,
           type: itemType,
@@ -675,28 +684,28 @@
 
       function searchForMatchingItem(sourceItem, packages) {
         if (!packages || !Array.isArray(packages)) return null;
-        
+
         for (const pkg of packages) {
           // Check if this package matches
           if (sourceItem.type === 'package' && pkg.name === sourceItem.name) {
             return pkg;
           }
-          
+
           // Check elements in this package
           if (sourceItem.type === 'element' && pkg.elements) {
-            const match = pkg.elements.find(el => 
+            const match = pkg.elements.find(el =>
               (el.name || el.className) === sourceItem.name
             );
             if (match) return match;
           }
-          
+
           // Recursively search in child packages
           if (pkg.children || pkg.packages) {
             const childMatch = searchForMatchingItem(sourceItem, pkg.children || pkg.packages);
             if (childMatch) return childMatch;
           }
         }
-        
+
         return null;
       }
 
@@ -704,16 +713,16 @@
     //   тянет на универсальную функцию сравнения. атрибуты и связи надо сделать так же
       function compareItems(item1, item2) {
         const differences = [];
-        
+
         if (!item1 || !item2) return differences;
-        
+
         // Compare basic properties
         const compareProps = ['name', 'className', 'type', 'description', 'description_ru', 'isAbstract', 'multiplicity'];
-        
+
         compareProps.forEach(prop => {
           const val1 = item1[prop];
           const val2 = item2[prop];
-          
+
           if (val1 !== val2 && (val1 !== undefined || val2 !== undefined)) {
             differences.push({
               field: prop,
@@ -724,11 +733,11 @@
             });
           }
         });
-        
+
         // Compare attributes
         const attrs1 = item1.attributes || [];
         const attrs2 = item2.attributes || [];
-        
+
         if (attrs1.length !== attrs2.length) {
           differences.push({
             field: 'attributes',
@@ -738,7 +747,7 @@
             message: `Количество атрибутов: ${attrs1.length} → ${attrs2.length}`
           });
         }
-        
+
         // Compare each attribute
         attrs1.forEach(attr1 => {
           const attr2 = attrs2.find(a => a.name === attr1.name);
@@ -796,7 +805,7 @@
             }
           }
         });
-        
+
         // Check for attributes only in item2
         attrs2.forEach(attr2 => {
           const attr1 = attrs1.find(a => a.name === attr2.name);
@@ -810,11 +819,11 @@
             });
           }
         });
-        
+
         // Compare links/associations
         const links1 = item1.links || [];
         const links2 = item2.links || [];
-        
+
         if (links1.length !== links2.length) {
           differences.push({
             field: 'links',
@@ -824,15 +833,15 @@
             message: `Количество связей: ${links1.length} → ${links2.length}`
           });
         }
-        
+
         // Compare each link
         links1.forEach(link1 => {
-          const link2 = links2.find(l => 
-            l.target_class_name === link1.target_class_name && 
+          const link2 = links2.find(l =>
+            l.target_class_name === link1.target_class_name &&
             l.relation_kind === link1.relation_kind &&
             l.target_class_role_name === link1.target_class_role_name
           );
-          
+
           if (!link2) {
             differences.push({
               field: 'links',
@@ -868,15 +877,15 @@
             }
           }
         });
-        
+
         // Check for links only in item2
         links2.forEach(link2 => {
-          const link1 = links1.find(l => 
-            l.target_class_name === link2.target_class_name && 
+          const link1 = links1.find(l =>
+            l.target_class_name === link2.target_class_name &&
             l.relation_kind === link2.relation_kind &&
             l.target_class_role_name === link2.target_class_role_name
           );
-          
+
           if (!link1) {
             differences.push({
               field: 'links',
@@ -887,49 +896,49 @@
             });
           }
         });
-        
+
         return differences;
       }
 
       // Render selective comparison results
       function renderSelectiveComparisonResults(object1, object2, results) {
         document.getElementById("comparison-results").style.display = "block";
-        
+
         // Calculate stats (but don't render comparison-stats block)
         const identical = results.filter(r => r.status === 'identical').length;
         const different = results.filter(r => r.status === 'different').length;
         const notFound = results.filter(r => r.status === 'not-found').length;
-        
+
         // Update headers
         document.getElementById("profile1-name").textContent = `${object1.name} (${object1.objectType === 'model' ? 'Модель' : 'Профиль'})`;
         document.getElementById("profile2-name").textContent = `${object2.name} (${object2.objectType === 'model' ? 'Модель' : 'Профиль'})`;
-        
+
         // Update details
-        document.getElementById("profile1-details").innerHTML = 
+        document.getElementById("profile1-details").innerHTML =
           `<p><strong>Выбрано для сравнения:</strong> ${results.length} объект(ов)</p>` +
           `<p><strong>Идентичных:</strong> ${identical}</p>` +
           `<p><strong>С различиями:</strong> ${different}</p>` +
           `<p><strong>Не найдено:</strong> ${notFound}</p>`;
-        
-        document.getElementById("profile2-details").innerHTML = 
+
+        document.getElementById("profile2-details").innerHTML =
           `<p><strong>Проект:</strong> ${object2.projectName}</p>` +
           `<p><strong>Тип:</strong> ${object2.objectType === 'model' ? object2.type : 'Профиль'}</p>`;
-        
+
         // Render differences list
         let diffHtml = '';
-        
+
         results.forEach(result => {
-          const statusIcon = result.status === 'identical' ? '✅' : 
+          const statusIcon = result.status === 'identical' ? '✅' :
                             result.status === 'not-found' ? '❌' : '⚠️';
-          const statusClass = result.status === 'identical' ? 'diff-added' : 
+          const statusClass = result.status === 'identical' ? 'diff-added' :
                              result.status === 'not-found' ? 'diff-removed' : 'badge';
-          
+
           diffHtml += `
             <div class="card difference-item">
               <h4><span class="${statusClass}">${statusIcon}</span> ${esc(result.name)} (${result.type === 'package' ? 'Пакет' : 'Класс'})</h4>
               <p><strong>${result.message}</strong></p>
           `;
-          
+
           if (result.differences && result.differences.length > 0) {
             diffHtml += `
               <table class="table" style="margin-top: 10px;">
@@ -949,13 +958,13 @@
                 </thead>
                 <tbody>
             `;
-            
+
             result.differences.forEach(diff => {
               const objLabel = formatDifferenceLabel(diff);
               const value1 = formatDifferenceValue(diff.value1);
               const value2 = formatDifferenceValue(diff.value2);
               const changeType = formatChangeType(diff, object1.name, object2.name);
-              
+
               diffHtml += `
                 <tr>
                   <td>${objLabel}</td>
@@ -965,16 +974,16 @@
                 </tr>
               `;
             });
-            
+
             diffHtml += `
                 </tbody>
               </table>
             `;
           }
-          
+
           diffHtml += '</div>';
         });
-        
+
         document.getElementById("differences-list").innerHTML = diffHtml || '<p class="text-muted">Нет результатов для отображения</p>';
       }
 
@@ -984,9 +993,9 @@
           if (diff.type === 'missing' || diff.type === 'added') {
             return `Атрибут "${esc(diff.value1 || diff.value2)}"`;
           }
-          
+
           const attrName = extractAttributeName(diff.message);
-          
+
           if (diff.type === 'type') {
             return `Атрибут "${attrName}": тип данных`;
           } else if (diff.type === 'multiplicity') {
@@ -1001,9 +1010,9 @@
             const linkInfo = extractLinkInfo(diff.value1 || diff.value2);
             return `Связь "${linkInfo.target}"`;
           }
-          
+
           const linkName = extractLinkName(diff.message);
-          
+
           if (diff.type === 'description') {
             return `Связь "${linkName}": описание`;
           } else if (diff.type === 'target_description') {
@@ -1013,7 +1022,7 @@
           // Property-level differences
           return `Свойство "${esc(diff.field)}"`;
         }
-        
+
         return esc(diff.field);
       }
 
@@ -1085,7 +1094,7 @@
         }
 
         const { object1, object2, results } = window.lastComparisonResults;
-        
+
         // Generate report content
         let reportText = `ОТЧЕТ О СРАВНЕНИИ\n`;
         reportText += `${'='.repeat(80)}\n\n`;
@@ -1100,7 +1109,7 @@
         const identical = results.filter(r => r.status === 'identical').length;
         const different = results.filter(r => r.status === 'different').length;
         const notFound = results.filter(r => r.status === 'not-found').length;
-        
+
         reportText += `СТАТИСТИКА\n`;
         reportText += `${'-'.repeat(80)}\n`;
         reportText += `Всего объектов сравнено: ${results.length}\n`;
@@ -1124,7 +1133,7 @@
               reportText += `   ${diffIndex + 1}) ${diff.message}\n`;
             });
           }
-          
+
           reportText += `\n${'-'.repeat(80)}\n\n`;
         });
 

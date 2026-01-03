@@ -47,13 +47,15 @@ function renderProjectCard(project, options = {}) {
           `<div class="project-card-description">${project.description}</div>`
           : ''
         }
-        <div class="project-card-meta">
-          ${showMeta ?  renderMeta(project) : ''}
-          ${showStats ? renderStats(project) : ''}
-        </div>
+
       </div>
 
       ${showActions ?  (actionsTemplate || renderDefaultActions(project)) : ''}
+
+      <div class="project-card-meta">
+          ${showMeta ?  renderMeta(project) : ''}
+          ${showStats ? renderStats(project) : ''}
+      </div>
     </div>
   `;
 }
@@ -63,12 +65,24 @@ function renderProjectCard(project, options = {}) {
  */
 function renderMeta(project) {
   return `
-      <div class="project-card-meta_item">
-        <span>📌 Версия:  ${project.version || '—'}</span>
-        <span>📅 Создан: ${formatDate(project.createDate)}</span>
-        <span>🛠️ Изменен: ${formatDate(project.modifyDate)}</span>
-        <span>🔑 Доступ: ${getAccessRightsValue(project.accessRights)}</span>
-      </div>
+      <dl class="project-card-meta_list">
+        <div class="project-card-meta_item">
+          <dt>📌 Версия</dt>
+          <dd>${project.version || '—'}</dd>
+        </div>
+        <div class="project-card-meta_item">
+          <dt>📅 Создан</dt>
+          <dd>${formatDate(project.createDate)}</dd>
+          </div>
+        <div class="project-card-meta_item">
+          <dt>🛠️ Изменен</dt>
+          <dd>${formatDate(project.modifyDate)}</dd>
+        </div>
+        <div class="project-card-meta_item">
+          <dt>🔑 Доступ</dt>
+          <dd>${getAccessRightsValue(project.accessRights)}</dd>
+        </div>
+      </dl>
   `;
 }
 
@@ -77,12 +91,16 @@ function renderMeta(project) {
  */
 function renderStats(project) {
   return `
-
+    <dl class="project-card-meta_list">
       <div class="project-card-meta_item">
-        <span>📋 Моделей: ${project.models ?  project.models.length : 0}</span>
-        <span>⚙️ Профилей: ${project.profiles ? project.profiles.length : 0}</span>
+        <dt>📋 Моделей</dt>
+        <dd>${project.models ? project.models.length : 0}</dd>
       </div>
-
+      <div class="project-card-meta_item">
+        <dt>⚙️ Профилей</dt>
+        <dd>${project.profiles ? project.profiles.length : 0}</dd>
+      </div>
+    </dl>
   `;
 }
 

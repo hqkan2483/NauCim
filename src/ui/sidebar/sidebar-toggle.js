@@ -1,6 +1,6 @@
 const DEFAULTS = {
   sidebarId: "sidebar",
-  toggleBtnSelector: ".sidebar-toggle",
+  toggleBtnSelector: ".sidebar__toggle",
   collapsedClass: "collapsed",
   openClass: "sidebar-open",
   defaultWidth: 250,

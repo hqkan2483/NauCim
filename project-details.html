@@ -4,45 +4,59 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nautilus.CIM - Сведения о проекте</title>
+    <link rel="stylesheet" href="src/styles/00-fonts.css" />
+    <link rel="stylesheet" href="src/styles/01-tokens.css" />
+    <link rel="stylesheet" href="src/styles/02-body.css" />
+    <link rel="stylesheet" href="src/styles/03-app-container.css" />
+    <link rel="stylesheet" href="src/styles/04-utils.css" />
+    <link rel="stylesheet" href="src/styles/05-sidebar-nav.css" />
+    <link rel="stylesheet" href="src/styles/06-main-content.css" />
+    <link rel="stylesheet" href="src/styles/07-info-style.css" />
+    <link rel="stylesheet" href="src/styles/components/buttons.css" />
+    <link rel="stylesheet" href="src/styles/components/toolbar.css" />
+
+
+
+
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="page page-project-details">
     <div class="app-container">
       <!-- SIDEBAR -->
       <div class="sidebar" id="sidebar">
-        <button class="sidebar-toggle sidebar-open" aria-label="Toggle sidebar">
-          <span class="toggle-icon">☰</span>
+        <button class="sidebar__toggle sidebar-open" aria-label="Toggle sidebar">
+          <span class="sidebar__toggle-icon">☰</span>
         </button>
 
-        <div class="sidebar-header">
+        <div class="sidebar__header">
           <span id="sidebar-project-title">Nautilus.CIM</span>
         </div>
 
-        <div class="sidebar-nav">
-          <a href="projects.html" class="nav-item">📁 Все Проекты</a>
+        <div class="sidebar__nav">
+          <a href="projects.html" class="sidebar__nav-item">📁 Все Проекты</a>
           <div class="divider-white mb-10"></div>
 
-          <div class="nav-section-title">Структура проекта</div>
+          <div class="sidebar__section-title">Структура проекта</div>
           <div id="current-project-structure" class="project-structure-nav">
             <div class="no-items text-muted">Нет проекта</div>
           </div>
 
-          <div class="nav-section-title">Действия</div>
-          <div class="nav-item" data-modal-open="new-model-modal">
+          <div class="sidebar__section-title">Действия</div>
+          <div class="sidebar__nav-item" data-modal-open="new-model-modal">
             ⬆️ Импорт модели
           </div>
-          <a href="compare.html" class="nav-item">🔍 Сравнение</a>
+          <a href="compare.html" class="sidebar__nav-item">🔍 Сравнение</a>
         </div>
       </div>
-      <div class="sidebar-resize-handle" id="sidebar-resize-handle"></div>
+      <div class="sidebar__resize-handle" id="sidebar-resize-handle"></div>
 
       <!-- MAIN CONTENT -->
-      <div class="main-content">
+      <div class="app-container__main-content main-content">
         <div class="toolbar">
-          <div class="toolbar-title">
+          <div class="toolbar__title">
             <span id="project-title">Nautilus.CIM</span>
           </div>
-          <div class="toolbar-actions">
+          <div class="toolbar__actions">
             <!-- ✅ Diagram mode toggle -->
             <button class="btn btn-primary btn-toolbar" id="toggle-diagram-mode">
               📐 Режим диаграммы
@@ -56,7 +70,7 @@
           </div>
         </div>
 
-        <div class="content-area">
+        <div class="main-content__content-area content-area">
           <!-- No Project Warning -->
           <div id="no-project-warning" class="hidden">
             <div class="warning-content">

@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nautilus.CIM - Редактор профиля</title>
+    <link rel="stylesheet" href="src/styles/00-fonts.css" />
+    <link rel="stylesheet" href="src/styles/01-tokens.css" />
+    <link rel="stylesheet" href="src/styles/02-body.css" />
+    <link rel="stylesheet" href="src/styles/03-app-container.css" />
+    <link rel="stylesheet" href="src/styles/04-utils.css" />
+    <link rel="stylesheet" href="src/styles/05-sidebar-nav.css" />
+    <link rel="stylesheet" href="src/styles/06-main-content.css" />
+    <link rel="stylesheet" href="src/styles/07-info-style.css" />
+    <link rel="stylesheet" href="src/styles/components/buttons.css" />
+    <link rel="stylesheet" href="src/styles/components/toolbar.css" />
+
+
+
+
+
     <link rel="stylesheet" href="styles.css" />
     <!-- Joint.js library for diagram editor -->
     <link
@@ -520,18 +535,18 @@
 
     </style>
   </head>
-  <body>
+  <body class="page page-profile-editor">
     <div class="app-container">
       <!-- MAIN CONTENT -->
-      <div class="main-content">
+      <div class="app-container__main-content main-content">
         <div class="toolbar">
-          <div class="toolbar-title">
+          <div class="toolbar__title">
             <span id="page-title">Редактор профиля</span>
             <span class="profile-name-display" id="profile-name-display"
               >Новый профиль</span
             >
           </div>
-          <div class="toolbar-actions">
+          <div class="toolbar__actions">
             <button
               class="btn btn-secondary"
               id="toggle-mode-btn"
@@ -723,7 +738,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div id="editor-mode-profile-object">
                 <div class="tabs" id="editor-details-tabs">
                   <div class="tab active" data-tab="object-info">Описание</div>
@@ -858,9 +873,9 @@
                         <span class="tree-toggle" onclick="toggleLeftExpand('${itemKey}'); event.stopPropagation();">
                             ${hasChildren ? (isExpanded ? "▼" : "▶") : " "}
                         </span>
-                        <input 
-                            type="checkbox" 
-                            class="tree-item-checkbox" 
+                        <input
+                            type="checkbox"
+                            class="tree-item-checkbox"
                             id="${itemKey}"
                             ${isChecked ? "checked" : ""}
                             onchange="toggleLeftItem('${itemKey}'); event.stopPropagation();"
@@ -926,9 +941,9 @@
                         }('${itemKey}'); event.stopPropagation();">
                             ${hasChildren ? (isExpanded ? "▼" : "▶") : " "}
                         </span>
-                        <input 
-                            type="checkbox" 
-                            class="tree-item-checkbox" 
+                        <input
+                            type="checkbox"
+                            class="tree-item-checkbox"
                             id="${itemKey}"
                             ${isChecked ? "checked" : ""}
                             onchange="${
@@ -971,9 +986,9 @@
                   side === "left" ? "setActiveLeftItem" : "setActiveRightItem"
                 }('${elemKey}', event)">
                                     <span class="tree-toggle"> </span>
-                                    <input 
-                                        type="checkbox" 
-                                        class="tree-item-checkbox" 
+                                    <input
+                                        type="checkbox"
+                                        class="tree-item-checkbox"
                                         id="${elemKey}"
                                         ${elemChecked ? "checked" : ""}
                                         onchange="${
@@ -1066,24 +1081,24 @@
 
         // Find corresponding item in left tree
         const matchingLeftKey = findMatchingLeftItem(rightInfo);
-        
+
         if (matchingLeftKey) {
           // Expand all parent items
           expandPathToLeftItem(matchingLeftKey);
-          
+
           // Set as active
           activeLeftItem = matchingLeftKey;
-          
+
           // Re-render trees
           renderAvailableTree();
-          
+
           // Update model panel
           renderEditorModeDetailsPanel();
         } else {
           // Object not found in left tree - clear active item
           activeLeftItem = null;
           renderAvailableTree();
-          
+
           // Show "not found" message in left panel
           const modelObjectPanel = document.getElementById('editor-mode-model-object');
           if (modelObjectPanel) {
@@ -1093,7 +1108,7 @@
             const links = isElement ? (data.links || []).filter(l => {
               return !(l.relation_kind === 'Generalization' && l.role === 'parent');
             }) : [];
-            
+
             let html = `
               <div class="tabs">
                 <div class="tab active" onclick="switchEditorTab('description')">Описание</div>
@@ -1139,24 +1154,24 @@
 
         // Find corresponding item in profile tree
         const matchingProfileKey = findMatchingProfileItem(leftInfo);
-        
+
         if (matchingProfileKey) {
           // Expand all parent items
           expandPathToItem(matchingProfileKey);
-          
+
           // Set as active
           activeRightItem = matchingProfileKey;
-          
+
           // Re-render trees
           renderProfileTree();
-          
+
           // Update profile panel
           renderEditorModeProfilePanel();
         } else {
           // Object not found in profile - clear active item
           activeRightItem = null;
           renderProfileTree();
-          
+
           // Show "not in profile" message in right panel
           const profileObjectPanel = document.getElementById('editor-mode-profile-object');
           if (profileObjectPanel) {
@@ -1166,7 +1181,7 @@
             const links = isElement ? (data.links || []).filter(l => {
               return !(l.relation_kind === 'Generalization' && l.role === 'parent');
             }) : [];
-            
+
             let html = `
               <div class="tabs">
                 <div class="tab active" onclick="switchProfileTab('description')">Описание</div>
@@ -1176,7 +1191,7 @@
 
               <div class="tab-content active" data-tab="description">
                 <p style="color: #888; font-style: italic; padding: 10px 0;">
-                  Данный объект не найден в текущем профиле. 
+                  Данный объект не найден в текущем профиле.
                   Вы можете добавить его, используя кнопку "→ Перенести в профиль".
                 </p>
               </div>
@@ -1262,7 +1277,7 @@
         for (let i = 0; i < availableData.length; i++) {
           const baseEntry = availableData[i];
           const baseKey = `left-${baseEntry.type}-${baseEntry.id}`;
-          
+
           // Check if this is the matching model/profile
           if (baseEntry.name === modelName || baseEntry.id === objectId) {
             // Search within this model/profile
@@ -1280,7 +1295,7 @@
         for (let i = 0; i < availableData.length; i++) {
           const baseEntry = availableData[i];
           const baseKey = `left-${baseEntry.type}-${baseEntry.id}`;
-          
+
           const result = searchInLeftItems(baseEntry.children || [], baseKey, (item) => {
             return item.id === objectId;
           });
@@ -1294,7 +1309,7 @@
         for (let i = 0; i < availableData.length; i++) {
           const baseEntry = availableData[i];
           const baseKey = `left-${baseEntry.type}-${baseEntry.id}`;
-          
+
           const result = searchInLeftItems(baseEntry.children || [], baseKey, (item) => {
             return item.name === name;
           });
@@ -1340,21 +1355,21 @@
       function expandPathToLeftItem(itemKey) {
         // Parse the path and expand all parent items
         const parts = itemKey.split('-');
-        
+
         // First part should be like 'left-model-123' or 'left-profile-456'
         let currentPath = '';
         let i = 0;
-        
+
         // Build base path (left-{type}-{id})
         while (i < parts.length && parts[i] !== 'pkg' && parts[i] !== 'elem') {
           if (currentPath) currentPath += '-';
           currentPath += parts[i];
           i++;
         }
-        
+
         // Expand base item
         expandedLeftItems.add(currentPath);
-        
+
         // Now expand packages
         for (; i < parts.length; i++) {
           if (parts[i] === 'pkg' && i + 1 < parts.length) {
@@ -1442,13 +1457,13 @@
         activeLeftItem = itemKey;
         renderAvailableTree();
         updateDetailsPanel("left");
-        
+
         // Update editor mode details panel if in editor mode
         const contentArea = document.querySelector('.editor-content-area');
         if (contentArea && contentArea.classList.contains('editor-mode')) {
           // Synchronize with profile tree FIRST
           syncProfileTreeWithLeftItem(itemKey);
-          
+
           // Then render editor mode details panel (after activeRightItem is set)
           renderEditorModeDetailsPanel();
         }
@@ -1459,13 +1474,13 @@
         activeRightItem = itemKey;
         renderProfileTree();
         updateDetailsPanel("right");
-        
+
         // Update editor mode profile panel if in editor mode
         const contentArea = document.querySelector('.editor-content-area');
         if (contentArea && contentArea.classList.contains('editor-mode')) {
           // Synchronize with left tree FIRST
           syncLeftTreeWithRightItem(itemKey);
-          
+
           // Then render editor mode profile panel (after activeLeftItem is set)
           renderEditorModeProfilePanel();
         }
@@ -2087,7 +2102,7 @@
           <p><strong>Описание:</strong> ${
             classData.description || classData.description_ru || "Нет описания"
           }</p>
-          
+
           <h5 style="margin-top: 15px; margin-bottom: 5px;">Атрибуты (${
             attrs.length
           }):</h5>
@@ -2131,12 +2146,12 @@
       // Helper function to check if a link exists in profile
       function linkExistsInProfile(modelLink, profileLinks) {
         if (!profileLinks || !Array.isArray(profileLinks)) return false;
-        
+
         return profileLinks.some(profileLink => {
           const roleMatch = (modelLink.target_class_role_name || '') === (profileLink.target_class_role_name || '');
           const kindMatch = (modelLink.relation_kind || '') === (profileLink.relation_kind || '');
           const classMatch = (modelLink.target_class_name || '') === (profileLink.target_class_name || '');
-          
+
           return roleMatch && kindMatch && classMatch;
         });
       }
@@ -2144,11 +2159,11 @@
       // Helper function to check if an attribute exists in profile
       function attributeExistsInProfile(modelAttr, profileAttrs) {
         if (!profileAttrs || !Array.isArray(profileAttrs)) return false;
-        
+
         return profileAttrs.some(profileAttr => {
           const nameMatch = (modelAttr.name || '') === (profileAttr.name || '');
           const typeMatch = (modelAttr.type || modelAttr.dataType || '') === (profileAttr.type || profileAttr.dataType || '');
-          
+
           return nameMatch && typeMatch;
         });
       }
@@ -2191,7 +2206,7 @@
         // Render tabs for element (class)
         const attrs = data.attributes || [];
         const links = data.links || [];
-        
+
         // Filter out parent Generalization links
         const filteredLinks = links.filter(l => {
           return !(l.relation_kind === 'Generalization' && l.role === 'parent');
@@ -2244,7 +2259,7 @@
             const alreadyInProfile = attributeExistsInProfile(attr, profileAttrs);
             const rowClass = alreadyInProfile ? 'attributes-table-row already-in-profile' : 'attributes-table-row';
             const disabledAttr = alreadyInProfile ? 'disabled' : '';
-            
+
             html += `
               <div class="${rowClass}">
                 <div class="attributes-table-cell-checkbox">
@@ -2306,7 +2321,7 @@
             const alreadyInProfile = linkExistsInProfile(link, profileLinks);
             const rowClass = alreadyInProfile ? 'attributes-table-row already-in-profile' : 'attributes-table-row';
             const disabledAttr = alreadyInProfile ? 'disabled' : '';
-            
+
             html += `
               <div class="${rowClass}">
                 <div class="attributes-table-cell-checkbox">
@@ -2373,7 +2388,7 @@
         // Render tabs for element (class)
         const attrs = data.attributes || [];
         const links = data.links || [];
-        
+
         // Filter out parent Generalization links
         const filteredLinks = links.filter(l => {
           return !(l.relation_kind === 'Generalization' && l.role === 'parent');
@@ -2529,7 +2544,7 @@
 
         // TODO: Implement attribute exclusion logic
         alert(`Выбрано атрибутов для исключения: ${selectedProfileAttributes.size}\n\nФункциональность исключения будет реализована позже`);
-        
+
         // Clear selection after exclusion
         selectedProfileAttributes.clear();
         renderEditorModeProfilePanel();
@@ -2543,7 +2558,7 @@
 
         // TODO: Implement link exclusion logic
         alert(`Выбрано связей для исключения: ${selectedProfileLinks.size}\n\nФункциональность исключения будет реализована позже`);
-        
+
         // Clear selection after exclusion
         selectedProfileLinks.clear();
         renderEditorModeProfilePanel();
@@ -2596,7 +2611,7 @@
 
         // TODO: Implement attribute transfer logic
         alert(`Выбрано атрибутов: ${selectedAttributes.size}\n\nФункциональность переноса будет реализована позже`);
-        
+
         // Clear selection after transfer
         selectedAttributes.clear();
         renderEditorModeDetailsPanel();
@@ -2610,7 +2625,7 @@
 
         // TODO: Implement link transfer logic
         alert(`Выбрано связей: ${selectedLinks.size}\n\nФункциональность переноса будет реализована позже`);
-        
+
         // Clear selection after transfer
         selectedLinks.clear();
         renderEditorModeDetailsPanel();
