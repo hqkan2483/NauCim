@@ -875,6 +875,23 @@ function handleItemDetailsClick(e) {
   const target = e.target instanceof HTMLElement ? e.target : null;
   if (!target) return;
 
+  // Navigate to target class from links table
+  const navigateToTargetClassEl = target.closest(
+    "[data-action='navigate-to-target-class']"
+  );
+  if (navigateToTargetClassEl) {
+    const classId = navigateToTargetClassEl.getAttribute("data-target-class-id");
+    const modelId = navigateToTargetClassEl.getAttribute("data-model-id");
+    const profileId = navigateToTargetClassEl.getAttribute("data-profile-id");
+    if (!classId) {
+      alert("Целевой класс не указан (targetClassId пустой).");
+      return;
+    }
+
+    handleNavigateToClass(classId, modelId, profileId, "item-links", true);
+    return;
+  }
+
   // Navigate to package
   const navigateToPackageEl = target.closest(
     "[data-action='navigate-to-package']"
@@ -1059,14 +1076,27 @@ function handleNavigateToPackage(packageId, modelId = "", profileId = "") {
   });
 }
 
-function handleNavigateToClass(classId, modelId = "", profileId = "") {
+function handleNavigateToClass(
+  classId,
+  modelId = "",
+  profileId = "",
+  activeTab = "item-attributes",
+  showAlertOnNotFound = false
+) {
   const context =
     modelId && modelId !== ""
       ? "model"
       : profileId && profileId !== ""
       ? "profile"
       : null;
-  if (!context) return;
+  if (!context) {
+    if (showAlertOnNotFound) {
+      alert(
+        "Невозможно перейти к классу: не определён контекст модели/профиля."
+      );
+    }
+    return;
+  }
 
   const project = getProjectById(currentProjectId);
   if (!project) return;
@@ -1078,7 +1108,14 @@ function handleNavigateToClass(classId, modelId = "", profileId = "") {
     profileId,
     context
   );
-  if (!parentChain || parentChain.length === 0) return;
+  if (!parentChain || parentChain.length === 0) {
+    if (showAlertOnNotFound) {
+      alert(
+        "Класс не найден в дереве в пределах текущей модели/профиля (по targetClassId)."
+      );
+    }
+    return;
+  }
 
   expandTreePath(parentChain);
 
@@ -1092,7 +1129,11 @@ function handleNavigateToClass(classId, modelId = "", profileId = "") {
     if (classEl) {
       setSelectedTreeItem(classEl);
       classEl.scrollIntoView({ behavior: "smooth", block: "center" });
-      handleSelectClass(classId, modelId, profileId);
+      handleSelectClass(classId, modelId, profileId, activeTab);
+    } else if (showAlertOnNotFound) {
+      alert(
+        "Класс не найден в дереве в пределах текущей модели/профиля (по targetClassId)."
+      );
     }
   });
 }

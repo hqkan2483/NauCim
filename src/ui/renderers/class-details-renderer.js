@@ -348,7 +348,14 @@ function renderClassLinks(cls) {
         <tr data-link-id="${link.linkId}">
           <td><strong>${link.targetClassRoleName || '—'}</strong></td>
           <td>${linkIcon} ${link.relationKind || '—'} <br> ${roleLabel}</td>
-          <td>${link.targetClassName || '—'}</td>
+          <td class="target-class-name"
+              data-action="navigate-to-target-class"
+              data-target-class-id="${link.targetClassId || ''}"
+              data-model-id="${cls.modelId || ''}"
+              data-profile-id="${cls.profileId || ''}"
+              data-ref-model-id="${cls.refModelId || ''}">
+            ${link.targetClassName || '—'}
+          </td>
           <td>${link.multiplicity || '—'}</td>
           <td>${link.targetDescription || '—'}</td>
           <td>
