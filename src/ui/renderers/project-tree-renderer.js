@@ -305,7 +305,7 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
               data-profile-id="${profileId || ""}"
               data-is-enumeration="${isEnumeration}"
               data-is-abstract="${isAbstract}"
-              data-action="select-class"
+            data-action="${isEnumeration ? "select-enumeration" : "select-class"}"
               title="${buildTitleAttribute(cls.documentation, cls.documentationRu, cls.name)}">
           ${className}
         </span>
@@ -319,7 +319,7 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
     // ✅ For Enumeration:  render ONLY literals
     if (isEnumeration && cls.literals && cls.literals.length > 0) {
       cls.literals.forEach((literal, idx) => {
-        html += renderLiteralTree(literal, `${itemId}-lit-${idx}`);
+        html += renderLiteralTree(literal, `${itemId}-lit-${idx}`, cls.id, modelId, profileId);
       });
     }
 
@@ -328,14 +328,14 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
       // Render attributes
       if (cls.attributes && cls.attributes.length > 0) {
         cls.attributes.forEach((attr, idx) => {
-          html += renderAttributeTree(attr, `${itemId}-attr-${idx}`);
+          html += renderAttributeTree(attr, `${itemId}-attr-${idx}`, cls.id, modelId, profileId);
         });
       }
 
       // Render links
       if (cls.links && cls.links.length > 0) {
         cls.links.forEach((link, idx) => {
-          html += renderLinkTree(link, `${itemId}-link-${idx}`);
+          html += renderLinkTree(link, `${itemId}-link-${idx}`, cls.id, modelId, profileId);
         });
       }
     }
@@ -350,7 +350,7 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
 /**
  * Render attribute tree (leaf node)
  */
-function renderAttributeTree(attr, itemId) {
+function renderAttributeTree(attr, itemId, parentClassId, modelId = null, profileId = null) {
   let attrName = attr.name || "Атрибут";
   if (attr.stereotype) {
     attrName = `«${attr.stereotype}» ${attrName}`;
@@ -368,6 +368,9 @@ function renderAttributeTree(attr, itemId) {
         <span class="tree-structure-name"
               data-type="attribute"
               data-attr-id="${attr.id || ""}"
+            data-parent-class-id="${parentClassId || ""}"
+            data-model-id="${modelId || ""}"
+            data-profile-id="${profileId || ""}"
               data-action="select-attribute"
               title="${buildTitleAttribute(attr.documentation, attr.documentationRu, attr.name)}">
           ${attrName}:  ${attr.dataType || "—"}${multiplicityStr}
@@ -380,7 +383,7 @@ function renderAttributeTree(attr, itemId) {
 /**
  * Render link tree
  */
-function renderLinkTree(link, itemId) {
+function renderLinkTree(link, itemId, parentClassId, modelId = null, profileId = null) {
   let linkIcon = "🔗";
   let linkPrefix = "";
 
@@ -416,6 +419,9 @@ function renderLinkTree(link, itemId) {
               data-link-id="${link.linkId || ""}"
               data-link-kind="${link.relationKind || ""}"
               data-target-class-id="${link.targetClassId || ""}"
+            data-parent-class-id="${parentClassId || ""}"
+            data-model-id="${modelId || ""}"
+            data-profile-id="${profileId || ""}"
               data-action="select-link"
               title="${link.targetDescription || linkName}">
           ${linkIcon} ${linkName}${roleInfo}${multiplicityStr}
@@ -431,7 +437,7 @@ function renderLinkTree(link, itemId) {
  * @param {string} itemId - Unique item ID
  * @returns {string} HTML string
  */
-function renderLiteralTree(literal, itemId) {
+function renderLiteralTree(literal, itemId, parentClassId, modelId = null, profileId = null) {
   let literalName = literal.name || "Значение";
 
   let descriptionStr = "";
@@ -446,6 +452,9 @@ function renderLiteralTree(literal, itemId) {
         <span class="tree-structure-name"
               data-type="literal"
               data-literal-id="${literal.id || ""}"
+            data-parent-class-id="${parentClassId || ""}"
+            data-model-id="${modelId || ""}"
+            data-profile-id="${profileId || ""}"
               data-action="select-literal"
               title="${buildTitleAttribute(literal.documentation, literal.documentationRu, literal.name)}">
           🔢 ${literalName}${descriptionStr}

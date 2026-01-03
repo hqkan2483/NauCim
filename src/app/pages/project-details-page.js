@@ -262,13 +262,29 @@ function bindEvents() {
         return;
       }
 
+      // ✅ NEW: Select enumeration (class with type Enumeration)
+      const selectEnumerationEl = target.closest(
+        "[data-action='select-enumeration']"
+      );
+      if (selectEnumerationEl) {
+        setSelectedTreeItem(selectEnumerationEl);
+        const classId = selectEnumerationEl.getAttribute("data-class-id");
+        const modelId = selectEnumerationEl.getAttribute("data-model-id");
+        const profileId = selectEnumerationEl.getAttribute("data-profile-id");
+        if (classId) handleSelectEnumeration(classId, modelId, profileId);
+        return;
+      }
+
       // Select attribute
       const selectAttributeEl = target.closest(
         "[data-action='select-attribute']"
       );
       if (selectAttributeEl) {
         const attrId = selectAttributeEl.getAttribute("data-attr-id");
-        if (attrId) handleSelectAttribute(attrId);
+        const parentClassId = selectAttributeEl.getAttribute("data-parent-class-id");
+        const modelId = selectAttributeEl.getAttribute("data-model-id");
+        const profileId = selectAttributeEl.getAttribute("data-profile-id");
+        if (attrId) handleSelectAttribute(attrId, parentClassId, modelId, profileId);
         return;
       }
 
@@ -276,7 +292,10 @@ function bindEvents() {
       const selectLinkEl = target.closest("[data-action='select-link']");
       if (selectLinkEl) {
         const linkId = selectLinkEl.getAttribute("data-link-id");
-        if (linkId) handleSelectLink(linkId);
+        const parentClassId = selectLinkEl.getAttribute("data-parent-class-id");
+        const modelId = selectLinkEl.getAttribute("data-model-id");
+        const profileId = selectLinkEl.getAttribute("data-profile-id");
+        if (linkId) handleSelectLink(linkId, parentClassId, modelId, profileId);
         return;
       }
 
@@ -284,7 +303,10 @@ function bindEvents() {
       const selectLiteralEl = target.closest("[data-action='select-literal']");
       if (selectLiteralEl) {
         const literalId = selectLiteralEl.getAttribute("data-literal-id");
-        if (literalId) handleSelectLiteral(literalId);
+        const parentClassId = selectLiteralEl.getAttribute("data-parent-class-id");
+        const modelId = selectLiteralEl.getAttribute("data-model-id");
+        const profileId = selectLiteralEl.getAttribute("data-profile-id");
+        if (literalId) handleSelectLiteral(literalId, parentClassId, modelId, profileId);
         return;
       }
     });
@@ -701,10 +723,24 @@ function handleSelectClass(
 }
 
 /**
+ * Handle select enumeration from tree
+ * Opens class with literals tab active
+ */
+function handleSelectEnumeration(classId, modelId = "", profileId = "") {
+  handleSelectClass(classId, modelId, profileId, "item-literals");
+}
+
+/**
  * Handle select attribute from tree
  * Opens parent class with attributes tab active
  */
-function handleSelectAttribute(attrId) {
+function handleSelectAttribute(attrId, parentClassId = "", modelId = "", profileId = "") {
+  if (parentClassId) {
+    selectParentClassInTree({ id: parentClassId, modelId, profileId });
+    handleSelectClass(parentClassId, modelId, profileId, "item-attributes");
+    return;
+  }
+
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
@@ -714,21 +750,27 @@ function handleSelectAttribute(attrId) {
     return;
   }
 
-  const modelId = parentClass.modelId || "";
-  const profileId = parentClass.profileId || "";
+  const parentModelId = parentClass.modelId || "";
+  const parentProfileId = parentClass.profileId || "";
 
   // ✅ Select parent class in tree
   selectParentClassInTree(parentClass);
 
   // Select parent class with attributes tab active
-  handleSelectClass(parentClass.id, modelId, profileId, "item-attributes");
+  handleSelectClass(parentClass.id, parentModelId, parentProfileId, "item-attributes");
 }
 
 /**
  * Handle select link from tree
  * Opens parent class with links tab active
  */
-function handleSelectLink(linkId) {
+function handleSelectLink(linkId, parentClassId = "", modelId = "", profileId = "") {
+  if (parentClassId) {
+    selectParentClassInTree({ id: parentClassId, modelId, profileId });
+    handleSelectClass(parentClassId, modelId, profileId, "item-links");
+    return;
+  }
+
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
@@ -738,21 +780,27 @@ function handleSelectLink(linkId) {
     return;
   }
 
-  const modelId = parentClass.modelId || "";
-  const profileId = parentClass.profileId || "";
+  const parentModelId = parentClass.modelId || "";
+  const parentProfileId = parentClass.profileId || "";
 
   // ✅ Select parent class in tree
   selectParentClassInTree(parentClass);
 
   // Select parent class with links tab active
-  handleSelectClass(parentClass.id, modelId, profileId, "item-links");
+  handleSelectClass(parentClass.id, parentModelId, parentProfileId, "item-links");
 }
 
 /**
  * Handle select literal from tree
  * Opens parent class with literals tab active
  */
-function handleSelectLiteral(literalId) {
+function handleSelectLiteral(literalId, parentClassId = "", modelId = "", profileId = "") {
+  if (parentClassId) {
+    selectParentClassInTree({ id: parentClassId, modelId, profileId });
+    handleSelectClass(parentClassId, modelId, profileId, "item-literals");
+    return;
+  }
+
   const project = getProjectById(currentProjectId);
   if (!project) return;
 
@@ -762,14 +810,14 @@ function handleSelectLiteral(literalId) {
     return;
   }
 
-  const modelId = parentClass.modelId || "";
-  const profileId = parentClass.profileId || "";
+  const parentModelId = parentClass.modelId || "";
+  const parentProfileId = parentClass.profileId || "";
 
   // ✅ Select parent class in tree
   selectParentClassInTree(parentClass);
 
   // Select parent class with literals tab active
-  handleSelectClass(parentClass.id, modelId, profileId, "item-literals");
+  handleSelectClass(parentClass.id, parentModelId, parentProfileId, "item-literals");
 }
 
 // ============================================================
@@ -863,14 +911,6 @@ function handleItemDetailsClick(e) {
   }
   if (target.closest("#cls-cancel-btn")) {
     handleCancelClassEdit();
-    return;
-  }
-  if (target.closest("#attr-cancel-btn")) {
-    handleCancelAttributeEdit();
-    return;
-  }
-  if (target.closest("#link-cancel-btn")) {
-    handleCancelLinkEdit();
     return;
   }
 
@@ -1244,8 +1284,6 @@ function handleItemDetailsSubmit(e) {
 
   if (form.id === "package-form") handleSavePackage(form);
   else if (form.id === "class-form") handleSaveClass(form);
-  else if (form.id === "attribute-form") handleSaveAttribute(form);
-  else if (form.id === "link-form") handleSaveLink(form);
 }
 
 // ============================================================
@@ -1328,37 +1366,6 @@ function handleDeleteAttribute(attrId) {
   alert("Функция удаления атрибута в разработке");
 }
 
-function handleSaveAttribute(form) {
-  const attrId = form.getAttribute("data-attr-id");
-  const updatedData = {
-    name: document.getElementById("attr-name").value.trim(),
-    dataType: document.getElementById("attr-dataType").value.trim(),
-    multiplicity: document.getElementById("attr-multiplicity").value.trim(),
-    stereotype: document.getElementById("attr-stereotype").value.trim(),
-    visibility: document.getElementById("attr-visibility").value,
-    initialValue: document.getElementById("attr-initialValue").value.trim(),
-    dataTypeId: document.getElementById("attr-dataTypeId").value.trim(),
-    documentation: document.getElementById("attr-documentation").value.trim(),
-    documentationRu: document
-      .getElementById("attr-documentationRu")
-      .value.trim(),
-    details: document.getElementById("attr-details").value.trim(),
-  };
-
-  console.log("💾 Сохранение атрибута:", attrId, updatedData);
-  alert("Функция сохранения атрибута в разработке");
-}
-
-function handleCancelAttributeEdit() {
-  if (!originalItemData) return;
-  if (!confirm("Отменить изменения? Несохранённые данные будут потеряны."))
-    return;
-
-  const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent)
-    itemDetailsContent.innerHTML = renderAttributeDetails(originalItemData);
-}
-
 // ============================================================
 // LINK HANDLERS
 // ============================================================
@@ -1398,41 +1405,6 @@ function handleDeleteLink(linkId, classId) {
     itemDetailsContent.innerHTML = renderClassDetails(found.cls);
     restoreClassTab(tabToRestore);
   }
-}
-
-function handleSaveLink(form) {
-  const linkId = form.getAttribute("data-link-id");
-  const updatedData = {
-    relationKind: document.getElementById("link-relationKind").value,
-    role: document.getElementById("link-role").value,
-    targetClassName: document
-      .getElementById("link-targetClassName")
-      .value.trim(),
-    targetClassId: document.getElementById("link-targetClassId").value.trim(),
-    multiplicity: document.getElementById("link-multiplicity").value.trim(),
-    targetClassRoleName: document
-      .getElementById("link-targetClassRoleName")
-      .value.trim(),
-    srcClassRoleName: document
-      .getElementById("link-srcClassRoleName")
-      .value.trim(),
-    targetDescription: document
-      .getElementById("link-targetDescription")
-      .value.trim(),
-  };
-
-  console.log("💾 Сохранение связи:", linkId, updatedData);
-  alert("Функция сохранения связи в разработке");
-}
-
-function handleCancelLinkEdit() {
-  if (!originalItemData) return;
-  if (!confirm("Отменить изменения?  Несохранённые данные будут потеряны."))
-    return;
-
-  const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent)
-    itemDetailsContent.innerHTML = renderLinkDetails(originalItemData);
 }
 
 // ============================================================
@@ -1527,46 +1499,6 @@ function findClassById(
   return null;
 }
 
-function findAttributeById(project, attrId) {
-  const searchInPackages = (packages) => {
-    for (const pkg of packages) {
-      if (pkg.classes) {
-        for (const cls of pkg.classes) {
-          if (cls.attributes) {
-            const attr = cls.attributes.find((a) => a.id === attrId);
-            if (attr) return attr;
-          }
-        }
-      }
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  if (project.models) {
-    for (const model of project.models) {
-      if (model.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(model.rootPackages[0].packages);
-        if (found) return found;
-      }
-    }
-  }
-
-  if (project.profiles) {
-    for (const profile of project.profiles) {
-      if (profile.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found) return found;
-      }
-    }
-  }
-
-  return null;
-}
-
 function findAttributeWithParent(project, attrId) {
   const searchInPackages = (packages) => {
     for (const pkg of packages) {
@@ -1575,46 +1507,6 @@ function findAttributeWithParent(project, attrId) {
           if (cls.attributes) {
             const attr = cls.attributes.find((a) => a.id === attrId);
             if (attr) return { attr, cls };
-          }
-        }
-      }
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  if (project.models) {
-    for (const model of project.models) {
-      if (model.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(model.rootPackages[0].packages);
-        if (found) return found;
-      }
-    }
-  }
-
-  if (project.profiles) {
-    for (const profile of project.profiles) {
-      if (profile.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found) return found;
-      }
-    }
-  }
-
-  return null;
-}
-
-function findLinkById(project, linkId) {
-  const searchInPackages = (packages) => {
-    for (const pkg of packages) {
-      if (pkg.classes) {
-        for (const cls of pkg.classes) {
-          if (cls.links) {
-            const link = cls.links.find((l) => l.linkId === linkId);
-            if (link) return link;
           }
         }
       }
