@@ -20,8 +20,7 @@
 
         <div class="sidebar-nav">
           <a href="projects.html" class="nav-item">📁 Все Проекты</a>
-           <div class="divider-white mb-10"></div>
-
+          <div class="divider-white mb-10"></div>
 
           <div class="nav-section-title">Структура проекта</div>
           <div id="current-project-structure" class="project-structure-nav">
@@ -44,7 +43,8 @@
             <span id="project-title">Nautilus.CIM</span>
           </div>
           <div class="toolbar-actions">
-            <button class="btn btn-primary btn-toolbar" id="diagram-mode-toggle-btn">
+            <!-- ✅ Diagram mode toggle -->
+            <button class="btn btn-primary btn-toolbar" id="toggle-diagram-mode">
               📐 Режим диаграммы
             </button>
             <button class="btn btn-primary btn-toolbar" data-modal-open="new-model-modal">
@@ -69,8 +69,8 @@
             </div>
           </div>
 
-          <!-- Standard Mode Content -->
-          <div id="standard-mode-content">
+          <!-- ✅ Standard Mode Content -->
+          <div id="standard-layout">
             <!-- Models Container -->
             <div id="models-container" class="hidden">
               <div class="split-view">
@@ -110,9 +110,8 @@
               </div>
             </div>
 
-            <!-- ✅ NEW:  Item Details Container -->
+            <!-- Item Details Container -->
             <div id="item-container" class="hidden">
-              <!-- <div class="divider mb-15"></div> -->
               <div class="item-details-wrapper">
                 <div id="item-details-content">
                   <div class="text-center">Выберите элемент в дереве для просмотра деталей</div>
@@ -121,11 +120,20 @@
             </div>
           </div>
 
-          <!-- Diagram Mode Content (будет в PR9) -->
-          <div id="diagram-mode-content" class="hidden">
-            <div id="diagram-container"></div>
-            <div id="diagram-resize-handle" class="divider diagram-resize-handle"></div>
-            <div id="item-container-diagram" class="item-container-diagram"></div>
+          <!-- ✅ Diagram Mode Content -->
+          <div id="diagram-layout" class="diagram-layout hidden">
+            <!-- Canvas Area -->
+            <div id="diagram-canvas-container" class="diagram-canvas">
+              <!-- Diagram placeholder will be rendered here -->
+            </div>
+
+            <!-- Resizable Handle -->
+            <div id="diagram-resize-handle" class="diagram-resize-handle"></div>
+
+            <!-- Details Panel -->
+            <div id="diagram-details-panel" class="diagram-details-panel">
+              <div class="text-center text-muted">Выберите элемент в дереве для просмотра деталей</div>
+            </div>
           </div>
         </div>
       </div>

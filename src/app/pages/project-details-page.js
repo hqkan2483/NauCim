@@ -61,6 +61,7 @@ let selectedModelId = null;
 let selectedProfileId = null;
 let originalItemData = null;
 let lastClassTabName = null;
+let isDiagramMode = false; // ✅ NEW
 
 // ============================================================
 // INIT
@@ -131,16 +132,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         const tabToRestore = getActiveClassTabName() || lastClassTabName;
 
         const found = findAttributeWithParent(project, attrId);
-        if (!found) return;
+        if (! found) return;
 
         Object.assign(found.attr, updates);
 
-        const itemDetailsContent = document.getElementById(
-          "item-details-content"
-        );
-        if (itemDetailsContent) {
-          itemDetailsContent.innerHTML = renderClassDetails(found.cls);
-          restoreClassTab(tabToRestore);
+        // ✅ Update based on mode
+        if (isDiagramMode) {
+          const diagramDetailsPanel = document.getElementById("diagram-details-panel");
+          if (diagramDetailsPanel) {
+            diagramDetailsPanel.innerHTML = renderClassDetails(found.cls, true);
+            restoreClassTab(tabToRestore);
+          }
+        } else {
+          const itemDetailsContent = document.getElementById("item-details-content");
+          if (itemDetailsContent) {
+            itemDetailsContent.innerHTML = renderClassDetails(found.cls, false);
+            restoreClassTab(tabToRestore);
+          }
         }
       },
     });
@@ -157,12 +165,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         Object.assign(found.link, updates);
 
-        const itemDetailsContent = document.getElementById(
-          "item-details-content"
-        );
-        if (itemDetailsContent) {
-          itemDetailsContent.innerHTML = renderClassDetails(found.cls);
-          restoreClassTab(tabToRestore);
+        // ✅ Update based on mode
+        if (isDiagramMode) {
+          const diagramDetailsPanel = document.getElementById("diagram-details-panel");
+          if (diagramDetailsPanel) {
+            diagramDetailsPanel.innerHTML = renderClassDetails(found.cls, true);
+            restoreClassTab(tabToRestore);
+          }
+        } else {
+          const itemDetailsContent = document.getElementById("item-details-content");
+          if (itemDetailsContent) {
+            itemDetailsContent.innerHTML = renderClassDetails(found.cls, false);
+            restoreClassTab(tabToRestore);
+          }
         }
       },
     });
@@ -170,6 +185,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   bindEvents();
   checkProject();
+
+  // ✅ Restore diagram mode from localStorage
+  restoreDiagramMode();
 });
 
 // ============================================================
@@ -183,7 +201,13 @@ function bindEvents() {
     });
   }
 
-  document.addEventListener("modal: beforeopen", (e) => {
+  // ✅ Diagram mode toggle
+  const toggleDiagramBtn = document.getElementById("toggle-diagram-mode");
+  if (toggleDiagramBtn) {
+    toggleDiagramBtn.addEventListener("click", toggleDiagramMode);
+  }
+
+  document.addEventListener("modal:beforeopen", (e) => {
     const modalId = e.detail.modalId;
     if (modalId === "new-model-modal") {
       clearNewModelModal();
@@ -419,11 +443,258 @@ function bindEvents() {
   }
 
   // Item details
+  // ✅ Delegated events on item-details-content (STANDARD MODE)
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
     itemDetailsContent.addEventListener("click", handleItemDetailsClick);
     itemDetailsContent.addEventListener("submit", handleItemDetailsSubmit);
   }
+}
+
+
+/**
+ * Bind events to details panel (called after rendering)
+ * Works for both standard and diagram modes
+ */
+function bindDetailsPanelEvents() {
+  // Get the active details container
+  const container = isDiagramMode
+    ? document.getElementById("diagram-details-panel")
+    : document.getElementById("item-details-content");
+
+  // Tab switching
+  container.querySelectorAll("[data-section-tab]").forEach(tab => {
+    tab.addEventListener("click", (e) => {
+      e.preventDefault();
+      handleTabSwitch(tab);
+    });
+  });
+
+  // Add attribute button
+  const addAttrBtn = container.querySelector("#add-attribute-btn");
+  if (addAttrBtn) {
+    addAttrBtn.addEventListener("click", () => {
+      handleAddAttribute(addAttrBtn.getAttribute("data-class-id"));
+    });
+  }
+
+  // Add link button
+  const addLinkBtn = container.querySelector("#add-link-btn");
+  if (addLinkBtn) {
+    addLinkBtn.addEventListener("click", () => {
+      handleAddLink(addLinkBtn.getAttribute("data-class-id"));
+    });
+  }
+
+  // Add literal button
+  const addLiteralBtn = container.querySelector("#add-literal-btn");
+  if (addLiteralBtn) {
+    addLiteralBtn.addEventListener("click", () => {
+      handleAddLiteral(addLiteralBtn.getAttribute("data-class-id"));
+    });
+  }
+
+  // Edit attribute buttons
+  container.querySelectorAll("[data-action='edit-attribute']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      handleEditAttribute(btn.getAttribute("data-attr-id"));
+    });
+  });
+
+  // Delete attribute buttons
+  container.querySelectorAll("[data-action='delete-attribute']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      handleDeleteAttribute(btn.getAttribute("data-attr-id"));
+    });
+  });
+
+  // Edit link buttons
+  container.querySelectorAll("[data-action='edit-link']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      handleEditLink(
+        btn.getAttribute("data-link-id"),
+        btn.getAttribute("data-class-id")
+      );
+    });
+  });
+
+  // Delete link buttons
+  container.querySelectorAll("[data-action='delete-link']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      handleDeleteLink(
+        btn.getAttribute("data-link-id"),
+        btn.getAttribute("data-class-id")
+      );
+    });
+  });
+
+  // Edit literal buttons
+  container.querySelectorAll("[data-action='edit-literal']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      handleEditLiteral(btn.getAttribute("data-literal-id"));
+    });
+  });
+
+  // Delete literal buttons
+  container.querySelectorAll("[data-action='delete-literal']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      handleDeleteLiteral(btn.getAttribute("data-literal-id"));
+    });
+  });
+
+  // Form submit
+  const form = container.querySelector("form");
+  if (form) {
+    form.addEventListener("submit", handleItemDetailsSubmit);
+  }
+
+  // Cancel buttons
+  const pkgCancelBtn = container.querySelector("#pkg-cancel-btn");
+  if (pkgCancelBtn) {
+    pkgCancelBtn.addEventListener("click", handleCancelPackageEdit);
+  }
+
+  const clsCancelBtn = container.querySelector("#cls-cancel-btn");
+  if (clsCancelBtn) {
+    clsCancelBtn.addEventListener("click", handleCancelClassEdit);
+  }
+
+  // Navigate buttons
+  container.querySelectorAll("[data-action='navigate-to-target-class']").forEach(el => {
+    el.addEventListener("click", () => {
+      const classId = el.getAttribute("data-target-class-id");
+      const modelId = el.getAttribute("data-model-id");
+      const profileId = el.getAttribute("data-profile-id");
+      if (! classId) {
+        alert("Целевой класс не указан (targetClassId пустой).");
+        return;
+      }
+      handleNavigateToClass(classId, modelId, profileId, "item-links", true);
+    });
+  });
+
+  container.querySelectorAll("[data-action='navigate-to-package']").forEach(el => {
+    el.addEventListener("click", () => {
+      const packageId = el.getAttribute("data-package-id");
+      const modelId = el.getAttribute("data-model-id");
+      const profileId = el.getAttribute("data-profile-id");
+      if (packageId) handleNavigateToPackage(packageId, modelId, profileId);
+    });
+  });
+
+  container.querySelectorAll("[data-action='navigate-to-class']").forEach(el => {
+    el.addEventListener("click", () => {
+      const classId = el.getAttribute("data-class-id");
+      const modelId = el.getAttribute("data-model-id");
+      const profileId = el.getAttribute("data-profile-id");
+      if (classId) handleNavigateToClass(classId, modelId, profileId);
+    });
+  });
+}
+
+// ============================================================
+// DIAGRAM MODE
+// ============================================================
+
+/**
+ * Restore diagram mode from localStorage
+ */
+function restoreDiagramMode() {
+  const savedMode = localStorage.getItem("cim.diagramMode");
+  if (savedMode === "true") {
+    switchToDiagramMode();
+  }
+}
+
+/**
+ * Toggle between standard and diagram modes
+ */
+function toggleDiagramMode() {
+  if (isDiagramMode) {
+    switchToStandardMode();
+  } else {
+    switchToDiagramMode();
+  }
+}
+
+/**
+ * Switch to standard mode
+ */
+function switchToStandardMode() {
+  isDiagramMode = false;
+  localStorage.setItem("cim.diagramMode", "false");
+
+  // ✅ Remove diagram-mode class from body
+  document.body.classList.remove("diagram-mode");
+
+  // ✅ Show standard layout
+  const standardLayout = document.getElementById("standard-layout");
+  if (standardLayout) {
+    standardLayout.classList.remove("hidden");
+  }
+
+  // ✅ Hide diagram layout
+  const diagramLayout = document.getElementById("diagram-layout");
+  if (diagramLayout) {
+    diagramLayout.classList.add("hidden");
+  }
+
+  // ✅ Update button text
+  const toggleBtn = document.getElementById("toggle-diagram-mode");
+  if (toggleBtn) {
+    toggleBtn.innerHTML = '📐 Режим диаграммы';
+  }
+}
+
+/**
+ * Switch to diagram mode
+ */
+function switchToDiagramMode() {
+  isDiagramMode = true;
+  localStorage.setItem("cim. diagramMode", "true");
+
+  document.body.classList.add("diagram-mode");
+
+  const standardLayout = document.getElementById("standard-layout");
+  if (standardLayout) {
+    standardLayout.classList.add("hidden");
+  }
+
+  const diagramLayout = document.getElementById("diagram-layout");
+  if (diagramLayout) {
+    diagramLayout. classList.remove("hidden");
+  }
+
+  const toggleBtn = document.getElementById("toggle-diagram-mode");
+  if (toggleBtn) {
+    toggleBtn.innerHTML = '📋 Стандартный режим';
+  }
+
+  initDiagramCanvas();
+}
+
+/**
+ * Initialize diagram canvas with placeholder
+ */
+function initDiagramCanvas() {
+  const diagramContainer = document.getElementById("diagram-canvas-container");
+  if (diagramContainer) {
+    diagramContainer.innerHTML = renderDiagramPlaceholder();
+  }
+}
+
+/**
+ * Render diagram placeholder
+ */
+function renderDiagramPlaceholder() {
+  return `
+    <div class="diagram-placeholder">
+      <div class="placeholder-icon">📐</div>
+      <h3>Режим диаграммы</h3>
+      <p>Выберите класс в дереве слева для отображения</p>
+      <p class="text-muted">Интерактивная диаграмма будет добавлена в следующих версиях</p>
+    </div>
+  `;
 }
 
 // ============================================================
@@ -640,6 +911,16 @@ function hideProfileContainer() {
 // ============================================================
 // SELECT HANDLERS
 // ============================================================
+/**
+ * Handles the selection of a package and displays its details in the appropriate panel.
+ *
+ * @param {string} packageId - The unique identifier of the package to select.
+ * @param {string} [modelId=""] - The unique identifier of the parent model (optional).
+ * @param {string} [profileId=""] - The unique identifier of the parent profile (optional).
+ *
+ * @returns {void}
+ *
+ */
 function handleSelectPackage(packageId, modelId = "", profileId = "") {
   const project = getProjectById(currentProjectId);
   if (!project) return;
@@ -651,26 +932,35 @@ function handleSelectPackage(packageId, modelId = "", profileId = "") {
       ? "profile"
       : null;
 
-  if (!context) {
+  if (! context) {
     console.error("Package must belong to either a model or profile");
     return;
   }
 
   const pkg = findPackageById(project, packageId, modelId, profileId, context);
   if (!pkg) {
-    console.warn(`Package not found:  ${packageId}`);
+    console.warn(`Package not found: ${packageId}`);
     return;
   }
 
   originalItemData = JSON.parse(JSON.stringify(pkg));
 
-  const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent)
-    itemDetailsContent.innerHTML = renderPackageDetails(pkg);
+  // ✅ Render based on mode
+  if (isDiagramMode) {
+    const diagramDetailsPanel = document.getElementById("diagram-details-panel");
+    if (diagramDetailsPanel) {
+      diagramDetailsPanel.innerHTML = renderPackageDetails(pkg);
+    }
+  } else {
+    const itemDetailsContent = document.getElementById("item-details-content");
+    if (itemDetailsContent) {
+      itemDetailsContent.innerHTML = renderPackageDetails(pkg);
+    }
 
-  showItemContainer();
-  hideModelContainer();
-  hideProfileContainer();
+    showItemContainer();
+    hideModelContainer();
+    hideProfileContainer();
+  }
 }
 
 /**
@@ -709,17 +999,32 @@ function handleSelectClass(
 
   originalItemData = JSON.parse(JSON.stringify(cls));
 
-  const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderClassDetails(cls);
+  // ✅ Render differently based on mode
+  if (isDiagramMode) {
+    // Render in diagram details panel
+    const diagramDetailsPanel = document.getElementById("diagram-details-panel");
+    if (diagramDetailsPanel) {
+      diagramDetailsPanel.innerHTML = renderClassDetails(cls, true);
+      activateTab("item-general");
 
-    // ✅ Activate the specified tab
-    activateTab(activeTab);
+      // ✅ Bind events after rendering
+      bindDetailsPanelEvents();
+    }
+  } else {
+    // Standard mode
+    const itemDetailsContent = document.getElementById("item-details-content");
+    if (itemDetailsContent) {
+      itemDetailsContent.innerHTML = renderClassDetails(cls, false);
+      activateTab(activeTab);
+
+      // ✅ Bind events after rendering
+      bindDetailsPanelEvents();
+    }
+
+    showItemContainer();
+    hideModelContainer();
+    hideProfileContainer();
   }
-
-  showItemContainer();
-  hideModelContainer();
-  hideProfileContainer();
 }
 
 /**
@@ -883,7 +1188,7 @@ function handleItemDetailsClick(e) {
     const classId = navigateToTargetClassEl.getAttribute("data-target-class-id");
     const modelId = navigateToTargetClassEl.getAttribute("data-model-id");
     const profileId = navigateToTargetClassEl.getAttribute("data-profile-id");
-    if (!classId) {
+    if (! classId) {
       alert("Целевой класс не указан (targetClassId пустой).");
       return;
     }
@@ -914,7 +1219,7 @@ function handleItemDetailsClick(e) {
     return;
   }
 
-  // Tab switching
+  // ✅ Tab switching (works in both modes)
   const tabBtn = target.closest("[data-section-tab]");
   if (tabBtn) {
     handleTabSwitch(tabBtn);
@@ -1001,24 +1306,33 @@ function handleTabSwitch(tabBtn) {
   const tabName = tabBtn.getAttribute("data-section-tab");
   lastClassTabName = tabName;
 
-  document
-    .querySelectorAll("[data-section-tab]")
-    .forEach((tab) => tab.classList.remove("active"));
+  // Remove active class from all tabs
+  document.querySelectorAll("[data-section-tab]").forEach((tab) => tab.classList.remove("active"));
   tabBtn.classList.add("active");
 
+  // Hide all tab content
   document
     .querySelectorAll("[data-tab-content]")
     .forEach((content) => content.classList.remove("active"));
+
+  // Show selected tab content
   const selectedContent = document.querySelector(
     `[data-tab-content="${tabName}"]`
   );
-  if (selectedContent) selectedContent.classList.add("active");
+  if (selectedContent) {
+    selectedContent.classList.add("active");
+  }
 
+  // Hide all action buttons
   document
     .querySelectorAll(".tab-action-btn")
     .forEach((btn) => btn.classList.add("hidden"));
+
+  // Show corresponding action button
   const selectedActionBtn = document.querySelector(`[data-tab="${tabName}"]`);
-  if (selectedActionBtn) selectedActionBtn.classList.remove("hidden");
+  if (selectedActionBtn) {
+    selectedActionBtn.classList.remove("hidden");
+  }
 }
 
 function getActiveClassTabName() {
