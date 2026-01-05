@@ -72,6 +72,13 @@
   font-size: 12px;
 }
 
+.text-truncate {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Empty State - replaces the old .text-center variant with padding/color */
 .empty-state {
   text-align: center;

@@ -36,7 +36,7 @@
   display: none;
 }
 
-/* Project Details: Diagram mode layout 
+/* Project Details: Diagram mode layout
    Keeps styles page-scoped and token-based.
 */
 
@@ -60,14 +60,6 @@
   background: var(--bg-light);
 }
 
-.page-project-details.diagram-mode .diagram-mode-placeholder {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  color: var(--secondary-text);
-}
 
 body.is-resizing {
   user-select: none;
