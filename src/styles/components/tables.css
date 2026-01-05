@@ -45,3 +45,21 @@
   gap: 6px;
   justify-content: center;
 }
+
+/* перечень связей, ссылка на класс назначения  */
+td.target-class-name[data-action="navigate-to-target-class"] {
+  cursor: pointer;
+  user-select: none;
+}
+
+td.target-class-name[data-action="navigate-to-target-class"]:hover {
+  color: var(--hover);
+  text-decoration: underline;
+  background: var(--info-block);
+}
+
+td.target-class-name[data-action="navigate-to-target-class"]:active {
+  color: var(--active);
+  background: var(--info-block);
+}
+

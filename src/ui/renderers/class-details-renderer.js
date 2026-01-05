@@ -15,7 +15,7 @@ function renderClassDetails(cls) {
 
   let html = ``;
   html += renderClassForm(cls);
-  html += `<div class="item-section">`;
+  html += `<div class="item-section class-contents">`;
   html += renderClassTabs(cls);
   html += `<div class="tabs-content">`;
   html += renderTabContent(cls);

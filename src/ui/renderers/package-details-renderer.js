@@ -97,8 +97,10 @@ function renderPackageDetails(pkg) {
  */
 function renderPackageContents(pkg) {
   let html = `
-    <div class="item-section">
-      <h3 class="section-title">Содержимое пакета</h3>
+    <div class="item-section package-contents">
+     <div class="section-header">
+      <h3 class="section-name">Содержимое пакета</h3>
+    </div>
   `;
 
   // Subpackages

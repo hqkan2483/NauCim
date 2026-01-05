@@ -38,12 +38,14 @@
   --white-07: rgba(255, 255, 255, 0.7);
   --white-08: rgba(255, 255, 255, 0.8);
 
+  --black-002: rgba(0, 0, 0, 0.02);
   --black-01: rgba(0, 0, 0, 0.1);
 
 
   --main-color-005: rgba(0, 90, 155, 0.05);
   --main-color-008: rgba(0, 90, 155, 0.08);
   --main-color-01: rgba(0, 90, 155, 0.1);
+  --main-color-02: rgba(0, 90, 155, 0.2);
 
  --list-item-hover: rgba(74, 174, 247, 0.1);
  --list-item-selected: rgba(74, 174, 247, 0.2);
