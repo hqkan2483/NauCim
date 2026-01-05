@@ -6,35 +6,20 @@
 /**
  * Render class details HTML (editable form)
  * @param {Object} cls - Class object
- * @param {boolean} isDiagramMode - Whether in diagram mode
  * @returns {string} HTML string
  */
-function renderClassDetails(cls, isDiagramMode = false) {
+function renderClassDetails(cls) {
   if (!cls) {
     return '<div class="text-center">Выберите класс для просмотра деталей</div>';
   }
 
-  // let html = `<div class="item-details">`;
-   let html = ``;
-
-  // ✅ In diagram mode, tabs include "Общая информация" (form)
-  if (isDiagramMode) {
-    html += renderClassTabsWithForm(cls);
-    html += `<div class="tabs-content">`;
-    html += renderFormTabContent(cls);
-    html += renderTabContent(cls);
-    html += `</div>`;
-  } else {
-    // Standard mode:  form first, then tabs
-    html += renderClassForm(cls);
-    html += `<div class="item-section">`;
-    html += renderClassTabs(cls);
-    html += `<div class="tabs-content">`;
-    html += renderTabContent(cls);
-    html += `</div></div>`;
-  }
-
-  // html += `</div>`;
+  let html = ``;
+  html += renderClassForm(cls);
+  html += `<div class="item-section">`;
+  html += renderClassTabs(cls);
+  html += `<div class="tabs-content">`;
+  html += renderTabContent(cls);
+  html += `</div></div>`;
   return html;
 }
 
@@ -185,103 +170,6 @@ function renderClassTabs(cls) {
   `;
   return html;
 }
-
-/**
- * Render class tabs WITH form tab (for diagram mode)
- * ✅ Includes "Общая информация" tab
- */
-function renderClassTabsWithForm(cls) {
-  const isEnumeration = cls.type === 'Enumeration';
-
-  let html = `
-    <div class="item-section">
-      <div class="section-header">
-        <div class="section-tabs">
-          <!-- ✅ Form tab (active by default in diagram mode) -->
-          <div class="section-title tab tab-mini active"
-               data-section-tab="item-general"
-               data-class-id="${cls.id}">
-            Общая информация
-          </div>
-  `;
-
-  // Tabs for non-enumeration
-  if (!isEnumeration) {
-    html += `
-      <div class="section-title tab tab-mini"
-           data-section-tab="item-attributes"
-           data-class-id="${cls.id}">
-        Атрибуты (${cls.attributes ? cls.attributes.length : 0})
-      </div>
-      <div class="section-title tab tab-mini"
-           data-section-tab="item-links"
-           data-class-id="${cls.id}">
-        Связи (${cls.links ? cls.links.length : 0})
-      </div>
-    `;
-  }
-
-  // Tab for enumeration
-  if (isEnumeration) {
-    html += `
-      <div class="section-title tab tab-mini"
-           data-section-tab="item-literals"
-           data-class-id="${cls.id}">
-        Значения перечисления (${cls.literals ?  cls.literals.length : 0})
-      </div>
-    `;
-  }
-
-  html += `
-        </div>
-        <div class="section-tab-actions">
-  `;
-
-  // Action buttons (hidden by default, shown when respective tab is active)
-  if (!isEnumeration) {
-    html += `
-      <button class="btn btn-primary btn-small tab-action-btn hidden"
-              id="add-attribute-btn" data-class-id="${cls.id}" data-tab="item-attributes">
-        ➕ Добавить атрибут
-      </button>
-      <button class="btn btn-primary btn-small tab-action-btn hidden"
-              id="add-link-btn" data-class-id="${cls.id}" data-tab="item-links">
-        ➕ Добавить связь
-      </button>
-    `;
-  }
-
-  if (isEnumeration) {
-    html += `
-      <button class="btn btn-primary btn-small tab-action-btn hidden"
-              id="add-literal-btn" data-class-id="${cls.id}" data-tab="item-literals">
-        ➕ Добавить значение
-      </button>
-    `;
-  }
-
-  html += `
-        </div>
-      </div>
-    </div>
-  `;
-
-  return html;
-}
-
-/**
- * Render form as tab content (for diagram mode)
- * @param {Object} cls - Class object
- * @returns {string} HTML string
- */
-function renderFormTabContent(cls) {
-  return `
-    <div class="tab-content active" data-tab-content="item-general">
-      ${renderClassForm(cls)}
-    </div>
-  `;
-}
-
 /**
  * Render tab content (all tabs, visibility controlled by CSS)
  */
@@ -314,9 +202,6 @@ function renderTabContent(cls) {
   return html;
 }
 
-/**
- * Render class attributes section with management buttons
- */
 /**
  * Render class attributes section with management buttons
  */
