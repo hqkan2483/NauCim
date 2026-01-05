@@ -2504,9 +2504,9 @@ body.modal-open {
 
 /* формы для редактирования пакетов и классов */
 
-#item-container * .item-form {
+/* #item-container * .item-form { */
   /* margin-top: 20px; */
-}
+/* } */
 
 #item-container * .form-section {
   margin-bottom: 20px;
@@ -2709,12 +2709,12 @@ body.modal-open {
 } */
 
 /* Text Utilities */
-#item-container * .text-truncate {
+/* #item-container * .text-truncate {
   max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
+} */
 
 /* Small Button */
 /* #item-container * .btn-small {
@@ -2759,9 +2759,9 @@ body.modal-open {
 } */
 
 /* Tab Content Sections */
-#item-container * .tabs-content {
+/* #item-container * .tabs-content {
   margin-top: 0;
-}
+} */
 
  /* * .tab-content-section {
   display: none;
@@ -2780,21 +2780,21 @@ body.modal-open {
    ============================================================ */
 
 /* Hide diagram layout by default */
-#diagram-layout {
+/* #diagram-layout {
   display:  none;
-}
+} */
 
 /* Standard mode (default) */
-body:not(.diagram-mode) #standard-layout {
+/* body:not(.diagram-mode) #standard-layout {
   display: block;
-}
+} */
 
-body:not(.diagram-mode) #diagram-layout {
+/* body:not(.diagram-mode) #diagram-layout {
   display: none;
-}
+} */
 
 /* Diagram mode active */
-body.diagram-mode #standard-layout {
+/* body.diagram-mode #standard-layout {
   display:  none ! important;
 }
 
@@ -2808,13 +2808,13 @@ body.diagram-mode #diagram-layout {
     "details";
   height: calc(100vh - 120px);
   gap: 0;
-}
+} */
 
 /* ============================================================
    DIAGRAM CANVAS
    ============================================================ */
 
-.diagram-canvas {
+/* .diagram-canvas {
   grid-area: canvas;
   background:  #fafafa;
   background-image:
@@ -2829,13 +2829,13 @@ body.diagram-mode #diagram-layout {
   align-items: center;
   justify-content: center;
   min-height: 400px;
-}
+} */
 
 /* ============================================================
    DIAGRAM PLACEHOLDER
    ============================================================ */
 
-.diagram-placeholder {
+/* .diagram-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2871,13 +2871,13 @@ body.diagram-mode #diagram-layout {
   color: #999;
   font-style: italic;
   margin-top: 8px;
-}
+} */
 
 /* ============================================================
    DIAGRAM RESIZE HANDLE
    ============================================================ */
 
-.diagram-resize-handle {
+/* .diagram-resize-handle {
   grid-area: handle;
   height: 8px;
   background: #f0f0f0;
@@ -2899,12 +2899,12 @@ body.diagram-mode #diagram-layout {
   font-size: 16px;
   letter-spacing: 2px;
   transform: rotate(90deg);
-}
+} */
 
 /* ============================================================
    DIAGRAM DETAILS PANEL
    ============================================================ */
-
+/*
 .diagram-details-panel {
   grid-area: details;
   background: #fff;
@@ -2915,75 +2915,75 @@ body.diagram-mode #diagram-layout {
   padding: 20px;
   min-height: 200px;
   max-height: 600px;
-}
+} */
 
 /* Scrollbar styling for details panel */
-.diagram-details-panel::-webkit-scrollbar {
+/* .diagram-details-panel::-webkit-scrollbar {
   width: 8px;
-}
-
+} */
+/*
 .diagram-details-panel::-webkit-scrollbar-track {
   background: #f5f5f5;
   border-radius: 4px;
-}
+} */
 
-.diagram-details-panel::-webkit-scrollbar-thumb {
+/* .diagram-details-panel::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius:  4px;
-}
+} */
 
-.diagram-details-panel::-webkit-scrollbar-thumb:hover {
+/* .diagram-details-panel::-webkit-scrollbar-thumb:hover {
   background: #999;
-}
+} */
 
 /* ============================================================
    DIAGRAM MODE ADJUSTMENTS
    ============================================================ */
 
 /* Adjust item-details in diagram mode */
-body.diagram-mode .item-details {
+/* body.diagram-mode .item-details {
   gap: 16px;
-}
+} */
 
-body.diagram-mode .item-details-wrapper {
+/* body.diagram-mode .item-details-wrapper {
   padding: 0;
-}
+} */
 
 /* Adjust section header for diagram mode */
-body.diagram-mode .item-section .section-header {
+/* body.diagram-mode .item-section .section-header {
   flex-wrap: wrap;
   gap: 12px;
-}
+} */
 
-body.diagram-mode .section-tabs {
+/* body.diagram-mode .section-tabs {
   width: 100%;
   margin-bottom:  8px;
-}
+} */
 
-body.diagram-mode .section-tab-actions {
+/* body.diagram-mode .section-tab-actions {
   width: 100%;
   justify-content:  flex-start;
-}
+} */
 
 /* Form styling in diagram mode */
-body.diagram-mode .item-form {
+/* body.diagram-mode .item-form {
   background: transparent;
-}
+} */
 
-body.diagram-mode .form-section {
+/* body.diagram-mode .form-section {
   padding: 0;
-}
+} */
 
 /* Tab content in diagram mode */
-body.diagram-mode .tab-content-section {
+/* body.diagram-mode .tab-content-section {
   padding: 16px 0;
-}
+} */
 
 /* ============================================================
    RESPONSIVE DIAGRAM MODE
    ============================================================ */
 
-@media (max-width:  1024px) {
+/* @media (max-width:  1024px) {
   body.diagram-mode #diagram-layout {
     grid-template-rows: 1fr auto 400px;
   }
@@ -3013,7 +3013,7 @@ body.diagram-mode .tab-content-section {
   .diagram-placeholder p {
     font-size: 14px;
   }
-}
+} */
 
 /* ============================================================
    TAB CONTENT VISIBILITY
@@ -3031,16 +3031,16 @@ body.diagram-mode .tab-content-section {
    DIAGRAM MODE: HIDE STANDARD CONTAINERS
    ============================================================ */
 
-body.diagram-mode #models-container,
+/* body.diagram-mode #models-container,
 body.diagram-mode #profiles-container {
   display: none !important;
-}
+} */
 
 /* ✅ Override . hidden class in diagram mode */
-body.diagram-mode #diagram-layout.hidden {
+/* body.diagram-mode #diagram-layout.hidden {
   display: grid !important;
 }
 
 body:not(.diagram-mode) #standard-layout.hidden {
   display: block !important;
-}
+} */

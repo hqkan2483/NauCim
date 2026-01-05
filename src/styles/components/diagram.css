@@ -1,0 +1,103 @@
+/* ============================================================
+   DIAGRAM PLACEHOLDER
+   ============================================================ */
+
+.page-project-details.diagram-mode .diagram-mode-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  color: var(--secondary-text);
+}
+
+
+.diagram-placeholder .placeholder-icon {
+  font-size:  72px;
+  margin-bottom: 20px;
+  opacity: 0.3;
+  line-height: 1;
+}
+
+.diagram-placeholder h3 {
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: #333;
+  font-weight: 600;
+}
+
+.diagram-placeholder p {
+  font-size: 16px;
+  margin:  6px 0;
+  max-width: 500px;
+  line-height: 1.5;
+}
+
+.diagram-placeholder .text-muted {
+  font-size: 14px;
+  color: #999;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* ============================================================
+   DIAGRAM RESIZE HANDLE
+   ============================================================ */
+
+.diagram-resize-handle {
+  height: 8px;
+  background: #f0f0f0;
+  cursor: ns-resize;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.diagram-resize-handle:hover {
+  background: #e0e0e0;
+}
+
+.diagram-resize-handle::after {
+  content: '⋮';
+  color: #999;
+  font-size: 16px;
+  letter-spacing: 2px;
+  transform: rotate(90deg);
+}
+
+/* ============================================================
+   DIAGRAM DETAILS PANEL
+   ============================================================ */
+
+.diagram-details-panel {
+  grid-area: details;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  min-height: 200px;
+  max-height: 600px;
+}
+
+/* Scrollbar styling for details panel */
+.diagram-details-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.diagram-details-panel::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.diagram-details-panel::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius:  4px;
+}
+
+.diagram-details-panel::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}

@@ -4,18 +4,10 @@
  */
 
 import { buildTitleAttribute } from '../../utils/title-attribute-builder.js';
-/**
- * Render package details HTML (editable form)
- * @param {Object} pkg - Package object
- * @returns {string} HTML string
- */
-function renderPackageDetails(pkg) {
-  if (!pkg) {
-    return '<div class="text-center">Выберите пакет для просмотра деталей</div>';
-  }
 
-  let html = `
-    <div class="item-details">
+function renderPackageForm(pkg) {
+  return `
+
       <form class="item-form" id="package-form" data-package-id="${pkg.id}">
         <div class="form-section">
           <div class="form-section-title">
@@ -85,11 +77,51 @@ function renderPackageDetails(pkg) {
         </div>
       </form>
 
-      ${renderPackageContents(pkg)}
+  `;
+}
+
+function renderPackageDetailsTabs(pkg) {
+  const tabName = "pkg-general";
+
+  let html = `
+    <div class="item-section package-contents">
+      <div class="section-header">
+        <div class="section-tabs">
+          <div class="section-title tab active"
+               data-section-tab="${tabName}">
+            Общая информация
+          </div>
+        </div>
+      </div>
+
+      <div class="tabs-content">
+        <div class="tab-content active" data-tab-content="${tabName}">
+          ${renderPackageForm(pkg)}
+        </div>
+      </div>
     </div>
   `;
 
   return html;
+}
+
+/**
+ * Render package details HTML (editable form)
+ * @param {Object} pkg - Package object
+ * @param {Object} [options]
+ * @param {('standard'|'diagram')} [options.viewMode]
+ * @returns {string} HTML string
+ */
+function renderPackageDetails(pkg, { viewMode = 'standard' } = {}) {
+  if (!pkg) {
+    return '<div class="text-center">Выберите пакет для просмотра деталей</div>';
+  }
+
+  if (viewMode === 'diagram') {
+    return renderPackageDetailsTabs(pkg);
+  }
+
+  return `${renderPackageForm(pkg)}${renderPackageContents(pkg)}`;
 }
 
 /**

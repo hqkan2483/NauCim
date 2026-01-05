@@ -30,7 +30,7 @@
   padding: 10px 12px;
   background: var(--black-002);
   border-radius: 6px;
-  border-left: 3px solid #ff9800;
+  border-left: 3px solid var(--orange-peel);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -64,7 +64,7 @@
 
 .package-contents .classes-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 10px;
   margin-top: 10px;
 }

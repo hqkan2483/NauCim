@@ -6,19 +6,31 @@
 /**
  * Render class details HTML (editable form)
  * @param {Object} cls - Class object
+ * @param {Object} [options]
+ * @param {('standard'|'diagram')} [options.viewMode]
  * @returns {string} HTML string
  */
-function renderClassDetails(cls) {
+function renderClassDetails(cls, { viewMode = 'standard' } = {}) {
   if (!cls) {
     return '<div class="text-center">Выберите класс для просмотра деталей</div>';
+  }
+
+  if (viewMode === 'diagram') {
+    let html = ``;
+    html += `<div class="item-section class-contents">`;
+    html += renderClassTabs(cls, { viewMode });
+    html += `<div class="tabs-content">`;
+    html += renderTabContent(cls, { viewMode });
+    html += `</div></div>`;
+    return html;
   }
 
   let html = ``;
   html += renderClassForm(cls);
   html += `<div class="item-section class-contents">`;
-  html += renderClassTabs(cls);
+  html += renderClassTabs(cls, { viewMode });
   html += `<div class="tabs-content">`;
-  html += renderTabContent(cls);
+  html += renderTabContent(cls, { viewMode });
   html += `</div></div>`;
   return html;
 }
@@ -94,18 +106,31 @@ function renderClassForm(cls) {
 /**
  * Render class tabs header with buttons
  */
-function renderClassTabs(cls) {
+function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
   const isEnumeration = cls.type === 'Enumeration';
+  const includeGeneralInfo = viewMode === 'diagram';
+  const generalTabName = 'item-general';
+  const shouldGeneralBeActive = includeGeneralInfo;
 
   let html = `
       <div class="section-header">
         <div class="section-tabs">
   `;
 
+  if (includeGeneralInfo) {
+    html += `
+      <div class="section-title tab ${shouldGeneralBeActive ? 'active' : ''}"
+           data-section-tab="${generalTabName}"
+           data-class-id="${cls.id}">
+        Общая информация
+      </div>
+    `;
+  }
+
   // ✅ Для обычного класса:  Атрибуты и Связи
   if (!isEnumeration) {
     html += `
-      <div class="section-title tab active"
+      <div class="section-title tab ${shouldGeneralBeActive ? '' : 'active'}"
            data-section-tab="item-attributes"
            data-class-id="${cls.id}">
         Атрибуты (${cls.attributes ?  cls.attributes.length : 0})
@@ -121,7 +146,7 @@ function renderClassTabs(cls) {
   // ✅ Для Enumeration: только Значения перечисления
   if (isEnumeration) {
     html += `
-      <div class="section-title tab active"
+      <div class="section-title tab ${shouldGeneralBeActive ? '' : 'active'}"
            data-section-tab="item-literals"
            data-class-id="${cls.id}">
         Значения перечисления (${cls.literals ? cls.literals.length : 0})
@@ -141,13 +166,13 @@ function renderClassTabs(cls) {
               id="add-attribute-btn"
               data-class-id="${cls.id}"
               data-tab="item-attributes">
-        ➕ Добавить атрибут
+        ✚ Добавить атрибут
       </button>
       <button class="btn btn-primary tab-action-btn hidden"
               id="add-link-btn"
               data-class-id="${cls.id}"
               data-tab="item-links">
-        ➕ Добавить связь
+        ✚ Добавить связь
       </button>
     `;
   }
@@ -159,7 +184,7 @@ function renderClassTabs(cls) {
               id="add-literal-btn"
               data-class-id="${cls.id}"
               data-tab="item-literals">
-        ➕ Добавить значение
+        ✚ Добавить значение
       </button>
     `;
   }
@@ -173,15 +198,26 @@ function renderClassTabs(cls) {
 /**
  * Render tab content (all tabs, visibility controlled by CSS)
  */
-function renderTabContent(cls) {
+function renderTabContent(cls, { viewMode = 'standard' } = {}) {
   const isEnumeration = cls.type === 'Enumeration';
+  const includeGeneralInfo = viewMode === 'diagram';
+  const generalTabName = 'item-general';
+  const shouldGeneralBeActive = includeGeneralInfo;
 
   let html = '';
+
+  if (includeGeneralInfo) {
+    html += `
+      <div class="tab-content ${shouldGeneralBeActive ? 'active' : ''}" data-tab-content="${generalTabName}">
+        ${renderClassForm(cls)}
+      </div>
+    `;
+  }
 
   // ✅ Для обычного класса:  Атрибуты и Связи
   if (!isEnumeration) {
     html += `
-      <div class="tab-content active" data-tab-content="item-attributes">
+      <div class="tab-content ${shouldGeneralBeActive ? '' : 'active'}" data-tab-content="item-attributes">
         ${renderClassAttributes(cls)}
       </div>
       <div class="tab-content" data-tab-content="item-links">
@@ -193,7 +229,7 @@ function renderTabContent(cls) {
   // ✅ Для Enumeration: только Литералы
   if (isEnumeration) {
     html += `
-      <div class="tab-content active" data-tab-content="item-literals">
+      <div class="tab-content ${shouldGeneralBeActive ? '' : 'active'}" data-tab-content="item-literals">
         ${renderClassLiterals(cls)}
       </div>
     `;
