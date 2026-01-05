@@ -50,6 +50,7 @@
  --list-item-hover: rgba(74, 174, 247, 0.1);
  --list-item-selected: rgba(74, 174, 247, 0.2);
 
+ --orange-peel: #ff9500; /* для акцентов и важных элементов интерфейса */
 
   /* Tree class-links color */
   --generalization-link: rgba(173, 216, 230, 0.9); /* светло-голубой */

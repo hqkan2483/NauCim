@@ -141,13 +141,13 @@ function renderClassTabs(cls) {
               id="add-attribute-btn"
               data-class-id="${cls.id}"
               data-tab="item-attributes">
-        ➕ Добавить атрибут
+        ✚ Добавить атрибут
       </button>
       <button class="btn btn-primary tab-action-btn hidden"
               id="add-link-btn"
               data-class-id="${cls.id}"
               data-tab="item-links">
-        ➕ Добавить связь
+        ✚ Добавить связь
       </button>
     `;
   }
@@ -159,7 +159,7 @@ function renderClassTabs(cls) {
               id="add-literal-btn"
               data-class-id="${cls.id}"
               data-tab="item-literals">
-        ➕ Добавить значение
+        ✚ Добавить значение
       </button>
     `;
   }

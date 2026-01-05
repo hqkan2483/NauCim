@@ -844,16 +844,21 @@ function handleSelectLiteral(literalId, parentClassId = "", modelId = "", profil
 function activateTab(tabName) {
   // Wait for DOM to be ready
   requestAnimationFrame(() => {
+    // If requested tab doesn't exist (e.g., Enumeration has only item-literals),
+    // keep the renderer's default active tab/content.
+    const targetTab = document.querySelector(`[data-section-tab="${tabName}"]`);
+    const targetContent = document.querySelector(`[data-tab-content="${tabName}"]`);
+    if (!targetTab || !targetContent) {
+      return;
+    }
+
     // Remove active class from all tabs
     document
       .querySelectorAll("[data-section-tab]")
       .forEach((tab) => tab.classList.remove("active"));
 
     // Add active class to specified tab
-    const targetTab = document.querySelector(`[data-section-tab="${tabName}"]`);
-    if (targetTab) {
-      targetTab.classList.add("active");
-    }
+    targetTab.classList.add("active");
 
     // Hide all tab content
     document
@@ -861,12 +866,7 @@ function activateTab(tabName) {
       .forEach((content) => content.classList.remove("active"));
 
     // Show selected tab content
-    const selectedContent = document.querySelector(
-      `[data-tab-content="${tabName}"]`
-    );
-    if (selectedContent) {
-      selectedContent.classList.add("active");
-    }
+    targetContent.classList.add("active");
 
     // Hide all action buttons
     document
