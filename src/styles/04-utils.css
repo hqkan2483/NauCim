@@ -1,0 +1,92 @@
+/* Spacing Utilities */
+.mb-10 {
+  margin-bottom: 10px;
+}
+.mb-15 {
+  margin-bottom: 15px;
+}
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mb-30 {
+  margin-bottom: 30px;
+}
+
+.mt-15 {
+  margin-top: 15px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mt-30 {
+  margin-top: 30px;
+}
+
+/* Flex Utilities */
+.flex {
+  display: flex;
+}
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gap-10 {
+  gap: 10px;
+}
+
+.gap-15 {
+  gap: 15px;
+}
+
+/* Other Utilities */
+.no-margin {
+  margin: 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Utility Classes */
+
+/* Text Alignment - simple alignment utilities only */
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+
+/* Text Color Utilities */
+.text-muted {
+  color: var(--text-secondary);
+}
+
+.text-muted-sidebar {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+/* Empty State - replaces the old .text-center variant with padding/color */
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 40px;
+}
+
+/* Divider Utility */
+.divider {
+  height: 1px;
+  background: var(--border-color);
+}
+
+.divider-white {
+  height: 1px;
+  background: var(--bg-primary);
+}
+

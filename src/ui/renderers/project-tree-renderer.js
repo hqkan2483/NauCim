@@ -24,7 +24,7 @@ function renderProjectTree(project, projectId) {
                 data-project-id="${projectId}"
                 data-action="toggle-project"
                 aria-expanded="${isExpanded ?  "true" : "false"}">
-          <span class="expand-icon">${isExpanded ? "▼" : "▶"}</span>
+          <span class="tree-expand-icon">${isExpanded ? "▼" : "▶"}</span>
         </button>
         <span class="project-name" title="${project.name}">
           📦 ${project.name}

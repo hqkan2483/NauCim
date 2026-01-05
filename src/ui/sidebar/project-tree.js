@@ -119,7 +119,7 @@ function renderProjectsTree() {
                   data-project-id="${p.id}"
                   data-action="expand"
                   aria-expanded="${isExpanded ?  "true" : "false"}">
-            <span class="expand-icon">${isExpanded ? "▼" : "▶"}</span>
+            <span class="tree-expand-icon">${isExpanded ? "▼" : "▶"}</span>
           </button>
           <span class="project-name"
                 data-project-id="${p.id}"
@@ -138,7 +138,13 @@ function renderProjectsTree() {
               <div class="structure-section">
                 <div class="structure-title">📋 Модели (${p.models.length})</div>
                 <div class="structure-items">
-                  ${p.models.map((m) => `<div class="structure-item" data-id="${m.id || ""}">🔷 ${m.name || "Модель без названия"}</div>`).join("")}
+                  ${p.models.map((m) => `
+                    <div class="tree-structure-item">
+                      <div class="tree-structure-header projects-page-tree">
+                        <div class="tree-structure-name projects-page-tree" data-id="${m.id || ""}">🔷 ${m.name || "Модель без названия"}</div>
+                      </div>
+                    </div>
+                  `).join("")}
                 </div>
               </div>
             `
@@ -150,7 +156,13 @@ function renderProjectsTree() {
               <div class="structure-section">
                 <div class="structure-title">⚙️ Профили (${p.profiles.length})</div>
                 <div class="structure-items">
-                  ${p.profiles.map((pr) => `<div class="structure-item" data-id="${pr.id || ""}">⚡ ${pr.name || "Профиль без названия"}</div>`).join("")}
+                  ${p.profiles.map((pr) => `
+                    <div class="tree-structure-item">
+                      <div class="tree-structure-header projects-page-tree">
+                        <div class="tree-structure-name projects-page-tree" data-id="${pr.id || ""}">⚙️ ${pr.name || "Профиль без названия"}</div>
+                      </div>
+                    </div>
+                  `).join("")}
                 </div>
               </div>
             `

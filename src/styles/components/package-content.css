@@ -1,0 +1,120 @@
+.package-contents .content-group {
+  margin-bottom: 20px;
+}
+
+.package-contents .content-group-title {
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0 0 12px 0;
+  color: var(--primary-text);
+}
+
+.package-contents .section-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-text);
+}
+
+/* SUBPACKAGES LIST */
+.package-contents .subpackages-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.package-contents .subpackage-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--black-002);
+  border-radius: 6px;
+  border-left: 3px solid #ff9800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.package-contents .subpackage-item:hover {
+  background: var(--main-color-01);
+  transform: translateX(4px);
+}
+
+.package-contents .subpackage-item:active {
+  background: var(--main-color-02);
+  transform: translateX(2px);
+}
+
+.package-contents .subpackage-item .subpackage-name {
+  font-weight: 500;
+}
+
+/* Visual feedback */
+.package-contents .subpackage-item:hover .subpackage-name {
+  color: var(--hover);
+  /* font-weight: 500; */
+}
+
+.package-contents .subpackage-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* CLASS LIST */
+
+.package-contents .classes-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.package-contents .class-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--black-002);
+  border-radius: 6px;
+  border-left: 3px solid var(--main-color);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.package-contents .class-item:hover {
+  background: var(--main-color-01);
+  transform: translateX(4px);
+}
+
+.package-contents .class-item:active {
+  background: var(--main-color-02);
+  transform: translateX(2px);
+}
+
+/* Visual feedback */
+.package-contents .class-item:hover .class-name {
+  color: var(--hover);
+  font-weight: 500;
+}
+
+.package-contents .class-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.package-contents .class-name {
+  font-weight: 500;
+  color: var(--primary-text);
+  flex: 1;
+}
+
+.package-contents .class-stereotype {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--secondary-text);
+  background: var(--black-01);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+

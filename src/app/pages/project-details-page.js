@@ -131,13 +131,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         const tabToRestore = getActiveClassTabName() || lastClassTabName;
 
         const found = findAttributeWithParent(project, attrId);
-        if (!found) return;
+        if (! found) return;
 
         Object.assign(found.attr, updates);
 
-        const itemDetailsContent = document.getElementById(
-          "item-details-content"
-        );
+        const itemDetailsContent = document.getElementById("item-details-content");
         if (itemDetailsContent) {
           itemDetailsContent.innerHTML = renderClassDetails(found.cls);
           restoreClassTab(tabToRestore);
@@ -157,9 +155,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         Object.assign(found.link, updates);
 
-        const itemDetailsContent = document.getElementById(
-          "item-details-content"
-        );
+        const itemDetailsContent = document.getElementById("item-details-content");
         if (itemDetailsContent) {
           itemDetailsContent.innerHTML = renderClassDetails(found.cls);
           restoreClassTab(tabToRestore);
@@ -183,7 +179,14 @@ function bindEvents() {
     });
   }
 
-  document.addEventListener("modal: beforeopen", (e) => {
+  const toggleDiagramBtn = document.getElementById("toggle-diagram-mode");
+  if (toggleDiagramBtn) {
+    toggleDiagramBtn.addEventListener("click", () => {
+      alert("Режим диаграммы будет реализован позже.");
+    });
+  }
+
+  document.addEventListener("modal:beforeopen", (e) => {
     const modalId = e.detail.modalId;
     if (modalId === "new-model-modal") {
       clearNewModelModal();
@@ -419,6 +422,7 @@ function bindEvents() {
   }
 
   // Item details
+  // ✅ Delegated events on item-details-content (STANDARD MODE)
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
     itemDetailsContent.addEventListener("click", handleItemDetailsClick);
@@ -521,7 +525,7 @@ function renderModelsContainer() {
     const modelDetails = document.getElementById("model-details");
     if (modelDetails) {
       modelDetails.innerHTML =
-        '<div class="text-center">Выберите модель для просмотра деталей</div>';
+        '<div class="empty-state">Выберите модель для просмотра деталей</div>';
     }
   }
 }
@@ -580,7 +584,7 @@ function renderProfilesContainer() {
     const profileDetails = document.getElementById("profile-details");
     if (profileDetails) {
       profileDetails.innerHTML =
-        '<div class="text-center">Выберите профиль для просмотра деталей</div>';
+        '<div class="empty-state">Выберите профиль для просмотра деталей</div>';
     }
   }
 }
@@ -640,6 +644,16 @@ function hideProfileContainer() {
 // ============================================================
 // SELECT HANDLERS
 // ============================================================
+/**
+ * Handles the selection of a package and displays its details in the appropriate panel.
+ *
+ * @param {string} packageId - The unique identifier of the package to select.
+ * @param {string} [modelId=""] - The unique identifier of the parent model (optional).
+ * @param {string} [profileId=""] - The unique identifier of the parent profile (optional).
+ *
+ * @returns {void}
+ *
+ */
 function handleSelectPackage(packageId, modelId = "", profileId = "") {
   const project = getProjectById(currentProjectId);
   if (!project) return;
@@ -651,22 +665,23 @@ function handleSelectPackage(packageId, modelId = "", profileId = "") {
       ? "profile"
       : null;
 
-  if (!context) {
+  if (! context) {
     console.error("Package must belong to either a model or profile");
     return;
   }
 
   const pkg = findPackageById(project, packageId, modelId, profileId, context);
   if (!pkg) {
-    console.warn(`Package not found:  ${packageId}`);
+    console.warn(`Package not found: ${packageId}`);
     return;
   }
 
   originalItemData = JSON.parse(JSON.stringify(pkg));
 
   const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent)
+  if (itemDetailsContent) {
     itemDetailsContent.innerHTML = renderPackageDetails(pkg);
+  }
 
   showItemContainer();
   hideModelContainer();
@@ -712,8 +727,6 @@ function handleSelectClass(
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
     itemDetailsContent.innerHTML = renderClassDetails(cls);
-
-    // ✅ Activate the specified tab
     activateTab(activeTab);
   }
 
@@ -883,7 +896,7 @@ function handleItemDetailsClick(e) {
     const classId = navigateToTargetClassEl.getAttribute("data-target-class-id");
     const modelId = navigateToTargetClassEl.getAttribute("data-model-id");
     const profileId = navigateToTargetClassEl.getAttribute("data-profile-id");
-    if (!classId) {
+    if (! classId) {
       alert("Целевой класс не указан (targetClassId пустой).");
       return;
     }
@@ -914,7 +927,7 @@ function handleItemDetailsClick(e) {
     return;
   }
 
-  // Tab switching
+  // ✅ Tab switching (works in both modes)
   const tabBtn = target.closest("[data-section-tab]");
   if (tabBtn) {
     handleTabSwitch(tabBtn);
@@ -1001,24 +1014,34 @@ function handleTabSwitch(tabBtn) {
   const tabName = tabBtn.getAttribute("data-section-tab");
   lastClassTabName = tabName;
 
-  document
-    .querySelectorAll("[data-section-tab]")
-    .forEach((tab) => tab.classList.remove("active"));
+  // Remove active class from all tabs
+  document.querySelectorAll("[data-section-tab]").forEach((tab) => tab.classList.remove("active"));
   tabBtn.classList.add("active");
 
+  // Hide all tab content
   document
     .querySelectorAll("[data-tab-content]")
     .forEach((content) => content.classList.remove("active"));
+
+  // Show selected tab content
   const selectedContent = document.querySelector(
     `[data-tab-content="${tabName}"]`
   );
-  if (selectedContent) selectedContent.classList.add("active");
+  console.log("Selected content for tab:", tabName, selectedContent);
+  if (selectedContent) {
+    selectedContent.classList.add("active");
+  }
 
+  // Hide all action buttons
   document
     .querySelectorAll(".tab-action-btn")
     .forEach((btn) => btn.classList.add("hidden"));
+
+  // Show corresponding action button
   const selectedActionBtn = document.querySelector(`[data-tab="${tabName}"]`);
-  if (selectedActionBtn) selectedActionBtn.classList.remove("hidden");
+  if (selectedActionBtn) {
+    selectedActionBtn.classList.remove("hidden");
+  }
 }
 
 function getActiveClassTabName() {

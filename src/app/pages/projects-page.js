@@ -236,11 +236,13 @@ function updateCurrentProjectDisplay() {
 
   const project = getCurrentProject();
   if (project) {
-    currentProjectEl.textContent = project.name;
-    currentProjectEl.style.color = "rgba(255, 255, 255, 0.95)";
+    currentProjectEl.classList.remove("sidebar__section-info");
+    currentProjectEl.classList.add("sidebar__section-data");
+    currentProjectEl.innerHTML = `<span>${project.name}</span>`;
   } else {
-    currentProjectEl.textContent = "Нет проекта";
-    currentProjectEl.style.color = "rgba(255, 255, 255, 0.7)";
+  currentProjectEl.classList.remove("sidebar__section-data");
+  currentProjectEl.classList.add("sidebar__section-info");
+  currentProjectEl.innerHTML = `<span>Нет проекта</span>`;
   }
 }
 
@@ -372,7 +374,7 @@ function renderModelsContainer() {
   if (! selectedModelId) {
     const modelDetails = document.getElementById("model-details");
     if (modelDetails) {
-      modelDetails.innerHTML = '<div class="text-center">Выберите модель для просмотра деталей</div>';
+      modelDetails.innerHTML = '<div class="empty-state">Выберите модель для просмотра деталей</div>';
     }
   }
 }
@@ -427,7 +429,7 @@ function renderProfilesContainer() {
   if (! selectedProfileId) {
     const profileDetails = document.getElementById("profile-details");
     if (profileDetails) {
-      profileDetails.innerHTML = '<div class="text-center">Выберите профиль для просмотра деталей</div>';
+      profileDetails.innerHTML = '<div class="empty-state">Выберите профиль для просмотра деталей</div>';
     }
   }
 }

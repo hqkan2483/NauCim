@@ -1,0 +1,65 @@
+/* Models container & Profile container */
+
+/* SPLIT VIEW */
+.split-view {
+  display: flex;
+  gap: 15px;
+  height: 100%;
+}
+
+.split-left {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  padding-right: 15px;
+}
+
+.split-left_list {
+  margin-bottom: 10px;
+}
+
+.split-left_control {
+  margin-top: auto;
+}
+
+.split-right {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.split-right_control {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.split-left .split-title {
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+
+/* todo  - переделать  на более конкретное название */
+.split-left .list-item {
+  margin-bottom: 5px;
+  font-family: "Inter";
+  font-size: 16px;
+  padding: 4px 10px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.split-left .list-item:hover {
+  background: var(--list-item-hover);
+}
+
+.split-left .list-item.selected {
+  background: var(--list-item-selected);
+  border-left: 3px solid var(--main-color);
+}
+

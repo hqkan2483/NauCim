@@ -125,6 +125,7 @@ function renderRecentProjects() {
         currentProjectId:  currentProjectId,
         cardClickAction: "select",
         actionsTemplate: renderSimpleAction(p),
+        compact: true,
       })
     )
     .join("");
@@ -137,17 +138,18 @@ function updateCurrentProjectDisplay() {
   if (!currentProjectEl) return;
 
   const projectId = getCurrentProjectId();
-  if (projectId) {
-    const project = getAllProjects().find((p) => p.id === projectId);
-    if (project) {
-      currentProjectEl.textContent = project.name;
-      currentProjectEl.style.color = "rgba(255, 255, 255, 0.95)";
-      return;
-    }
+  const project = projectId ? getAllProjects().find((p) => p.id === projectId) : null;
+
+  if (project) {
+    currentProjectEl.classList.remove("sidebar__section-info");
+    currentProjectEl.classList.add("sidebar__section-data");
+    currentProjectEl.innerHTML = `<span>${project.name}</span>`;
+    return;
   }
 
-  currentProjectEl.textContent = "Нет проекта";
-  currentProjectEl.style.color = "rgba(255, 255, 255, 0.7)";
+  currentProjectEl.classList.remove("sidebar__section-data");
+  currentProjectEl.classList.add("sidebar__section-info");
+  currentProjectEl.innerHTML = `<span>Нет проекта</span>`;
 }
 
 // ============================================================

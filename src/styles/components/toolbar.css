@@ -1,0 +1,20 @@
+.toolbar {
+  height: 58px;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #005a9b;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.toolbar__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.toolbar__actions {
+  display: flex;
+  gap: 10px;
+}

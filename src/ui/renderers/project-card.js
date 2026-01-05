@@ -36,24 +36,29 @@ function renderProjectCard(project, options = {}) {
   // Build HTML
   return `
     <div class="${cardClass}" ${cardDataAttrs}>
-      <div class="project-card-content">
-        <div class="project-card-header">
-          <div class="project-card-title" ${titleClickAttr}>
-            ${project.name}
+      <div class="project-card-content-wrapper">
+        <div class="project-card-content">
+          <div class="project-card-header">
+            <div class="project-card-title" ${titleClickAttr}>
+              ${project.name}
+            </div>
           </div>
+
+          ${showDescription && project.description ?
+            `<div class="project-card-description">${project.description}</div>`
+            : ''
+          }
+
         </div>
 
-        ${showDescription && project.description ?
-          `<div class="project-card-description">${project.description}</div>`
-          : ''
-        }
-        <div class="project-card-meta">
+        ${showActions ?  (actionsTemplate || renderDefaultActions(project)) : ''}
+        </div>
+
+
+      <div class="project-card-meta">
           ${showMeta ?  renderMeta(project) : ''}
           ${showStats ? renderStats(project) : ''}
-        </div>
       </div>
-
-      ${showActions ?  (actionsTemplate || renderDefaultActions(project)) : ''}
     </div>
   `;
 }
@@ -63,12 +68,24 @@ function renderProjectCard(project, options = {}) {
  */
 function renderMeta(project) {
   return `
-      <div class="project-card-meta_item">
-        <span>📌 Версия:  ${project.version || '—'}</span>
-        <span>📅 Создан: ${formatDate(project.createDate)}</span>
-        <span>🛠️ Изменен: ${formatDate(project.modifyDate)}</span>
-        <span>🔑 Доступ: ${getAccessRightsValue(project.accessRights)}</span>
-      </div>
+      <dl class="project-card-meta_list">
+        <div class="project-card-meta_item">
+          <dt>📌 Версия</dt>
+          <dd>${project.version || '—'}</dd>
+        </div>
+        <div class="project-card-meta_item">
+          <dt>📅 Создан</dt>
+          <dd>${formatDate(project.createDate)}</dd>
+          </div>
+        <div class="project-card-meta_item">
+          <dt>🛠️ Изменен</dt>
+          <dd>${formatDate(project.modifyDate)}</dd>
+        </div>
+        <div class="project-card-meta_item">
+          <dt>🔑 Доступ</dt>
+          <dd>${getAccessRightsValue(project.accessRights)}</dd>
+        </div>
+      </dl>
   `;
 }
 
@@ -77,12 +94,16 @@ function renderMeta(project) {
  */
 function renderStats(project) {
   return `
-
+    <dl class="project-card-meta_list">
       <div class="project-card-meta_item">
-        <span>📋 Моделей: ${project.models ?  project.models.length : 0}</span>
-        <span>⚙️ Профилей: ${project.profiles ? project.profiles.length : 0}</span>
+        <dt>📋 Моделей</dt>
+        <dd>${project.models ? project.models.length : 0}</dd>
       </div>
-
+      <div class="project-card-meta_item">
+        <dt>⚙️ Профилей</dt>
+        <dd>${project.profiles ? project.profiles.length : 0}</dd>
+      </div>
+    </dl>
   `;
 }
 
@@ -92,17 +113,17 @@ function renderStats(project) {
 function renderDefaultActions(project) {
   return `
     <div class="project-card-actions">
-      <button class="btn btn-secondary btn-small"
+      <button class="btn btn-secondary btn-small project-card-btn"
               data-action="edit-project"
               data-project-id="${project.id}">
         ✏️ Редактировать
       </button>
-      <button class="btn btn-secondary btn-small"
+      <button class="btn btn-secondary btn-small project-card-btn"
               data-action="delete-project"
               data-project-id="${project.id}">
         🗑️ Удалить
       </button>
-      <button class="btn btn-primary btn-small"
+      <button class="btn btn-primary btn-small project-card-btn"
               data-action="open-project-details"
               data-project-id="${project.id}">
         📂 Открыть проект
@@ -118,7 +139,7 @@ function renderDefaultActions(project) {
 export function renderSimpleAction(project) {
   return `
     <div class="project-card-actions">
-      <button class="btn btn-primary btn-small"
+      <button class="btn btn-primary btn-small project-card-btn"
               data-action="open-project-details"
               data-project-id="${project.id}">
         Открыть →

@@ -1,0 +1,65 @@
+/* все таблицы всех страниц */
+
+/* для всех */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* для всех */
+.table th {
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+  /* font-size: 15px; */
+  border-bottom: 2px solid var(--border-color);
+  color: var(--primary-text);
+  /* background-color: var(--main-color-008); */
+}
+
+/* Для всех */
+.table tr:hover {
+  background: var(--main-color-005);
+}
+
+/* для всех */
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  /* font-size: 14px; */
+  line-height: 1.2;
+}
+
+/* для всех */
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+/* специфика контейнеров модели и профиля */
+.table.project-details-table td:first-child {
+  min-width: 200px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+/* перечень связей, ссылка на класс назначения  */
+td.target-class-name[data-action="navigate-to-target-class"] {
+  cursor: pointer;
+  user-select: none;
+}
+
+td.target-class-name[data-action="navigate-to-target-class"]:hover {
+  color: var(--hover);
+  text-decoration: underline;
+  background: var(--info-block);
+}
+
+td.target-class-name[data-action="navigate-to-target-class"]:active {
+  color: var(--active);
+  background: var(--info-block);
+}
+

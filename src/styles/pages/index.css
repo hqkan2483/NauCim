@@ -1,0 +1,13 @@
+.page-index .section-title {
+  margin-bottom: 15px;
+  color: var(--primary-text);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.page-index .projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}

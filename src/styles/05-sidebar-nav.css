@@ -1,0 +1,137 @@
+.sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  padding-left: 15px;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+.sidebar__header {
+  padding: 15px 20px;
+  font-size: 20px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 10px;
+}
+
+.sidebar__nav-item  {
+  display: block;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.sidebar__nav-item:hover {
+  background: var(--white-01);
+}
+
+.sidebar__section-title {
+  padding: 15px 20px 5px;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: var(--white-05);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.sidebar__section-info {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: var(--white-07);
+}
+
+.sidebar__section-data {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: var(--sidebar-text);
+}
+
+
+
+/* SIDEBAR RESIZE HANDLE */
+.sidebar__resize-handle {
+  width: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: col-resize;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.sidebar__resize-handle:hover {
+  background: var(--hover);
+}
+
+/* SIDEBAR TOGGLE */
+.sidebar__toggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 40px;
+  height: 60px;
+  background: #23365c;
+  border: none;
+  cursor: pointer;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  transition: all 0.3s ease;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar__toggle:hover {
+  background: #0073c8;
+}
+
+.sidebar__toggle.sidebar-open {
+  left: auto;
+  right: 0;
+}
+
+.sidebar__toggle-icon {
+  transition: transform 0.3s ease;
+}
+
+.sidebar__toggle.sidebar-open .sidebar__toggle-icon {
+  transform: rotate(180deg);
+}
+
+.sidebar.collapsed {
+  min-width: 0;
+  width: 0;
+  margin-right: 40px;
+  padding: 0;
+}
+
+.sidebar.collapsed .sidebar__toggle {
+  position: fixed;
+  left: 0;
+  right: auto;
+  top: 0;
+  background: #005a9b;
+}
+
+.sidebar.collapsed .sidebar__toggle:hover {
+  background: #0073c8;
+}
+
+@media (max-width: 768px) {
+  .sidebar__toggle {
+    display: flex;
+  }
+}

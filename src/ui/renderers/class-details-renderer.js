@@ -13,107 +13,82 @@ function renderClassDetails(cls) {
     return '<div class="text-center">Выберите класс для просмотра деталей</div>';
   }
 
-  let html = `
-    <div class="item-details">
-      <form class="item-form" id="class-form" data-class-id="${cls.id}">
-        <div class="form-section">
-          <div class="form-section-title">
-            <div class="form-row">
-              <div class="form-cell">
-                <div class="form-group form-group__line">
-                    <label class="form-label form-label__title" for="cls-name">Класс *</label>
-                    <input
-                      type="text"
-                      id="cls-name"
-                      class="form-input form-input__short"
-                      value="${cls.name || ''}"
-                      required
-                    />
-                </div>
-              </div>
-              <div class="form-cell form-cell__line">
-                 <div class="form-group">
-                  <label class="form-checkbox-label">
-                    <span>Абстрактный класс</span>
-                    <input
-                      type="checkbox"
-                      id="cls-isAbstract"
-                      class="form-checkbox"
-                      ${cls.isAbstract ? 'checked' : ''}
-                    />
-                  </label>
-                  </div>
-                  <div class="form-group form-group__line">
-                    <label class="form-label" for="cls-stereotype">Стереотип</label>
-                    <input
-                      type="text"
-                      id="cls-stereotype"
-                      class="form-input"
-                      value="${cls.stereotype || ''}"
-                      placeholder="Например: rs, rf"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          <div class="form-row">
-             <div class="form-cell">
-              <div class="form-group">
-                <label class="form-label" for="cls-documentation">Описание</label>
-                <textarea
-                  id="cls-documentation"
-                  class="form-textarea"
-                  rows="3"
-                >${cls.documentation || ''}</textarea>
-              </div>
-            </div>
-
-            <div class="form-cell">
-              <div class="form-group">
-                <label class="form-label" for="cls-documentationRu">Описание (RU)</label>
-                <textarea
-                  id="cls-documentationRu"
-                  class="form-textarea"
-                  rows="3"
-                >${cls.documentationRu || ''}</textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-             <div class="form-cell">
-              <div class="form-group">
-                <label class="form-label" for="cls-details">Детали</label>
-                <textarea
-                  id="cls-details"
-                  class="form-textarea"
-                  rows="4"
-                >${cls.details || ''}</textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">
-            💾 Сохранить изменения
-          </button>
-          <button type="button" class="btn btn-secondary" id="cls-cancel-btn">
-            ↩️ Отмена
-          </button>
-        </div>
-      </form>
-
-      ${renderClassTabs(cls)}
-
-      <div class="tabs-content">
-        ${renderTabContent(cls)}
-      </div>
-    </div>
-  `;
-
+  let html = ``;
+  html += renderClassForm(cls);
+  html += `<div class="item-section class-contents">`;
+  html += renderClassTabs(cls);
+  html += `<div class="tabs-content">`;
+  html += renderTabContent(cls);
+  html += `</div></div>`;
   return html;
+}
+
+/**
+ * Render class form (extracted for reuse)
+ * @param {Object} cls - Class object
+ * @returns {string} HTML string
+ */
+function renderClassForm(cls) {
+  return `
+    <form class="item-form" id="class-form" data-class-id="${cls.id}">
+      <div class="form-section">
+        <div class="form-section-title">
+          <div class="form-row">
+            <div class="form-cell">
+              <div class="form-group form-group__line">
+                <label class="form-label form-label__title" for="cls-name">Класс *</label>
+                <input type="text" id="cls-name" class="form-input form-input__short"
+                       value="${cls.name || ''}" required />
+              </div>
+            </div>
+            <div class="form-cell form-cell__line">
+              <div class="form-group">
+                <label class="form-checkbox-label">
+                  <span>Абстрактный класс</span>
+                  <input type="checkbox" id="cls-isAbstract" class="form-checkbox"
+                         ${cls.isAbstract ? 'checked' : ''} />
+                </label>
+              </div>
+              <div class="form-group form-group__line">
+                <label class="form-label" for="cls-stereotype">Стереотип</label>
+                <input type="text" id="cls-stereotype" class="form-input"
+                       value="${cls.stereotype || ''}" placeholder="Например: rs, rf" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-cell">
+            <div class="form-group">
+              <label class="form-label" for="cls-documentation">Описание</label>
+              <textarea id="cls-documentation" class="form-textarea" rows="3">${cls.documentation || ''}</textarea>
+            </div>
+          </div>
+          <div class="form-cell">
+            <div class="form-group">
+              <label class="form-label" for="cls-documentationRu">Описание (RU)</label>
+              <textarea id="cls-documentationRu" class="form-textarea" rows="3">${cls.documentationRu || ''}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-cell">
+            <div class="form-group">
+              <label class="form-label" for="cls-details">Детали</label>
+              <textarea id="cls-details" class="form-textarea" rows="4">${cls.details || ''}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">💾 Сохранить изменения</button>
+        <button type="button" class="btn btn-secondary" id="cls-cancel-btn">↩️ Отмена</button>
+      </div>
+    </form>
+  `;
 }
 
 /**
@@ -123,31 +98,30 @@ function renderClassTabs(cls) {
   const isEnumeration = cls.type === 'Enumeration';
 
   let html = `
-    <div class="item-section">
       <div class="section-header">
         <div class="section-tabs">
   `;
 
   // ✅ Для обычного класса:  Атрибуты и Связи
-  if (! isEnumeration) {
+  if (!isEnumeration) {
     html += `
-      <div class="section-title tab tab-mini active"
+      <div class="section-title tab active"
            data-section-tab="item-attributes"
            data-class-id="${cls.id}">
         Атрибуты (${cls.attributes ?  cls.attributes.length : 0})
       </div>
-      <div class="section-title tab tab-mini"
+      <div class="section-title tab "
            data-section-tab="item-links"
            data-class-id="${cls.id}">
-        Связи (${cls.links ? cls.links.length :  0})
+        Связи (${cls.links ? cls.links.length : 0})
       </div>
     `;
   }
 
-  // ✅ Для Enumeration:  только Значения перечисления
+  // ✅ Для Enumeration: только Значения перечисления
   if (isEnumeration) {
     html += `
-      <div class="section-title tab tab-mini active"
+      <div class="section-title tab active"
            data-section-tab="item-literals"
            data-class-id="${cls.id}">
         Значения перечисления (${cls.literals ? cls.literals.length : 0})
@@ -161,15 +135,15 @@ function renderClassTabs(cls) {
   `;
 
   // ✅ Кнопки для обычного класса
-  if (! isEnumeration) {
+  if (!isEnumeration) {
     html += `
-      <button class="btn btn-primary btn-small tab-action-btn"
+      <button class="btn btn-primary tab-action-btn"
               id="add-attribute-btn"
               data-class-id="${cls.id}"
               data-tab="item-attributes">
         ➕ Добавить атрибут
       </button>
-      <button class="btn btn-primary btn-small tab-action-btn hidden"
+      <button class="btn btn-primary tab-action-btn hidden"
               id="add-link-btn"
               data-class-id="${cls.id}"
               data-tab="item-links">
@@ -181,7 +155,7 @@ function renderClassTabs(cls) {
   // ✅ Кнопка для Enumeration
   if (isEnumeration) {
     html += `
-      <button class="btn btn-primary btn-small tab-action-btn"
+      <button class="btn btn-primary tab-action-btn"
               id="add-literal-btn"
               data-class-id="${cls.id}"
               data-tab="item-literals">
@@ -193,11 +167,9 @@ function renderClassTabs(cls) {
   html += `
         </div>
       </div>
-    </div>
   `;
   return html;
 }
-
 /**
  * Render tab content (all tabs, visibility controlled by CSS)
  */
@@ -206,22 +178,22 @@ function renderTabContent(cls) {
 
   let html = '';
 
-  // ✅ Для обычного класса: Атрибуты и Связи
+  // ✅ Для обычного класса:  Атрибуты и Связи
   if (!isEnumeration) {
     html += `
-      <div class="tab-content-section active" data-tab-content="item-attributes">
+      <div class="tab-content active" data-tab-content="item-attributes">
         ${renderClassAttributes(cls)}
       </div>
-      <div class="tab-content-section" data-tab-content="item-links">
+      <div class="tab-content" data-tab-content="item-links">
         ${renderClassLinks(cls)}
       </div>
     `;
   }
 
-  // ✅ Для Enumeration:  только Литералы
+  // ✅ Для Enumeration: только Литералы
   if (isEnumeration) {
     html += `
-      <div class="tab-content-section active" data-tab-content="item-literals">
+      <div class="tab-content active" data-tab-content="item-literals">
         ${renderClassLiterals(cls)}
       </div>
     `;
@@ -234,7 +206,8 @@ function renderTabContent(cls) {
  * Render class attributes section with management buttons
  */
 function renderClassAttributes(cls) {
-  let html = `<div class="tab-content" data-tab-content="item-attributes">`;
+  // let html = `<div class="tab-content" data-tab-content="item-attributes">`;
+  let html = ``;
 
   if (! cls.attributes || cls.attributes.length === 0) {
     html += `
@@ -247,7 +220,7 @@ function renderClassAttributes(cls) {
       <table class="table attributes-table">
           <colgroup>
             <col style="width: 15%;"/>
-            <col style="width: 15%;"/>
+            <col style="width:  15%;"/>
             <col style="width: 8%;"/>
             <col style="width: 10%;"/>
             <col style="min-width: 44%;"/>
@@ -257,7 +230,7 @@ function renderClassAttributes(cls) {
           <tr>
             <th>Имя</th>
             <th>Тип данных</th>
-            <th>Мн.</th>
+            <th>Мн. </th>
             <th>Стереотип</th>
             <th>Описание</th>
             <th> </th>
@@ -300,20 +273,25 @@ function renderClassAttributes(cls) {
     `;
   }
 
-  html += `</div>`;
+  // html += `</div>`;
   return html;
 }
+
 
 /**
  * Render class links section with management buttons
  */
+/**
+ * Render class links section with management buttons
+ */
 function renderClassLinks(cls) {
-  let html = `<div class="tab-content" data-tab-content="item-links">`;
+  // let html = `<div class="tab-content" data-tab-content="item-links">`;
+  let html = ``;
 
   if (!cls.links || cls.links.length === 0) {
     html += `
       <div class="no-content">
-        <p>Нет связей.  Нажмите "Добавить связь" для создания. </p>
+        <p>Нет связей.  Нажмите "Добавить связь" для создания.</p>
       </div>
     `;
   } else {
@@ -386,7 +364,7 @@ function renderClassLinks(cls) {
     `;
   }
 
-  html += `</div>`;
+  // html += `</div>`;
   return html;
 }
 
@@ -394,12 +372,13 @@ function renderClassLinks(cls) {
  * Render class literals section (for Enumeration)
  */
 function renderClassLiterals(cls) {
-  let html = `<div class="tab-content" data-tab-content="item-literals">`;
+  // let html = `<div class="tab-content" data-tab-content="item-literals">`;
+  let html = ``;
 
   if (!cls.literals || cls.literals.length === 0) {
     html += `
       <div class="no-content">
-        <p>Нет значений.  Нажмите "Добавить значение" для создания.</p>
+        <p>Нет значений. Нажмите "Добавить значение" для создания.</p>
       </div>
     `;
   } else {
@@ -448,7 +427,7 @@ function renderClassLiterals(cls) {
     `;
   }
 
- html += `</div>`;
+  // html += `</div>`;
   return html;
 }
 

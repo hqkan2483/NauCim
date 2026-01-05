@@ -4,22 +4,44 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nautilus.CIM - Проекты</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="src/styles/00-fonts.css" />
+    <link rel="stylesheet" href="src/styles/01-tokens.css" />
+    <link rel="stylesheet" href="src/styles/02-body.css" />
+    <link rel="stylesheet" href="src/styles/03-app-container.css" />
+    <link rel="stylesheet" href="src/styles/04-utils.css" />
+    <link rel="stylesheet" href="src/styles/05-sidebar-nav.css" />
+    <link rel="stylesheet" href="src/styles/06-main-content.css" />
+    <link rel="stylesheet" href="src/styles/07-info-style.css" />
+    <link rel="stylesheet" href="src/styles/components/buttons.css" />
+    <link rel="stylesheet" href="src/styles/components/toolbar.css" />
+    <link rel="stylesheet" href="src/styles/components/project-cards.css" />
+    <link rel="stylesheet" href="src/styles/components/quick-actions.css" />
+    <link rel="stylesheet" href="src/styles/components/sidebar-nav-tree.css" />
+    <link rel="stylesheet" href="src/styles/components/search-box.css" />
+    <link rel="stylesheet" href="src/styles/components/object-container.css" />
+    <link rel="stylesheet" href="src/styles/components/tabs.css" />
+    <link rel="stylesheet" href="src/styles/components/tables.css" />
+
+
+
+
+
+    <!-- <link rel="stylesheet" href="styles.css" /> -->
   </head>
-  <body>
+  <body class="page page-projects">
     <div class="app-container">
       <!-- SIDEBAR -->
       <div class="sidebar" id="sidebar">
-        <button class="sidebar-toggle sidebar-open" aria-label="Toggle sidebar">
-          <span class="toggle-icon">☰</span>
+        <button class="sidebar__toggle sidebar-open" aria-label="Toggle sidebar">
+          <span class="sidebar__toggle-icon">☰</span>
         </button>
 
-        <div class="sidebar-header">
+        <div class="sidebar__header">
           <span>Nautilus.CIM</span>
         </div>
 
-        <div class="sidebar-nav">
-          <a href="index.html" class="nav-item">📊 Главная</a>
+        <div class="sidebar__nav">
+          <a href="index.html" class="sidebar__nav-item">📊 Главная</a>
 
           <!-- Projects Tree -->
           <div class="nav-tree-item">
@@ -42,33 +64,24 @@
             </div>
           </div>
 
-          <div class="nav-section-title">Текущий проект</div>
-          <div
-            id="current-project"
-            style="
-              padding: 10px 15px;
-              font-size: 14px;
-              color: rgba(255, 255, 255, 0.7);
-            "
-          >
-            Нет проекта
-          </div>
+          <div class="sidebar__section-title">Текущий проект</div>
+          <div id="current-project" class="sidebar__section-info">Нет проекта</div>
 
-          <div class="nav-section-title">Действия</div>
-          <div class="nav-item" data-modal-open="new-project-modal">
+          <div class="sidebar__section-title">Действия</div>
+          <div class="sidebar__nav-item" data-modal-open="new-project-modal">
             + Новый проект
           </div>
 
-          <a href="compare.html" class="nav-item">🔍 Сравнение</a>
+          <a href="compare.html" class="sidebar__nav-item">🔍 Сравнение</a>
         </div>
       </div>
-      <div class="sidebar-resize-handle" id="sidebar-resize-handle"></div>
+      <div class="sidebar__resize-handle" id="sidebar-resize-handle"></div>
 
       <!-- MAIN CONTENT -->
-      <div class="main-content">
+      <div class="app-container__main-content main-content">
         <div class="toolbar">
-          <div class="toolbar-title">Проекты</div>
-          <div class="toolbar-actions">
+          <div class="toolbar__title">Проекты</div>
+          <div class="toolbar__actions">
             <button class="btn btn-primary" data-modal-open="new-project-modal">
               + Новый проект
             </button>
@@ -85,7 +98,7 @@
           </button>
         </div>
 
-        <div class="content-area">
+        <div class="main-content__content-area content-area">
           <div class="search-box" id="search-box">
             <span class="search-icon">🔍</span>
             <input
@@ -103,7 +116,7 @@
             <div class="split-view">
               <div class="split-left">
 
-                  <h3 class="no-margin">Модели</h3>
+                  <h3 class="split-title">Модели</h3>
                   <!-- <button class="btn btn-primary btn-small" data-modal-open="new-model-modal"> + Новая модель </button> -->
 
                 <div id="models-list"></div>
@@ -119,7 +132,7 @@
             <div class="split-view">
               <div class="split-left">
 
-                  <h3 class="no-margin">Профили</h3>
+                  <h3 class="split-title">Профили</h3>
 
                 <div id="profiles-list"></div>
               </div>
