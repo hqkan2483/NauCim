@@ -152,8 +152,8 @@ function validateProject(project) {
 }
 
 // ✅ Good: Pure functions when possible
-function calculateTotal(items) {
-  return items.reduce((sum, item) => sum + item.price, 0);
+function countClasses(packages) {
+  return packages.reduce((count, pkg) => count + pkg.classes.length, 0);
 }
 ```
 
