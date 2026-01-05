@@ -59,7 +59,20 @@
   line-height: 1;
 }
 
+.table-actions .btn-icon {
+  font-size: 16px;
+}
+
+
 .btn-icon:hover {
   background: var(--main-color-01);
   transform: scale(1.1);
+}
+
+.table-actions .btn-icon:hover {
+  background: var(--black-01);
+}
+
+.table-actions .btn-icon-danger:hover {
+  background: var(--danger-button-hover);
 }

@@ -1,0 +1,64 @@
+/* Здесь все-все табы в проекте */
+/* для всех */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* особенность таба в описании проекта/модели */
+.split-right .tabs {
+ margin-bottom: 10px;
+ border-bottom: 2px solid var(--border-color);
+}
+
+/* для всех */
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.6;
+  transition: all 0.3s;
+}
+
+/* особенность таба в описании проекта/модели */
+.split-right .tab {
+  margin-bottom: -2px;
+  cursor: default;
+}
+
+/* для всех */
+.tab.active {
+  border-bottom-color: var(--main-color);
+  color: var(--main-color);
+  opacity: 1;
+}
+
+.tab:not(.active):hover {
+  opacity: 0.8;
+  background: var(--main-color-01);
+}
+
+.tab.active:hover {
+  background: var(--main-color-01);
+}
+
+.split-right .tab.active:hover {
+  background-color:  transparent;
+}
+
+
+
+/* .split-right .tab:not(.active):hover {
+  color: var(--primary-color);
+} */
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}

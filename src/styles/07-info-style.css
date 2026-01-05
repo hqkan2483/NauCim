@@ -5,3 +5,29 @@
   font-size: 14px;
 }
 
+/* No Profiles Message */
+.no-profiles-message {
+  padding: 10px;
+  color: var(--secondary-text);
+}
+
+.no-items, .no-items-message {
+  padding: 20px;
+  text-align: center;
+  color: var(--secondary-text);
+  font-style: italic;
+}
+
+.no-content {
+  padding: 30px;
+  text-align: center;
+  color: var(--secondary-text);
+  font-style: italic;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 6px;
+  border: 1px dashed var(--border-color);
+}
+
+.no-content p {
+  margin: 0;
+}

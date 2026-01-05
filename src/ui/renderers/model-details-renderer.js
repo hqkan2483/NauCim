@@ -36,7 +36,7 @@ function renderModelDetails(model, options = {}) {
   // Properties table
   html += `
     <div class="tab-content active">
-      <table class="table model-details-table">
+      <table class="table project-details-table">
         <colgroup>
           <col style="width: 25%;"/>
           <col style="width: 25%;"/>

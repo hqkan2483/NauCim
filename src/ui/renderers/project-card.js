@@ -36,21 +36,24 @@ function renderProjectCard(project, options = {}) {
   // Build HTML
   return `
     <div class="${cardClass}" ${cardDataAttrs}>
-      <div class="project-card-content">
-        <div class="project-card-header">
-          <div class="project-card-title" ${titleClickAttr}>
-            ${project.name}
+      <div class="project-card-content-wrapper">
+        <div class="project-card-content">
+          <div class="project-card-header">
+            <div class="project-card-title" ${titleClickAttr}>
+              ${project.name}
+            </div>
           </div>
+
+          ${showDescription && project.description ?
+            `<div class="project-card-description">${project.description}</div>`
+            : ''
+          }
+
         </div>
 
-        ${showDescription && project.description ?
-          `<div class="project-card-description">${project.description}</div>`
-          : ''
-        }
+        ${showActions ?  (actionsTemplate || renderDefaultActions(project)) : ''}
+        </div>
 
-      </div>
-
-      ${showActions ?  (actionsTemplate || renderDefaultActions(project)) : ''}
 
       <div class="project-card-meta">
           ${showMeta ?  renderMeta(project) : ''}
@@ -110,17 +113,17 @@ function renderStats(project) {
 function renderDefaultActions(project) {
   return `
     <div class="project-card-actions">
-      <button class="btn btn-secondary btn-small"
+      <button class="btn btn-secondary btn-small project-card-btn"
               data-action="edit-project"
               data-project-id="${project.id}">
         ✏️ Редактировать
       </button>
-      <button class="btn btn-secondary btn-small"
+      <button class="btn btn-secondary btn-small project-card-btn"
               data-action="delete-project"
               data-project-id="${project.id}">
         🗑️ Удалить
       </button>
-      <button class="btn btn-primary btn-small"
+      <button class="btn btn-primary btn-small project-card-btn"
               data-action="open-project-details"
               data-project-id="${project.id}">
         📂 Открыть проект
@@ -136,7 +139,7 @@ function renderDefaultActions(project) {
 export function renderSimpleAction(project) {
   return `
     <div class="project-card-actions">
-      <button class="btn btn-primary btn-small"
+      <button class="btn btn-primary btn-small project-card-btn"
               data-action="open-project-details"
               data-project-id="${project.id}">
         Открыть →

@@ -36,7 +36,7 @@ function renderProfileDetails(profile, options = {}) {
   // Properties table
   html += `
     <div class="tab-content active">
-      <table class="table profile-details-table">
+      <table class="table project-details-table">
         <colgroup>
           <col style="width: 25%;"/>
           <col style="width: 25%;"/>

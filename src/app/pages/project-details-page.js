@@ -792,7 +792,7 @@ function renderModelsContainer() {
     const modelDetails = document.getElementById("model-details");
     if (modelDetails) {
       modelDetails.innerHTML =
-        '<div class="text-center">Выберите модель для просмотра деталей</div>';
+        '<div class="empty-state">Выберите модель для просмотра деталей</div>';
     }
   }
 }
@@ -851,7 +851,7 @@ function renderProfilesContainer() {
     const profileDetails = document.getElementById("profile-details");
     if (profileDetails) {
       profileDetails.innerHTML =
-        '<div class="text-center">Выберите профиль для просмотра деталей</div>';
+        '<div class="empty-state">Выберите профиль для просмотра деталей</div>';
     }
   }
 }
@@ -1319,6 +1319,7 @@ function handleTabSwitch(tabBtn) {
   const selectedContent = document.querySelector(
     `[data-tab-content="${tabName}"]`
   );
+  console.log("Selected content for tab:", tabName, selectedContent);
   if (selectedContent) {
     selectedContent.classList.add("active");
   }

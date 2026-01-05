@@ -4,15 +4,16 @@
   --primary-color: magenta;
   --primary-hover: magenta;
 
-  /* Sidebar colors */
-  --sidebar-bg: #23365c;
-  --sidebar-text: #f5f5f5;
-  --sidebar-secondary: var(--white-05);
 
   /* ИИ стайлгайд */
   --main-color: #005a9b; /* Основной цвет: RGB(0, 90, 155) | #005A9B | HSL(207°, 100%, 30%) */
   --hover: #0073c8;
   --active: #004678; /* для активных состояний и нажатых кнопок */
+
+  /* Text colors */
+  --primary-text: #191c22; /* для основного текста и заголовков */
+  /* --text-primary: #1f3a4a; */
+  --secondary-text: #626c71; /* для вторичного текста */
 
   --block: #f5f7fa; /* дополнительный фон для блоков темнее основного фона */
   --bg-primary: #fcfcf9; /* основной фон */
@@ -24,19 +25,37 @@
   --btn-secondary-hover: rgba(94, 82, 64, 0.2); /* для вторичных кнопок */
 
 
+/* Sidebar colors */
+  --sidebar-bg: #23365c;
+  --sidebar-text: #f5f5f5;
+  --sidebar-secondary: var(--white-05);
+
   /* RGBA  */
   --white-01: rgba(255, 255, 255, 0.1);
+  --white-02: rgba(255, 255, 255, 0.2);
   --white-03: rgba(255, 255, 255, 0.3);
   --white-05: rgba(255, 255, 255, 0.5);
   --white-07: rgba(255, 255, 255, 0.7);
+  --white-08: rgba(255, 255, 255, 0.8);
 
+  --black-01: rgba(0, 0, 0, 0.1);
+
+
+  --main-color-005: rgba(0, 90, 155, 0.05);
+  --main-color-008: rgba(0, 90, 155, 0.08);
   --main-color-01: rgba(0, 90, 155, 0.1);
 
+ --list-item-hover: rgba(74, 174, 247, 0.1);
+ --list-item-selected: rgba(74, 174, 247, 0.2);
 
-  --primary-text: #191c22; /* для основного текста и заголовков */
-  /* --text-primary: #1f3a4a; */
-  --secondary-text: #626c71; /* для вторичного текста */
 
+  /* Tree class-links color */
+  --generalization-link: rgba(173, 216, 230, 0.9); /* светло-голубой */
+  --association-link: rgba(144, 238, 144, 0.9); /* светло-зеленый */
+
+  --danger-button-hover: rgba(220, 53, 69, 0.1); /* для кнопок удаления и опасных действий */
+
+  /*  */
   --success: #22c55e; /* для положительных сообщений, успешных операций */
   --warning: #f97316; /* для предупреждений и внимания */
   --error: #f97316; /* для предупреждений и внимания */

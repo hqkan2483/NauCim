@@ -14,10 +14,15 @@
     <link rel="stylesheet" href="src/styles/07-info-style.css" />
     <link rel="stylesheet" href="src/styles/components/buttons.css" />
     <link rel="stylesheet" href="src/styles/components/toolbar.css" />
+    <link rel="stylesheet" href="src/styles/components/sidebar-nav-tree.css" />
+    <link rel="stylesheet" href="src/styles/components/object-container.css" />
+    <link rel="stylesheet" href="src/styles/components/tabs.css" />
+    <link rel="stylesheet" href="src/styles/components/tables.css" />
+    <link rel="stylesheet" href="src/styles/components/warning-content.css" />
 
 
 
-
+    <link rel="stylesheet" href="src/styles/pages/project-details-page.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="page page-project-details">
@@ -89,7 +94,7 @@
             <div id="models-container" class="hidden">
               <div class="split-view">
                 <div class="split-left">
-                  <h3 class="no-margin">Модели</h3>
+                  <h3 class="split-title">Модели</h3>
                   <div id="models-list" class="split-left_list"></div>
                   <div id="model-list-control" class="split-left_control">
                     <button class="btn btn-primary" data-modal-open="new-model-modal">+ Добавить модель</button>
@@ -99,7 +104,7 @@
                   <div id="model-details">
                     <div class="text-center">Выберите модель для просмотра деталей</div>
                   </div>
-                  <div id="model-details-control" class="mt-15 split-right_control"></div>
+                  <div id="model-details-control" class="mt-30 split-right_control"></div>
                 </div>
               </div>
             </div>
@@ -109,7 +114,7 @@
               <div class="divider mb-15"></div>
               <div class="split-view">
                 <div class="split-left">
-                  <h3 class="no-margin">Профили</h3>
+                  <h3 class="split-title">Профили</h3>
                   <div id="profiles-list" class="split-left_list"></div>
                   <div id="profile-list-control" class="split-left_control">
                     <button class="btn btn-primary" data-modal-open="new-profile-modal">+ Создать профиль</button>
@@ -119,18 +124,18 @@
                   <div id="profile-details">
                     <div class="text-center">Выберите профиль для просмотра деталей</div>
                   </div>
-                  <div id="profile-details-control" class="mt-15 split-right_control"></div>
+                  <div id="profile-details-control" class="mt-30 split-right_control"></div>
                 </div>
               </div>
             </div>
 
             <!-- Item Details Container -->
             <div id="item-container" class="hidden">
-              <div class="item-details-wrapper">
-                <div id="item-details-content">
+              <!-- <div class="item-details-wrapper"> -->
+                <div id="item-details-content" class="item-details">
                   <div class="text-center">Выберите элемент в дереве для просмотра деталей</div>
                 </div>
-              </div>
+              <!-- </div> -->
             </div>
           </div>
 

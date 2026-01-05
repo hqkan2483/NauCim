@@ -1,0 +1,370 @@
+.nav-tree-item {
+  display: block;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-tree-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.nav-tree-header:hover {
+  background: var(--white-01);
+}
+
+.nav-tree-toggle {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  transition: background 0.2s;
+  cursor: pointer;
+  text-align: left;
+}
+
+.nav-tree-toggle:hover {
+  background: var(--white-01);
+}
+
+/* .nav-tree-toggle:focus {
+  outline: 2px solid var(--hover);
+  outline-offset: -2px;
+} */
+
+.nav-tree-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px;
+}
+
+/* TREE ICON */
+.tree-icon {
+  display: inline-block;
+  margin-right: 8px;
+  transition: transform 0.2s ease;
+  width: 8px;
+}
+
+.nav-tree-toggle[aria-expanded="true"] .tree-icon {
+  transform: rotate(90deg);
+}
+
+.nav-tree-children {
+  display: block;
+  /* background: rgba(0, 0, 0, 0.2); */
+  margin-left: 10px;
+}
+
+.nav-tree-children.nav-tree-collapsed {
+  display: none;
+}
+
+.nav-tree-item-link {
+  display: block;
+  padding: 8px 20px 8px 35px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  transition: background 0.2s;
+  /* cursor: pointer; */
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ХЗ зачем эти 4 класса */
+/* .nav-tree-item-link:hover {
+  background: var(--white-01);
+  padding-left: 37px;
+}
+
+.nav-tree-item-link.active {
+  background: var(--primary-color);
+  color: white;
+  font-weight: 500;
+}
+
+.nav-tree-link {
+  display: block;
+  padding: 10px 20px 10px 35px;
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: background 0.2s;
+  font-size: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-tree-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+} */
+
+/* Дерево проектов и структура проектов */
+
+.project-structure-nav {
+  padding: 0;
+}
+
+.project-structure-nav .no-items {
+  padding: 10px 15px;
+  color: var(--white-07);
+  font-size: 12px;
+}
+
+.project-tree-item {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.project-tree-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+  gap: 6px;
+}
+
+.project-tree-header:hover {
+  background: var(--white-01);
+}
+
+.project-tree-header.active {
+  background: var(--white-02);
+}
+
+.project-tree-header.active:hover {
+  background: var(--hover);
+}
+
+.project-name {
+  font-size: 14px;
+  font-weight: 400;
+  /* color: var(--sidebar-text); */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-structure {
+  padding-top: 10px;
+  background: var(--black-01);
+  margin-left: 20px;
+  border-left: 2px solid var(--main-color);
+  font-size: 13px;
+}
+
+.structure-section {
+  margin-bottom: 10px;
+  margin-left: 5px;
+}
+
+.structure-section:last-child {
+  margin-bottom: 0;
+}
+
+.structure-title {
+  margin-bottom: 5px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--white-07);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.structure-items {
+  margin-left: 15px;
+  padding-left: 10px;
+}
+
+.structure-empty {
+  padding: 10px;
+  font-size: 13px;
+  color: var(--white-05);
+  font-style: italic;
+  text-align: center;
+}
+
+.tree-structure-item {
+  margin: 2px 0;
+}
+
+.tree-structure-header {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.2s;
+  gap: 4px;
+  min-height: 28px;
+}
+
+.tree-structure-header.projects-page-tree {
+  cursor: default;
+  transition: none;
+}
+
+.tree-structure-header:hover {
+  background: var(--white-01);
+}
+
+.tree-structure-header.projects-page-tree:hover {
+  background: none;
+}
+
+.tree-structure-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+.tree-structure-name.projects-page-tree:hover {
+  background: none;
+}
+
+.tree-structure-name.selected {
+  background: var(--hover);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.tree-structure-children {
+  padding-left: 10px; /* 10px отступ для каждого уровня */
+  margin-top: 2px;
+}
+
+.tree-structure-name[data-type="model"]::before {
+  content: "🔷";
+}
+
+.tree-structure-name[data-type="profile"]::before {
+  content: "⚙️";
+}
+
+.tree-structure-name[data-type="package"]::before {
+  content: "📦";
+}
+
+.tree-structure-name[data-type="class"]::before {
+  content: "📄";
+}
+
+.tree-structure-name[data-type="class"][data-is-enumeration="true"]::before {
+  content: "🔢";
+}
+
+.tree-structure-name[data-type="class"][data-is-abstract="true"]::before {
+  content: "📋";
+}
+
+.tree-structure-name[data-type="attribute"]::before {
+  content: "🔹";
+}
+
+.tree-structure-name[data-type="link"] {
+  color: var(--sidebar-text);
+  font-size: 12px;
+  font-style: italic;
+  padding-left: 2px;
+}
+
+.tree-structure-name[data-type="link"][data-link-kind="Generalization"] {
+  color: var(--generalization-link); /* Light blue for inheritance */
+}
+
+.tree-structure-name[data-type="link"][data-link-kind="Association"] {
+  color: var(--association-link); /* Light green for association */
+}
+
+.tree-structure-name[data-type="link"]:hover {
+  background: var(--white-01);
+  font-style: normal;
+}
+
+/* Highlight active link */
+.tree-structure-name[data-type="link"].active {
+  background: var(--white-02);
+  font-weight: 500;
+}
+
+
+/* Кнопка разворачивания дерева  */
+.project-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: none;
+  border: none;
+  color: var(--sidebar-text);
+  padding: 0 5px 0 0;
+  cursor: pointer;
+}
+
+.project-tree-header.active .project-expand-btn {
+  color: white;
+}
+
+/* .expand-icon {
+  display: inline-block;
+  font-size: 13px;
+  transition: transform 0.2s ease;
+} */
+
+/* Кнопка разворачивания узлов дерева */
+
+.tree-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--sidebar-text);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.tree-expand-btn:hover {
+  background: var(--white-01);
+}
+
+/* совпадает с иконкой выше */
+.tree-expand-icon {
+  font-size: 13px;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+/* пустышка вместо кнопки */
+.tree-expand-spacer {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* разные вспомогательные стили */
+
+.no-projects-tree {
+  opacity: 0.6;
+}
