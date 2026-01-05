@@ -50,6 +50,7 @@ import {
 } from "../../ui/renderers/project-tree-renderer.js";
 import { renderPackageDetails } from "../../ui/renderers/package-details-renderer.js";
 import { renderClassDetails } from "../../ui/renderers/class-details-renderer.js";
+import { initDiagramMode } from "./project-details/diagram-mode.js";
 // import { renderAttributeDetails } from "../../ui/renderers/attribute-details-renderer.js";
 // import { renderLinkDetails } from "../../ui/renderers/link-details-renderer.js";
 
@@ -61,6 +62,9 @@ let selectedModelId = null;
 let selectedProfileId = null;
 let originalItemData = null;
 let lastClassTabName = null;
+
+// Diagram mode controller (Step 1)
+let diagramMode = null;
 
 // ============================================================
 // INIT
@@ -83,6 +87,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   restoreSidebarState();
   initSidebarToggle();
   initSidebarResize();
+
+  diagramMode = initDiagramMode({
+    hideModelContainer,
+    hideProfileContainer,
+    showItemContainer,
+    clearItemDetailsContent,
+    getSelectedTreeType,
+  });
 
   if (currentProjectId) {
     initModelModal(currentProjectId, {
@@ -166,6 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   bindEvents();
   checkProject();
+  diagramMode?.restoreFromStorage();
 });
 
 // ============================================================
@@ -182,7 +195,7 @@ function bindEvents() {
   const toggleDiagramBtn = document.getElementById("toggle-diagram-mode");
   if (toggleDiagramBtn) {
     toggleDiagramBtn.addEventListener("click", () => {
-      alert("Режим диаграммы будет реализован позже.");
+      diagramMode?.toggle();
     });
   }
 
@@ -457,12 +470,23 @@ function showNoProjectWarning() {
   document.getElementById("no-project-warning").classList.remove("hidden");
   document.getElementById("models-container").classList.add("hidden");
   document.getElementById("profiles-container").classList.add("hidden");
+  document.getElementById("diagrams-container")?.classList.add("hidden");
+  document.getElementById("diagram-resize-handle")?.classList.add("hidden");
+  hideItemContainer();
 }
 
 function hideNoProjectWarning() {
   document.getElementById("no-project-warning").classList.add("hidden");
-  document.getElementById("models-container").classList.remove("hidden");
-  document.getElementById("profiles-container").classList.remove("hidden");
+  if (diagramMode?.isEnabled()) {
+    document.getElementById("models-container").classList.add("hidden");
+    document.getElementById("profiles-container").classList.add("hidden");
+    diagramMode.sync();
+  } else {
+    document.getElementById("models-container").classList.remove("hidden");
+    document.getElementById("profiles-container").classList.remove("hidden");
+    document.getElementById("diagrams-container")?.classList.add("hidden");
+    document.getElementById("diagram-resize-handle")?.classList.add("hidden");
+  }
 }
 
 function updatePageTitle(project) {
@@ -542,9 +566,15 @@ function selectModel(modelId) {
   if (modelDetailsControl)
     modelDetailsControl.innerHTML = renderModelControls(model);
 
-  hideItemContainer();
-  showModelContainer();
-  showProfileContainer();
+  if (diagramMode?.isEnabled()) {
+    // In diagram mode, models/profiles are not shown; item panel stays visible but empty.
+    clearItemDetailsContent();
+    diagramMode.sync({ clearItem: true });
+  } else {
+    hideItemContainer();
+    showModelContainer();
+    showProfileContainer();
+  }
 }
 
 // ============================================================
@@ -603,9 +633,14 @@ function selectProfile(profileId) {
   if (profileDetailsControl)
     profileDetailsControl.innerHTML = renderProfileControls(profile);
 
-  hideItemContainer();
-  showModelContainer();
-  showProfileContainer();
+  if (diagramMode?.isEnabled()) {
+    clearItemDetailsContent();
+    diagramMode.sync({ clearItem: true });
+  } else {
+    hideItemContainer();
+    showModelContainer();
+    showProfileContainer();
+  }
 }
 
 // ============================================================
@@ -639,6 +674,19 @@ function showProfileContainer() {
 function hideProfileContainer() {
   const profileContainer = document.getElementById("profiles-container");
   if (profileContainer) profileContainer.classList.add("hidden");
+}
+
+function clearItemDetailsContent() {
+  const itemDetailsContent = document.getElementById("item-details-content");
+  if (itemDetailsContent) itemDetailsContent.innerHTML = "";
+}
+
+function getSelectedTreeType() {
+  const selected = document.querySelector(
+    ".project-tree-item .tree-structure-name.selected"
+  );
+  if (!selected) return null;
+  return selected.getAttribute("data-type") || null;
 }
 
 // ============================================================
@@ -686,6 +734,7 @@ function handleSelectPackage(packageId, modelId = "", profileId = "") {
   showItemContainer();
   hideModelContainer();
   hideProfileContainer();
+  if (diagramMode?.isEnabled()) diagramMode.sync();
 }
 
 /**
@@ -733,6 +782,7 @@ function handleSelectClass(
   showItemContainer();
   hideModelContainer();
   hideProfileContainer();
+  if (diagramMode?.isEnabled()) diagramMode.sync();
 }
 
 /**

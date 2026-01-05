@@ -1,3 +1,5 @@
+@import "./project-details-diagram-mode.css";
+
 .page-project-details .item-details {
   max-width: 100%;
   padding: 0 20px;
@@ -32,4 +34,45 @@
 
 .page-project-details .tab-action-btn.hidden {
   display: none;
+}
+
+/* Project Details: Diagram mode layout 
+   Keeps styles page-scoped and token-based.
+*/
+
+.page-project-details.diagram-mode .main-content__content-area.content-area {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.page-project-details.diagram-mode #diagrams-container,
+.page-project-details.diagram-mode #item-container {
+  min-height: 120px;
+  overflow: auto;
+}
+
+.page-project-details.diagram-mode #diagrams-container {
+  background: var(--bg-light);
+}
+
+.page-project-details.diagram-mode #item-container {
+  background: var(--bg-light);
+}
+
+.page-project-details.diagram-mode .diagram-mode-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  color: var(--secondary-text);
+}
+
+body.is-resizing {
+  user-select: none;
+}
+
+body.is-resizing * {
+  cursor: ns-resize;
 }
