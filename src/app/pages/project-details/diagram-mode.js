@@ -4,6 +4,20 @@
 const STORAGE_KEY_DIAGRAM_MODE = "cim.diagramMode";
 const STORAGE_KEY_DIAGRAM_SPLIT_RATIO = "cim.diagramSplitRatio";
 
+function getDiagramModeToggleButton() {
+  return document.getElementById("toggle-diagram-mode");
+}
+
+function setDiagramModeToggleButtonLabel(isDiagramModeEnabled) {
+  const btn = getDiagramModeToggleButton();
+  if (!btn) return;
+
+  // Keep icon consistent with existing toolbar button.
+  btn.textContent = isDiagramModeEnabled
+    ? "📐 Стандартный режим"
+    : "📐 Режим диаграммы";
+}
+
 function getDiagramsContainer() {
   return document.getElementById("diagrams-container");
 }
@@ -153,6 +167,8 @@ function initDiagramMode({
     isEnabled = true;
     if (persist) localStorage.setItem(STORAGE_KEY_DIAGRAM_MODE, "1");
 
+    setDiagramModeToggleButtonLabel(true);
+
     standardModeVisibilitySnapshot = {
       modelsHidden:
         document
@@ -177,6 +193,8 @@ function initDiagramMode({
   const exit = ({ persist = true } = {}) => {
     isEnabled = false;
     if (persist) localStorage.setItem(STORAGE_KEY_DIAGRAM_MODE, "0");
+
+    setDiagramModeToggleButtonLabel(false);
 
     document.body.classList.remove("diagram-mode");
     hideDiagramsContainer();
@@ -207,6 +225,8 @@ function initDiagramMode({
     const flag = localStorage.getItem(STORAGE_KEY_DIAGRAM_MODE);
     if (flag === "1") {
       enter({ persist: false });
+    } else {
+      setDiagramModeToggleButtonLabel(false);
     }
   };
 
