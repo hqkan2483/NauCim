@@ -1,0 +1,161 @@
+/* тут все стили для форм */
+
+/* расподожение эдементов форм */
+.form-section {
+  margin-bottom: 20px;
+  padding: 20px 20px;
+}
+
+.form-section-title {
+  margin: 0 0 20px 0;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  row-gap: 20px;
+  column-gap: 40px;
+  margin-bottom: 15px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-cell__line {
+  flex-direction: row;
+  gap: 40px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group__line {
+  flex-direction: row;
+  gap: 20px;
+}
+
+ .form-label {
+  display: block;
+  flex-shrink: 0;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-label__title {
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.form-group__line .form-label {
+  align-self: center;
+}
+
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  padding-left: 20px;
+}
+
+
+/* Поля ввода, текстовые области и выпадающие списки */
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: 5px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-weight: 400;
+  font-size: 14px;
+  font-family: inherit;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.form-input__short {
+  width: 400px;
+}
+
+.form-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--main-color);
+  box-shadow: 0 0 0 3px var(--main-color-01);
+}
+
+.form-input[readonly],
+.form-textarea[readonly],
+.form-select[readonly] {
+  background: var(--black-01);
+  cursor: not-allowed;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+.form-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 5px 0;
+}
+
+.form-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+
+/* Form validation */
+.form-input.input-error,
+.form-textarea.input-error {
+  border-color: #e74c3c;
+}
+
+.form-input.input-success,
+.form-textarea.input-success {
+  border-color: #27ae60;
+}
+
+.validation-feedback {
+  font-size: 12px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.validation-error {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.validation-success {
+  color: #27ae60;
+  background: rgba(39, 174, 96, 0.1);
+}

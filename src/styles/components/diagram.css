@@ -2,6 +2,14 @@
    DIAGRAM PLACEHOLDER
    ============================================================ */
 
+.page-project-details.diagram-mode #diagrams-container {
+  min-height: 120px;
+  overflow: auto;
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
 .page-project-details.diagram-mode .diagram-mode-placeholder {
   height: 100%;
   display: flex;
