@@ -5,6 +5,9 @@
 }
 
 body {
+  height: 100vh;
+  margin: 0;
+
   font-family: "Open Sans", "Proxima Nova", "Inter", serif;
   background: var(--bg-primary);
   color: var(--primary-text);

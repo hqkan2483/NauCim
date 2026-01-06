@@ -174,13 +174,13 @@ All CSS is organized in a modular structure:
 - `components/` - Component-specific styles
 
 **Page Styles**:
-- `app/pages/` - Page-specific styles
+- `pages/` - Page-specific styles
 
 **Style Organization Strategy**:
 1. Global tokens and variables in `01-tokens.css`
 2. Base element styles in numbered files
 3. Component-specific styles in `components/`
-4. Page-specific styles in `app/pages/`
+4. Page-specific styles in `pages/`
 5. Follow the numbering convention for load order
 
 #### ⚠️ Deprecated: `styles.css`
@@ -252,7 +252,7 @@ NauCim/
 │   ├── parser/                    # Data parsing
 │   ├── utils/                     # Utilities
 │   ├── app/
-│   │   ├── pages/            # page-specific controller
+│   │   ├── pages/            # page entrypoint
 │   └── ...
 ├── models-data/                   # JSON data files
 ├── index.html                     # Main page

@@ -30,7 +30,7 @@ src/
 ├── state/          # State management
 ├── enums/          # Enumerations
 └── app/            # Application initialization
-│   ├── pages/      # Page initialization
+│   ├── pages/      # Page entrypoint
 ```
 
 ### File Naming
