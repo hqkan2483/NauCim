@@ -378,7 +378,7 @@ git push origin feature/my-feature
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Detailed architecture documentation
 - [CONVENTIONS.md](CONVENTIONS.md) - Coding standards and conventions
 - [PYTHON_SCRIPTS.md](PYTHON_SCRIPTS.md) - Python utility scripts
-- [docs_DATA_STRUCTURES_Version5.md](docs_DATA_STRUCTURES_Version5.md) - Data contract
+- [DATA_STRUCTURES.md](DATA_STRUCTURES.md) - Data contract
 
 ## Getting Help
 

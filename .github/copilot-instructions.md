@@ -100,7 +100,7 @@ Modal windows and reusable components:
 
 ## Data Contract
 
-**Canonical Reference**: `docs/docs_DATA_STRUCTURES_Version5.md`
+**Canonical Reference**: `docs/DATA_STRUCTURES.md`
 
 This document defines all data structures used in the application:
 - Project
@@ -140,7 +140,7 @@ Always refer to this document when working with data structures.
 2. **Always use the current architecture** with services, renderers, and modular UI components
 3. **Respect the separation of concerns**: data layer, UI layer, and styling are separate
 4. **Follow the modularization strategy** when refactoring or adding new features
-5. **Reference the data contract** (`docs/docs_DATA_STRUCTURES_Version5.md`) for data structures
+5. **Reference the data contract** (`docs/DATA_STRUCTURES.md`) for data structures
 
 ## Technology Stack
 - **HTML5** - Page structure

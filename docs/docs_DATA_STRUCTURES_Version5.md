@@ -74,9 +74,6 @@ interface Model {
   accessRights: AccessRights;      // Права доступа (см. Enums)
   relatedProfiles: ProfileRef[]; // Профили, использующие эту модель
   rootPackages: RootPackage[]; // корневой пакет модели
-  // packages: Package[];           // Пакеты (иерархическая структура)
-  // classes: Class[];              // Классы модели
-  // attributes: Attribute[];       // Атрибуты (плоский список для быстрого доступа)
 }
 ```
 
@@ -96,9 +93,6 @@ interface Model {
     { "id": "profile-123", "name": "Equipment Profile" }
   ],
   "rootPackages": [ ... ]
-  // "packages": [... ],
-  // "classes": [...],
-  // "attributes": [...]
 }
 ```
 
@@ -895,6 +889,6 @@ multiplicity: "0..1"
 
 ## Связанные документы
 
-- [API Documentation](./API.md)
+<!-- - [API Documentation](./API.md)
 - [Service Layer](./SERVICES.md)
-- [Data Migration Guide](./MIGRATIONS.md)
+- [Data Migration Guide](./MIGRATIONS.md) -->

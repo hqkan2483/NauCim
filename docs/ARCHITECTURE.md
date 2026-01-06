@@ -234,7 +234,7 @@ NauCim/
 ├── docs/
 │   ├── ARCHITECTURE.md             # This file
 │   ├── CONVENTIONS.md              # Development conventions
-│   ├── docs_DATA_STRUCTURES_Version5.md  # Data contract (canonical)
+│   ├── DATA_STRUCTURES.md          # Data contract (canonical)
 │   └── ...
 ├── src/
 │   ├── services/                   # Business logic
@@ -255,6 +255,9 @@ NauCim/
 ├── models-data/                   # JSON data files
 ├── index.html                     # Main page
 ├── projects.html                  # Projects page
+├── project-details.html           # Project models editor
+├── profile-editor.html            # Profile editor
+├── compare.html                   # Compare models and projects
 ├── data.js                        # ⚠️ DEPRECATED
 ├── sidebar.js                     # ⚠️ DEPRECATED
 ├── styles.css                     # ⚠️ DEPRECATED
@@ -277,7 +280,7 @@ ES6 modules with explicit imports/exports for clear dependencies.
 
 ## Data Contract
 
-**Canonical Reference**: `docs/docs_DATA_STRUCTURES_Version5.md`
+**Canonical Reference**: `docs/DATA_STRUCTURES.md`
 
 This document defines all data structures:
 - Project

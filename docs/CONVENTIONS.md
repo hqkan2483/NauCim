@@ -411,7 +411,7 @@ export function archiveProject(id) { ... }
 
 ### Always Reference the Canonical Data Structure
 
-**Source**: `docs/docs_DATA_STRUCTURES_Version5.md`
+**Source**: `docs/DATA_STRUCTURES.md`
 
 When working with data structures:
 1. Check the data contract document first

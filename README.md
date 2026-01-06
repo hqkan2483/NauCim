@@ -14,7 +14,7 @@ NauCIM/
 ├── index.html                  # Главная страница
 ├── projects.html               # Управление проектами
 ├── profile-editor.html         # Редактор профилей
-├── project-details.html        # Детали проекта
+├── project-details.html        # Редактор проекта
 ├── compare.html                # Сравнение профилей
 ├── src/
 │   ├── services/              # Бизнес-логика и операции с данными
@@ -73,7 +73,7 @@ NauCIM/
 
 - **Главная** (`index.html`) → `src/app/pages/index-page.js` - Дашборд, последние проекты
 - **Проекты** (`projects.html`) → `src/app/pages/projects-page.js` - Управление проектами
-- **Детали проекта** (`project-details.html`) → `src/app/pages/project-details-page.js` - Модели, профили, классы
+- **Редактирование проекта** (`project-details.html`) → `src/app/pages/project-details-page.js` - Модели, профили, классы
 - **Сравнение** (`compare.html`) - Сравнение профилей
 - **Редактор профилей** (`profile-editor.html`) - Визуальный редактор с диаграммами
 
@@ -85,6 +85,7 @@ NauCIM/
 ✅ Сравнение профилей
 ✅ Визуализация структуры классов
 ✅ Генерация XSD кода
+✅ Генерация документации
 ✅ Древовидная навигация
 ✅ Поиск и фильтрация
 
@@ -97,7 +98,7 @@ NauCIM/
 
 ## Документация
 
-- 📘 **[Структуры данных V5](docs/docs_DATA_STRUCTURES_Version5.md)** - Канонический контракт данных (Project, Model, Profile, Class, Attribute)
+- 📘 **[Структуры данных V5](docs/DATA_STRUCTURES.md)** - Канонический контракт данных (Project, Model, Profile, Class, Attribute)
 - 🏗️ **[Архитектура](docs/ARCHITECTURE.md)** - Структура приложения и границы модулей
 - 📝 **[Соглашения](docs/CONVENTIONS.md)** - Правила кодирования и контракты данных
 - 🚀 **[Запуск локально](docs/RUN_LOCAL.md)** - Как запустить приложение на локальном сервере
@@ -134,9 +135,10 @@ NauCIM/
 
 Все структуры данных (Project, Model, Profile, Class, Attribute, Package) определены в каноническом документе:
 
-📘 **[docs/docs_DATA_STRUCTURES_Version5.md](docs/docs_DATA_STRUCTURES_Version5.md)** - Единственный источник истины для контрактов данных
+📘 **[docs/DATA_STRUCTURES.md](docs/DATA_STRUCTURES.md)** - Единственный источник истины для контрактов данных
 
 Этот документ содержит:
+
 - TypeScript-интерфейсы для всех сущностей
 - Описание обязательных и необязательных полей
 - Перечисления (Enums) для типов данных
@@ -192,7 +194,7 @@ NauCIM/
 
 - **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Описание архитектуры приложения
 - **[CONVENTIONS.md](docs/CONVENTIONS.md)** - Соглашения о разработке и стиль кода
-- **[docs_DATA_STRUCTURES_Version5.md](docs/docs_DATA_STRUCTURES_Version5.md)** - Контракт данных (канонический источник)
+- **[DATA_STRUCTURES.md](docs/DATA_STRUCTURES.md)** - Контракт данных (канонический источник)
 - **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Руководство для GitHub Copilot
 
 ### Модульная архитектура
