@@ -32,7 +32,7 @@ NauCIM/
 ├── docs/                       # Документация
 │   ├── ARCHITECTURE.md        # Описание архитектуры
 │   ├── CONVENTIONS.md         # Соглашения о разработке
-│   └── docs_DATA_STRUCTURES_Version5.md  # Контракт данных
+│   └── DATA_STRUCTURES.md  # Контракт данных
 ├── data.js                     # ⚠️ УСТАРЕЛО - не использовать
 ├── sidebar.js                  # ⚠️ УСТАРЕЛО - не использовать
 ├── styles.css                  # ⚠️ УСТАРЕЛО - не использовать
