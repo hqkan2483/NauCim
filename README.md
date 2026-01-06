@@ -17,6 +17,8 @@ NauCIM/
 ├── project-details.html        # Редактор проекта
 ├── compare.html                # Сравнение профилей
 ├── src/
+│   ├── app/
+│   │   ├── pages/           #  js модули страницы.  контроллер страницы
 │   ├── services/              # Бизнес-логика и операции с данными
 │   │   ├── dataloader.js     # ⭐ Загрузка данных в MemoryStore
 │   │   ├── model-service.js

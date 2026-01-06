@@ -30,6 +30,7 @@ src/
 ├── state/          # State management
 ├── enums/          # Enumerations
 └── app/            # Application initialization
+│   ├── pages/      # Page initialization
 ```
 
 ### File Naming
@@ -45,6 +46,7 @@ src/
 ### JavaScript
 
 #### Variables and Functions
+
 - Use **camelCase** for variables and functions:
   ```javascript
   const projectId = '123';
@@ -52,13 +54,15 @@ src/
   ```
 
 #### Constants
+
 - Use **UPPER_SNAKE_CASE** for true constants:
   ```javascript
   const MAX_PROJECT_NAME_LENGTH = 100;
-  const DEFAULT_ACCESS_RIGHTS = 'custom';
+  const DEFAULT_ACCESS_RIGHTS = "custom";
   ```
 
 #### Classes and Objects
+
 - Use **PascalCase** for class names:
   ```javascript
   class ProjectService { ... }
@@ -66,6 +70,7 @@ src/
   ```
 
 #### Private Methods/Variables
+
 - Prefix with underscore for internal/private:
   ```javascript
   function _internalHelper() { ... }
@@ -75,26 +80,39 @@ src/
 ### CSS
 
 #### Class Names
+
 - Use **kebab-case** for CSS classes:
   ```css
-  .project-card { ... }
-  .sidebar-toggle-button { ... }
+  .project-card {
+    ...;
+  }
+  .sidebar-toggle-button {
+    ...;
+  }
   ```
 
 #### CSS Custom Properties
+
 - Use **kebab-case** with semantic names:
   ```css
-  --primary-color: #2196F3;
+  --primary-color: #2196f3;
   --sidebar-width: 300px;
   --font-size-large: 18px;
   ```
 
 #### BEM Naming (when appropriate)
-- Block__Element--Modifier pattern:
+
+- Block\_\_Element--Modifier pattern:
   ```css
-  .project-card { ... }
-  .project-card__title { ... }
-  .project-card__title--highlighted { ... }
+  .project-card {
+    ...;
+  }
+  .project-card__title {
+    ...;
+  }
+  .project-card__title--highlighted {
+    ...;
+  }
   ```
 
 ## Code Style
@@ -102,6 +120,7 @@ src/
 ### JavaScript
 
 #### ES6+ Features
+
 Always use modern JavaScript features:
 
 ```javascript
@@ -185,7 +204,7 @@ async function loadData() {
     const response = await fetch(url);
     return await response.json();
   } catch (error) {
-    console.error('Failed to load data:', error);
+    console.error("Failed to load data:", error);
     return fallbackData;
   }
 }
@@ -193,7 +212,7 @@ async function loadData() {
 // ✅ Good: Validation with clear error messages
 function createProject(name) {
   if (!name || name.trim().length === 0) {
-    throw new Error('Project name is required');
+    throw new Error("Project name is required");
   }
   // ... create project
 }
@@ -209,16 +228,16 @@ function createProject(name) {
   /* Layout */
   display: flex;
   flex-direction: column;
-  
+
   /* Box model */
   padding: 16px;
   margin: 8px;
-  
+
   /* Visual */
   background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
-  
+
   /* Typography */
   font-size: 14px;
   line-height: 1.5;
@@ -249,11 +268,11 @@ function createProject(name) {
 
 ```javascript
 // ✅ Good: Use service
-import { ProjectService } from './services/project-service.js';
+import { ProjectService } from "./services/project-service.js";
 const project = ProjectService.getById(id);
 
 // ❌ Bad: Direct MemoryStore access from UI
-import { MemoryStore } from './store/memory-store.js';
+import { MemoryStore } from "./store/memory-store.js";
 const project = MemoryStore.getProjectById(id);
 ```
 
@@ -297,13 +316,13 @@ class ProjectModal {
     this.isOpen = false;
     this.currentProject = null;
   }
-  
+
   open(project) {
     this.currentProject = project;
     this.isOpen = true;
     this.render();
   }
-  
+
   close() {
     this.isOpen = false;
     this.render();
@@ -337,7 +356,7 @@ class ProjectModal {
 ```javascript
 /**
  * Retrieves a project by its unique identifier.
- * 
+ *
  * @param {string} id - The project ID
  * @returns {Object|null} The project object or null if not found
  */
@@ -351,7 +370,7 @@ function getProjectById(id) {
 ```javascript
 /**
  * Project Service
- * 
+ *
  * Handles all project-related operations including CRUD,
  * search, and validation.
  */
@@ -362,6 +381,7 @@ function getProjectById(id) {
 ### README Updates
 
 When adding new features:
+
 1. Update relevant documentation in `docs/`
 2. Add examples if introducing new patterns
 3. Update `docs/ARCHITECTURE.md` if changing structure
@@ -373,17 +393,19 @@ When adding new features:
 The following files are **DEPRECATED** and kept only for backward compatibility:
 
 #### `data.js`
+
 - **Status**: LEGACY
 - **Reason**: Replaced by modular architecture
-- **Use instead**: 
+- **Use instead**:
   - `src/store/memory-store.js` for storage
   - `src/services/dataloader.js` for initialization
   - `src/services/*-service.js` for CRUD operations
 
 #### `sidebar.js`
+
 - **Status**: LEGACY
 - **Reason**: Replaced by modular sidebar components
-- **Use instead**: 
+- **Use instead**:
   - `src/ui/sidebar/index.js` for initialization
   - `src/ui/sidebar/project-tree.js` for tree functionality
   - `src/ui/sidebar/sidebar-resize.js` for resizing
@@ -391,6 +413,7 @@ The following files are **DEPRECATED** and kept only for backward compatibility:
   - `src/ui/renderers/project-tree-renderer.js` for rendering
 
 #### `styles.css`
+
 - **Status**: LEGACY
 - **Reason**: Replaced by modular styles in `src/styles/`
 - **Use instead**: Appropriate files in `src/styles/` directory
@@ -414,6 +437,7 @@ export function archiveProject(id) { ... }
 **Source**: `docs/DATA_STRUCTURES.md`
 
 When working with data structures:
+
 1. Check the data contract document first
 2. Follow the defined interfaces exactly
 3. Don't create ad-hoc data structures
@@ -423,20 +447,21 @@ When working with data structures:
 // ✅ Good: Following data contract
 const project = {
   id: generateId(),
-  name: 'New Project',
-  description: 'Description',
-  version: '1.0',
+  name: "New Project",
+  description: "Description",
+  version: "1.0",
   createDate: new Date().toISOString(),
   modifyDate: new Date().toISOString(),
-  accessRights: 'custom',
+  accessRights: "custom",
   models: [],
-  profiles: []
+  profiles: [],
 };
 ```
 
 ## Best Practices Summary
 
 ### Do's ✅
+
 - Use ES6+ features (modules, arrow functions, destructuring)
 - Follow the modular architecture
 - Separate concerns (data, UI, styles)
@@ -449,6 +474,7 @@ const project = {
 - Keep functions small and focused
 
 ### Don'ts ❌
+
 - Don't modify deprecated files (`data.js`, `sidebar.js`, `styles.css`)
 - Don't access MemoryStore directly from UI code
 - Don't mix business logic with rendering
