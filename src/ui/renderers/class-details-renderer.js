@@ -96,8 +96,8 @@ function renderClassForm(cls) {
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">💾 Сохранить изменения</button>
-        <button type="button" class="btn btn-secondary" id="cls-cancel-btn">↩️ Отмена</button>
+        <button type="submit" class="btn btn-primary btn--class-details">💾 Сохранить изменения</button>
+        <button type="button" class="btn btn-secondary btn--class-details" id="cls-cancel-btn">↩️ Отмена</button>
       </div>
     </form>
   `;
@@ -162,13 +162,13 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
   // ✅ Кнопки для обычного класса
   if (!isEnumeration) {
     html += `
-      <button class="btn btn-primary tab-action-btn"
+      <button class="btn btn-primary tab-action-btn btn--class-details"
               id="add-attribute-btn"
               data-class-id="${cls.id}"
               data-tab="item-attributes">
         ✚ Добавить атрибут
       </button>
-      <button class="btn btn-primary tab-action-btn hidden"
+      <button class="btn btn-primary tab-action-btn btn--class-details hidden"
               id="add-link-btn"
               data-class-id="${cls.id}"
               data-tab="item-links">
@@ -180,7 +180,7 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
   // ✅ Кнопка для Enumeration
   if (isEnumeration) {
     html += `
-      <button class="btn btn-primary tab-action-btn"
+      <button class="btn btn-primary tab-action-btn btn--class-details"
               id="add-literal-btn"
               data-class-id="${cls.id}"
               data-tab="item-literals">

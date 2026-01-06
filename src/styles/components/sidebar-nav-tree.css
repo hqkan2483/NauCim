@@ -164,7 +164,7 @@
 
 .structure-section {
   margin-bottom: 10px;
-  margin-left: 5px;
+  /* margin-left: 5px; */
 }
 
 .structure-section:last-child {
@@ -172,7 +172,7 @@
 }
 
 .structure-title {
-  margin-bottom: 5px;
+  /* margin-bottom: 5px; */
   padding: 0 10px;
   font-size: 12px;
   font-weight: 500;
@@ -201,12 +201,13 @@
 .tree-structure-header {
   display: flex;
   align-items: center;
-  padding: 4px 0;
+  padding: 0 0;
+  /* padding: 4px 0; */
   cursor: pointer;
   border-radius: 3px;
   transition: background 0.2s;
-  gap: 4px;
-  min-height: 28px;
+  /* gap: 4px; */
+  min-height: 25px;
 }
 
 .tree-structure-header.projects-page-tree {
@@ -309,8 +310,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 10px;
+  height: 10px;
   background: none;
   border: none;
   color: var(--sidebar-text);
@@ -335,8 +336,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   padding: 0;
   background: none;
   border: none;
@@ -351,7 +352,7 @@
 
 /* совпадает с иконкой выше */
 .tree-expand-icon {
-  font-size: 13px;
+  font-size: 10px;
   display: inline-block;
   transition: transform 0.2s ease;
 }
