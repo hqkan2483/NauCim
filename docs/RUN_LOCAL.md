@@ -1,237 +1,393 @@
-# Running Nautilus.CIM Locally
+# Running NauCim Locally
 
-This guide explains how to run the Nautilus.CIM application on your local machine.
+This guide explains how to run and develop the Nautilus.CIM application on your local machine.
 
-## Why a Local Server is Required
+## Prerequisites
 
-Nautilus.CIM is a **static web application** that loads data from JSON files using JavaScript's `fetch()` API. 
+### Required
 
-**Browser Security Restriction**: Modern browsers block `fetch()` requests when opening HTML files directly via `file://` protocol. This is a security measure to prevent malicious websites from reading local files.
+- **Modern Web Browser**: Chrome 90+, Firefox 88+, Safari 14+, or Edge 90+
+  - JavaScript ES6+ support required
+  - localStorage support required
 
-**Solution**: Run a local HTTP server to serve the files over `http://localhost`.
+### Optional (for Python scripts)
 
-## Quick Start (Recommended)
+- **Python 3.6+** - Only needed if you plan to run data processing scripts
+  - See [PYTHON_SCRIPTS.md](PYTHON_SCRIPTS.md) for details
 
-### Option 1: Python HTTP Server (Easiest)
+## Quick Start
 
-Python 3 includes a built-in HTTP server. This is the **recommended** method.
+### Option 1: Direct File Opening (Simple)
 
-**Prerequisites**: Python 3.x installed
-
-**Steps**:
-
-1. Open terminal/command prompt
-2. Navigate to the repository root directory:
+1. **Clone the repository**:
    ```bash
-   cd /path/to/NauCim
-   ```
-3. Start the server:
-   ```bash
-   python -m http.server 8000
-   ```
-   Or on some systems:
-   ```bash
-   python3 -m http.server 8000
-   ```
-4. Open browser and navigate to:
-   ```
-   http://localhost:8000
+   git clone https://github.com/thachanhtuan/NauCim.git
+   cd NauCim
    ```
 
-**Default pages**:
-- Home: `http://localhost:8000/index.html`
-- Projects: `http://localhost:8000/projects.html`
-- Project details: `http://localhost:8000/project-details.html`
-- Compare: `http://localhost:8000/compare.html`
-- Profile editor: `http://localhost:8000/profile-editor.html`
+2. **Open in browser**:
+   - Navigate to the repository directory
+   - Open `index.html` directly in your browser
+   - Or double-click `index.html` in your file manager
 
-### Option 2: Node.js HTTP Server
+**Limitations**:
+- Some browsers restrict ES6 modules when using `file://` protocol
+- CORS issues may occur with local file access
+- Recommended only for quick viewing
 
-If you have Node.js installed, you can use the `http-server` package.
+### Option 2: Local Web Server (Recommended)
 
-**Prerequisites**: Node.js and npm installed
+Running a local web server avoids CORS and module loading issues.
 
-**Steps**:
+#### Using Python
 
-1. Install `http-server` globally (one-time):
-   ```bash
-   npm install -g http-server
-   ```
-2. Navigate to repository root:
-   ```bash
-   cd /path/to/NauCim
-   ```
-3. Start the server:
-   ```bash
-   http-server -p 8000
-   ```
-4. Open browser to `http://localhost:8000`
+If you have Python installed:
 
-### Option 3: PHP Built-in Server
+```bash
+# Python 3
+cd /path/to/NauCim
+python -m http.server 8000
+
+# Python 2
+python -m SimpleHTTPServer 8000
+```
+
+Then open: http://localhost:8000
+
+#### Using Node.js
+
+If you have Node.js installed:
+
+```bash
+# Install http-server globally (one time)
+npm install -g http-server
+
+# Run server
+cd /path/to/NauCim
+http-server -p 8000
+```
+
+Then open: http://localhost:8000
+
+#### Using PHP
 
 If you have PHP installed:
 
-**Prerequisites**: PHP 5.4+ installed
+```bash
+cd /path/to/NauCim
+php -S localhost:8000
+```
 
-**Steps**:
+Then open: http://localhost:8000
 
-1. Navigate to repository root:
-   ```bash
-   cd /path/to/NauCim
-   ```
-2. Start the server:
-   ```bash
-   php -S localhost:8000
-   ```
-3. Open browser to `http://localhost:8000`
-
-### Option 4: VS Code Live Server Extension
+#### Using VS Code
 
 If you use Visual Studio Code:
 
-**Steps**:
+1. Install the "Live Server" extension
+2. Right-click on `index.html`
+3. Select "Open with Live Server"
 
-1. Install the "Live Server" extension by Ritwick Dey
-2. Open the NauCim folder in VS Code
-3. Right-click on `index.html`
-4. Select "Open with Live Server"
-5. Browser opens automatically to `http://127.0.0.1:5500/index.html`
+## Application Pages
 
-**Benefit**: Auto-reload on file changes during development
+After starting the server, you can access:
 
-## Troubleshooting
+- **Main Page**: `http://localhost:8000/index.html`
+- **Projects**: `http://localhost:8000/projects.html`
+- **Project Details**: `http://localhost:8000/project-details.html`
+- **Profile Editor**: `http://localhost:8000/profile-editor.html`
+- **Profile Comparison**: `http://localhost:8000/compare.html`
 
-### Port Already in Use
+## Project Structure
 
-If you see "Address already in use" error, try a different port:
-
-```bash
-# Python
-python -m http.server 8080
-
-# Node http-server
-http-server -p 8080
-
-# PHP
-php -S localhost:8080
 ```
-
-Then access via `http://localhost:8080`
-
-### CORS Errors
-
-If you see CORS errors in browser console:
-- Make sure you're accessing via `http://localhost`, not `file://`
-- Check that the server is running
-- Try clearing browser cache
-
-### Failed to Fetch JSON
-
-If demo data doesn't load:
-1. Verify files exist in `models-data/` directory:
-   ```bash
-   ls models-data/*.json
-   ```
-2. Check browser DevTools Console for error messages
-3. Ensure you're using a local server, not opening files directly
-
-### Browser Compatibility
-
-Nautilus.CIM requires a modern browser with ES6+ support:
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-
-If using an older browser, you may see JavaScript errors.
+NauCim/
+├── index.html              # Main entry point
+├── *.html                  # Application pages
+├── src/                    # Application source code
+│   ├── services/          # Business logic
+│   ├── ui/                # UI components
+│   ├── styles/            # CSS files
+│   └── ...
+├── models-data/           # JSON data files
+├── scripts/               # Python utility scripts
+└── docs/                  # Documentation
+```
 
 ## Development Workflow
 
-### Typical Development Session
+### Making Changes
 
-1. Start local server:
-   ```bash
-   python -m http.server 8000
-   ```
-2. Open `http://localhost:8000` in browser
-3. Make changes to HTML/CSS/JS files
-4. Refresh browser to see changes (or use Live Server for auto-reload)
-5. Press `Ctrl+C` in terminal to stop server when done
+1. **Edit files** in your favorite editor
+2. **Save changes**
+3. **Refresh browser** to see updates
+   - Hard refresh: `Ctrl+F5` (Windows/Linux) or `Cmd+Shift+R` (Mac)
 
-### Working with Multiple Pages
+### Browser Developer Tools
 
-The application has multiple HTML entry points:
-- `index.html` - Dashboard/home page
-- `projects.html` - Project management
-- `project-details.html` - Project details view
-- `compare.html` - Profile comparison
-- `profile-editor.html` - Visual profile editor
+Essential tools for development:
 
-Navigate between them via:
-- In-app navigation links
-- Direct URL in browser (e.g., `http://localhost:8000/projects.html`)
+- **Console** (F12): View logs and errors
+- **Network** tab: Check file loading
+- **Application** tab: Inspect localStorage data
+- **Elements** tab: Inspect DOM and CSS
 
-### Debugging
+### Working with Data
 
-1. **Browser DevTools Console**: 
-   - Press `F12` to open DevTools
-   - Check Console tab for JavaScript errors
-   - Check Network tab for failed fetch requests
+#### Viewing Data
 
-2. **Data Inspection**:
-   - Open Console in DevTools
-   - Access MemoryStore:
-     ```javascript
-     // In browser console after page loads
-     window.MemoryStore  // View entire store
-     window.MemoryStore.store.projects  // View projects array
-     ```
+Data is stored in browser localStorage. To view:
 
-3. **LocalStorage Inspection**:
-   - DevTools → Application tab → Local Storage
-   - View/edit stored UI state
+1. Open browser DevTools (F12)
+2. Go to Application tab
+3. Select Local Storage → `http://localhost:8000`
+4. Look for keys with project data
 
-## Production Deployment
+#### Clearing Data
 
-While this guide focuses on local development, for production deployment:
+To reset to initial state:
 
-### Static Hosting Options
+1. Open browser Console (F12)
+2. Run: `localStorage.clear()`
+3. Refresh page
 
-The application can be deployed to any static hosting service:
-- **GitHub Pages**: Free hosting for public repos
-- **Netlify**: Free tier with easy deployment
-- **Vercel**: Free tier with auto-deployment
-- **AWS S3 + CloudFront**: Scalable cloud hosting
-- **Any web server**: Apache, Nginx, IIS
+Or use browser settings to clear site data.
 
-### Deployment Steps (Generic)
+#### Loading Test Data
 
-1. Copy all repository files to hosting server
-2. Ensure directory structure is preserved
-3. Set root/index to `index.html`
-4. No build step required - serve files as-is
+The application loads test data automatically from `models-data/`:
+- `CIM100-model.json`
+- `CIM16-model.json`
+- `GOSTRExt-model.json`
+- `focl-model.json`
+- `GOST-XXXXX.1-profile.json`
+- `GOST-XXXXX.2-profile.json`
 
-### Important Notes
+See `src/services/dataloader.js` for loading logic.
 
-- Application is purely client-side - no backend needed
-- All data is demo data from JSON files
-- No database or API endpoints required
-- User changes are NOT persisted (currently)
+## Architecture Overview
 
-## Next Steps
+### Data Flow
 
-After getting the app running:
-- Read [`ARCHITECTURE.md`](ARCHITECTURE.md) to understand the code structure
-- Review [`docs_DATA_STRUCTURES_Version5.md`](docs_DATA_STRUCTURES_Version5.md) for data contracts
-- Check [`CONVENTIONS.md`](CONVENTIONS.md) for coding standards
-- Explore [`PYTHON_SCRIPTS.md`](PYTHON_SCRIPTS.md) if working with data files
+```
+JSON Files (models-data/) 
+  ↓
+dataloader.js 
+  ↓
+MemoryStore (src/store/memory-store.js)
+  ↓
+Services (src/services/)
+  ↓
+UI Components & Renderers (src/ui/)
+  ↓
+Browser DOM
+```
 
-## Additional Resources
+### Key Components
 
-- [Python http.server documentation](https://docs.python.org/3/library/http.server.html)
-- [Node.js http-server package](https://www.npmjs.com/package/http-server)
-- [VS Code Live Server extension](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)
+- **Data Layer**: 
+  - `src/services/dataloader.js` - Data loading
+  - `src/services/*-service.js` - CRUD operations
+  - `src/store/memory-store.js` - In-memory storage
 
----
+- **UI Layer**:
+  - `src/ui/components/` - Reusable components (modals)
+  - `src/ui/renderers/` - Rendering logic
+  - `src/ui/sidebar/` - Sidebar components
 
-**Key Takeaway**: Always use a local HTTP server - never open `index.html` directly in the browser.
+- **Styles**:
+  - `src/styles/` - All CSS files (modular)
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed information.
+
+## Common Development Tasks
+
+### Adding a New Feature
+
+1. **Plan the change** - Review architecture docs
+2. **Choose the right location**:
+   - Data operations → `src/services/`
+   - Rendering logic → `src/ui/renderers/`
+   - Reusable component → `src/ui/components/`
+   - Styles → `src/styles/`
+3. **Follow conventions** - See [CONVENTIONS.md](CONVENTIONS.md)
+4. **Test in browser** - Verify functionality
+
+### Modifying Styles
+
+1. **Never edit** `styles.css` (deprecated)
+2. **Edit files in** `src/styles/`:
+   - Global tokens → `01-tokens.css`
+   - Component styles → `components/`
+   - Page styles → `pages/`
+3. **Refresh browser** to see changes
+4. **Use DevTools** to inspect computed styles
+
+### Working with Services
+
+Example: Adding a new project operation
+
+```javascript
+// src/services/project-service.js
+export function archiveProject(projectId) {
+  const project = MemoryStore.getProjectById(projectId);
+  if (!project) return null;
+  
+  project.archived = true;
+  project.modifyDate = new Date().toISOString();
+  
+  MemoryStore.updateProject(projectId, project);
+  return project;
+}
+```
+
+### Adding a New Renderer
+
+Example: Creating a renderer for a new component
+
+```javascript
+// src/ui/renderers/my-component-renderer.js
+
+export function renderMyComponent(data) {
+  return `
+    <div class="my-component">
+      <h3>${data.title}</h3>
+      <p>${data.description}</p>
+    </div>
+  `;
+}
+```
+
+Then import and use:
+
+```javascript
+import { renderMyComponent } from './ui/renderers/my-component-renderer.js';
+
+const html = renderMyComponent({ title: 'Hello', description: 'World' });
+document.getElementById('container').innerHTML = html;
+```
+
+## Troubleshooting
+
+### Page is Blank
+
+- **Check console** for JavaScript errors (F12)
+- **Verify** you're using a local web server (not `file://`)
+- **Try** hard refresh: `Ctrl+F5`
+
+### Module Not Found Errors
+
+- **Ensure** web server is running
+- **Check** import paths include `.js` extension
+- **Verify** file paths are correct and case-sensitive
+
+### Data Not Loading
+
+- **Check** Network tab in DevTools
+- **Verify** JSON files exist in `models-data/`
+- **Look for** errors in Console
+- **Check** `dataloader.js` for issues
+
+### Styles Not Applying
+
+- **Check** Elements tab to see computed styles
+- **Verify** CSS files are loaded in Network tab
+- **Clear** browser cache
+- **Check** for CSS syntax errors in Console
+
+### localStorage Full
+
+If you get quota exceeded errors:
+1. Open DevTools → Application → Local Storage
+2. Clear old data
+3. Or increase quota in browser settings (Chrome)
+
+## Testing Changes
+
+### Manual Testing Checklist
+
+- [ ] Page loads without errors
+- [ ] All interactive elements work
+- [ ] Data saves to localStorage
+- [ ] Styles render correctly
+- [ ] No console errors
+- [ ] Works in multiple browsers
+- [ ] Responsive design works
+
+### Browser Testing
+
+Test in multiple browsers:
+- Chrome (primary target)
+- Firefox
+- Safari (if on Mac)
+- Edge
+
+### Performance
+
+Monitor in DevTools:
+- Network tab: Check file sizes
+- Performance tab: Check for slow operations
+- Console: Check for warnings
+
+## Best Practices
+
+### Code Organization
+
+✅ **DO**:
+- Use ES6 modules
+- Follow naming conventions
+- Keep functions small and focused
+- Add comments for complex logic
+- Use services for data operations
+
+❌ **DON'T**:
+- Modify deprecated files (`data.js`, `sidebar.js`, `styles.css`)
+- Put business logic in renderers
+- Mix concerns (data/UI/styles)
+- Hardcode values that should be variables
+
+### Git Workflow
+
+```bash
+# Create a feature branch
+git checkout -b feature/my-feature
+
+# Make changes
+# ... edit files ...
+
+# Stage changes
+git add src/services/my-service.js
+
+# Commit with clear message
+git commit -m "Add archive project feature"
+
+# Push to remote
+git push origin feature/my-feature
+```
+
+### Before Committing
+
+- [ ] Test in browser
+- [ ] Check for console errors
+- [ ] Review changed files
+- [ ] Follow conventions
+- [ ] Update documentation if needed
+
+## Further Reading
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Detailed architecture documentation
+- [CONVENTIONS.md](CONVENTIONS.md) - Coding standards and conventions
+- [PYTHON_SCRIPTS.md](PYTHON_SCRIPTS.md) - Python utility scripts
+- [docs_DATA_STRUCTURES_Version5.md](docs_DATA_STRUCTURES_Version5.md) - Data contract
+
+## Getting Help
+
+If you encounter issues:
+1. Check this documentation
+2. Review browser console for errors
+3. Check existing issues on GitHub
+4. Open a new issue with:
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Browser and version
+   - Console errors (if any)

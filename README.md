@@ -11,28 +11,41 @@
 
 ```
 NauCIM/
-├── index.html              # Главная страница
-├── projects.html           # Управление проектами
-├── project-details.html    # Детали проекта
-├── profile-editor.html     # Редактор профилей
-├── compare.html            # Сравнение профилей
-├── data.js                 # Управление данными (MemoryStore)
-├── sidebar.js              # Боковая панель навигации
-├── src/                    # Исходный код приложения
-│   ├── app/pages/          # Модули страниц
-│   │   ├── index-page.js
-│   │   ├── projects-page.js
-│   │   └── project-details-page.js
-│   └── ui/templates/       # Шаблоны модальных окон
-├── models-data/            # JSON-файлы с данными моделей
-├── scripts/                # Python-утилиты для данных
-└── docs/                   # Документация
-    ├── docs_DATA_STRUCTURES_Version5.md  # ⭐ Контракт данных
-    ├── ARCHITECTURE.md
-    ├── CONVENTIONS.md
-    ├── RUN_LOCAL.md
-    └── PYTHON_SCRIPTS.md
+├── index.html                  # Главная страница
+├── projects.html               # Управление проектами
+├── profile-editor.html         # Редактор профилей
+├── project-details.html        # Детали проекта
+├── compare.html                # Сравнение профилей
+├── src/
+│   ├── services/              # Бизнес-логика и операции с данными
+│   │   ├── dataloader.js     # ⭐ Загрузка данных в MemoryStore
+│   │   ├── model-service.js
+│   │   ├── profile-service.js
+│   │   └── project-service.js
+│   ├── store/
+│   │   └── memory-store.js   # ⭐ Хранилище данных в памяти
+│   ├── ui/
+│   │   ├── components/       # Переиспользуемые компоненты (модалки)
+│   │   ├── renderers/        # Модули рендеринга
+│   │   └── sidebar/          # ⭐ Компоненты сайдбара
+│   └── styles/                # ⭐ Все CSS файлы
+├── docs/                       # Документация
+│   ├── ARCHITECTURE.md        # Описание архитектуры
+│   ├── CONVENTIONS.md         # Соглашения о разработке
+│   └── docs_DATA_STRUCTURES_Version5.md  # Контракт данных
+├── data.js                     # ⚠️ УСТАРЕЛО - не использовать
+├── sidebar.js                  # ⚠️ УСТАРЕЛО - не использовать
+├── styles.css                  # ⚠️ УСТАРЕЛО - не использовать
+└── README.md                   # Инструкция
 ```
+
+### ⚠️ Устаревшие файлы (не использовать для новой разработки)
+
+- **`data.js`** - заменен на `src/services/dataloader.js` и `src/services/*-service.js`
+- **`sidebar.js`** - заменен на `src/ui/sidebar/*`
+- **`styles.css`** - заменен на `src/styles/**`
+
+Эти файлы сохранены только для совместимости. Вся новая разработка должна использовать модульную архитектуру в директории `src/`.
 
 ## Как использовать
 
@@ -170,3 +183,24 @@ NauCIM/
 2. Переключитесь в режим **→ Ассоциация**
 3. Соедините классы
 4. Простая стрелка покажет направление ассоциации
+
+---
+
+## 📚 Документация для разработчиков
+
+Для разработчиков и контрибьюторов доступна подробная документация:
+
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Описание архитектуры приложения
+- **[CONVENTIONS.md](docs/CONVENTIONS.md)** - Соглашения о разработке и стиль кода
+- **[docs_DATA_STRUCTURES_Version5.md](docs/docs_DATA_STRUCTURES_Version5.md)** - Контракт данных (канонический источник)
+- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Руководство для GitHub Copilot
+
+### Модульная архитектура
+
+Приложение использует модульную архитектуру с четким разделением ответственности:
+
+- **Слой данных**: `src/services/dataloader.js` + сервисы + `src/store/memory-store.js`
+- **Слой UI**: `src/ui/components/` и `src/ui/renderers/`
+- **Слой стилей**: `src/styles/**`
+
+См. [ARCHITECTURE.md](docs/ARCHITECTURE.md) для деталей.

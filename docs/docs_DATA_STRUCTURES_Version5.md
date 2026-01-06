@@ -1,5 +1,10 @@
 # Структуры данных Nautilus. CIM
 
+> **⭐ CANONICAL DATA CONTRACT**  
+> This is the authoritative, canonical reference for all data structures in the NauCim application.  
+> All code, documentation, and development must follow the data structures defined in this document.  
+> When in doubt about data structure definitions, always refer to this document as the source of truth.
+
 Этот документ описывает все структуры данных, используемые в приложении. 
 
 ---

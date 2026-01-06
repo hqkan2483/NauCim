@@ -1,121 +1,157 @@
 # GitHub Copilot Instructions for NauCim
 
-## Data Contract: Canonical Source of Truth
+## Project Overview
 
-**CRITICAL**: The file `docs/docs_DATA_STRUCTURES_Version5.md` is the **canonical data contract** and **single source of truth** for all data structures in this application.
+Nautilus.CIM is an interactive prototype platform for creating, editing, and managing CIM (Common Information Model) information model profiles for power systems. This is a client-side application using HTML5, CSS3, and ES6+ JavaScript with localStorage for data persistence.
 
-### Strict Rules for Data Structures
+## Architecture Guidelines
 
-1. **DO NOT invent or rename fields** - All fields must match exactly as defined in Version 5 documentation
-2. **ASK before changing V5** - Any modification to data structures defined in V5 requires explicit user approval
-3. **Ensure required fields** - All required fields and default values must match V5 specifications
-4. **Validate against V5** - When working with data structures (Project, Model, Profile, Class, Attribute, Package), always reference `docs/docs_DATA_STRUCTURES_Version5.md`
+### Data Layer (⚠️ Important)
 
-## Repository Architecture
+#### **DEPRECATED - Do NOT use for new development:**
+- `data.js` - Legacy data management file, kept only for compatibility
 
-### Entry Points and Page Structure
+#### **Current Architecture - Use these:**
+- **MemoryStore**: `src/store/memory-store.js` - Global in-memory data storage
+- **Data Loading**: `src/services/dataloader.js` - Initializes and loads data into MemoryStore
+- **CRUD Operations**: Implemented in service files:
+  - `src/services/model-service.js` - Model-related operations
+  - `src/services/profile-service.js` - Profile-related operations
+  - `src/services/project-service.js` - Project-related operations
 
-- **Main entry page**: `index.html` → loads `src/app/pages/index-page.js` as ES6 module
-- **Projects page**: `projects.html` → loads `src/app/pages/projects-page.js`
-- **Project details**: `project-details.html` → loads `src/app/pages/project-details-page.js`
-- **Compare page**: `compare.html` → loads comparison UI (inline scripts)
-- **Profile editor**: `profile-editor.html` → loads profile editing UI (uses Joint.js for diagrams)
+**When working with data:**
+1. Always use service files for CRUD operations
+2. Services interact with MemoryStore
+3. Never modify `data.js` - it's deprecated
 
-### Architecture Boundaries
+### UI Components
 
-#### Page Layer (`src/app/pages/*-page.js`)
-- Entry modules for each HTML page
-- Responsible for initializing page-specific UI and event handlers
-- Import and use shared data layer and services
+#### Sidebar (⚠️ Important)
 
-#### Data Layer (`data.js`)
-- **Central data management** via `MemoryStore` object
-- **Loads JSON data via `fetch()`** from `models-data/*.json` files
-- Provides functions: `getProjects()`, `getProject(id)`, `addProject()`, `updateProject()`, `deleteProject()`
-- Initializes demo data from multiple JSON files (CIM100.json, GOSTRExtension.json, CIM16.json, focl.json, profile-test.json, profile-test2.json)
+**DEPRECATED - Do NOT use for new development:**
+- `sidebar.js` - Legacy sidebar implementation, kept only for compatibility
 
-#### Sidebar (`sidebar.js`)
-- Shared navigation component
-- Manages sidebar state (collapsed/expanded, width, project tree)
-- Uses localStorage for persistence
+**Current Architecture - Use these:**
+- `src/ui/sidebar/index.js` - Main sidebar initialization
+- `src/ui/sidebar/project-tree.js` - Project tree functionality
+- `src/ui/sidebar/sidebar-resize.js` - Sidebar resizing
+- `src/ui/sidebar/sidebar-toggle.js` - Sidebar toggle functionality
+- `src/ui/renderers/project-tree-renderer.js` - Project tree rendering logic
 
-#### Templates (`src/ui/templates/modals/*.html`)
-- HTML templates for modal dialogs
-- Includes: new-project-modal, edit-project-modal, new-model-modal, edit-model-modal, new-profile-modal, edit-profile-modal, edit-attribute-modal, edit-link-modal
+**When working with sidebar:**
+1. All sidebar changes go in `src/ui/sidebar/*`
+2. Rendering logic belongs in `src/ui/renderers/`
+3. Never modify `sidebar.js` - it's deprecated
 
-#### Services and Utilities (`src/services/`, `src/utils/`)
-- Reusable business logic and helper functions
-- Import from page modules as needed
+#### UI Renderers
 
-### Runtime Constraints
+**Location**: `src/ui/renderers/`
 
-**CRITICAL**: This is a **static application** that requires a **local HTTP server** to run properly.
+Contains rendering functionality for page blocks that can be isolated into standalone entities:
+- `attribute-details-renderer.js`
+- `class-details-renderer.js`
+- `link-details-renderer.js`
+- `model-details-renderer.js`
+- `package-details-renderer.js`
+- `profile-details-renderer.js`
+- `project-card.js`
+- `project-list-renderers.js`
+- `project-tree-renderer.js`
 
-**Why**: The application uses `fetch()` to load JSON data from `models-data/*.json`. Browsers block `fetch()` requests when using the `file://` protocol for security reasons.
+**Convention**: When creating or refactoring rendering logic, prefer extracting it into separate modules in `src/ui/renderers/`.
 
-**Solution**: Always run via local HTTP server (see `docs/RUN_LOCAL.md`)
+#### UI Components (Modals)
 
-### LocalStorage Persistence
+**Location**: `src/ui/components/`
 
-The application stores UI state in browser localStorage. **DO NOT change or remove** these keys without understanding their purpose:
+Modal windows and reusable components:
+- `attribute-modal.js`
+- `link-modal.js`
+- `model-modal.js`
+- `profile-modal.js`
+- `project-modal.js`
 
-- `currentProjectId` - ID of the currently selected project
-- `sidebarWidth` - Width of the sidebar in pixels
-- `sidebarCollapsed` - Boolean string ("true"/"false") for sidebar collapsed state
-- `projectsTreeExpanded` - Boolean string for projects tree expansion state
-- `expandedProjects` - JSON object mapping project IDs to their expansion state
+**Convention**: When creating or refactoring pages or blocks, prefer extracting reusable components.
 
-### Python Scripts (`scripts/*.py`)
+### Styles (⚠️ Important)
 
-- **Purpose**: Offline CLI utilities for preparing, validating, and transforming JSON data in `models-data/`
-- **Not runtime dependencies**: These scripts are NOT loaded or used by the web application
-- **Relative paths**: Run scripts from repo root with relative paths, e.g., `python scripts/verify_counts.py`
-- **Historical reference**: `scripts/runScript.txt` contains absolute paths from original development environment and is for reference only
+**DEPRECATED - Do NOT use for new development:**
+- `styles.css` - Legacy styles file, kept only for compatibility
 
-#### Available Scripts
-- `verify_counts.py` - Validate data counts and relationships
-- `check_refModelItemId.py` - Check reference model item IDs
-- `set_refModelItemId.py` - Set reference model item IDs
-- `add-model-id-to-class.py` - Add model IDs to class definitions
-- `add-model-id-to-pack.py` - Add model IDs to package definitions
-- `regen-class-id.py` - Regenerate class IDs
-- `rename_attribute_type.py` - Rename attribute types across models
+**Current Architecture - Use these:**
+- `src/styles/**` - All styling changes should be made here
+- Create new CSS files in `src/styles/` as needed following the existing naming pattern:
+  - `00-fonts.css` - Font definitions
+  - `01-tokens.css` - CSS custom properties/variables
+  - `02-body.css` - Body and base styles
+  - `03-app-container.css` - App container
+  - `04-utils.css` - Utility classes
+  - `05-sidebar-nav.css` - Sidebar navigation
+  - `06-main-content.css` - Main content area
+  - `07-info-style.css` - Info styles
+  - `components/` - Component-specific styles
+  - `pages/` - Page-specific styles
 
-## Coding Conventions
+**When working with styles:**
+1. Never modify `styles.css` - it's deprecated
+2. Add new styles to appropriate files in `src/styles/`
+3. Follow the numbering convention for base styles
+4. Use `components/` and `pages/` subdirectories for specific styles
 
-### Module System
-- Use **ES6 modules** (`type="module"` in script tags)
-- Use `import/export` syntax, not CommonJS `require()`
+## Data Contract
 
-### Data Access
-- Always use `MemoryStore` functions from `data.js` to access/modify data
-- Do NOT directly access `MemoryStore.store` - use provided getter/setter methods
+**Canonical Reference**: `docs/docs_DATA_STRUCTURES_Version5.md`
 
-### File Paths
-- Use relative paths for in-repo resources (e.g., `./models-data/CIM100.json`)
-- Static assets are at repo root level (`index.html`, `styles.css`, `data.js`, `sidebar.js`)
+This document defines all data structures used in the application:
+- Project
+- Model
+- Profile
+- Class
+- Attribute
+- Package
+- Enums
 
-### UI Patterns
-- Modal dialogs are loaded from `src/ui/templates/modals/*.html`
-- Page-specific CSS in `src/styles/pages/`
-- Component CSS in `src/styles/components/`
-- Shared styles in `src/styles/0X-*.css` files
+Always refer to this document when working with data structures.
 
-## Documentation References
+## Development Conventions
 
-- **Data structures**: `docs/docs_DATA_STRUCTURES_Version5.md` ⭐ CANONICAL
-- **Architecture details**: `docs/ARCHITECTURE.md`
-- **Coding conventions**: `docs/CONVENTIONS.md`
-- **Local development**: `docs/RUN_LOCAL.md`
-- **Python scripts**: `docs/PYTHON_SCRIPTS.md`
+### File Organization
+- **Services** (`src/services/`) - Business logic and data operations
+- **Store** (`src/store/`) - Data storage (MemoryStore)
+- **UI** (`src/ui/`) - User interface components and renderers
+- **Styles** (`src/styles/`) - All CSS files
+- **Utils** (`src/utils/`) - Utility functions
+- **Parser** (`src/parser/`) - Data parsing logic
 
-## Development Workflow
+### Modularization Strategy
+1. **Extract rendering logic** into `src/ui/renderers/` when it can be isolated
+2. **Create reusable components** in `src/ui/components/` for modal windows and shared UI elements
+3. **Separate concerns**: Keep data operations in services, rendering in renderers, and business logic isolated
 
-1. **Before making data structure changes**: Review `docs/docs_DATA_STRUCTURES_Version5.md`
-2. **Before running the app**: Start local HTTP server (see `docs/RUN_LOCAL.md`)
-3. **Before modifying JSON data**: Consider using Python scripts in `scripts/` folder
-4. **Before changing localStorage keys**: Verify existing usage in `sidebar.js` and `data.js`
+### Code Style
+- Use ES6+ features (modules, arrow functions, destructuring, etc.)
+- Follow existing naming conventions in the codebase
+- Keep functions small and focused
+- Add comments for complex logic
 
----
+## Important Notes for AI Assistance
 
-**Remember**: When in doubt about data structures, always refer to `docs/docs_DATA_STRUCTURES_Version5.md` as the source of truth.
+1. **Never suggest using deprecated files** (`data.js`, `sidebar.js`, `styles.css`)
+2. **Always use the current architecture** with services, renderers, and modular UI components
+3. **Respect the separation of concerns**: data layer, UI layer, and styling are separate
+4. **Follow the modularization strategy** when refactoring or adding new features
+5. **Reference the data contract** (`docs/docs_DATA_STRUCTURES_Version5.md`) for data structures
+
+## Technology Stack
+- **HTML5** - Page structure
+- **CSS3** - Styles and animations
+- **JavaScript ES6+** - Logic and interactivity (ES modules)
+- **SVG** - Rendering connections between classes
+- **Drag and Drop API** - Element dragging
+- **localStorage** - Local data storage
+
+## Browser Compatibility
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+

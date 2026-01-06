@@ -1,161 +1,96 @@
 # Python Scripts Documentation
 
-This document describes the Python utility scripts in the `scripts/` directory and how to use them.
+This directory contains utility scripts for processing and maintaining CIM model data files.
 
 ## Overview
 
-The `scripts/` folder contains Python CLI utilities for **offline data preparation, validation, and transformation** of JSON files in the `models-data/` directory.
+The scripts in `scripts/` directory are used for data migration, validation, and maintenance of JSON model files stored in `models-data/` directory.
 
-**Important**: These scripts are **NOT** runtime dependencies of the web application. They are developer tools for maintaining and preparing data files.
+## Scripts
 
-## Running Scripts
+### Model Data Processing
 
-### Prerequisites
+#### `add-model-id-to-class.py`
 
-- Python 3.x installed
-- No additional packages required (scripts use Python standard library)
-
-### Basic Usage
-
-Run scripts from the **repository root** using relative paths:
-
-```bash
-# From repository root directory
-python scripts/script-name.py [arguments]
-```
-
-### Script Descriptions
-
-#### 1. `verify_counts.py`
-
-**Purpose**: Validate entity counts and relationships in JSON data files.
-
-**Usage**:
-```bash
-python scripts/verify_counts.py
-```
-
-**What it does**:
-- Counts projects, models, profiles, classes, attributes, packages
-- Verifies referential integrity between entities
-- Reports any inconsistencies or missing references
-
-**When to use**:
-- After manually editing JSON files
-- Before committing data changes
-- To troubleshoot data issues
-
----
-
-#### 2. `check_refModelItemId.py`
-
-**Purpose**: Check reference model item IDs across entities.
-
-**Usage**:
-```bash
-python scripts/check_refModelItemId.py
-```
-
-**What it does**:
-- Validates `refModelItemId` fields exist and are correct
-- Checks that references point to valid entities
-- Reports orphaned or invalid references
-
-**When to use**:
-- After adding new classes or attributes
-- When working with model relationships
-
----
-
-#### 3. `set_refModelItemId.py`
-
-**Purpose**: Automatically set or update reference model item IDs.
-
-**Usage**:
-```bash
-python scripts/set_refModelItemId.py
-```
-
-**What it does**:
-- Analyzes entity relationships
-- Sets `refModelItemId` fields to correct values
-- Updates JSON files in place
-
-**When to use**:
-- After importing new data
-- When references are missing or incorrect
-- **Warning**: Modifies files - commit changes first or backup
-
----
-
-#### 4. `add-model-id-to-class.py`
-
-**Purpose**: Add model IDs to class definitions.
+**Purpose**: Adds `modelId` and `profileId` fields to class objects in model JSON files.
 
 **Usage**:
 ```bash
 python scripts/add-model-id-to-class.py
 ```
 
-**What it does**:
-- Adds `modelId` field to class objects that are missing it
-- Derives model ID from parent relationships
-- Updates JSON files with the changes
+**Details**:
+- Operates on `models-data/GOSTRExt-model.json` (configurable via `SRC` variable)
+- Creates backup file before modification
+- Inserts `modelId` and `profileId` fields after `profileRelations` field
+- Uses OrderedDict to maintain field order
 
-**When to use**:
-- After data migration
-- When adding new classes without model IDs
+#### `add-model-id-to-pack.py`
 
----
-
-#### 5. `add-model-id-to-pack.py`
-
-**Purpose**: Add model IDs to package definitions.
+**Purpose**: Adds `modelId` and `profileId` fields to package objects in model JSON files.
 
 **Usage**:
 ```bash
 python scripts/add-model-id-to-pack.py
 ```
 
-**What it does**:
-- Adds `modelId` field to package objects
-- Ensures packages are properly associated with models
-- Updates JSON files
+**Details**:
+- Operates on `models-data/GOSTRExt-model.json` (configurable via `SRC` variable)
+- Creates backup file before modification
+- Inserts fields before the `classes` key
+- Sets fields to `None` initially
 
-**When to use**:
-- Similar to class ID script but for packages
-- After importing package data
+#### `regen-class-id.py`
 
----
-
-#### 6. `regen-class-id.py`
-
-**Purpose**: Regenerate class IDs across data files.
+**Purpose**: Regenerates class IDs in model JSON files.
 
 **Usage**:
 ```bash
 python scripts/regen-class-id.py
 ```
 
-**What it does**:
-- Generates new unique IDs for classes
-- Updates all references to use new IDs
-- Maintains referential integrity
+**Details**:
+- Updates class identifiers
+- Maintains referential integrity within the model
 
-**When to use**:
-- When IDs are duplicated or invalid
-- After merging data from multiple sources
-- **Warning**: Changes IDs - may break external references
+### Validation Scripts
 
----
+#### `check_refModelItemId.py`
 
-#### 7. `rename_attribute_type.py`
-
-**Purpose**: Rename attribute types across multiple model files.
+**Purpose**: Validates `refModelItemId` references in profile JSON files.
 
 **Usage**:
 ```bash
-python scripts/rename_attribute_type.py <file1> <file2> <file3> ...
+python scripts/check_refModelItemId.py
+```
+
+**Details**:
+- Operates on `models-data/GOST-XXXXX.1-profile.json` (configurable via `SRC` variable)
+- Traverses all classes and checks reference integrity
+- Reports count of total items and items with valid references
+
+#### `verify_counts.py`
+
+**Purpose**: Verifies counts and statistics in model JSON files.
+
+**Usage**:
+```bash
+python scripts/verify_counts.py
+```
+
+**Details**:
+- Validates data integrity
+- Checks counts of various elements
+
+### Data Transformation
+
+#### `rename_attribute_type.py`
+
+**Purpose**: Renames attribute types across multiple model files.
+
+**Usage**:
+```bash
+python scripts/rename_attribute_type.py <file1.json> <file2.json> ...
 ```
 
 **Example**:
@@ -167,208 +102,149 @@ python scripts/rename_attribute_type.py \
   models-data/GOSTRExt-model.json
 ```
 
-**What it does**:
-- Finds and replaces attribute type names
-- Updates multiple JSON files in batch
-- Useful for standardizing attribute type naming
+**Details**:
+- Processes multiple files in one run
+- Updates attribute type references
+- Maintains consistency across model files
 
-**When to use**:
-- After changing attribute type enum values
-- When standardizing naming across models
-- **Note**: Edit script to configure old/new type names before running
+#### `set_refModelItemId.py`
 
----
+**Purpose**: Sets `refModelItemId` references in profile files.
 
-## Historical Reference: `runScript.txt`
-
-The file `scripts/runScript.txt` contains:
-```
-python "C:/pdp/MyProjects/GitHub/NauCim-1/scripts/rename_attribute_type.py" ...
+**Usage**:
+```bash
+python scripts/set_refModelItemId.py
 ```
 
-**Purpose**: Historical documentation of how scripts were originally run.
+**Details**:
+- Updates reference IDs
+- Ensures proper linking between profile and model items
 
-**Status**: 
-- Contains **absolute paths** from original development machine
-- **Do NOT use** these exact commands
-- Keep for reference only
+## Parser Scripts
 
-**Modern usage**: Run scripts with relative paths from repo root as shown above.
+Located in `src/parser/`:
 
----
+### `validate_json_schema.py`
+
+**Purpose**: Validates JSON data against defined schemas.
+
+**Usage**:
+```bash
+python src/parser/validate_json_schema.py
+```
+
+### `xmi_parser_v3_12.py`
+
+**Purpose**: Parses XMI (XML Metadata Interchange) files to JSON format.
+
+**Usage**:
+```bash
+python src/parser/xmi_parser_v3_12.py <input.xmi>
+```
+
+**Details**:
+- Converts XMI format (used by UML tools) to JSON
+- Parses CIM model definitions
+- Version 3.12 of the parser
+
+## Requirements
+
+### Python Version
+- Python 3.6 or higher
+
+### Dependencies
+Most scripts use only standard library modules:
+- `json` - JSON processing
+- `pathlib` - Path operations
+- `collections.OrderedDict` - Ordered dictionaries
+- `shutil` - File operations
+
+No external dependencies required for basic scripts.
 
 ## Best Practices
 
 ### Before Running Scripts
 
-1. **Backup your data**:
-   ```bash
-   cp -r models-data models-data.backup
-   ```
-   Or commit changes to git first.
+1. **Backup your data**: Most scripts create backups automatically, but always keep your own backup
+2. **Review the script**: Check the `SRC` variable to ensure it points to the correct file
+3. **Test on sample data**: Test on a copy before running on production data
 
-2. **Understand what the script does**:
-   - Read script description above
-   - Review script source code if needed
-   - Test on a copy of data first
+### Configuration
 
-3. **Run from correct directory**:
-   ```bash
-   # Always from repo root
-   cd /path/to/NauCim
-   python scripts/script-name.py
-   ```
-
-### After Running Scripts
-
-1. **Verify changes**:
-   ```bash
-   git diff models-data/
-   ```
-
-2. **Test the application**:
-   - Start local server (see [`RUN_LOCAL.md`](RUN_LOCAL.md))
-   - Load pages and verify data displays correctly
-   - Check browser console for errors
-
-3. **Commit changes** (if successful):
-   ```bash
-   git add models-data/
-   git commit -m "feat: update model IDs via script"
-   ```
-
-### When Scripts Fail
-
-If a script produces errors:
-
-1. **Read error message** carefully
-2. **Check input files** exist and are valid JSON
-3. **Verify Python version**: `python --version` (should be 3.x)
-4. **Restore from backup** if data is corrupted
-5. **Report issue** with error details
-
----
-
-## Script Maintenance
-
-### Adding New Scripts
-
-When creating new utility scripts:
-
-1. Add to `scripts/` directory
-2. Use relative paths for file access
-3. Add documentation to this file
-4. Test from repo root
-5. Include usage examples
-
-### Script Template
+Scripts typically have configurable paths at the top:
 
 ```python
-#!/usr/bin/env python3
-"""
-Script Name: my_script.py
-Purpose: Brief description of what this script does
-Usage: python scripts/my_script.py [arguments]
-"""
-
-import sys
-import json
-from pathlib import Path
-
-def main():
-    # Script implementation
-    pass
-
-if __name__ == "__main__":
-    main()
+SRC = Path("models-data/GOSTRExt-model.json")
+BACKUP = SRC.with_suffix(".backup.json")
 ```
 
----
+Modify these paths as needed for your use case.
 
-## Integration with Data Structures
+### After Running
 
-All scripts work with data structures defined in [`docs/docs_DATA_STRUCTURES_Version5.md`](docs_DATA_STRUCTURES_Version5.md).
-
-**Before modifying data with scripts**:
-1. Review V5 documentation
-2. Understand entity relationships
-3. Know which fields are required
-4. Verify enum values are valid
-
-**After script modifications**:
-1. Validate data still conforms to V5
-2. Check that required fields are present
-3. Ensure referential integrity
-
----
+1. **Verify output**: Check the modified files to ensure changes are correct
+2. **Check backups**: Verify that backup files were created (`.backup.json`)
+3. **Test data loading**: Ensure the modified files can be loaded by the application
 
 ## Common Workflows
 
-### Workflow 1: Import New Model Data
+### Adding New Fields to Model
 
+1. Use `add-model-id-to-pack.py` for package-level fields
+2. Use `add-model-id-to-class.py` for class-level fields
+3. Validate with `verify_counts.py`
+
+### Updating References
+
+1. Use `set_refModelItemId.py` to set references
+2. Validate with `check_refModelItemId.py`
+3. Regenerate IDs if needed with `regen-class-id.py`
+
+### Data Migration
+
+1. Backup all data files
+2. Run transformation scripts (e.g., `rename_attribute_type.py`)
+3. Validate with verification scripts
+4. Test data loading in the application
+
+## Troubleshooting
+
+### File Not Found Error
+
+Ensure you're running scripts from the repository root:
 ```bash
-# 1. Add new JSON file to models-data/
-cp ~/Downloads/new-model.json models-data/
-
-# 2. Add model IDs to classes
-python scripts/add-model-id-to-class.py
-
-# 3. Add model IDs to packages
-python scripts/add-model-id-to-pack.py
-
-# 4. Set reference IDs
-python scripts/set_refModelItemId.py
-
-# 5. Verify counts
-python scripts/verify_counts.py
-
-# 6. Test in browser
-python -m http.server 8000
+cd /path/to/NauCim
+python scripts/script-name.py
 ```
 
-### Workflow 2: Standardize Attribute Types
+### Encoding Issues
 
-```bash
-# 1. Edit rename_attribute_type.py to set old/new names
+Scripts use UTF-8 encoding by default. If you encounter encoding errors:
+- Ensure your JSON files are UTF-8 encoded
+- Check for BOM (Byte Order Mark) issues
 
-# 2. Run on all model files
-python scripts/rename_attribute_type.py \
-  models-data/CIM16-model.json \
-  models-data/CIM100-model.json \
-  models-data/GOSTRExt-model.json
+### Backup Files
 
-# 3. Verify changes
-git diff models-data/
+If a `.backup.json` file already exists, some scripts may fail. Either:
+- Delete or rename the old backup
+- Modify the script to use a different backup name
 
-# 4. Check counts
-python scripts/verify_counts.py
-```
+## Integration with Application
 
-### Workflow 3: Fix Broken References
+These scripts prepare and maintain data files that are loaded by:
+- `src/services/dataloader.js` - Main data loader
+- Application reads from `models-data/` directory
+- Data is loaded into `MemoryStore` for runtime use
 
-```bash
-# 1. Check for issues
-python scripts/check_refModelItemId.py
+See [ARCHITECTURE.md](ARCHITECTURE.md) for more details on data flow.
 
-# 2. Auto-fix references
-python scripts/set_refModelItemId.py
+## Contributing
 
-# 3. Verify fix
-python scripts/check_refModelItemId.py
-
-# 4. Test application
-python -m http.server 8000
-```
-
----
-
-## Related Documentation
-
-- **Data structures**: [`docs_DATA_STRUCTURES_Version5.md`](docs_DATA_STRUCTURES_Version5.md) - Entity definitions
-- **Architecture**: [`ARCHITECTURE.md`](ARCHITECTURE.md) - How data flows in the app
-- **Running locally**: [`RUN_LOCAL.md`](RUN_LOCAL.md) - Testing after script changes
-- **Conventions**: [`CONVENTIONS.md`](CONVENTIONS.md) - Python coding standards
-
----
-
-**Remember**: Scripts are tools for **preparing data offline**, not part of the runtime application.
+When adding new scripts:
+1. Follow the existing naming convention: `verb-noun.py`
+2. Include a shebang: `#!/usr/bin/env python3`
+3. Add configuration variables at the top
+4. Create backups before modifying files
+5. Use `OrderedDict` for maintaining field order in JSON
+6. Add proper error handling
+7. Document the script in this file

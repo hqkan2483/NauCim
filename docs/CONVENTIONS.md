@@ -1,430 +1,474 @@
-# Coding Conventions - Nautilus.CIM
+# NauCim Development Conventions
 
-This document outlines coding standards, best practices, and data contract rules for the Nautilus.CIM project.
+This document outlines the coding standards, conventions, and best practices for the NauCim project.
 
-## Data Contract Rules
+## Table of Contents
 
-### Canonical Source of Truth
+- [File Organization](#file-organization)
+- [Naming Conventions](#naming-conventions)
+- [Code Style](#code-style)
+- [Architecture Conventions](#architecture-conventions)
+- [Documentation](#documentation)
+- [Deprecated Files](#deprecated-files)
 
-**`docs/docs_DATA_STRUCTURES_Version5.md`** is the **ONLY** authoritative reference for data structures.
+## File Organization
 
-### Strict Rules
+### Directory Structure
 
-1. **DO NOT invent fields** - All field names must exactly match Version 5 documentation
-2. **DO NOT rename fields** - Field naming in V5 is the standard; do not deviate
-3. **ASK before modifying V5** - Any change to data structures requires user approval
-4. **Validate required fields** - Ensure all required fields are present with correct types
-5. **Respect default values** - Use default values as specified in V5
-6. **Maintain field types** - String, number, boolean, array, object types must match V5
-
-### When Working with Data Structures
-
-Before creating, modifying, or validating any of these entities:
-- Project
-- Model  
-- Profile
-- Class
-- Attribute
-- Package
-- Enums (AccessRights, ProfileType, AttributeType, etc.)
-
-**Always** reference `docs/docs_DATA_STRUCTURES_Version5.md` first.
-
-### Example: Adding a New Project
-
-❌ **Wrong** - Inventing fields:
-```javascript
-const project = {
-  id: generateId(),
-  title: "My Project",  // Wrong: should be "name"
-  desc: "...",          // Wrong: should be "description"
-  createdAt: new Date() // Wrong: should be "createDate" in ISO 8601 string
-};
 ```
-
-✅ **Correct** - Following V5:
-```javascript
-const project = {
-  id: generateId(),
-  name: "My Project",                    // Correct field name
-  description: "Project description",    // Correct field name (optional)
-  version: "1.0",                        // Required
-  createDate: new Date().toISOString(),  // Correct format
-  modifyDate: new Date().toISOString(),  // Required
-  accessRights: "PRIVATE",               // From AccessRights enum
-  models: [],                            // Required array
-  profiles: []                           // Required array
-};
+src/
+├── services/       # Business logic and data operations
+├── store/          # Data storage (MemoryStore)
+├── ui/
+│   ├── components/ # Reusable UI components (modals)
+│   ├── renderers/  # Rendering logic modules
+│   └── sidebar/    # Sidebar components
+├── styles/         # All CSS files
+├── parser/         # Data parsing
+├── utils/          # Utility functions
+├── data-schema/    # Type definitions
+├── state/          # State management
+├── enums/          # Enumerations
+└── app/            # Application initialization
 ```
-
-## JavaScript Conventions
-
-### Module System
-
-Use **ES6 native modules** exclusively:
-
-✅ **Correct**:
-```javascript
-import { getProjects, getProject } from './data.js';
-export function myFunction() { }
-```
-
-❌ **Wrong**:
-```javascript
-const data = require('./data.js');  // No CommonJS
-module.exports = { };                // No CommonJS
-```
-
-### Data Access Pattern
-
-Always use `MemoryStore` API from `data.js`:
-
-✅ **Correct**:
-```javascript
-import { getProjects, addProject, updateProject } from './data.js';
-
-const projects = getProjects();
-const project = getProject(projectId);
-addProject(newProject);
-```
-
-❌ **Wrong**:
-```javascript
-import MemoryStore from './data.js';
-const projects = MemoryStore.store.projects;  // Don't access .store directly
-```
-
-### File Paths
-
-Use relative paths for local resources:
-
-✅ **Correct**:
-```javascript
-fetch('./models-data/CIM100.json')
-import { utils } from '../utils/helpers.js'
-```
-
-❌ **Wrong**:
-```javascript
-fetch('/models-data/CIM100.json')     // Absolute path
-fetch('models-data/CIM100.json')       // Missing ./
-```
-
-### Async/Await
-
-Prefer `async/await` over raw Promises:
-
-✅ **Correct**:
-```javascript
-async function loadData() {
-  try {
-    const response = await fetch('./models-data/data.json');
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Failed to load data:', error);
-  }
-}
-```
-
-❌ **Discouraged**:
-```javascript
-function loadData() {
-  return fetch('./models-data/data.json')
-    .then(res => res.json())
-    .then(data => data)
-    .catch(err => console.error(err));
-}
-```
-
-### Error Handling
-
-Always handle errors gracefully:
-
-```javascript
-async function saveProject(project) {
-  try {
-    // Validation
-    if (!project.name) {
-      throw new Error('Project name is required');
-    }
-    
-    // Operation
-    const saved = addProject(project);
-    return saved;
-    
-  } catch (error) {
-    console.error('Error saving project:', error);
-    // Show user-friendly error message
-    alert(`Failed to save project: ${error.message}`);
-    return null;
-  }
-}
-```
-
-### ID Generation
-
-Follow existing pattern for entity IDs:
-
-```javascript
-// Project IDs: "project-{timestamp}-{random}"
-const projectId = `project-${Date.now()}-${generateRandomString()}`;
-
-// Model IDs: "model-{timestamp}-{random}"
-const modelId = `model-${Date.now()}-${generateRandomString()}`;
-
-// Profile IDs: "profile-{timestamp}-{random}"
-const profileId = `profile-${Date.now()}-${generateRandomString()}`;
-```
-
-### Date Handling
-
-Always use ISO 8601 format for dates:
-
-```javascript
-const createDate = new Date().toISOString();
-// Example: "2025-01-15T10:30:00.000Z"
-```
-
-## HTML Conventions
-
-### Script Loading
-
-Use `type="module"` for ES6 modules:
-
-```html
-<script type="module" src="./src/app/pages/index-page.js"></script>
-```
-
-### Semantic HTML
-
-Use appropriate semantic tags:
-```html
-<nav>          <!-- Navigation -->
-<main>         <!-- Main content -->
-<section>      <!-- Content sections -->
-<article>      <!-- Independent content -->
-<aside>        <!-- Sidebar content -->
-```
-
-## CSS Conventions
-
-### File Organization
-
-- Core styles: `src/styles/0X-*.css` (numbered for load order)
-- Components: `src/styles/components/*.css`
-- Pages: `src/styles/pages/*.css`
-
-### Class Naming
-
-Follow BEM-like conventions:
-
-```css
-.block { }
-.block__element { }
-.block--modifier { }
-
-/* Example */
-.sidebar { }
-.sidebar__nav-item { }
-.sidebar__nav-item--active { }
-```
-
-### Utility Classes
-
-Use existing utility classes from `src/styles/04-utils.css`:
-- `.mt-10`, `.mt-20`, `.mt-30` - Margins
-- `.hidden` - Hide elements
-- `.text-center` - Center text
-
-## LocalStorage Conventions
-
-### Read/Write Pattern
-
-Always check for existence before reading:
-
-```javascript
-// Reading
-const value = localStorage.getItem('key');
-const parsed = JSON.parse(localStorage.getItem('jsonKey') || '{}');
-
-// Writing
-localStorage.setItem('key', 'value');
-localStorage.setItem('jsonKey', JSON.stringify(object));
-```
-
-### Reserved Keys
-
-**DO NOT modify or remove** these localStorage keys without team approval:
-- `currentProjectId`
-- `sidebarWidth`
-- `sidebarCollapsed`
-- `projectsTreeExpanded`
-- `expandedProjects`
-
-### Adding New Keys
-
-If you need new localStorage keys:
-1. Document them in this file
-2. Use descriptive, camelCase names
-3. Add to reserved keys list
-4. Handle missing values gracefully
-
-## Python Script Conventions
 
 ### File Naming
 
-Use lowercase with hyphens:
-- `verify-counts.py` ✅
-- `verifyCountsCamelCase.py` ❌
-- `verify_counts.py` ✅ (also acceptable)
+- Use **kebab-case** for file names: `project-service.js`, `sidebar-toggle.js`
+- Use descriptive names that indicate purpose: `project-tree-renderer.js` not `ptr.js`
+- Suffix service files with `-service`: `model-service.js`
+- Suffix renderer files with `-renderer`: `class-details-renderer.js`
+- Suffix modal files with `-modal`: `project-modal.js`
 
-### Path Handling
+## Naming Conventions
 
-Scripts should accept relative paths from repo root:
+### JavaScript
 
-```python
-import sys
-import json
-from pathlib import Path
+#### Variables and Functions
+- Use **camelCase** for variables and functions:
+  ```javascript
+  const projectId = '123';
+  function getProjectById(id) { ... }
+  ```
 
-# Accept relative path argument
-data_file = Path(sys.argv[1])  # e.g., "models-data/CIM100.json"
+#### Constants
+- Use **UPPER_SNAKE_CASE** for true constants:
+  ```javascript
+  const MAX_PROJECT_NAME_LENGTH = 100;
+  const DEFAULT_ACCESS_RIGHTS = 'custom';
+  ```
 
-# Read relative to script location if needed
-script_dir = Path(__file__).parent
-data_file = script_dir.parent / "models-data" / "CIM100.json"
-```
+#### Classes and Objects
+- Use **PascalCase** for class names:
+  ```javascript
+  class ProjectService { ... }
+  const MemoryStore = { ... }
+  ```
 
-### Documentation
+#### Private Methods/Variables
+- Prefix with underscore for internal/private:
+  ```javascript
+  function _internalHelper() { ... }
+  const _privateCache = {};
+  ```
 
-Each script should have:
-```python
-"""
-Script Name: verify_counts.py
-Purpose: Validate entity counts and relationships in JSON data files
-Usage: python scripts/verify_counts.py
-"""
-```
+### CSS
 
-## Documentation Conventions
+#### Class Names
+- Use **kebab-case** for CSS classes:
+  ```css
+  .project-card { ... }
+  .sidebar-toggle-button { ... }
+  ```
 
-### Inline Comments
+#### CSS Custom Properties
+- Use **kebab-case** with semantic names:
+  ```css
+  --primary-color: #2196F3;
+  --sidebar-width: 300px;
+  --font-size-large: 18px;
+  ```
 
-Comment **why**, not **what**:
+#### BEM Naming (when appropriate)
+- Block__Element--Modifier pattern:
+  ```css
+  .project-card { ... }
+  .project-card__title { ... }
+  .project-card__title--highlighted { ... }
+  ```
 
-❌ **Bad**:
+## Code Style
+
+### JavaScript
+
+#### ES6+ Features
+Always use modern JavaScript features:
+
 ```javascript
-// Loop through projects
-projects.forEach(project => {
-  // Get project name
-  const name = project.name;
-});
+// ✅ Good: Arrow functions
+const getProjects = () => MemoryStore.getAllProjects();
+
+// ✅ Good: Destructuring
+const { id, name, version } = project;
+
+// ✅ Good: Template literals
+const message = `Project ${name} was created`;
+
+// ✅ Good: Spread operator
+const updatedProject = { ...project, name: newName };
+
+// ✅ Good: Default parameters
+function createProject(name, version = '1.0') { ... }
 ```
 
-✅ **Good**:
+#### Module Imports/Exports
+
 ```javascript
-// Filter out archived projects since they shouldn't appear in recent list
+// ✅ Good: Named exports
+export { MemoryStore };
+export function getProjectById(id) { ... }
+
+// ✅ Good: Named imports
+import { MemoryStore } from './store/memory-store.js';
+import { renderProjectCard } from './ui/renderers/project-card.js';
+
+// ✅ Good: Always include .js extension
+import { something } from './module.js';
+```
+
+#### Function Style
+
+```javascript
+// ✅ Good: Small, focused functions
+function getProjectById(id) {
+  return MemoryStore.getProjectById(id);
+}
+
+// ✅ Good: Early returns
+function validateProject(project) {
+  if (!project.name) return false;
+  if (!project.version) return false;
+  return true;
+}
+
+// ✅ Good: Pure functions when possible
+function countClasses(packages) {
+  return packages.reduce((count, pkg) => count + pkg.classes.length, 0);
+}
+```
+
+#### Comments
+
+```javascript
+// ✅ Good: Explain WHY, not WHAT
+// Filter out archived projects to improve performance on large datasets
 const activeProjects = projects.filter(p => !p.archived);
+
+// ✅ Good: Document complex logic
+/**
+ * Resolves class inheritance hierarchy by building a dependency tree.
+ * Uses breadth-first search to prevent circular dependencies.
+ */
+function resolveInheritance(classes) { ... }
+
+// ❌ Bad: Obvious comments
+// Get project by ID
+const project = getProjectById(id);
 ```
 
-### JSDoc Comments
+#### Error Handling
 
-Use JSDoc for functions with complex parameters:
+```javascript
+// ✅ Good: Try-catch for external operations
+async function loadData() {
+  try {
+    const response = await fetch(url);
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to load data:', error);
+    return fallbackData;
+  }
+}
+
+// ✅ Good: Validation with clear error messages
+function createProject(name) {
+  if (!name || name.trim().length === 0) {
+    throw new Error('Project name is required');
+  }
+  // ... create project
+}
+```
+
+### CSS
+
+#### Organization
+
+```css
+/* ✅ Good: Logical grouping */
+.project-card {
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  
+  /* Box model */
+  padding: 16px;
+  margin: 8px;
+  
+  /* Visual */
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  
+  /* Typography */
+  font-size: 14px;
+  line-height: 1.5;
+}
+```
+
+#### Use CSS Custom Properties
+
+```css
+/* ✅ Good: Use tokens from 01-tokens.css */
+.sidebar {
+  background-color: var(--sidebar-bg-color);
+  width: var(--sidebar-width);
+}
+
+/* ❌ Bad: Hardcoded values */
+.sidebar {
+  background-color: #f5f5f5;
+  width: 300px;
+}
+```
+
+## Architecture Conventions
+
+### Data Layer
+
+#### Always Use Services for Data Operations
+
+```javascript
+// ✅ Good: Use service
+import { ProjectService } from './services/project-service.js';
+const project = ProjectService.getById(id);
+
+// ❌ Bad: Direct MemoryStore access from UI
+import { MemoryStore } from './store/memory-store.js';
+const project = MemoryStore.getProjectById(id);
+```
+
+#### Data Flow Pattern
+
+```
+User Action → Service → MemoryStore → localStorage
+            ↓
+         Renderer → DOM
+```
+
+### UI Layer
+
+#### Separate Rendering from Logic
+
+```javascript
+// ✅ Good: Renderer is pure function
+export function renderProjectCard(project) {
+  return `
+    <div class="project-card" data-project-id="${project.id}">
+      <h3>${project.name}</h3>
+      <p>${project.description}</p>
+    </div>
+  `;
+}
+
+// ❌ Bad: Renderer with business logic
+export function renderProjectCard(project) {
+  // Don't do data operations in renderers
+  const relatedModels = MemoryStore.getModelsByProjectId(project.id);
+  // ...
+}
+```
+
+#### Component Encapsulation
+
+```javascript
+// ✅ Good: Component manages its own state
+class ProjectModal {
+  constructor() {
+    this.isOpen = false;
+    this.currentProject = null;
+  }
+  
+  open(project) {
+    this.currentProject = project;
+    this.isOpen = true;
+    this.render();
+  }
+  
+  close() {
+    this.isOpen = false;
+    this.render();
+  }
+}
+```
+
+### Style Layer
+
+#### Where to Put Styles
+
+1. **Global tokens** → `src/styles/01-tokens.css`
+2. **Base element styles** → `src/styles/02-body.css`
+3. **Layout utilities** → `src/styles/04-utils.css`
+4. **Component styles** → `src/styles/components/[component-name].css`
+5. **Page styles** → `src/styles/pages/[page-name].css`
+
+#### Never Use Deprecated Files
+
+```css
+/* ❌ NEVER modify these files - they are deprecated */
+/* - styles.css */
+
+/* ✅ Instead, create/modify files in src/styles/ */
+```
+
+## Documentation
+
+### Inline Documentation
 
 ```javascript
 /**
- * Creates a new project with validation
- * @param {string} name - Project name (required)
- * @param {string} version - Project version (default: "1.0")
- * @param {string} [description] - Optional description
- * @returns {Project} Created project object
+ * Retrieves a project by its unique identifier.
+ * 
+ * @param {string} id - The project ID
+ * @returns {Object|null} The project object or null if not found
  */
-function createProject(name, version = "1.0", description = "") {
-  // Implementation
+function getProjectById(id) {
+  return MemoryStore.getProjectById(id);
 }
 ```
 
-### Markdown Documentation
-
-- Use ATX headers (`#`, `##`, `###`)
-- Include table of contents for long docs
-- Use code fences with language tags
-- Link to related docs
-
-## Version Control
-
-### Commit Messages
-
-Format: `<type>: <description>`
-
-Types:
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `docs:` - Documentation only
-- `style:` - Code style (formatting, no logic change)
-- `refactor:` - Code restructuring (no behavior change)
-- `test:` - Adding tests
-- `chore:` - Build/tooling changes
-
-Examples:
-```
-feat: add profile comparison page
-fix: correct sidebar width calculation
-docs: update V5 data structures with new field
-refactor: extract modal logic into service
-```
-
-## Testing
-
-Currently, the project does not have automated tests. When adding tests:
-
-1. Create `tests/` directory
-2. Use naming: `feature.test.js`
-3. Test data access layer thoroughly
-4. Test data structure validation
-5. Mock `fetch()` calls in tests
-
-## Security
-
-### XSS Prevention
-
-Always sanitize user input before rendering:
+### File Headers
 
 ```javascript
-function escapeHtml(unsafe) {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+/**
+ * Project Service
+ * 
+ * Handles all project-related operations including CRUD,
+ * search, and validation.
+ */
 
-// Use when inserting user data into HTML
-element.textContent = userInput;  // Safe - browser escapes
-element.innerHTML = escapeHtml(userInput);  // Manually escape if needed
+// Module code...
 ```
 
-### Data Validation
+### README Updates
 
-Validate all user input:
+When adding new features:
+1. Update relevant documentation in `docs/`
+2. Add examples if introducing new patterns
+3. Update `docs/ARCHITECTURE.md` if changing structure
+
+## Deprecated Files
+
+### ⚠️ NEVER Modify These Files
+
+The following files are **DEPRECATED** and kept only for backward compatibility:
+
+#### `data.js`
+- **Status**: LEGACY
+- **Reason**: Replaced by modular architecture
+- **Use instead**: 
+  - `src/store/memory-store.js` for storage
+  - `src/services/dataloader.js` for initialization
+  - `src/services/*-service.js` for CRUD operations
+
+#### `sidebar.js`
+- **Status**: LEGACY
+- **Reason**: Replaced by modular sidebar components
+- **Use instead**: 
+  - `src/ui/sidebar/index.js` for initialization
+  - `src/ui/sidebar/project-tree.js` for tree functionality
+  - `src/ui/sidebar/sidebar-resize.js` for resizing
+  - `src/ui/sidebar/sidebar-toggle.js` for toggle
+  - `src/ui/renderers/project-tree-renderer.js` for rendering
+
+#### `styles.css`
+- **Status**: LEGACY
+- **Reason**: Replaced by modular styles in `src/styles/`
+- **Use instead**: Appropriate files in `src/styles/` directory
+
+### How to Handle Deprecated Code
 
 ```javascript
-function validateProject(project) {
-  if (!project.name || typeof project.name !== 'string') {
-    throw new Error('Invalid project name');
-  }
-  if (!project.version || typeof project.version !== 'string') {
-    throw new Error('Invalid project version');
-  }
-  // More validation per V5 requirements
-}
+// ✅ Good: Add new features to new architecture
+// Add new function to appropriate service
+// src/services/project-service.js
+export function archiveProject(id) { ... }
+
+// ❌ Bad: Adding to deprecated file
+// Don't add functions to data.js
 ```
 
----
+## Data Contract
 
-**Remember**: When in doubt, check:
-1. `docs/docs_DATA_STRUCTURES_Version5.md` for data contracts
-2. Existing code for patterns and conventions
-3. Ask the team if something is unclear
+### Always Reference the Canonical Data Structure
+
+**Source**: `docs/docs_DATA_STRUCTURES_Version5.md`
+
+When working with data structures:
+1. Check the data contract document first
+2. Follow the defined interfaces exactly
+3. Don't create ad-hoc data structures
+4. Update the data contract if structures change
+
+```javascript
+// ✅ Good: Following data contract
+const project = {
+  id: generateId(),
+  name: 'New Project',
+  description: 'Description',
+  version: '1.0',
+  createDate: new Date().toISOString(),
+  modifyDate: new Date().toISOString(),
+  accessRights: 'custom',
+  models: [],
+  profiles: []
+};
+```
+
+## Best Practices Summary
+
+### Do's ✅
+- Use ES6+ features (modules, arrow functions, destructuring)
+- Follow the modular architecture
+- Separate concerns (data, UI, styles)
+- Extract reusable logic into renderers and components
+- Use services for all data operations
+- Add styles to `src/styles/` directory
+- Follow naming conventions consistently
+- Write descriptive variable and function names
+- Add comments for complex logic
+- Keep functions small and focused
+
+### Don'ts ❌
+- Don't modify deprecated files (`data.js`, `sidebar.js`, `styles.css`)
+- Don't access MemoryStore directly from UI code
+- Don't mix business logic with rendering
+- Don't hardcode values that should be CSS custom properties
+- Don't create monolithic files
+- Don't skip documentation for complex features
+- Don't ignore the data contract
+
+## Code Review Checklist
+
+Before committing code, verify:
+
+- [ ] No modifications to deprecated files
+- [ ] New data operations added to services
+- [ ] New rendering logic in appropriate renderer
+- [ ] New styles in `src/styles/` directory
+- [ ] Follows naming conventions
+- [ ] Includes appropriate comments
+- [ ] Uses ES6+ features
+- [ ] Follows data contract
+- [ ] No hardcoded values (use CSS custom properties)
+- [ ] Pure functions where possible
+- [ ] Error handling for external operations
