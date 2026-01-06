@@ -9,8 +9,14 @@
 }
 
 .page-project-details .item-section {
-  border-top: 1px solid var(--border-color);
-  padding-top: 20px;
+  border-top: 2px solid var(--border-color);
+  padding-top: 30px;
+}
+
+.page-project-details.diagram-mode .item-section {
+ border-top: none;
+ padding-top: 10px;
+
 }
 
 .page-project-details .section-header {
@@ -46,18 +52,13 @@
   min-height: 0;
 }
 
-.page-project-details.diagram-mode #diagrams-container,
 .page-project-details.diagram-mode #item-container {
   min-height: 120px;
   overflow: auto;
 }
 
-.page-project-details.diagram-mode #diagrams-container {
-  background: var(--bg-light);
-}
-
 .page-project-details.diagram-mode #item-container {
-  background: var(--bg-light);
+  background-color: var(--bg-primary);
 }
 
 
