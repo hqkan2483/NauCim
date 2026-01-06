@@ -1796,7 +1796,10 @@ function handleDeleteModel(modelId) {
 }
 
 function handleEditProfile(profileId) {
-  openEditProfileModal(profileId);
+  if (!profileId) return;
+  window.location.href = `/profile-editor.html?profileId=${encodeURIComponent(
+    profileId
+  )}`;
 }
 
 function handleImportProfile() {
