@@ -47,6 +47,15 @@
   font-weight: 400;
 }
 
+.page-project-details.diagram-mode .btn--class-details,
+.page-project-details.diagram-mode .btn--project-details {
+  flex-shrink: 0;
+  min-width: 85px;
+  padding: 5px 10px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
 /* ICON BUTTONS */
 .btn-icon {
   background: none;

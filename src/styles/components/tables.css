@@ -6,16 +6,24 @@
   border-collapse: collapse;
 }
 
+.page-project-details.diagram-mode .table {
+  font-size: 13px;
+}
+
 /* для всех */
 .table th {
   padding: 10px;
   text-align: left;
   font-weight: 600;
-  /* font-size: 15px; */
   border-bottom: 2px solid var(--border-color);
   color: var(--primary-text);
   /* background-color: var(--main-color-008); */
 }
+
+.page-project-details.diagram-mode .table th {
+  padding: 5px;
+}
+
 
 /* Для всех */
 .table tr:hover {
@@ -28,6 +36,10 @@
   border-bottom: 1px solid var(--border-color);
   /* font-size: 14px; */
   line-height: 1.2;
+}
+
+.page-project-details.diagram-mode .table td {
+  padding: 5px;
 }
 
 /* для всех */

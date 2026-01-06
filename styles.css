@@ -321,9 +321,9 @@ body.modal-open {
   /* margin-bottom: 15px; */
 /* } */
 
-.modal-content .form-group {
+/* .modal-content .form-group {
   margin-bottom: 20px;
-}
+} */
 
 .form-group-flex {
   display: flex;
@@ -361,9 +361,9 @@ body.modal-open {
   font-weight: 500;
 }
 
-.modal-content .form-group .form-label {
+/* .modal-content .form-group .form-label {
   margin-bottom: 8px;
-}
+} */
 
 /* .form-input,
 .form-select,
@@ -808,7 +808,7 @@ body.modal-open {
 }
 
 /* MODAL */
-.modal {
+/* .modal {
   display: none;
   position: fixed;
   top: 0;
@@ -834,23 +834,23 @@ body.modal-open {
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-}
+} */
 
-.modal-title {
+/* .modal-title {
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 20px;
   color: var(--primary-text);
-}
+} */
 
-.modal-buttons {
+/* .modal-buttons {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
-}
+} */
 
-.modal-close {
+/* .modal-close {
   position: absolute;
   top: 8px;
   right: 15px;
@@ -859,7 +859,7 @@ body.modal-open {
   font-size: 20px;
   cursor: pointer;
   color: var(--secondary-text);
-}
+} */
 
 /* SPLIT VIEW
 .split-view {
@@ -1036,7 +1036,7 @@ body.modal-open {
 }
 
 /* Diagram Mode (будет использоваться в PR8) */
-.diagram-mode-content-on {
+/* .diagram-mode-content-on {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -1044,7 +1044,7 @@ body.modal-open {
 
 .content-area:has(.diagram-mode-content-on) #standard-mode-content {
   display: none;
-}
+} */
 
 #diagram-container {
   height: 66.666%;
@@ -1054,7 +1054,7 @@ body.modal-open {
   overflow: hidden;
   margin-bottom: 0;
 }
-
+/*
 .diagram-resize-handle.divider {
   height: 10px;
   background: transparent;
@@ -1072,7 +1072,7 @@ body.modal-open {
   height: 1px;
   background: var(--border-color);
   transform: translateY(-0.5px);
-}
+} */
 
 .item-container-diagram {
   height: 33.333%;
@@ -1332,10 +1332,10 @@ body.modal-open {
 }
 
 /* Modal Info Text */
-.modal-info-text {
+/* .modal-info-text {
   color: var(--secondary-text);
   margin-bottom: 15px;
-}
+} */
 
 /* Diagram Button Hidden State */
 #diagram-btn {

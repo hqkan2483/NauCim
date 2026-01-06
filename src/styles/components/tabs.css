@@ -23,6 +23,11 @@
   transition: all 0.3s;
 }
 
+.page-project-details.diagram-mode .tab {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
 /* особенность таба в описании проекта/модели */
 .split-right .tab {
   margin-bottom: -2px;

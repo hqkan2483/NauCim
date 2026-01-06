@@ -6,10 +6,20 @@
   padding: 20px 20px;
 }
 
+.page-project-details.diagram-mode .form-section {
+  margin-bottom: 0;
+  padding: 10px 20px;
+}
+
 .form-section-title {
   margin: 0 0 20px 0;
   padding-bottom: 15px;
   border-bottom: 2px solid var(--border-color);
+}
+
+.page-project-details.diagram-mode .form-section-title {
+  margin: 0 0 10px 0;
+  padding-bottom: 10px;
 }
 
 .form-row {
@@ -18,6 +28,11 @@
   row-gap: 20px;
   column-gap: 40px;
   margin-bottom: 15px;
+}
+
+.page-project-details.diagram-mode .form-row {
+  row-gap: 10px;
+  margin-bottom: 10px;
 }
 
 .form-row:last-child {
@@ -41,6 +56,10 @@
   gap: 6px;
 }
 
+.modal-content .form-group {
+  margin-bottom: 20px;
+}
+
 .form-group__line {
   flex-direction: row;
   gap: 20px;
@@ -53,10 +72,24 @@
   font-size: 14px;
 }
 
+.page-project-details.diagram-mode .form-label {
+  font-size: 13px;
+}
+
+.modal-content .form-group .form-label {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+
 .form-label__title {
   min-width: 0;
   font-size: 16px;
   font-weight: 600;
+}
+
+.page-project-details.diagram-mode .form-label__title {
+  font-size: 14px;
 }
 
 .form-group__line .form-label {
@@ -86,6 +119,19 @@
     border-color 0.2s,
     box-shadow 0.2s;
 }
+
+.page-project-details.diagram-mode .form-input,
+.page-project-details.diagram-mode .form-textarea,
+.page-project-details.diagram-mode .form-select {
+  font-size: 13px;
+}
+
+.modal-open .modal-content .form-input,
+.modal-open .modal-content .form-textarea,
+.modal-open .modal-content .form-select {
+  font-size: 14px;
+}
+
 
 .form-input__short {
   width: 400px;

@@ -68,10 +68,10 @@ function renderPackageForm(pkg) {
           </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="btn btn-primary btn--project-details">
             💾 Сохранить изменения
           </button>
-          <button type="button" class="btn btn-secondary" id="pkg-cancel-btn">
+          <button type="button" class="btn btn-secondary btn--project-details" id="pkg-cancel-btn">
             ↩️ Отмена
           </button>
         </div>
