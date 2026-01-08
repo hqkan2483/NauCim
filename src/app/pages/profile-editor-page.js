@@ -767,16 +767,23 @@ function toggleEditorMode() {
   isEditorMode = !isEditorMode;
 
   const contentArea = document.getElementById("editor-content-area");
+  const diagramEditor = document.getElementById("diagram-editor");
   const toggleBtn = document.getElementById("toggle-mode-btn");
 
+  if (!contentArea || !diagramEditor || !toggleBtn) return;
+
   if (isEditorMode) {
-    contentArea.classList.remove("standart-mode");
-    contentArea.classList.add("editor-mode");
+    // -> diagram mode
     toggleBtn.innerHTML = "📋 Стандартный режим";
+    contentArea.classList.remove("standard-mode");
+    contentArea.classList.add("diagram-mode");
+    diagramEditor.classList.remove("hidden");
   } else {
-    contentArea.classList.remove("editor-mode");
-    contentArea.classList.add("standart-mode");
+    // -> standard mode
     toggleBtn.innerHTML = "📐 Режим диаграммы";
+    contentArea.classList.remove("diagram-mode");
+    contentArea.classList.add("standard-mode");
+    diagramEditor.classList.add("hidden");
   }
 }
 
