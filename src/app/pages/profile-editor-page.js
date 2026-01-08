@@ -19,7 +19,10 @@ import {
   getItemDetailsByKey,
 } from "../../services/profile-editor-service.js";
 import { initEditorTree } from "../../ui/components/editor-tree.js";
-import { initDetailsPanel } from "../../ui/components/profile-details-panel.js";
+import {
+  initDetailsPanel,
+  renderProfileEditorDetailsPanelLayout,
+} from "../../ui/components/profile-editor-details-panel.js";
 
 // ============================================================
 // STATE
@@ -55,11 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ✅ Get profile ID from URL
   currentProfileId = getQueryParam("id");
 
-  console.log("🚀 Profile Editor initialized");
-  console.log("  - Profile ID from URL:", currentProfileId);
-
   if (!currentProfileId) {
-    console.error("❌ No profile ID found in URL");
     showNoProfileWarning();
     return;
   }
@@ -68,13 +67,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const projectId = findProjectByProfileId(currentProfileId);
 
   if (!projectId) {
-    console.error("❌ Project not found for profile:", currentProfileId);
     showNoProjectWarning();
     return;
   }
 
   currentProjectId = projectId;
-  console.log("  - Project ID found:", currentProjectId);
 
   loadProfileFromUrl();
   loadAvailableData();
@@ -100,12 +97,8 @@ document.addEventListener("DOMContentLoaded", async () => {
  * @returns {string|number|null} Project ID or null
  */
 function findProjectByProfileId(profileId) {
-  console.log("🔍 Searching for project containing profile:", profileId);
-
   // ✅ Get all projects from memoryStorage
   const projects = getAllProjects();
-
-  console.log("  - Total projects:", projects.length);
 
   for (const project of projects) {
     if (project.profiles && Array.isArray(project.profiles)) {
@@ -120,15 +113,11 @@ function findProjectByProfileId(profileId) {
       });
 
       if (profile) {
-        console.log(
-          `  ✅ Profile "${profile.name}" found in project "${project.name}" (ID: ${project.id})`
-        );
         return project.id;
       }
     }
   }
 
-  console.warn("  ⚠️ Profile not found in any project");
   return null;
 }
 
@@ -137,21 +126,16 @@ function findProjectByProfileId(profileId) {
 // ============================================================
 
 function initComponents() {
-  console.log("🔧 Initializing components...");
-
   // Initialize left tree (available items)
   const leftTreeContainer = document.getElementById("available-tree");
-  console.log("  - Left tree container:", leftTreeContainer);
 
   if (leftTreeContainer) {
     leftTreeComponent = initEditorTree("available-tree", {
       onSelect: (itemKey) => {
-        console.log("📌 Left tree item selected:", itemKey);
         activeLeftItem = itemKey;
         loadItemDetails(itemKey, "left");
       },
       onExpand: (itemKey, isExpanded) => {
-        console.log("📂 Left tree item expanded:", itemKey, isExpanded);
         if (isExpanded) {
           expandedLeftItems.add(itemKey);
         } else {
@@ -159,7 +143,6 @@ function initComponents() {
         }
       },
       onCheck: (itemKey, isChecked) => {
-        console.log("☑️ Left tree item checked:", itemKey, isChecked);
         if (isChecked) {
           selectedLeftItems.add(itemKey);
         } else {
@@ -167,24 +150,20 @@ function initComponents() {
         }
       },
     });
-    console.log("  ✅ Left tree component initialized:", leftTreeComponent);
   } else {
     console.error("  ❌ Left tree container not found");
   }
 
   // Initialize right tree (profile items)
   const rightTreeContainer = document.getElementById("profile-tree");
-  console.log("  - Right tree container:", rightTreeContainer);
 
   if (rightTreeContainer) {
     rightTreeComponent = initEditorTree("profile-tree", {
       onSelect: (itemKey) => {
-        console.log("📌 Right tree item selected:", itemKey);
         activeRightItem = itemKey;
         loadItemDetails(itemKey, "right");
       },
       onExpand: (itemKey, isExpanded) => {
-        console.log("📂 Right tree item expanded:", itemKey, isExpanded);
         if (isExpanded) {
           expandedRightItems.add(itemKey);
         } else {
@@ -192,7 +171,6 @@ function initComponents() {
         }
       },
       onCheck: (itemKey, isChecked) => {
-        console.log("☑️ Right tree item checked:", itemKey, isChecked);
         if (isChecked) {
           selectedRightItems.add(itemKey);
         } else {
@@ -200,28 +178,21 @@ function initComponents() {
         }
       },
     });
-    console.log("  ✅ Right tree component initialized:", rightTreeComponent);
   } else {
     console.error("  ❌ Right tree container not found");
   }
 
   // Initialize details panel
   const detailsPanelContainer = document.getElementById("details-panel");
-  console.log("  - Details panel container:", detailsPanelContainer);
 
   if (detailsPanelContainer) {
+    detailsPanelContainer.innerHTML = renderProfileEditorDetailsPanelLayout();
+
     detailsPanelComponent = initDetailsPanel("details-panel", {
-      onTabSwitch: (tabName) => {
-        console.log("📑 Tab switched to:", tabName);
-      },
+      onTabSwitch: (tabName) => {},
       defaultTab: "model",
     });
-    console.log("  ✅ Details panel initialized:", detailsPanelComponent);
-  } else {
-    console.error("  ❌ Details panel container not found");
   }
-
-  console.log("✅ All components initialized");
 }
 
 // ============================================================
@@ -229,8 +200,6 @@ function initComponents() {
 // ============================================================
 
 function loadItemDetails(itemKey, side) {
-  console.log("📋 Loading item details:", itemKey, "Side:", side);
-
   if (!detailsPanelComponent) {
     console.error("❌ Details panel component not initialized");
     return;
@@ -238,14 +207,12 @@ function loadItemDetails(itemKey, side) {
 
   const item = getItemDetailsByKey(itemKey, availableData, profileData);
 
-  console.log("  - Item found:", item);
-
   if (side === "left") {
     detailsPanelComponent.renderModelDetails(item);
-    detailsPanelComponent.switchTab("model");
+    detailsPanelComponent.switchTab("model", "available-item-details");
   } else {
     detailsPanelComponent.renderProfileDetails(item);
-    detailsPanelComponent.switchTab("profile");
+    detailsPanelComponent.switchTab("profile", "profile-item-details");
   }
 }
 
@@ -257,10 +224,6 @@ function loadItemDetails(itemKey, side) {
  * Load profile from URL parameters
  */
 function loadProfileFromUrl() {
-  console.log("📄 Loading profile...");
-  console.log("  - Profile ID:", currentProfileId);
-  console.log("  - Project ID:", currentProjectId);
-
   if (!currentProfileId || !currentProjectId) {
     console.error("❌ Missing IDs");
     return;
@@ -269,8 +232,6 @@ function loadProfileFromUrl() {
   // ✅ Parse profileId to number for getProfile
   const profileIdNum = parseInt(currentProfileId);
   const profile = getProfile(currentProjectId, profileIdNum);
-
-  console.log("  - Profile data:", profile);
 
   if (profile) {
     profileData.id = profile.id;
@@ -286,14 +247,8 @@ function loadProfileFromUrl() {
     // ✅ NEW STRUCTURE: rootPackages[0].packages
     profileData.items = profile.rootPackages?.[0]?.packages || [];
 
-    console.log("  ✅ Profile loaded:", {
-      name: profileData.name,
-      itemsCount: profileData.items.length,
-    });
-
     updateProfileDisplay();
   } else {
-    console.warn("⚠️ Profile not found:", currentProfileId);
     showNoProfileWarning();
   }
 }
@@ -304,9 +259,6 @@ function loadProfileFromUrl() {
 function loadAvailableData() {
   const project = getProjectById(currentProjectId);
 
-  console.log("📦 Loading available data...");
-  console.log("  - Project:", project);
-
   if (!project) {
     console.error("❌ Project not found:", currentProjectId);
     return;
@@ -316,16 +268,9 @@ function loadAvailableData() {
 
   // ✅ Add models with NEW structure (rootPackages)
   if (project.models && Array.isArray(project.models)) {
-    console.log("📋 Models found:", project.models.length);
-
     project.models.forEach((model) => {
       // ✅ NEW STRUCTURE:  rootPackages[0].packages
       const packages = model.rootPackages?.[0]?.packages || [];
-
-      console.log(`  - Model "${model.name}":`, {
-        rootPackages: model.rootPackages?.length || 0,
-        packages: packages.length,
-      });
 
       availableData.push({
         type: "model",
@@ -336,13 +281,10 @@ function loadAvailableData() {
       });
     });
   } else {
-    console.warn("⚠️ No models found in project");
   }
 
   // ✅ Add profiles with NEW structure
   if (project.profiles && Array.isArray(project.profiles)) {
-    console.log("⚙️ Profiles found:", project.profiles.length);
-
     project.profiles.forEach((profile) => {
       // ✅ Don't include the profile being edited
       const isCurrentProfile =
@@ -354,11 +296,6 @@ function loadAvailableData() {
         // ✅ NEW STRUCTURE:  rootPackages[0].packages
         const packages = profile.rootPackages?.[0]?.packages || [];
 
-        console.log(`  - Profile "${profile.name}":`, {
-          rootPackages: profile.rootPackages?.length || 0,
-          packages: packages.length,
-        });
-
         availableData.push({
           type: "profile",
           id: profile.id,
@@ -367,14 +304,10 @@ function loadAvailableData() {
           children: packages, // ✅ Use extracted packages
         });
       } else {
-        console.log(`  - Skipping current profile "${profile.name}"`);
       }
     });
   } else {
-    console.warn("⚠️ No profiles found in project");
   }
-
-  console.log("✅ Available data loaded:", availableData.length, "items");
 }
 
 // ============================================================
@@ -444,9 +377,6 @@ function renderAvailableTree() {
     return;
   }
 
-  console.log("🎨 Rendering available tree...");
-  console.log("  - Available data:", availableData.length);
-
   const html = renderAvailableTreeHTML(
     availableData,
     selectedLeftItems,
@@ -454,11 +384,7 @@ function renderAvailableTree() {
     activeLeftItem
   );
 
-  console.log("  - HTML length:", html.length);
-
   container.innerHTML = html;
-
-  console.log("✅ Available tree rendered");
 }
 
 /**
@@ -471,9 +397,6 @@ function renderProfileTree() {
     return;
   }
 
-  console.log("🎨 Rendering profile tree...");
-  console.log("  - Profile items:", profileData.items.length);
-
   const html = renderProfileTreeHTML(
     profileData,
     selectedRightItems,
@@ -481,11 +404,7 @@ function renderProfileTree() {
     activeRightItem
   );
 
-  console.log("  - HTML length:", html.length);
-
   container.innerHTML = html;
-
-  console.log("✅ Profile tree rendered");
 }
 
 // ============================================================
@@ -550,49 +469,6 @@ function bindEvents() {
   if (rightSearch) {
     rightSearch.addEventListener("input", filterRightTree);
   }
-
-  // // Tree interactions (delegated)
-  // document.addEventListener("click", handleTreeClick);
-
-  // Details tabs
-  bindDetailsTabs();
-}
-
-/**
- * Handle tree click events (delegated)
- */
-function handleTreeClick(e) {
-  const target = e.target;
-
-  // Toggle expand/collapse
-  if (target.closest("[data-action='toggle-expand']")) {
-    const treeItem = target.closest("[data-item-key]");
-    if (treeItem) {
-      const itemKey = treeItem.getAttribute("data-item-key");
-      const side = treeItem.getAttribute("data-side") || "left";
-      toggleExpand(itemKey, side);
-    }
-    return;
-  }
-
-  // Toggle checkbox
-  if (target.closest("[data-action='toggle-select']")) {
-    const treeItem = target.closest("[data-item-key]");
-    if (treeItem) {
-      const itemKey = treeItem.getAttribute("data-item-key");
-      const side = treeItem.getAttribute("data-side") || "left";
-      toggleSelect(itemKey, side);
-    }
-    return;
-  }
-
-  // Select item
-  const treeItem = target.closest("[data-item-key]");
-  if (treeItem) {
-    const itemKey = treeItem.getAttribute("data-item-key");
-    const side = treeItem.getAttribute("data-side") || "left";
-    setActiveItem(itemKey, side);
-  }
 }
 
 // ============================================================
@@ -600,9 +476,6 @@ function handleTreeClick(e) {
 // ============================================================
 
 function transferToProfile() {
-  console.log("→ Transfer to profile");
-  console.log("  - Selected left items:", selectedLeftItems.size);
-
   if (selectedLeftItems.size === 0) {
     alert("Выберите элементы для переноса");
     return;
@@ -649,8 +522,6 @@ function transferToProfile() {
         }
       },
     });
-
-    console.log("✅ Transfer complete");
   } catch (error) {
     console.error("❌ Transfer failed:", error);
     alert("Ошибка при переносе элементов: " + error.message);
@@ -658,9 +529,6 @@ function transferToProfile() {
 }
 
 function removeFromProfile() {
-  console.log("✕ Remove from profile");
-  console.log("  - Selected right items:", selectedRightItems.size);
-
   if (selectedRightItems.size === 0) {
     alert("Выберите элементы для удаления");
     return;
@@ -707,8 +575,6 @@ function removeFromProfile() {
         }
       },
     });
-
-    console.log("✅ Removal complete");
   } catch (error) {
     console.error("❌ Removal failed:", error);
     alert("Ошибка при удалении элементов: " + error.message);
@@ -719,9 +585,6 @@ function removeFromProfile() {
  * Save profile
  */
 function handleSaveProfile() {
-  console.log("💾 Saving profile...");
-  console.log("  - Profile data:", profileData);
-
   // Validate profile
   const validation = validateProfile(profileData);
 
@@ -734,20 +597,18 @@ function handleSaveProfile() {
   // Prepare for save
   const preparedProfile = prepareProfileForSave(profileData, currentProjectId);
 
-  console.log("  - Prepared profile:", preparedProfile);
-
   // Save profile
   try {
     if (preparedProfile.id && preparedProfile.id !== null) {
       // Update existing profile
       updateProfile(currentProjectId, preparedProfile.id, preparedProfile);
-      console.log("  ✅ Profile updated");
+
       alert("Профиль успешно обновлён!");
     } else {
       // Create new profile
       const newProfile = createProfile(currentProjectId, preparedProfile);
       profileData.id = newProfile.id;
-      console.log("  ✅ Profile created with ID:", newProfile.id);
+
       alert("Профиль успешно создан!");
     }
 
@@ -824,45 +685,6 @@ function filterRightTree() {
 
   // TODO:  Implement visual filtering
   console.log("Filtering right tree:", query);
-}
-// ============================================================
-// DETAILS TABS
-// ============================================================
-
-function bindDetailsTabs() {
-  const tabs = document.querySelectorAll(".tabs .tab");
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      const tabName = tab.getAttribute("data-tab");
-      switchDetailsTab(tabName);
-    });
-  });
-}
-
-function switchDetailsTab(tabName) {
-  // Remove active from all tabs
-  document.querySelectorAll(".tabs .tab").forEach((tab) => {
-    tab.classList.remove("active");
-  });
-
-  // Add active to clicked tab
-  const activeTab = document.querySelector(`.tabs .tab[data-tab="${tabName}"]`);
-  if (activeTab) {
-    activeTab.classList.add("active");
-  }
-
-  // Hide all tab content
-  document.querySelectorAll(".tab-content").forEach((content) => {
-    content.classList.remove("active");
-  });
-
-  // Show selected content
-  const activeContent = document.querySelector(
-    `[data-tab-content="${tabName}"]`
-  );
-  if (activeContent) {
-    activeContent.classList.add("active");
-  }
 }
 
 console.log("Profile Editor Page Module Loaded");
