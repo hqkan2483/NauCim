@@ -3,6 +3,9 @@
  * Manages the details panel with tabs
  */
 
+import { esc } from "../../utils/text-utils.js";
+
+
 /**
  * Initialize details panel component
  * @param {string} containerId - Container element ID
@@ -32,63 +35,67 @@ export function initDetailsPanel(containerId, options = {}) {
     init() {
       this.bindEvents();
 
-  // default: left section -> model, right section -> profile
-  this.switchTab("model", "available-item-details");
-  this.switchTab("profile", "profile-item-details");
+      // default: left section -> model, right section -> profile
+      this.switchTab("model", "available-item-details");
+      this.switchTab("profile", "profile-item-details");
     },
 
     /**
      * Bind event listeners
      */
     bindEvents() {
-  container.addEventListener("click", (e) => {
-    const target = e.target instanceof HTMLElement ? e.target : null;
-    if (!target) return;
+      container.addEventListener("click", (e) => {
+        const target = e.target instanceof HTMLElement ? e.target : null;
+        if (!target) return;
 
-    const tabEl = target.closest(".tabs .tab");
-    if (!tabEl) return;
+        const tabEl = target.closest(".tabs .tab");
+        if (!tabEl) return;
 
-    const sectionEl = tabEl.closest(".details-panel-content");
-    if (!sectionEl) return;
+        const sectionEl = tabEl.closest(".details-panel-content");
+        if (!sectionEl) return;
 
-    const tabName = tabEl.getAttribute("data-tab");
-    if (!tabName) return;
+        const tabName = tabEl.getAttribute("data-tab");
+        if (!tabName) return;
 
-    this.switchTab(tabName, sectionEl.id);
-  });
-},
+        this.switchTab(tabName, sectionEl.id);
+      });
+    },
 
     /**
      * Switch to a specific tab
      */
-switchTab(tabName, sectionId = null) {
-  const sectionEl = sectionId
-    ? container.querySelector(`#${CSS.escape(sectionId)}`)
-    : null;
+    switchTab(tabName, sectionId = null) {
+      const sectionEl = sectionId
+        ? container.querySelector(`#${CSS.escape(sectionId)}`)
+        : null;
 
-  const scope = sectionEl || container;
+      const scope = sectionEl || container;
 
-  // Remove active only inside this scope
-  scope.querySelectorAll(".tabs .tab").forEach((tab) => {
-    tab.classList.remove("active");
-  });
+      // Remove active only inside this scope
+      scope.querySelectorAll(".tabs .tab").forEach((tab) => {
+        tab.classList.remove("active");
+      });
 
-  const activeTab = scope.querySelector(`.tabs .tab[data-tab="${tabName}"]`);
-  if (activeTab) {
-    activeTab.classList.add("active");
-  }
+      const activeTab = scope.querySelector(
+        `.tabs .tab[data-tab="${tabName}"]`
+      );
+      if (activeTab) {
+        activeTab.classList.add("active");
+      }
 
-  scope.querySelectorAll(".tab-content").forEach((content) => {
-    content.classList.remove("active");
-  });
+      scope.querySelectorAll(".tab-content").forEach((content) => {
+        content.classList.remove("active");
+      });
 
-  const activeContent = scope.querySelector(`[data-tab-content="${tabName}"]`);
-  if (activeContent) {
-    activeContent.classList.add("active");
-  }
+      const activeContent = scope.querySelector(
+        `[data-tab-content="${tabName}"]`
+      );
+      if (activeContent) {
+        activeContent.classList.add("active");
+      }
 
-  this.options.onTabSwitch(tabName);
-},
+      this.options.onTabSwitch(tabName);
+    },
 
     /**
      * Render item details in model tab
@@ -97,9 +104,9 @@ switchTab(tabName, sectionId = null) {
       const content = container.querySelector('[data-tab-content="model"]');
       if (!content) return;
 
-      if (! item) {
+      if (!item) {
         content.innerHTML = `
-          <div class="text-muted" style="padding: 10px 0">
+          <div class="text-muted">
             Выберите элемент в дереве для просмотра информации.
           </div>
         `;
@@ -115,31 +122,42 @@ switchTab(tabName, sectionId = null) {
           <div class="item-property">
             <strong>ID:</strong> ${item.id || "—"}
           </div>
-          ${item.documentation ? `
+          ${
+            item.documentation
+              ? `
             <div class="item-property">
               <strong>Описание:</strong>
               <p>${item.documentation}</p>
             </div>
-          ` : ""}
-          ${item.elements && item.elements.length > 0 ? `
+          `
+              : ""
+          }
+          ${
+            item.elements && item.elements.length > 0
+              ? `
             <div class="item-property">
               <strong>Элементы:</strong> ${item.elements.length}
             </div>
-          ` : ""}
+          `
+              : ""
+          }
         </div>
       `;
     },
+
 
     /**
      * Render item details in profile tab
      */
     renderProfileDetails(item) {
+
+      console.log("Rendering profile details for item:", item);
       const content = container.querySelector('[data-tab-content="profile"]');
       if (!content) return;
 
       if (!item) {
         content.innerHTML = `
-          <div class="text-muted" style="padding: 10px 0">
+          <div class="text-muted">
             Выберите элемент профиля для просмотра информации.
           </div>
         `;
@@ -188,7 +206,7 @@ switchTab(tabName, sectionId = null) {
      */
     destroy() {
       console.log("Details panel destroyed");
-    }
+    },
   };
 
   // Initialize on creation
@@ -196,6 +214,8 @@ switchTab(tabName, sectionId = null) {
 
   return instance;
 }
+
+
 
 /**
  * Render attributes table
@@ -221,11 +241,13 @@ export function renderAttributesTable(attributes) {
       </div>
   `;
 
-  attributes.forEach(attr => {
+  attributes.forEach((attr) => {
     html += `
       <div class="attributes-table-row">
         <div class="attributes-table-cell-checkbox">
-          <input type="checkbox" class="attribute-checkbox" data-attr-id="${attr.id}">
+          <input type="checkbox" class="attribute-checkbox" data-attr-id="${
+            attr.id
+          }">
         </div>
         <div class="attributes-table-cell">
           <strong>${attr.name || "—"}</strong>
@@ -272,13 +294,15 @@ export function renderLinksTable(links) {
       </div>
   `;
 
-  links.forEach(link => {
+  links.forEach((link) => {
     const icon = link.relationKind === "Generalization" ? "⬆️" : "↔️";
 
     html += `
       <div class="attributes-table-row">
         <div class="attributes-table-cell-checkbox">
-          <input type="checkbox" class="link-checkbox" data-link-id="${link.linkId}">
+          <input type="checkbox" class="link-checkbox" data-link-id="${
+            link.linkId
+          }">
         </div>
         <div class="attributes-table-cell">
           <strong>${link.targetClassRoleName || "—"}</strong>
@@ -310,6 +334,11 @@ export function renderDetailsPanelSection({
 }) {
   return `
     <div class="details-panel-content ${sectionClass}" id="${sectionId}">
+      <div class="details-panel-header"> ${
+        sectionId === "available-item-details"
+          ? "Исходный объект"
+          : "Редактируемый профиль"
+      } </div>
       <div class="tabs" id="${tabsId}">
         ${tabsHtml}
       </div>
@@ -331,12 +360,12 @@ export function renderProfileEditorDetailsPanelLayout() {
   `;
 
   const leftTabs = `
-    <div class="tab active" data-tab="model">Информация об объекте модели</div>
+    <div class="tab active" data-tab="model">Общая информация</div>
     ${commonTabs}
   `;
 
   const rightTabs = `
-    <div class="tab active" data-tab="profile">Информация об объекте профиля</div>
+    <div class="tab active" data-tab="profile">Общая информация</div>
     ${commonTabs}
   `;
 
@@ -349,6 +378,7 @@ export function renderProfileEditorDetailsPanelLayout() {
       initialTabName: "model",
       emptyText: "Выберите элемент в дереве для просмотра информации.",
     })}
+    <div class="divider mb-20"></div>
     ${renderDetailsPanelSection({
       sectionId: "profile-item-details",
       sectionClass: "profile-item-details",
@@ -359,3 +389,72 @@ export function renderProfileEditorDetailsPanelLayout() {
     })}
   `;
 }
+
+
+
+
+// todo заменить формирование табов на динамическое создание в зависимости от типа элемента
+
+
+function renderProfileEditorDetailsTabs(item, { viewMode = 'standard' } = {}) {
+
+  const isPackage = item.type === 'Package';
+  const isEnumeration = item.type === 'Enumeration';
+  const includeGeneralInfo = viewMode === 'diagram';
+  const generalTabName = 'item-general';
+  const shouldGeneralBeActive = includeGeneralInfo;
+
+  let html = `
+      <div class="section-header">
+        <div class="section-tabs">
+  `;
+
+  if (includeGeneralInfo) {
+    html += `
+      <div class="section-title tab ${shouldGeneralBeActive ? 'active' : ''}"
+           data-section-tab="${generalTabName}"
+           data-item-id="${item.id}">
+        Общая информация
+      </div>
+    `;
+  }
+
+  // ✅ Для обычного класса:  Атрибуты и Связи
+  if (!isEnumeration) {
+    html += `
+      <div class="section-title tab ${shouldGeneralBeActive ? '' : 'active'}"
+           data-section-tab="item-attributes"
+           data-class-id="${cls.id}">
+        Атрибуты (${cls.attributes ?  cls.attributes.length : 0})
+      </div>
+      <div class="section-title tab "
+           data-section-tab="item-links"
+           data-item-id="${item.id}">
+        Связи (${item.links ? item.links.length : 0})
+      </div>
+    `;
+  }
+
+  // ✅ Для Enumeration: только Значения перечисления
+  if (isEnumeration) {
+    html += `
+      <div class="section-title tab ${shouldGeneralBeActive ? '' : 'active'}"
+           data-section-tab="item-literals"
+           data-item-id="${item.id}">
+        Значения перечисления (${item.literals ? item.literals.length : 0})
+      </div>
+    `;
+  }
+
+  html += `
+        </div>
+        <div class="section-tab-actions">
+  `
+
+  html += `
+        </div>
+      </div>
+  `;
+  return html;
+}
+

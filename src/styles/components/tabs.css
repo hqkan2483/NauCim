@@ -28,6 +28,11 @@
   font-size: 14px;
 }
 
+.page-profile-editor .tab {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
 /* особенность таба в описании проекта/модели */
 .split-right .tab {
   margin-bottom: -2px;

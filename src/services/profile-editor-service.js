@@ -11,8 +11,6 @@
  * @returns {Object} Updated profile data
  */
 export function transferItemsToProfile(selectedItems, availableData, profileData) {
-  console.log("🔄 Transferring items to profile...");
-  console.log("  - Selected items:", Array.from(selectedItems));
 
   const itemsToTransfer = [];
   const errors = [];
@@ -23,10 +21,9 @@ export function transferItemsToProfile(selectedItems, availableData, profileData
     const item = findItemByKey(itemKey, availableData);
 
     if (item) {
-      console.log(`    ✅ Found:   ${item.name || item.type}`);
       itemsToTransfer.push({ key: itemKey, data: item });
     } else {
-      console.warn(`    ⚠️ Not found: ${itemKey}`);
+
       errors.push(itemKey);
     }
   });
@@ -51,8 +48,6 @@ export function transferItemsToProfile(selectedItems, availableData, profileData
     }
   });
 
-  console.log("  - Packages to add:", packages.length);
-  console.log("  - Classes to add:", classes.length);
 
   // Add packages to profile
   packages.forEach(pkg => {
