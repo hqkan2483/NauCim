@@ -22,6 +22,7 @@ import { initEditorTree } from "../../ui/components/editor-tree.js";
 import {
   initDetailsPanel,
   renderProfileEditorDetailsPanelLayout,
+  renderProfileEditorDetailsTabs,
 } from "../../ui/components/profile-editor-details-panel.js";
 
 // ============================================================
@@ -209,11 +210,36 @@ function loadItemDetails(itemKey, side) {
 
   if (side === "left") {
     detailsPanelComponent.renderModelDetails(item);
-    detailsPanelComponent.switchTab("model", "available-item-details");
+    updateDetailsTabsForSide("left", item);
   } else {
     detailsPanelComponent.renderProfileDetails(item);
-    detailsPanelComponent.switchTab("profile", "profile-item-details");
+    updateDetailsTabsForSide("right", item);
   }
+}
+
+function updateDetailsTabsForSide(side, item) {
+  const sectionId = side === "left" ? "available-item-details" : "profile-item-details";
+  const sectionKind = side === "left" ? "available" : "profile";
+  const defaultTab = side === "left" ? "model" : "profile";
+
+  const sectionEl = document.getElementById(sectionId);
+  const tabsEl = sectionEl?.querySelector(".tabs");
+  if (!sectionEl || !tabsEl) return;
+
+  const currentActiveTab = tabsEl.querySelector(".tab.active")?.getAttribute("data-tab") || null;
+
+  tabsEl.innerHTML = renderProfileEditorDetailsTabs(item, {
+    section: sectionKind,
+    activeTab: currentActiveTab || defaultTab,
+  });
+
+  // выбираем таб, который реально существует после пересборки
+  const desiredTab =
+    (currentActiveTab && tabsEl.querySelector(`.tab[data-tab="${currentActiveTab}"]`))
+      ? currentActiveTab
+      : defaultTab;
+
+  detailsPanelComponent?.switchTab(desiredTab, sectionId);
 }
 
 // ============================================================

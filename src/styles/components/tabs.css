@@ -1,4 +1,39 @@
 /* Здесь все-все табы в проекте */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.page-profile-editor .section-header {
+  margin-top: 0;
+}
+
+.section-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.page-profile-editor .section-tabs {
+  gap: 10px;
+}
+
+
+
+.page-project-details .section-tab-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.page-project-details .tab-action-btn.hidden {
+  display: none;
+}
+
+
 /* для всех */
 .tabs {
   display: flex;

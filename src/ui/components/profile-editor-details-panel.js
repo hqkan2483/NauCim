@@ -25,7 +25,7 @@ export function initDetailsPanel(containerId, options = {}) {
     container,
     options: {
       onTabSwitch: options.onTabSwitch || (() => {}),
-      defaultTab: options.defaultTab || "model",
+      defaultTab: options.defaultTab || "model-item-general",
     },
     currentTab: null,
 
@@ -36,8 +36,8 @@ export function initDetailsPanel(containerId, options = {}) {
       this.bindEvents();
 
       // default: left section -> model, right section -> profile
-      this.switchTab("model", "available-item-details");
-      this.switchTab("profile", "profile-item-details");
+      this.switchTab("model-item-general", "available-item-details");
+      this.switchTab("profile-item-general", "profile-item-details");
     },
 
     /**
@@ -101,7 +101,7 @@ export function initDetailsPanel(containerId, options = {}) {
      * Render item details in model tab
      */
     renderModelDetails(item) {
-      const content = container.querySelector('[data-tab-content="model"]');
+      const content = container.querySelector('[data-tab-content="model-item-general"]');
       if (!content) return;
 
       if (!item) {
@@ -151,8 +151,7 @@ export function initDetailsPanel(containerId, options = {}) {
      */
     renderProfileDetails(item) {
 
-      console.log("Rendering profile details for item:", item);
-      const content = container.querySelector('[data-tab-content="profile"]');
+      const content = container.querySelector('[data-tab-content="profile-item-general"]');
       if (!content) return;
 
       if (!item) {
@@ -164,34 +163,38 @@ export function initDetailsPanel(containerId, options = {}) {
         return;
       }
 
-      content.innerHTML = `
-        <div class="item-details">
-          <h3>${item.name || "Без названия"}</h3>
-          <div class="item-property">
-            <strong>Включено в профиль</strong>
-          </div>
-          ${item.documentation ? `
-            <div class="item-property">
-              <strong>Описание: </strong>
-              <p>${item.documentation}</p>
-            </div>
-          ` : ""}
-          ${item.elements && item.elements.length > 0 ? `
-            <div class="item-property">
-              <strong>Элементы:</strong> ${item.elements.length}
-            </div>
-          ` : ""}
-          <div class="item-actions" style="margin-top: 15px">
-            <button class="btn btn-secondary btn-small" onclick="alert('Редактирование в разработке')">
-              ✏️ Редактировать
-            </button>
-            <button class="btn btn-danger btn-small" onclick="alert('Удаление в разработке')">
-              🗑️ Удалить из профиля
-            </button>
-          </div>
-        </div>
-      `;
+      content.innerHTML = renderProfileItemForm(item);
+
+      // content.innerHTML = `
+      //   <div class="item-details">
+      //     <h3>${item.name || "Без названия"}</h3>
+      //     <div class="item-property">
+      //       <strong>Включено в профиль</strong>
+      //     </div>
+      //     ${item.documentation ? `
+      //       <div class="item-property">
+      //         <strong>Описание: </strong>
+      //         <p>${item.documentation}</p>
+      //       </div>
+      //     ` : ""}
+      //     ${item.elements && item.elements.length > 0 ? `
+      //       <div class="item-property">
+      //         <strong>Элементы:</strong> ${item.elements.length}
+      //       </div>
+      //     ` : ""}
+      //     <div class="item-actions" style="margin-top: 15px">
+      //       <button class="btn btn-secondary btn-small" onclick="alert('Редактирование в разработке')">
+      //         ✏️ Редактировать
+      //       </button>
+      //       <button class="btn btn-danger btn-small" onclick="alert('Удаление в разработке')">
+      //         🗑️ Удалить из профиля
+      //       </button>
+      //     </div>
+      //   </div>
+      // `;
     },
+
+
 
     /**
      * Clear details
@@ -352,22 +355,18 @@ export function renderDetailsPanelSection({
   `;
 }
 
-export function renderProfileEditorDetailsPanelLayout() {
-  const commonTabs = `
-    <div class="tab" data-tab="object-attributes">Атрибуты</div>
-    <div class="tab" data-tab="object-links">Связи</div>
-    <div class="tab" data-tab="object-enumeration">Значения перечисления</div>
-  `;
+export function renderProfileEditorDetailsPanelLayout(
+  { availableItem = null, profileItem = null } = {}
+) {
+  const leftTabs = renderProfileEditorDetailsTabs(availableItem, {
+    section: "available",
+    activeTab: "model-item-general",
+  });
 
-  const leftTabs = `
-    <div class="tab active" data-tab="model">Общая информация</div>
-    ${commonTabs}
-  `;
-
-  const rightTabs = `
-    <div class="tab active" data-tab="profile">Общая информация</div>
-    ${commonTabs}
-  `;
+  const rightTabs = renderProfileEditorDetailsTabs(profileItem, {
+    section: "profile",
+    activeTab: "profile-item-general",
+  });
 
   return `
     ${renderDetailsPanelSection({
@@ -375,86 +374,140 @@ export function renderProfileEditorDetailsPanelLayout() {
       sectionClass: "available-item-details",
       tabsId: "available-details-tabs",
       tabsHtml: leftTabs,
-      initialTabName: "model",
+      initialTabName: "model-item-general",
       emptyText: "Выберите элемент в дереве для просмотра информации.",
     })}
     <div class="divider mb-20"></div>
     ${renderDetailsPanelSection({
       sectionId: "profile-item-details",
       sectionClass: "profile-item-details",
-      tabsId: "details-tabs",
+      tabsId: "profile-details-tabs",
       tabsHtml: rightTabs,
-      initialTabName: "profile",
+      initialTabName: "profile-item-general",
       emptyText: "Выберите элемент профиля для просмотра информации.",
     })}
   `;
 }
 
+export function renderProfileEditorDetailsTabs(
+  item,
+  { section = "available", activeTab } = {}
+) {
+  const type = item?.type ?? null;
 
+  const isUnknown = !type;
+  const isPackage = type === "Package";
+  const isEnumeration = type === "Enumeration";
 
+  const generalTabName = section === "profile" ? "profile-item-general" : "model-item-general";
+  const resolvedActiveTab = activeTab || generalTabName;
 
-// todo заменить формирование табов на динамическое создание в зависимости от типа элемента
+  const tabs = [
+    { name: generalTabName, label: "Общая информация", id: item?.id || "" },
+  ];
 
+  if (isUnknown) {
+    tabs.push(
+      { name: "object-attributes", label: "Атрибуты", id: item?.id || "" },
+      { name: "object-links", label: "Связи", id: item?.id || "" },
+      { name: "object-enumeration", label: "Значения перечисления", id: item?.id || "" }
+    );
+  } else if (isPackage) {
+    // только общая информация
+  } else if (isEnumeration) {
+    tabs.push({ name: "object-enumeration", label: "Значения перечисления", id: item?.id || "" });
+  } else {
+    tabs.push(
+      { name: "object-attributes", label: "Атрибуты", id: item?.id || "" },
+      { name: "object-links", label: "Связи", id: item?.id || "" }
+    );
+  }
 
-function renderProfileEditorDetailsTabs(item, { viewMode = 'standard' } = {}) {
-
-  const isPackage = item.type === 'Package';
-  const isEnumeration = item.type === 'Enumeration';
-  const includeGeneralInfo = viewMode === 'diagram';
-  const generalTabName = 'item-general';
-  const shouldGeneralBeActive = includeGeneralInfo;
-
-  let html = `
-      <div class="section-header">
+  let html = `<div class="section-header">
         <div class="section-tabs">
   `;
 
-  if (includeGeneralInfo) {
-    html += `
-      <div class="section-title tab ${shouldGeneralBeActive ? 'active' : ''}"
-           data-section-tab="${generalTabName}"
-           data-item-id="${item.id}">
-        Общая информация
-      </div>
-    `;
-  }
+  html += tabs
+    .map(
+      (t) =>
+        `<div class="tab ${t.name === resolvedActiveTab ? "active" : ""}" data-tab="${t.name}" data-item-id="${t.id}">${t.label}</div>`
+    )
+    .join("\n");
 
-  // ✅ Для обычного класса:  Атрибуты и Связи
-  if (!isEnumeration) {
-    html += `
-      <div class="section-title tab ${shouldGeneralBeActive ? '' : 'active'}"
-           data-section-tab="item-attributes"
-           data-class-id="${cls.id}">
-        Атрибуты (${cls.attributes ?  cls.attributes.length : 0})
-      </div>
-      <div class="section-title tab "
-           data-section-tab="item-links"
-           data-item-id="${item.id}">
-        Связи (${item.links ? item.links.length : 0})
-      </div>
-    `;
-  }
-
-  // ✅ Для Enumeration: только Значения перечисления
-  if (isEnumeration) {
-    html += `
-      <div class="section-title tab ${shouldGeneralBeActive ? '' : 'active'}"
-           data-section-tab="item-literals"
-           data-item-id="${item.id}">
-        Значения перечисления (${item.literals ? item.literals.length : 0})
-      </div>
-    `;
-  }
-
-  html += `
+    return html += `
         </div>
-        <div class="section-tab-actions">
+        </div>
   `
+}
 
-  html += `
+function renderProfileItemForm(item) {
+  let html =
+   `
+    <form class="item-form" id="profile-item-form" data-item-id="${item.id}">
+      <div class="form-section">
+        <div class="form-section-title">
+          <div class="form-row">
+            <div class="form-cell">
+              <div class="form-group form-group__line">
+                <label class="form-label form-label__title" for="profile-item-name">Класс *</label>
+                <input type="text" id="profile-item-name" class="form-input form-input__short"
+                       value="${item.name || ''}" required disabled />
+              </div>
+            </div>
+
+            <div class="form-cell form-cell__line">`
+             if (item.type === "Class" || item.type === "Enumeration") { html += `
+              <div class="form-group">
+                <label class="form-checkbox-label">
+                  <span>Абстрактный класс</span>
+                  <input type="checkbox" id="profile-item-isAbstract" class="form-checkbox"
+                         ${item.isAbstract ? 'checked' : ''} disabled />
+                </label>
+              </div>
+              <div class="form-group form-group__line">
+                <label class="form-label" for="profile-item-stereotype">Стереотип</label>
+                <input type="text" id="profile-item-stereotype" class="form-input"
+                       value="${item.stereotype || ''}" placeholder="Например: rs, rf" disabled />
+              </div>
+            </div>`
+              } else html += `
+            </div>`;
+        html += `
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-cell">
+            <div class="form-group">
+              <label class="form-label" for="profile-item-documentation">Описание</label>
+              <textarea id="profile-item-documentation" class="form-textarea" rows="3" disabled>${item.documentation || ''}</textarea>
+            </div>
+          </div>
+          <div class="form-cell">
+            <div class="form-group">
+              <label class="form-label" for="profile-item-documentationRu">Описание (RU)</label>
+              <textarea id="profile-item-documentationRu" class="form-textarea" rows="3">${item.documentationRu || ''}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-cell">
+            <div class="form-group">
+              <label class="form-label" for="profile-item-details">Детали</label>
+              <textarea id="profile-item-details" class="form-textarea" rows="4">${item.details || ''}</textarea>
+            </div>
+          </div>
         </div>
       </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary  btn--class-details">💾 Сохранить изменения</button>
+        <button type="button" class="btn btn-secondary btn--class-details" id="cls-cancel-btn">↩️ Отмена</button>
+      </div>
+    </form>
   `;
+
   return html;
 }
 

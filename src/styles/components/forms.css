@@ -11,6 +11,12 @@
   padding: 10px 20px;
 }
 
+.page-profile-editor .form-section {
+  margin-bottom: 0;
+  padding: 10px 10px;
+}
+
+
 .form-section-title {
   margin: 0 0 20px 0;
   padding-bottom: 15px;
@@ -18,6 +24,11 @@
 }
 
 .page-project-details.diagram-mode .form-section-title {
+  margin: 0 0 10px 0;
+  padding-bottom: 10px;
+}
+
+.page-profile-editor .form-section-title {
   margin: 0 0 10px 0;
   padding-bottom: 10px;
 }
@@ -76,11 +87,15 @@
   font-size: 13px;
 }
 
+.page-profile-editor .form-label {
+  font-size: 13px;
+}
+
+
 .modal-content .form-group .form-label {
   margin-bottom: 8px;
   font-size: 14px;
 }
-
 
 .form-label__title {
   min-width: 0;
@@ -91,6 +106,11 @@
 .page-project-details.diagram-mode .form-label__title {
   font-size: 14px;
 }
+
+.page-profile-editor .form-label__title {
+  font-size: 14px;
+}
+
 
 .form-group__line .form-label {
   align-self: center;
@@ -126,6 +146,13 @@
   font-size: 13px;
 }
 
+.page-profile-editor .form-input,
+.page-profile-editor .form-textarea,
+.page-profile-editor .form-select {
+  font-size: 13px;
+}
+
+
 .modal-open .modal-content .form-input,
 .modal-open .modal-content .form-textarea,
 .modal-open .modal-content .form-select {
@@ -155,6 +182,14 @@
 .form-select[readonly] {
   background: var(--black-01);
   cursor: not-allowed;
+}
+
+.form-input[disabled],
+.form-textarea[disabled],
+.form-select[disabled] {
+  background: var(--black-01);
+  cursor: not-allowed;
+  color: var(--primary-text);
 }
 
 .form-select {
