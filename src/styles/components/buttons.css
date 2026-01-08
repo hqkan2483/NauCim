@@ -56,6 +56,10 @@
   font-weight: 400;
 }
 
+.editor-panel-actions .btn--editor-tree {
+  width: 100%;
+}
+
 /* ICON BUTTONS */
 .btn-icon {
   background: none;
@@ -71,7 +75,6 @@
 .table-actions .btn-icon {
   font-size: 16px;
 }
-
 
 .btn-icon:hover {
   background: var(--main-color-01);

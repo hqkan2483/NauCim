@@ -76,8 +76,8 @@ export function renderTreeChildren(items, parentKey, side, selectedItems, expand
     const isActive = activeItem === itemKey;
 
     // ✅ Support both "classes" (from data) and "elements" (legacy)
-    const classes = item.classes || item.elements || [];
-    const subPackages = item.subPackages || item.children || [];
+    const classes = item.classes || [];
+    const subPackages = item.subPackages || [];
     const hasChildren = classes.length > 0 || subPackages.length > 0;
 
     html += `

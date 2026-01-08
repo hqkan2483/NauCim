@@ -18,6 +18,7 @@
     <!-- Component styles -->
     <link rel="stylesheet" href="src/styles/components/buttons.css" />
     <link rel="stylesheet" href="src/styles/components/toolbar.css" />
+    <link rel="stylesheet" href="src/styles/components/search-box.css" />
     <link rel="stylesheet" href="src/styles/components/sidebar-nav-tree.css" />
     <link rel="stylesheet" href="src/styles/components/object-container.css" />
     <link rel="stylesheet" href="src/styles/components/tabs.css" />
@@ -26,6 +27,7 @@
     <link rel="stylesheet" href="src/styles/components/forms.css" />
     <link rel="stylesheet" href="src/styles/components/warning-content.css" />
     <link rel="stylesheet" href="src/styles/components/modals.css" />
+    <link rel="stylesheet" href="src/styles/components/tree-with-checkbox.css" />
 
     <!-- Profile editor specific styles -->
     <link rel="stylesheet" href="src/styles/pages/profile-editor.css" />
@@ -33,35 +35,38 @@
     <!-- Legacy styles (temporary) -->
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="page page-profile-editor">
     <div class="app-container">
       <div class="main-content">
         <!-- Toolbar -->
         <div class="toolbar">
-          <div class="toolbar-title">
-            <span id="page-title">Редактор профиля</span>
-            <span class="profile-name-display" id="profile-name-display">Новый профиль</span>
+          <div class="toolbar__title">
+            <span id="page-title">Редактор профиля:</span>
+            <span class="toolbar__profile-name" id="profile-name-display">Новый профиль</span>
           </div>
-          <div class="toolbar-actions">
-            <button class="btn btn-secondary" id="toggle-mode-btn">
+          <div class="toolbar__actions">
+            <button class="btn btn-primary btn-toolbar" id="toggle-mode-btn">
               📐 Режим диаграммы
             </button>
-            <button class="btn btn-secondary" id="back-btn">
+            <button class="btn btn-primary btn-toolbar" id="back-btn">
               ← Назад
             </button>
-            <button class="btn btn-primary" id="save-profile-btn">
+            <button class="btn btn-primary btn-toolbar" data-modal-open="new-profile-modal">
+              + Создать профиль
+            </button>
+            <button class="btn btn-primary btn-toolbar" id="save-profile-btn">
               💾 Сохранить профиль
             </button>
           </div>
         </div>
 
         <!-- Editor Content -->
-        <div class="editor-content-area" id="editor-content-area">
-          <div class="editor-wrapper">
+        <div class="editor-content-area diagram-mode" id="editor-content-area">
+          <!-- <div class="editor-wrapper"> -->
             <div class="editor-container">
 
               <!-- Left Panel:  Available Models/Profiles -->
-              <div class="editor-panel" id="available-panel">
+              <div class="editor-panel available-panel" id="available-panel">
                 <div class="editor-panel-header">Модели и профили проекта</div>
                 <div class="editor-panel-content">
                   <div class="search-box">
@@ -70,20 +75,70 @@
                   <div id="available-tree"></div>
                 </div>
                 <div class="editor-panel-actions">
-                  <button class="btn btn-primary" id="transfer-to-profile-btn" style="width: 100%">
+                  <button class="btn btn-primary btn--editor-tree" id="transfer-to-profile-btn" >
                     → Перенести в профиль
                   </button>
-                  <button class="btn btn-secondary" id="clear-left-selection-btn" style="width: 100%">
+                  <button class="btn btn-secondary btn--editor-tree" id="clear-left-selection-btn" >
                     ✕ Снять выделение
                   </button>
                 </div>
               </div>
+              <div class="left-resizer"></div>
 
               <!-- Diagram Editor (hidden by default) -->
-              <div id="diagram-editor" class="hidden"></div>
+              <div id="diagram-editor" class="hidden diagram-editor"></div>
+
+
+              <!-- Details Panel (Standard Mode) -->
+            <div class="details-panel" id="details-panel">
+                <div class="details-panel-content available-item-details" id="available-item-details">
+                  <div class="tabs" id="available-details-tabs">
+                    <div class="tab active" data-tab="model">Информация об объекте модели</div>
+                  <div class="tab" data-tab="object-attributes">Атрибуты</div>
+                  <div class="tab" data-tab="object-links">Связи</div>
+                  <div class="tab" data-tab="object-enumeration">Значения перечисления</div>
+                    <!-- <div class="tab" data-tab="profile">Информация об объекте профиля</div> -->
+                  </div>
+
+                  <div class="tab-content active" data-tab-content="model">
+                    <div class="empty-state" >
+                      Выберите элемент в дереве для просмотра информации.
+                    </div>
+                  </div>
+
+                  <!-- <div class="tab-content" >
+                    <div class="text-muted" style="padding: 10px 0">
+                      Выберите элемент профиля для просмотра информации.
+                    </div>
+                  </div> -->
+                </div>
+                <div class="details-panel-content profile-item-details" id="profile-item-details">
+                  <div class="tabs" id="details-tabs">
+                    <!-- <div class="tab active" >Информация об объекте модели</div> -->
+                    <div class="tab" data-tab="profile">Информация об объекте профиля</div>
+                  <div class="tab" data-tab="object-attributes">Атрибуты</div>
+                  <div class="tab" data-tab="object-links">Связи</div>
+                  <div class="tab" data-tab="object-enumeration">Значения перечисления</div>
+                  </div>
+
+                  <!-- <div class="tab-content active" data-tab-content="model">
+                    <div class="text-muted" style="padding: 10px 0">
+                      Выберите элемент в дереве для просмотра информации.
+                    </div>
+                  </div> -->
+
+                  <div class="tab-content" data-tab-content="profile">
+                    <div class="empty-state">
+                      Выберите элемент профиля для просмотра информации.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="right-resizer"></div>
 
               <!-- Right Panel:  Profile Being Edited -->
-              <div class="editor-panel" id="profile-panel">
+              <div class="editor-panel profile-panel" id="profile-panel">
                 <div class="editor-panel-header">
                   <span id="profile-header-name">Новый профиль</span>
                 </div>
@@ -98,41 +153,19 @@
                   </div>
                 </div>
                 <div class="editor-panel-actions">
-                  <button class="btn btn-primary" id="remove-from-profile-btn" style="width: 100%">
+                  <button class="btn btn-primary btn--editor-tree" id="remove-from-profile-btn" >
                     ✕ Исключить из профиля
                   </button>
-                  <button class="btn btn-secondary" id="clear-right-selection-btn" style="width: 100%">
+                  <button class="btn btn-secondary btn--editor-tree" id="clear-right-selection-btn">
                     ✕ Снять выделение
                   </button>
-                </div>
-              </div>
-
-              <!-- Details Panel (Standard Mode) -->
-              <div class="details-panel" id="details-panel">
-                <div class="details-panel-content">
-                  <div class="tabs" id="details-tabs">
-                    <div class="tab active" data-tab="model">Информация об объекте модели</div>
-                    <div class="tab" data-tab="profile">Информация об объекте профиля</div>
-                  </div>
-
-                  <div class="tab-content active" data-tab-content="model">
-                    <div class="text-muted" style="padding: 10px 0">
-                      Выберите элемент в дереве для просмотра информации.
-                    </div>
-                  </div>
-
-                  <div class="tab-content" data-tab-content="profile">
-                    <div class="text-muted" style="padding: 10px 0">
-                      Выберите элемент профиля для просмотра информации.
-                    </div>
-                  </div>
                 </div>
               </div>
 
             </div>
 
             <!-- Editor Mode Details Panel (Diagram Mode) -->
-            <div id="editor-mode-details-panel" class="hidden">
+            <!-- <div id="editor-mode-details-panel" class="hidden">
               <div id="editor-mode-model-object">
                 <div class="tabs">
                   <div class="tab active" data-tab="object-info">Описание</div>
@@ -178,9 +211,9 @@
                   </div>
                 </div>
               </div>
-            </div>
+            </div> -->
 
-          </div>
+          <!-- </div> -->
         </div>
       </div>
     </div>

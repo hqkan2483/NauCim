@@ -1,5 +1,13 @@
-import { getProjectById, appDataInit, getAllProjects } from "../../services/project-service.js";
-import { getProfile, updateProfile, createProfile } from "../../services/profile-service.js";
+import {
+  getProjectById,
+  appDataInit,
+  getAllProjects,
+} from "../../services/project-service.js";
+import {
+  getProfile,
+  updateProfile,
+  createProfile,
+} from "../../services/profile-service.js";
 import { getQueryParam } from "../../utils/url-helper.js";
 import { renderAvailableTree as renderAvailableTreeHTML } from "../../ui/renderers/available-tree-renderer.js";
 import { renderProfileTree as renderProfileTreeHTML } from "../../ui/renderers/profile-tree-renderer.js";
@@ -8,9 +16,9 @@ import {
   removeItemsFromProfile,
   validateProfile,
   prepareProfileForSave,
-  getItemDetailsByKey
+  getItemDetailsByKey,
 } from "../../services/profile-editor-service.js";
-import { initProfileTree } from "../../ui/components/profile-tree.js";
+import { initEditorTree } from "../../ui/components/editor-tree.js";
 import { initDetailsPanel } from "../../ui/components/profile-details-panel.js";
 
 // ============================================================
@@ -101,16 +109,20 @@ function findProjectByProfileId(profileId) {
 
   for (const project of projects) {
     if (project.profiles && Array.isArray(project.profiles)) {
-      const profile = project.profiles.find(p => {
+      const profile = project.profiles.find((p) => {
         // ✅ Compare as both string and number
-        return p.id === profileId ||
-               p.id === parseInt(profileId) ||
-               p.id === String(profileId) ||
-               String(p.id) === String(profileId);
+        return (
+          p.id === profileId ||
+          p.id === parseInt(profileId) ||
+          p.id === String(profileId) ||
+          String(p.id) === String(profileId)
+        );
       });
 
       if (profile) {
-        console.log(`  ✅ Profile "${profile.name}" found in project "${project.name}" (ID: ${project.id})`);
+        console.log(
+          `  ✅ Profile "${profile.name}" found in project "${project.name}" (ID: ${project.id})`
+        );
         return project.id;
       }
     }
@@ -132,7 +144,7 @@ function initComponents() {
   console.log("  - Left tree container:", leftTreeContainer);
 
   if (leftTreeContainer) {
-    leftTreeComponent = initProfileTree("available-tree", {
+    leftTreeComponent = initEditorTree("available-tree", {
       onSelect: (itemKey) => {
         console.log("📌 Left tree item selected:", itemKey);
         activeLeftItem = itemKey;
@@ -153,7 +165,7 @@ function initComponents() {
         } else {
           selectedLeftItems.delete(itemKey);
         }
-      }
+      },
     });
     console.log("  ✅ Left tree component initialized:", leftTreeComponent);
   } else {
@@ -165,8 +177,8 @@ function initComponents() {
   console.log("  - Right tree container:", rightTreeContainer);
 
   if (rightTreeContainer) {
-    rightTreeComponent = initProfileTree("profile-tree", {
-      onSelect:  (itemKey) => {
+    rightTreeComponent = initEditorTree("profile-tree", {
+      onSelect: (itemKey) => {
         console.log("📌 Right tree item selected:", itemKey);
         activeRightItem = itemKey;
         loadItemDetails(itemKey, "right");
@@ -179,14 +191,14 @@ function initComponents() {
           expandedRightItems.delete(itemKey);
         }
       },
-      onCheck:  (itemKey, isChecked) => {
+      onCheck: (itemKey, isChecked) => {
         console.log("☑️ Right tree item checked:", itemKey, isChecked);
         if (isChecked) {
           selectedRightItems.add(itemKey);
         } else {
           selectedRightItems.delete(itemKey);
         }
-      }
+      },
     });
     console.log("  ✅ Right tree component initialized:", rightTreeComponent);
   } else {
@@ -202,7 +214,7 @@ function initComponents() {
       onTabSwitch: (tabName) => {
         console.log("📑 Tab switched to:", tabName);
       },
-      defaultTab: "model"
+      defaultTab: "model",
     });
     console.log("  ✅ Details panel initialized:", detailsPanelComponent);
   } else {
@@ -276,7 +288,7 @@ function loadProfileFromUrl() {
 
     console.log("  ✅ Profile loaded:", {
       name: profileData.name,
-      itemsCount: profileData.items.length
+      itemsCount: profileData.items.length,
     });
 
     updateProfileDisplay();
@@ -312,7 +324,7 @@ function loadAvailableData() {
 
       console.log(`  - Model "${model.name}":`, {
         rootPackages: model.rootPackages?.length || 0,
-        packages: packages.length
+        packages: packages.length,
       });
 
       availableData.push({
@@ -338,13 +350,13 @@ function loadAvailableData() {
         profile.id === parseInt(currentProfileId) ||
         String(profile.id) === String(currentProfileId);
 
-      if (! isCurrentProfile) {
+      if (!isCurrentProfile) {
         // ✅ NEW STRUCTURE:  rootPackages[0].packages
         const packages = profile.rootPackages?.[0]?.packages || [];
 
         console.log(`  - Profile "${profile.name}":`, {
           rootPackages: profile.rootPackages?.length || 0,
-          packages:  packages.length
+          packages: packages.length,
         });
 
         availableData.push({
@@ -588,40 +600,134 @@ function handleTreeClick(e) {
 // ============================================================
 
 function transferToProfile() {
+  console.log("→ Transfer to profile");
+  console.log("  - Selected left items:", selectedLeftItems.size);
+
   if (selectedLeftItems.size === 0) {
     alert("Выберите элементы для переноса");
     return;
   }
 
-  profileData = transferItemsToProfile(selectedLeftItems, availableData, profileData);
+  try {
+    // Transfer items
+    profileData = transferItemsToProfile(
+      selectedLeftItems,
+      availableData,
+      profileData
+    );
 
-  // Clear selection and re-render
-  selectedLeftItems.clear();
-  renderAvailableTree();
-  renderProfileTree();
+    // Clear selection
+    selectedLeftItems.clear();
+    if (leftTreeComponent) {
+      leftTreeComponent.clearSelection();
+    }
+
+    // Re-render profile tree
+    renderProfileTree();
+
+    // Re-initialize right tree component
+    if (rightTreeComponent) {
+      rightTreeComponent.destroy();
+    }
+    rightTreeComponent = initEditorTree("profile-tree", {
+      onSelect: (itemKey) => {
+        activeRightItem = itemKey;
+        loadItemDetails(itemKey, "right");
+      },
+      onExpand: (itemKey, isExpanded) => {
+        if (isExpanded) {
+          expandedRightItems.add(itemKey);
+        } else {
+          expandedRightItems.delete(itemKey);
+        }
+      },
+      onCheck: (itemKey, isChecked) => {
+        if (isChecked) {
+          selectedRightItems.add(itemKey);
+        } else {
+          selectedRightItems.delete(itemKey);
+        }
+      },
+    });
+
+    console.log("✅ Transfer complete");
+  } catch (error) {
+    console.error("❌ Transfer failed:", error);
+    alert("Ошибка при переносе элементов: " + error.message);
+  }
 }
 
 function removeFromProfile() {
+  console.log("✕ Remove from profile");
+  console.log("  - Selected right items:", selectedRightItems.size);
+
   if (selectedRightItems.size === 0) {
     alert("Выберите элементы для удаления");
     return;
   }
 
-  profileData = removeItemsFromProfile(selectedRightItems, profileData);
+  if (!confirm(`Удалить ${selectedRightItems.size} элемент(ов) из профиля?`)) {
+    return;
+  }
 
-  // Clear selection and re-render
-  selectedRightItems.clear();
-  renderProfileTree();
+  try {
+    // Remove items
+    profileData = removeItemsFromProfile(selectedRightItems, profileData);
+
+    // Clear selection
+    selectedRightItems.clear();
+    if (rightTreeComponent) {
+      rightTreeComponent.clearSelection();
+    }
+
+    // Re-render profile tree
+    renderProfileTree();
+
+    // Re-initialize right tree component
+    if (rightTreeComponent) {
+      rightTreeComponent.destroy();
+    }
+    rightTreeComponent = initEditorTree("profile-tree", {
+      onSelect: (itemKey) => {
+        activeRightItem = itemKey;
+        loadItemDetails(itemKey, "right");
+      },
+      onExpand: (itemKey, isExpanded) => {
+        if (isExpanded) {
+          expandedRightItems.add(itemKey);
+        } else {
+          expandedRightItems.delete(itemKey);
+        }
+      },
+      onCheck: (itemKey, isChecked) => {
+        if (isChecked) {
+          selectedRightItems.add(itemKey);
+        } else {
+          selectedRightItems.delete(itemKey);
+        }
+      },
+    });
+
+    console.log("✅ Removal complete");
+  } catch (error) {
+    console.error("❌ Removal failed:", error);
+    alert("Ошибка при удалении элементов: " + error.message);
+  }
 }
 
+/**
+ * Save profile
+ */
 function handleSaveProfile() {
   console.log("💾 Saving profile...");
+  console.log("  - Profile data:", profileData);
 
   // Validate profile
   const validation = validateProfile(profileData);
 
   if (!validation.valid) {
     alert("Ошибки валидации:\n" + validation.errors.join("\n"));
+    console.error("❌ Validation errors:", validation.errors);
     return;
   }
 
@@ -652,6 +758,7 @@ function handleSaveProfile() {
     alert("Ошибка при сохранении профиля: " + error.message);
   }
 }
+
 // ============================================================
 // MODE TOGGLE
 // ============================================================
@@ -717,7 +824,7 @@ function filterRightTree() {
 
 function bindDetailsTabs() {
   const tabs = document.querySelectorAll(".tabs .tab");
-  tabs.forEach(tab => {
+  tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       const tabName = tab.getAttribute("data-tab");
       switchDetailsTab(tabName);
@@ -727,7 +834,7 @@ function bindDetailsTabs() {
 
 function switchDetailsTab(tabName) {
   // Remove active from all tabs
-  document.querySelectorAll(".tabs .tab").forEach(tab => {
+  document.querySelectorAll(".tabs .tab").forEach((tab) => {
     tab.classList.remove("active");
   });
 
@@ -738,12 +845,14 @@ function switchDetailsTab(tabName) {
   }
 
   // Hide all tab content
-  document.querySelectorAll(".tab-content").forEach(content => {
+  document.querySelectorAll(".tab-content").forEach((content) => {
     content.classList.remove("active");
   });
 
   // Show selected content
-  const activeContent = document.querySelector(`[data-tab-content="${tabName}"]`);
+  const activeContent = document.querySelector(
+    `[data-tab-content="${tabName}"]`
+  );
   if (activeContent) {
     activeContent.classList.add("active");
   }

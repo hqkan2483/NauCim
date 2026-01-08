@@ -10,19 +10,64 @@
   overflow:  hidden;
 }
 
-.editor-wrapper {
+/* .editor-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
+} */
 
 .editor-container {
-  flex: 1;
-  display: flex;
-  gap: 10px;
-  overflow: hidden;
+    flex: 1;
+    overflow: hidden;
 }
+
+.standard-mode .editor-container {
+  display: grid;
+  grid-template-columns:  min-content 5px 1fr 5px min-content;
+  grid-template-areas:
+    "left-panel resl details-panel resr right-panel";
+}
+
+
+
+.diagram-mode .editor-container {
+  display: grid;
+  grid-template-columns:  min-content 5px 1fr 5px min-content;
+  grid-template-rows: 2fr 1fr;
+  grid-template-areas:
+    "left-panel resl diagram-panel resr right-panel"
+    "editor-details-panel editor-details-panel editor-details-panel editor-details-panel editor-details-panel";
+
+}
+
+/* PANELS LAYOUT */
+
+.standard-mode .available-panel, .diagram-mode .available-panel {
+  grid-area: left-panel;
+}
+
+.standard-mode .profile-panel, .diagram-mode .profile-panel {
+  grid-area: right-panel;
+}
+
+.standard-mode .details-panel{
+  grid-area: details-panel;
+}
+
+.diagram-mode .details-panel {
+  grid-area: editor-details-panel;
+}
+
+.diagram-mode .diagram-editor {
+  display: block;
+  grid-area: diagram-panel;
+}
+
+
+
+
+
 
 /* ============================================================
    EDITOR PANELS
@@ -37,6 +82,8 @@
   width: 350px;
   min-width: 300px;
 }
+
+
 
 .editor-panel-header {
   padding: 10px 15px;
@@ -66,14 +113,18 @@
    DETAILS PANEL
    ============================================================ */
 
-.details-panel {
+.standard-mode .details-panel {
   flex: 1;
   display:  flex;
   flex-direction:  column;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background: #fff;
+  background: var(--bg-primary);
   min-width: 0;
+}
+
+.diagram-mode .details-panel {
+  flex-direction: row;
 }
 
 .details-panel-content {
@@ -83,93 +134,16 @@
   overflow-x: auto;
 }
 
-/* ============================================================
-   SEARCH BOX
-   ============================================================ */
 
-.search-box {
-  margin-bottom: 10px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #4a90e2;
-}
 
 /* ============================================================
    TREE STYLES
    ============================================================ */
 
-#available-tree,
+/* #available-tree,
 #profile-tree {
   min-width: min-content;
-}
-
-.tree-item-with-checkbox {
-  display: flex;
-  align-items: center;
-  padding: 4px 0;
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s;
-}
-
-.tree-item-with-checkbox:hover {
-  background-color: #f5f5f5;
-}
-
-.tree-item-with-checkbox.tree-item-selected {
-  background-color: #e3f2fd;
-}
-
-.tree-item-with-checkbox.tree-item-selected:hover {
-  background-color: #d1e7fd;
-}
-
-.tree-toggle {
-  display: inline-block;
-  width: 16px;
-  cursor: pointer;
-  user-select: none;
-  font-size: 12px;
-  margin-right: 4px;
-  text-align: center;
-}
-
-.tree-item-checkbox {
-  margin-right: 8px;
-  cursor: pointer;
-}
-
-.tree-item-label {
-  cursor: grab;
-  user-select: none;
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-.tree-item-label.dragging {
-  opacity: 0.5;
-  cursor: grabbing;
-}
-
-.tree-children {
-  display: block;
-  padding-left: 20px;
-}
-
-.tree-children.collapsed {
-  display: none;
-}
+} */
 
 /* ============================================================
    PROFILE NAME DISPLAY
@@ -445,35 +419,4 @@
   color: #888;
   font-style: italic;
   border-top: 1px solid #e5e5e5;
-}
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 1200px) {
-  .editor-panel {
-    width: 300px;
-    min-width: 250px;
-  }
-}
-
-@media (max-width:  768px) {
-  .editor-container {
-    flex-direction: column;
-  }
-
-  .editor-panel {
-    width: 100%;
-    height: 300px;
-  }
-
-  .details-panel {
-    height: 300px;
-  }
-
-  .editor-content-area.editor-mode #editor-mode-details-panel {
-    grid-template-columns: 1fr;
-    height: auto;
-  }
 }

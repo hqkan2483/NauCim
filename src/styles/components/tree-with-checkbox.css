@@ -1,0 +1,67 @@
+
+.tree-item-with-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.tree-item-with-checkbox:hover {
+  background-color: #f5f5f5;
+}
+
+.tree-item-with-checkbox.tree-item-selected {
+  background-color: #e3f2fd;
+}
+
+.tree-item-with-checkbox.tree-item-selected:hover {
+  background-color: #d1e7fd;
+}
+
+.tree-toggle {
+  display: inline-block;
+  margin-top: -4px;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  margin-right: 4px;
+  text-align: center;
+}
+
+.tree-item-checkbox {
+  /* margin-right: 8px; */
+  cursor: pointer;
+  align-self: center;
+}
+
+.tree-item-label {
+  cursor: grab;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+}
+
+.tree-item-label.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.tree-children {
+  display: block;
+  padding-left: 20px;
+}
+
+.tree-children.collapsed {
+  display: none;
+}
+
+
+/*  */

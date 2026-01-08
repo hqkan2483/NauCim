@@ -1,5 +1,5 @@
 /**
- * Profile Tree Component
+ * Profile Editor Tree Component
  * Manages tree interactions (expand/collapse, select, drag-drop)
  */
 
@@ -9,7 +9,7 @@
  * @param {Object} options - Configuration options
  * @returns {Object} Tree component instance
  */
-export function initProfileTree(containerId, options = {}) {
+function initEditorTree(containerId, options = {}) {
   const container = document.getElementById(containerId);
   if (!container) {
     console.error(`Container #${containerId} not found`);
@@ -18,7 +18,7 @@ export function initProfileTree(containerId, options = {}) {
 
   const instance = {
     container,
-    options:  {
+    options: {
       onSelect: options.onSelect || (() => {}),
       onExpand: options.onExpand || (() => {}),
       onCheck: options.onCheck || (() => {}),
@@ -87,12 +87,14 @@ export function initProfileTree(containerId, options = {}) {
      */
     toggleExpand(itemKey) {
       const treeItem = container.querySelector(`[data-item-key="${itemKey}"]`);
-      if (! treeItem) return;
+      if (!treeItem) return;
 
       const toggleBtn = treeItem.querySelector("[data-action='toggle-expand']");
-      const childrenContainer = container.querySelector(`[data-parent="${itemKey}"]`);
+      const childrenContainer = container.querySelector(
+        `[data-parent="${itemKey}"]`
+      );
 
-      if (! childrenContainer) return;
+      if (!childrenContainer) return;
 
       const isCollapsed = childrenContainer.classList.contains("collapsed");
 
@@ -115,7 +117,7 @@ export function initProfileTree(containerId, options = {}) {
      */
     selectItem(itemKey) {
       // Remove previous selection
-      container.querySelectorAll(".tree-item-with-checkbox").forEach(item => {
+      container.querySelectorAll(".tree-item-with-checkbox").forEach((item) => {
         item.classList.remove("tree-item-selected");
       });
 
@@ -133,7 +135,7 @@ export function initProfileTree(containerId, options = {}) {
      */
     handleDragStart(e) {
       const target = e.target;
-      if (! target.classList.contains("tree-item-label")) return;
+      if (!target.classList.contains("tree-item-label")) return;
 
       const treeItem = target.closest("[data-item-key]");
       if (!treeItem) return;
@@ -165,7 +167,7 @@ export function initProfileTree(containerId, options = {}) {
       const itemKey = e.dataTransfer.getData("text/plain");
 
       // Remove dragging class
-      container.querySelectorAll(".dragging").forEach(el => {
+      container.querySelectorAll(".dragging").forEach((el) => {
         el.classList.remove("dragging");
       });
 
@@ -176,30 +178,34 @@ export function initProfileTree(containerId, options = {}) {
      * Expand all items
      */
     expandAll() {
-      container.querySelectorAll(".tree-children").forEach(children => {
+      container.querySelectorAll(".tree-children").forEach((children) => {
         children.classList.remove("collapsed");
       });
 
-      container.querySelectorAll("[data-action='toggle-expand']").forEach(btn => {
-        if (btn.textContent.trim() === "▶") {
-          btn.textContent = "▼";
-        }
-      });
+      container
+        .querySelectorAll("[data-action='toggle-expand']")
+        .forEach((btn) => {
+          if (btn.textContent.trim() === "▶") {
+            btn.textContent = "▼";
+          }
+        });
     },
 
     /**
      * Collapse all items
      */
     collapseAll() {
-      container.querySelectorAll(".tree-children").forEach(children => {
+      container.querySelectorAll(".tree-children").forEach((children) => {
         children.classList.add("collapsed");
       });
 
-      container.querySelectorAll("[data-action='toggle-expand']").forEach(btn => {
-        if (btn.textContent.trim() === "▼") {
-          btn.textContent = "▶";
-        }
-      });
+      container
+        .querySelectorAll("[data-action='toggle-expand']")
+        .forEach((btn) => {
+          if (btn.textContent.trim() === "▼") {
+            btn.textContent = "▶";
+          }
+        });
     },
 
     /**
@@ -207,12 +213,14 @@ export function initProfileTree(containerId, options = {}) {
      */
     getCheckedItems() {
       const checked = [];
-      container.querySelectorAll(".tree-item-checkbox: checked").forEach(checkbox => {
-        const treeItem = checkbox.closest("[data-item-key]");
-        if (treeItem) {
-          checked.push(treeItem.getAttribute("data-item-key"));
-        }
-      });
+      container
+        .querySelectorAll(".tree-item-checkbox: checked")
+        .forEach((checkbox) => {
+          const treeItem = checkbox.closest("[data-item-key]");
+          if (treeItem) {
+            checked.push(treeItem.getAttribute("data-item-key"));
+          }
+        });
       return checked;
     },
 
@@ -220,7 +228,7 @@ export function initProfileTree(containerId, options = {}) {
      * Clear all selections
      */
     clearSelection() {
-      container.querySelectorAll(".tree-item-checkbox").forEach(checkbox => {
+      container.querySelectorAll(".tree-item-checkbox").forEach((checkbox) => {
         checkbox.checked = false;
       });
     },
@@ -229,8 +237,14 @@ export function initProfileTree(containerId, options = {}) {
      * Destroy component
      */
     destroy() {
-      console.log("Tree component destroyed");
-    }
+      console.log(`🗑️ Destroying tree component for #${this.container.id}`);
+
+      // Remove event listeners
+      const newContainer = this.container.cloneNode(false);
+      this.container.parentNode.replaceChild(newContainer, this.container);
+
+      console.log("✅ Component destroyed");
+    },
   };
 
   // Bind events on initialization
@@ -238,3 +252,5 @@ export function initProfileTree(containerId, options = {}) {
 
   return instance;
 }
+
+export { initEditorTree };

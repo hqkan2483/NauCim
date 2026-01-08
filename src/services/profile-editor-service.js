@@ -11,22 +11,65 @@
  * @returns {Object} Updated profile data
  */
 export function transferItemsToProfile(selectedItems, availableData, profileData) {
+  console.log("🔄 Transferring items to profile...");
+  console.log("  - Selected items:", Array.from(selectedItems));
+
   const itemsToTransfer = [];
+  const errors = [];
 
   selectedItems.forEach(itemKey => {
+    console.log(`  - Processing:  ${itemKey}`);
+
     const item = findItemByKey(itemKey, availableData);
+
     if (item) {
-      itemsToTransfer.push(item);
+      console.log(`    ✅ Found:   ${item.name || item.type}`);
+      itemsToTransfer.push({ key: itemKey, data: item });
+    } else {
+      console.warn(`    ⚠️ Not found: ${itemKey}`);
+      errors.push(itemKey);
     }
   });
 
-  // Add items to profile
-  itemsToTransfer.forEach(item => {
-    addItemToProfile(item, profileData);
+  console.log("  - Items to transfer:", itemsToTransfer.length);
+
+  // Group items by type for better organization
+  const packages = [];
+  const classes = [];
+
+  itemsToTransfer.forEach(({ key, data }) => {
+    const itemType = getItemType(key);
+
+    if (itemType === 'package') {
+      packages.push(data);
+    } else if (itemType === 'class') {
+      classes.push(data);
+    } else if (itemType === 'model' || itemType === 'profile') {
+      // Transfer all packages from model/profile
+      const rootPackages = data.children || data.rootPackages?.[0]?.packages || [];
+      packages.push(...rootPackages);
+    }
   });
+
+  console.log("  - Packages to add:", packages.length);
+  console.log("  - Classes to add:", classes.length);
+
+  // Add packages to profile
+  packages.forEach(pkg => {
+    addPackageToProfile(pkg, profileData);
+  });
+
+  // Add standalone classes to a default package
+  if (classes.length > 0) {
+    addClassesToProfile(classes, profileData);
+  }
+
+  console.log("✅ Transfer complete");
+  console.log("  - Profile items count:", profileData.items.length);
 
   return profileData;
 }
+
 
 /**
  * Remove selected items from profile
@@ -35,11 +78,101 @@ export function transferItemsToProfile(selectedItems, availableData, profileData
  * @returns {Object} Updated profile data
  */
 export function removeItemsFromProfile(selectedItems, profileData) {
+  console.log("🗑️ Removing items from profile...");
+  console.log("  - Selected items:", Array.from(selectedItems));
+
+  const itemsToRemove = [];
+
   selectedItems.forEach(itemKey => {
-    removeItemByKey(itemKey, profileData);
+    console.log(`  - Processing: ${itemKey}`);
+
+    // Parse key to find item
+    const pathInfo = parseProfileItemKey(itemKey);
+    if (pathInfo) {
+      itemsToRemove.push(pathInfo);
+    }
   });
 
+  console.log("  - Items to remove:", itemsToRemove.length);
+
+  // Sort by depth (deepest first) to avoid index shifting issues
+  itemsToRemove.sort((a, b) => b.depth - a.depth);
+
+  // Remove items
+  itemsToRemove.forEach(pathInfo => {
+    removeItemByPath(profileData.items, pathInfo);
+  });
+
+  console.log("✅ Removal complete");
+  console.log("  - Profile items count:", profileData.items.length);
+
   return profileData;
+}
+
+/**
+ * Parse profile item key to extract path information
+ * @param {string} itemKey - Item key (e.g., "profile-root-pkg-1-cls-2")
+ * @returns {Object|null} Path information
+ */
+function parseProfileItemKey(itemKey) {
+  const parts = itemKey.split("-");
+
+  // profile-root-pkg-1-cls-2
+  // Remove "profile-root"
+  if (parts[0] !== "profile" || parts[1] !== "root") {
+    return null;
+  }
+
+  const pathParts = parts.slice(2);
+
+  return {
+    pathParts,
+    depth: pathParts.length,
+    itemKey
+  };
+}
+
+/**
+ * Remove item by path
+ * @param {Array} items - Items array
+ * @param {Object} pathInfo - Path information
+ */
+function removeItemByPath(items, pathInfo) {
+  const { pathParts } = pathInfo;
+
+  if (! items || pathParts.length === 0) return;
+
+  const [type, indexStr, ...rest] = pathParts;
+  const index = parseInt(indexStr);
+
+  if (type === "pkg") {
+    if (rest.length === 0) {
+      // Remove package
+      const removed = items.splice(index, 1);
+      console.log(`  ✅ Removed package at index ${index}: `, removed[0]?.name);
+    } else {
+      const pkg = items[index];
+      if (! pkg) return;
+
+      const nextType = rest[0];
+
+      if (nextType === "cls") {
+        // Remove class from package
+        const clsIndex = parseInt(rest[1]);
+        const classes = pkg.classes || [];
+        const removed = classes.splice(clsIndex, 1);
+        console.log(`  ✅ Removed class at index ${clsIndex}:`, removed[0]?.name);
+      } else if (nextType === "pkg") {
+        // Recurse into sub-packages
+        const subPackages = pkg.subPackages || pkg.children || [];
+        const subPathInfo = {
+          pathParts: rest,
+          depth: rest.length
+        };
+        removeItemByPath(subPackages, subPathInfo);
+      }
+    }
+  }
 }
 
 /**
@@ -172,6 +305,81 @@ function navigateToChild(children, pathParts) {
 
 
 /**
+ * Add package to profile
+ * @param {Object} pkg - Package to add
+ * @param {Object} profileData - Profile data
+ */
+function addPackageToProfile(pkg, profileData) {
+  if (!profileData.items) {
+    profileData.items = [];
+  }
+
+  // Check if package already exists
+  const exists = profileData.items.some(existingPkg =>
+    existingPkg.id === pkg.id
+  );
+
+  if (exists) {
+    console.log(`  ⚠️ Package "${pkg.name}" already in profile, skipping`);
+    return;
+  }
+
+  // Deep clone the package
+  const clonedPkg = JSON.parse(JSON.stringify(pkg));
+
+  // Mark as coming from profile (optional)
+  clonedPkg.profileId = profileData.id;
+
+  profileData.items.push(clonedPkg);
+  console.log(`  ✅ Added package: ${clonedPkg.name}`);
+}
+
+/**
+ * Add classes to profile (create a default package if needed)
+ * @param {Array} classes - Classes to add
+ * @param {Object} profileData - Profile data
+ */
+function addClassesToProfile(classes, profileData) {
+  if (!profileData.items) {
+    profileData.items = [];
+  }
+
+  // Find or create "Imported Classes" package
+  let defaultPackage = profileData.items.find(pkg =>
+    pkg.name === "Imported Classes" || pkg.id === "imported-classes"
+  );
+
+  if (!defaultPackage) {
+    defaultPackage = {
+      id:  "imported-classes",
+      name: "Imported Classes",
+      type: "Package",
+      documentation: "Автоматически созданный пакет для импортированных классов",
+      classes: [],
+      subPackages: []
+    };
+    profileData.items.push(defaultPackage);
+    console.log("  ✅ Created default package for classes");
+  }
+
+  // Add classes to default package
+  classes.forEach(cls => {
+    const exists = defaultPackage.classes.some(existingCls =>
+      existingCls.id === cls.id
+    );
+
+    if (!exists) {
+      const clonedCls = JSON.parse(JSON.stringify(cls));
+      clonedCls.profileId = profileData.id;
+      defaultPackage.classes.push(clonedCls);
+      console.log(`  ✅ Added class: ${clonedCls.name}`);
+    } else {
+      console.log(`  ⚠️ Class "${cls.name}" already in profile, skipping`);
+    }
+  });
+}
+
+/**
  * Add item to profile
  * @param {Object} item - Item to add
  * @param {Object} profileData - Profile data
@@ -290,6 +498,27 @@ export function getItemDetailsByKey(itemKey, availableData, profileData) {
     return item;
   }
 }
+
+/**
+ * Get item type from key
+ * @param {string} itemKey - Item key
+ * @returns {string} Item type
+ */
+function getItemType(itemKey) {
+  const parts = itemKey.split("-");
+
+  // left-model-3 → "model"
+  // left-model-3-pkg-1 → "package"
+  // left-model-3-pkg-1-cls-2 → "class"
+
+  if (parts.includes("cls")) return "class";
+  if (parts.includes("pkg")) return "package";
+  if (parts.includes("model")) return "model";
+  if (parts.includes("profile")) return "profile";
+
+  return "unknown";
+}
+
 
 
 /**
