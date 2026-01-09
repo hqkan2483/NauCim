@@ -190,8 +190,41 @@ function initComponents() {
     detailsPanelContainer.innerHTML = renderProfileEditorDetailsPanelLayout();
 
     detailsPanelComponent = initDetailsPanel("details-panel", {
-      onTabSwitch: (tabName) => {},
-      defaultTab: "model",
+      onTabSwitch: (tabName) => {
+        // Если ничего не выбрано — оставляем empty-state как есть
+        if (tabName.startsWith("profile-item-")) {
+          if (!activeRightItem) return;
+
+          const item = getItemDetailsByKey(
+            activeRightItem,
+            availableData,
+            profileData
+          );
+
+          if (tabName === "profile-item-general") {
+            detailsPanelComponent?.renderProfileDetails(item);
+          } else if (tabName === "profile-item-attributes") {
+            detailsPanelComponent?.renderProfileAttributes(item);
+          } else if (tabName === "profile-item-links") {
+            detailsPanelComponent?.renderProfileLinks(item);
+          } else if (tabName === "profile-item-enumeration") {
+            detailsPanelComponent?.renderProfileEnumeration(item);
+          }
+        } else if (tabName.startsWith("model-item-")) {
+          if (!activeLeftItem) return;
+
+          const item = getItemDetailsByKey(
+            activeLeftItem,
+            availableData,
+            profileData
+          );
+
+          if (tabName === "model-item-general") {
+            detailsPanelComponent?.renderModelDetails(item);
+          }
+        }
+      },
+      defaultTab: "model-item-general",
     });
   }
 }
@@ -213,20 +246,26 @@ function loadItemDetails(itemKey, side) {
     updateDetailsTabsForSide("left", item);
   } else {
     detailsPanelComponent.renderProfileDetails(item);
+    detailsPanelComponent.renderProfileAttributes(item); // ✅ добавили
+    detailsPanelComponent.renderProfileLinks(item);
+    detailsPanelComponent.renderProfileEnumeration(item);
     updateDetailsTabsForSide("right", item);
   }
 }
 
 function updateDetailsTabsForSide(side, item) {
-  const sectionId = side === "left" ? "available-item-details" : "profile-item-details";
+  const sectionId =
+    side === "left" ? "available-item-details" : "profile-item-details";
   const sectionKind = side === "left" ? "available" : "profile";
-  const defaultTab = side === "left" ? "model" : "profile";
+  const defaultTab =
+    side === "left" ? "model-item-general" : "profile-item-general";
 
   const sectionEl = document.getElementById(sectionId);
   const tabsEl = sectionEl?.querySelector(".tabs");
   if (!sectionEl || !tabsEl) return;
 
-  const currentActiveTab = tabsEl.querySelector(".tab.active")?.getAttribute("data-tab") || null;
+  const currentActiveTab =
+    tabsEl.querySelector(".tab.active")?.getAttribute("data-tab") || null;
 
   tabsEl.innerHTML = renderProfileEditorDetailsTabs(item, {
     section: sectionKind,
@@ -235,7 +274,8 @@ function updateDetailsTabsForSide(side, item) {
 
   // выбираем таб, который реально существует после пересборки
   const desiredTab =
-    (currentActiveTab && tabsEl.querySelector(`.tab[data-tab="${currentActiveTab}"]`))
+    currentActiveTab &&
+    tabsEl.querySelector(`.tab[data-tab="${currentActiveTab}"]`)
       ? currentActiveTab
       : defaultTab;
 
