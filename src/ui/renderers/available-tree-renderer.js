@@ -28,7 +28,13 @@ export function renderAvailableTree(availableData, selectedItems, expandedItems,
 
     html += `
       <div class="tree-item-with-checkbox ${isActive ? "tree-item-selected" : ""}"
-           data-item-key="${itemKey}">
+           data-item-key="${itemKey}"
+           data-item-id="${item.id || ""}"
+           data-item-type="${item.type || ""}"
+           data-model-id="${item.modelId || ""}"
+           data-profile-id="${item.profileId || ""}"
+           data-ref-model-id="${item.refModelId || ""}"
+           data-ref-model-item-id="${item.refModelItemId || ""}">
         <span class="tree-toggle" data-action="toggle-expand">
           ${hasChildren ? (isExpanded ? "▼" : "▶") : " "}
         </span>
@@ -83,7 +89,14 @@ export function renderTreeChildren(items, parentKey, side, selectedItems, expand
     html += `
       <div class="tree-item-with-checkbox ${isActive ? "tree-item-selected" : ""}"
            data-item-key="${itemKey}"
-           data-side="${side}">
+           data-side="${side}"
+           data-item-id="${item.id || ""}"
+           data-item-type="${item.type || ""}"
+           data-model-id="${item.modelId || ""}"
+           data-profile-id="${item.profileId || ""}"
+           data-ref-model-id="${item.refModelId || ""}"
+           data-ref-model-item-id="${item.refModelItemId || ""}"
+           >
         <span class="tree-toggle" data-action="toggle-expand">
           ${hasChildren ? (isExpanded ? "▼" : "▶") : " "}
         </span>
@@ -113,7 +126,13 @@ export function renderTreeChildren(items, parentKey, side, selectedItems, expand
           html += `
             <div class="tree-item-with-checkbox ${clsActive ?  "tree-item-selected" :  ""}"
                  data-item-key="${clsKey}"
-                 data-side="${side}">
+                 data-side="${side}"
+                 data-item-id="${cls.id || ""}"
+           data-item-type="${cls.type || ""}"
+           data-model-id="${cls.modelId || ""}"
+           data-profile-id="${cls.profileId || ""}"
+           data-ref-model-id="${cls.refModelId || ""}"
+           data-ref-model-item-id="${cls.refModelItemId || ""}">
               <span class="tree-toggle"> </span>
               <input type="checkbox" class="tree-item-checkbox"
                      ${clsChecked ? "checked" :  ""}

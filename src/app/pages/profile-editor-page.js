@@ -221,6 +221,12 @@ function initComponents() {
 
           if (tabName === "model-item-general") {
             detailsPanelComponent?.renderModelDetails(item);
+          } else if (tabName === "model-item-attributes") {
+            detailsPanelComponent?.renderModelAttributes(item);
+          } else if (tabName === "model-item-links") {
+            detailsPanelComponent?.renderModelLinks(item);
+          } else if (tabName === "model-item-enumeration") {
+            detailsPanelComponent?.renderModelEnumeration(item);
           }
         }
       },
@@ -243,6 +249,9 @@ function loadItemDetails(itemKey, side) {
 
   if (side === "left") {
     detailsPanelComponent.renderModelDetails(item);
+    detailsPanelComponent.renderModelAttributes(item);
+    detailsPanelComponent.renderModelLinks(item);
+    detailsPanelComponent.renderModelEnumeration(item);
     updateDetailsTabsForSide("left", item);
   } else {
     detailsPanelComponent.renderProfileDetails(item);

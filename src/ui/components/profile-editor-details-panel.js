@@ -114,36 +114,70 @@ export function initDetailsPanel(containerId, options = {}) {
         return;
       }
 
-      content.innerHTML = `
-        <div class="item-details">
-          <h3>${item.name || "Без названия"}</h3>
-          <div class="item-property">
-            <strong>Тип:</strong> ${item.type || "—"}
+      content.innerHTML =  renderItemForm(item, false);
+    },
+
+    renderModelAttributes(item) {
+      const content = container.querySelector(
+        '[data-tab-content="model-item-attributes"]'
+      );
+      if (!content) return;
+
+      if (!item) {
+        content.innerHTML = `
+          <div class="text-muted">
+            Выберите элемент в дереве для просмотра атрибутов.
           </div>
-          <div class="item-property">
-            <strong>ID:</strong> ${item.id || "—"}
+        `;
+        return;
+      }
+
+      content.innerHTML = renderAttributesTable(item.attributes);
+    },
+
+    renderModelLinks(item) {
+      const content = container.querySelector(
+        '[data-tab-content="model-item-links"]'
+      );
+      if (!content) return;
+
+      if (!item) {
+        content.innerHTML = `
+          <div class="text-muted">
+            Выберите элемент в дереве для просмотра связей.
           </div>
-          ${
-            item.documentation
-              ? `
-            <div class="item-property">
-              <strong>Описание:</strong>
-              <p>${item.documentation}</p>
-            </div>
-          `
-              : ""
-          }
-          ${
-            item.elements && item.elements.length > 0
-              ? `
-            <div class="item-property">
-              <strong>Элементы:</strong> ${item.elements.length}
-            </div>
-          `
-              : ""
-          }
-        </div>
-      `;
+        `;
+        return;
+      }
+
+      content.innerHTML = renderLinksTable(item.links);
+    },
+
+    renderModelEnumeration(item) {
+      const content = container.querySelector(
+        '[data-tab-content="model-item-enumeration"]'
+      );
+      if (!content) return;
+
+      if (!item) {
+        content.innerHTML = `
+          <div class="text-muted">
+            Выберите элемент в дереве для просмотра значений перечисления.
+          </div>
+        `;
+        return;
+      }
+
+      if (item.type !== "Enumeration") {
+        content.innerHTML = `
+          <div class="text-muted">
+            Значения перечисления доступны только для объектов типа "Enumeration".
+          </div>
+        `;
+        return;
+      }
+
+      content.innerHTML = renderLiteralsTable(item.literals);
     },
 
     /**
@@ -239,6 +273,9 @@ renderProfileEnumeration(item) {
      */
     clear() {
       this.renderModelDetails(null);
+      this.renderModelAttributes(null);
+      this.renderModelLinks(null);
+      this.renderModelEnumeration(null);
       this.renderProfileDetails(null);
       this.renderProfileAttributes(null);
       this.renderProfileLinks(null);
@@ -448,6 +485,23 @@ export function renderDetailsPanelSection({
           `
         )
         .join("")}
+
+        ${sectionId === "available-item-details" ? `
+          <div class="details-panel-footer">
+
+            <button type="button" class="btn btn-primary btn--class-details" id="transfer-to-profile-btn">→ Перенести в профиль</button>
+            <button type="button" class="btn btn-primary btn--class-details" id="edit-profile-btn"> Редактировать в модели </button>
+
+            <button type="button" class="btn btn-primary btn--class-details" id="show-in-profile-btn"> Показать в профиле </button>
+            </div>
+
+          </div>
+        ` : `<div class="details-panel-footer">
+
+             <button type="button" class="btn btn-primary btn--class-details" id="show-in-model-btn"> Показать в модели </button>
+
+          </div>`}
+
     </div>
   `;
 }
@@ -490,7 +544,7 @@ export function renderProfileEditorDetailsPanelLayout({
       emptyText: "Выберите элемент в дереве для просмотра информации.",
       tabContentNames: leftTabContentNames,
     })}
-    <div class="divider mb-20"></div>
+    <div class="divider divider--details-panel mb-20"></div>
     ${renderDetailsPanelSection({
       sectionId: "profile-item-details",
       sectionClass: "profile-item-details",
@@ -575,7 +629,7 @@ export function renderProfileEditorDetailsTabs(
 }
 
 function renderProfileItemDetailsForm(item) {
-  let html = renderItemForm(item);
+  let html = renderItemForm(item,true);
 
   html += `
       <div class="form-actions">
@@ -588,7 +642,7 @@ function renderProfileItemDetailsForm(item) {
   return html;
 }
 
-function renderItemForm(item) {
+function renderItemForm(item, isProfile = true) {
   let html = `
     <form class="item-form" id="profile-item-form" data-item-id="${item.id}">
       <div class="form-section">
@@ -642,7 +696,7 @@ function renderItemForm(item) {
           <div class="form-cell">
             <div class="form-group">
               <label class="form-label" for="profile-item-documentationRu">Описание (RU)</label>
-              <textarea id="profile-item-documentationRu" class="form-textarea" rows="3">${
+              <textarea id="profile-item-documentationRu" class="form-textarea" rows="3" ${isProfile ? "" : "disabled"}>${
                 item.documentationRu || ""
               }</textarea>
             </div>
@@ -653,7 +707,7 @@ function renderItemForm(item) {
           <div class="form-cell">
             <div class="form-group">
               <label class="form-label" for="profile-item-addInfo">Детали</label>
-              <textarea id="profile-item-addInfo" class="form-textarea" rows="4">${
+              <textarea id="profile-item-addInfo" class="form-textarea" rows="3" ${isProfile ? "" : "disabled"}>${
                 item.details || ""
               }</textarea>
             </div>

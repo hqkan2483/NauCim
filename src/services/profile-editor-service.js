@@ -179,9 +179,8 @@ function removeItemByPath(items, pathInfo) {
 function findItemByKey(itemKey, availableData) {
   console.log("🔎 Finding item by key:", itemKey);
 
-  // Parse key:  left-model-3-pkg-1-cls-2
-  // Format: left-{type}-{id}-{path...}
-
+  // Parse key: left-{type}-{id}-{path...}
+  // IMPORTANT: {id} can contain dashes (e.g. UUID-like), so we can't assume parts[2] is the full id.
   const parts = itemKey.split("-");
   console.log("  - Parts:", parts);
 
@@ -192,11 +191,12 @@ function findItemByKey(itemKey, availableData) {
 
   // parts[0] = "left"
   // parts[1] = "model" or "profile"
-  // parts[2] = id
-  // parts[3+] = path
-
+  // parts[2..] = id (can include dashes) + optional path starting with "pkg"
   const type = parts[1]; // "model" or "profile"
-  const id = parts[2];   // "3"
+
+  const pathStartIndex = parts.indexOf("pkg", 2);
+  const idParts = pathStartIndex === -1 ? parts.slice(2) : parts.slice(2, pathStartIndex);
+  const id = idParts.join("-");
 
   console.log("  - Type:", type);
   console.log("  - ID:", id);
@@ -219,14 +219,14 @@ function findItemByKey(itemKey, availableData) {
 
   console.log("  ✅ Root item found:", rootItem.name);
 
-  // If it's just the root item (e.g., "left-model-3")
-  if (parts.length === 3) {
+  // If it's just the root item (e.g., "left-model-<id>")
+  if (pathStartIndex === -1) {
     console.log("  ✅ Returning root item");
     return rootItem;
   }
 
   // Navigate to child item
-  const pathParts = parts.slice(3); // ["pkg", "1", "cls", "2"]
+  const pathParts = parts.slice(pathStartIndex); // ["pkg", "1", "cls", "2"]
   console.log("  - Path parts:", pathParts);
 
   const childItem = navigateToChild(rootItem.children, pathParts);

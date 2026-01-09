@@ -97,3 +97,7 @@
   background: var(--bg-primary);
 }
 
+.diagram-mode .divider--details-panel {
+  width: 2px;
+  height: 100%;
+}
