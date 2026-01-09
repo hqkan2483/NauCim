@@ -12,57 +12,376 @@
  */
 export function transferItemsToProfile(selectedItems, availableData, profileData) {
 
-  const itemsToTransfer = [];
-  const errors = [];
-
-  selectedItems.forEach(itemKey => {
-    console.log(`  - Processing:  ${itemKey}`);
-
-    const item = findItemByKey(itemKey, availableData);
-
-    if (item) {
-      itemsToTransfer.push({ key: itemKey, data: item });
-    } else {
-
-      errors.push(itemKey);
-    }
-  });
-
-  console.log("  - Items to transfer:", itemsToTransfer.length);
-
-  // Group items by type for better organization
-  const packages = [];
-  const classes = [];
-
-  itemsToTransfer.forEach(({ key, data }) => {
-    const itemType = getItemType(key);
-
-    if (itemType === 'package') {
-      packages.push(data);
-    } else if (itemType === 'class') {
-      classes.push(data);
-    } else if (itemType === 'model' || itemType === 'profile') {
-      // Transfer all packages from model/profile
-      const rootPackages = data.children || data.rootPackages?.[0]?.packages || [];
-      packages.push(...rootPackages);
-    }
-  });
-
-
-  // Add packages to profile
-  packages.forEach(pkg => {
-    addPackageToProfile(pkg, profileData);
-  });
-
-  // Add standalone classes to a default package
-  if (classes.length > 0) {
-    addClassesToProfile(classes, profileData);
+  if (!Array.isArray(profileData.items)) {
+    profileData.items = [];
   }
 
-  console.log("✅ Transfer complete");
-  console.log("  - Profile items count:", profileData.items.length);
+  const report = {
+    transferred: [],
+    skipped: [],
+    notFound: [],
+  };
 
-  return profileData;
+  const existingClassNames = new Set();
+  const existingPackageNames = new Set();
+  collectExistingProfileNames(profileData.items, existingPackageNames, existingClassNames);
+
+  const itemKeys = Array.from(selectedItems);
+
+  itemKeys.forEach((itemKey) => {
+    const pathInfo = findItemPathByKey(itemKey, availableData);
+    if (!pathInfo) {
+      console.warn("⚠️ Item not found for transfer:", itemKey);
+      report.notFound.push(itemKey);
+      return;
+    }
+
+    // 1) Если выбран корневой элемент модели/профиля слева — переносим всё содержимое
+    if (pathInfo.leafKind === "root") {
+      const rootPackages = pathInfo.rootItem?.children || [];
+      rootPackages.forEach((pkg) => {
+        mergePackageIntoProfile(profileData.items, pkg, existingPackageNames, existingClassNames, profileData.id, report, []);
+      });
+
+      const rootName = pathInfo.rootItem?.name ? String(pathInfo.rootItem.name) : "(без имени)";
+      report.transferred.push(`Корень: ${rootName}`);
+      return;
+    }
+
+    // 2) Если выбран пакет
+    if (pathInfo.leafKind === "package") {
+      const pkg = pathInfo.leafItem;
+      const pkgNameKey = normalizeName(pkg?.name);
+      const fullPath = formatPath([...pathInfo.packageChain.map((p) => p?.name).filter(Boolean)]);
+
+      // Проверка дубля пакета по имени во всём правом дереве
+      if (pkgNameKey && existingPackageNames.has(pkgNameKey)) {
+        report.skipped.push({
+          kind: "Пакет",
+          name: pkg?.name ?? "(без имени)",
+          path: fullPath,
+          reason: "Совпадение имени: пакет уже есть в профиле",
+        });
+        return;
+      }
+
+      // Создаём цепочку пакетов до выбранного пакета (не включая его), затем мержим выбранный пакет
+      const chainRes = ensurePackageChainResult(
+        profileData.items,
+        pathInfo.packageChain.slice(0, -1),
+        profileData.id,
+        existingPackageNames
+      );
+
+      mergePackageIntoProfile(chainRes.parentArray, pkg, existingPackageNames, existingClassNames, profileData.id, report, pathInfo.packageChain.slice(0, -1));
+
+      report.transferred.push(`Пакет: ${fullPath || (pkg?.name ?? "(без имени)")}`);
+      return;
+    }
+
+    // 3) Если выбран класс/перечисление
+    if (pathInfo.leafKind === "class") {
+      const cls = pathInfo.leafItem;
+      const clsNameKey = normalizeName(cls?.name);
+      const fullPath = formatPath([
+        ...pathInfo.packageChain.map((p) => p?.name).filter(Boolean),
+        cls?.name,
+      ].filter(Boolean));
+
+      // Проверка дубля класса по имени во всём правом дереве
+      if (clsNameKey && existingClassNames.has(clsNameKey)) {
+        report.skipped.push({
+          kind: "Класс",
+          name: cls?.name ?? "(без имени)",
+          path: fullPath,
+          reason: "Совпадение имени: класс уже есть в профиле",
+        });
+        return;
+      }
+
+      // Создаём цепочку пакетов до контейнера класса, затем добавляем класс
+      const chainRes = ensurePackageChainResult(
+        profileData.items,
+        pathInfo.packageChain,
+        profileData.id,
+        existingPackageNames
+      );
+
+      if (chainRes.lastPackage) {
+        addClassToPackage(chainRes.lastPackage, cls, existingClassNames, profileData.id);
+
+        report.transferred.push(`Класс: ${fullPath || (cls?.name ?? "(без имени)")}`);
+        return;
+      }
+
+      // fallback: класс без пакета (нештатно) — кладём в дефолтный пакет
+      let defaultPackage = findPackageByName(profileData.items, "Imported Classes");
+      if (!defaultPackage) {
+        defaultPackage = {
+          id: "imported-classes",
+          name: "Imported Classes",
+          type: "Package",
+          documentation: "Автоматически созданный пакет для импортированных классов",
+          classes: [],
+          subPackages: [],
+          profileId: profileData.id,
+        };
+        profileData.items.push(defaultPackage);
+        existingPackageNames.add(normalizeName(defaultPackage.name));
+      }
+      addClassToPackage(defaultPackage, cls, existingClassNames, profileData.id);
+
+      report.transferred.push(`Класс: ${fullPath || (cls?.name ?? "(без имени)")}`);
+      return;
+    }
+  });
+
+  return { profileData, report };
+}
+
+function normalizeName(name) {
+  return String(name ?? "").trim().toLowerCase();
+}
+
+function getPackageChildren(pkg) {
+  return pkg?.subPackages || pkg?.children || [];
+}
+
+function getPackageClasses(pkg) {
+  return pkg?.classes || pkg?.elements || [];
+}
+
+function collectExistingProfileNames(packages, packageNames, classNames) {
+  if (!Array.isArray(packages)) return;
+
+  packages.forEach((pkg) => {
+    const pkgNameKey = normalizeName(pkg?.name);
+    if (pkgNameKey) packageNames.add(pkgNameKey);
+
+    const classes = getPackageClasses(pkg);
+    if (Array.isArray(classes)) {
+      classes.forEach((cls) => {
+        const clsNameKey = normalizeName(cls?.name);
+        if (clsNameKey) classNames.add(clsNameKey);
+      });
+    }
+
+    collectExistingProfileNames(getPackageChildren(pkg), packageNames, classNames);
+  });
+}
+
+function clonePackageShell(sourcePkg, profileId) {
+  const cloned = JSON.parse(JSON.stringify(sourcePkg || {}));
+  cloned.profileId = profileId;
+  cloned.type = "Package";
+  cloned.classes = [];
+  cloned.subPackages = [];
+  return cloned;
+}
+
+function cloneClass(sourceCls, profileId) {
+  const cloned = JSON.parse(JSON.stringify(sourceCls || {}));
+  cloned.profileId = profileId;
+  return cloned;
+}
+
+function findPackageByName(packagesArray, pkgName) {
+  const nameKey = normalizeName(pkgName);
+  if (!nameKey) return null;
+  return (packagesArray || []).find((p) => normalizeName(p?.name) === nameKey) || null;
+}
+
+function ensurePackageByName(packagesArray, sourcePkg, profileId, existingPackageNames) {
+  const existing = findPackageByName(packagesArray, sourcePkg?.name);
+  if (existing) return existing;
+
+  const created = clonePackageShell(sourcePkg, profileId);
+  packagesArray.push(created);
+
+  const nameKey = normalizeName(created?.name);
+  if (nameKey) existingPackageNames.add(nameKey);
+  return created;
+}
+
+/**
+ * Создаёт цепочку пакетов в правом дереве по именам.
+ * Возвращает массив пакетов на уровне, где лежит последний пакет цепочки (т.е. массив subPackages родителя).
+ */
+function ensurePackageChainResult(rootPackagesArray, sourcePackageChain, profileId, existingPackageNames) {
+  let currentArray = rootPackagesArray;
+  let lastPackage = null;
+
+  if (!Array.isArray(sourcePackageChain) || sourcePackageChain.length === 0) {
+    return { parentArray: currentArray, lastPackage };
+  }
+
+  sourcePackageChain.forEach((sourcePkg) => {
+    lastPackage = ensurePackageByName(currentArray, sourcePkg, profileId, existingPackageNames);
+    if (!lastPackage.subPackages) lastPackage.subPackages = [];
+    currentArray = lastPackage.subPackages;
+  });
+
+  return { parentArray: currentArray, lastPackage };
+}
+
+function addClassToPackage(targetPkg, sourceCls, existingClassNames, profileId) {
+  if (!targetPkg.classes) targetPkg.classes = [];
+
+  const clsNameKey = normalizeName(sourceCls?.name);
+  if (clsNameKey && existingClassNames.has(clsNameKey)) {
+    return;
+  }
+
+  const cloned = cloneClass(sourceCls, profileId);
+  targetPkg.classes.push(cloned);
+  if (clsNameKey) existingClassNames.add(clsNameKey);
+}
+
+function mergePackageIntoProfile(parentPackagesArray, sourcePkg, existingPackageNames, existingClassNames, profileId, report, parentChain) {
+  if (!sourcePkg) return;
+
+  const safeParentArray = Array.isArray(parentPackagesArray) ? parentPackagesArray : [];
+
+  // создаём/находим пакет по имени у текущего родителя
+  const targetPkg = ensurePackageByName(safeParentArray, sourcePkg, profileId, existingPackageNames);
+
+  if (report) {
+    const pkgNameKey = normalizeName(sourcePkg?.name);
+    if (pkgNameKey && existingPackageNames.has(pkgNameKey)) {
+      // note: ensurePackageByName already added it; we keep reporting at higher-level to avoid spam
+    }
+  }
+
+  // переносим классы (пропуская дубли по имени во всём профиле)
+  const sourceClasses = getPackageClasses(sourcePkg);
+  if (Array.isArray(sourceClasses) && sourceClasses.length > 0) {
+    sourceClasses.forEach((cls) => {
+      const clsNameKey = normalizeName(cls?.name);
+      if (clsNameKey && existingClassNames.has(clsNameKey)) {
+        if (report) {
+          report.skipped.push({
+            kind: "Класс",
+            name: cls?.name ?? "(без имени)",
+            path: formatPath([
+              ...(parentChain || []).map((p) => p?.name).filter(Boolean),
+              sourcePkg?.name,
+              cls?.name,
+            ].filter(Boolean)),
+            reason: "Совпадение имени: класс уже есть в профиле",
+          });
+        }
+        return;
+      }
+
+      addClassToPackage(targetPkg, cls, existingClassNames, profileId);
+
+      if (report) {
+        report.transferred.push(
+          `Класс: ${formatPath([
+            ...(parentChain || []).map((p) => p?.name).filter(Boolean),
+            sourcePkg?.name,
+            cls?.name,
+          ].filter(Boolean))}`
+        );
+      }
+    });
+  }
+
+  // переносим подпакеты рекурсивно (по имени, с merge)
+  const sourceSubPackages = getPackageChildren(sourcePkg);
+  if (!targetPkg.subPackages) targetPkg.subPackages = [];
+  if (Array.isArray(sourceSubPackages) && sourceSubPackages.length > 0) {
+    sourceSubPackages.forEach((sp) => {
+      const nextChain = [...(parentChain || []), sourcePkg];
+      mergePackageIntoProfile(targetPkg.subPackages, sp, existingPackageNames, existingClassNames, profileId, report, nextChain);
+    });
+  }
+}
+
+function formatPath(parts) {
+  if (!Array.isArray(parts) || parts.length === 0) return "";
+  return parts.map((p) => String(p)).join("/");
+}
+
+/**
+ * Возвращает путь (цепочку пакетов) и выбранный объект по ключу левого дерева.
+ */
+function findItemPathByKey(itemKey, availableData) {
+  const parts = itemKey.split("-");
+  if (parts.length < 3) return null;
+
+  const type = parts[1];
+  const pathStartIndex = parts.indexOf("pkg", 2);
+  const idParts = pathStartIndex === -1 ? parts.slice(2) : parts.slice(2, pathStartIndex);
+  const id = idParts.join("-");
+
+  const rootItem = availableData.find((item) =>
+    item.type === type && (item.id === id || item.id === parseInt(id) || String(item.id) === id)
+  );
+  if (!rootItem) return null;
+
+  if (pathStartIndex === -1) {
+    return { leafKind: "root", rootItem, packageChain: [], containerPackage: null, leafItem: rootItem };
+  }
+
+  const pathParts = parts.slice(pathStartIndex);
+  const res = navigateToChildWithAncestors(rootItem.children, pathParts, []);
+  if (!res) return null;
+
+  return {
+    leafKind: res.leafKind,
+    rootItem,
+    packageChain: res.packageChain,
+    containerPackage: res.containerPackage,
+    leafItem: res.leafItem,
+  };
+}
+
+function navigateToChildWithAncestors(children, pathParts, ancestors) {
+  if (!children || !Array.isArray(children) || pathParts.length === 0) {
+    return null;
+  }
+
+  const [type, indexStr, ...rest] = pathParts;
+  const index = parseInt(indexStr);
+
+  if (type !== "pkg") return null;
+  const pkg = children[index];
+  if (!pkg) return null;
+
+  const nextAncestors = [...ancestors, pkg];
+
+  if (rest.length === 0) {
+    return {
+      leafKind: "package",
+      packageChain: nextAncestors,
+      containerPackage: ancestors.length > 0 ? ancestors[ancestors.length - 1] : null,
+      leafItem: pkg,
+    };
+  }
+
+  const nextType = rest[0];
+
+  if (nextType === "cls" || nextType === "elem") {
+    const clsIndex = parseInt(rest[1]);
+    const classes = getPackageClasses(pkg);
+    const cls = classes[clsIndex];
+    if (!cls) return null;
+
+    return {
+      leafKind: "class",
+      packageChain: nextAncestors,
+      containerPackage: pkg,
+      leafItem: cls,
+    };
+  }
+
+  if (nextType === "pkg") {
+    const subPackages = getPackageChildren(pkg);
+    return navigateToChildWithAncestors(subPackages, rest, nextAncestors);
+  }
+
+  return null;
 }
 
 
