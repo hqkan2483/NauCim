@@ -56,6 +56,19 @@
   font-weight: 400;
 }
 
+.page-profile-editor .btn--class-details,
+.page-profile-editor .btn--project-details {
+  flex-shrink: 0;
+  min-width: 85px;
+  padding: 5px 10px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.editor-panel-actions .btn--editor-tree {
+  width: 100%;
+}
+
 /* ICON BUTTONS */
 .btn-icon {
   background: none;
@@ -71,7 +84,6 @@
 .table-actions .btn-icon {
   font-size: 16px;
 }
-
 
 .btn-icon:hover {
   background: var(--main-color-01);

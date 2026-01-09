@@ -91,9 +91,9 @@ function renderProfileControls(profile) {
 
   if (profile.accessRights === 'readWrite') {
     html += `
-      <button class="btn btn-primary" data-action="edit-profile" data-profile-id="${profile.id}">✏️ Редактировать описание</button>
+      <button class="btn btn-primary" data-action="edit-profile" data-profile-id="${profile.id}">✏️ Редактировать</button>
     `;
-  } else html += `<button class="btn btn-secondary" disabled>✏️ Редактировать описание</button>`;
+  } else html += `<button class="btn btn-secondary" disabled>✏️ Редактировать</button>`;
 
   if (profile.accessRights === 'readWrite') {
     html += `

@@ -19,28 +19,7 @@
 
 }
 
-.page-project-details .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
 
-.page-project-details .section-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.page-project-details .section-tab-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.page-project-details .tab-action-btn.hidden {
-  display: none;
-}
 
 /* Project Details: Diagram mode layout
    Keeps styles page-scoped and token-based.

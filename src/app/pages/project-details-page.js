@@ -1797,7 +1797,7 @@ function handleDeleteModel(modelId) {
 
 function handleEditProfile(profileId) {
   if (!profileId) return;
-  window.location.href = `/profile-editor.html?profileId=${encodeURIComponent(
+  window.location.href = `/profile-editor.html?id=${encodeURIComponent(
     profileId
   )}`;
 }
