@@ -201,17 +201,25 @@ function handleTreeClick(event, side) {
     const key = expandEl.getAttribute("data-key");
     if (!key) return;
 
-    if (selectiveExpanded.has(key)) selectiveExpanded.delete(key);
+    // Render full tree once; then toggle UI state without re-rendering.
+    const isExpanded = selectiveExpanded.has(key);
+    if (isExpanded) selectiveExpanded.delete(key);
     else selectiveExpanded.add(key);
 
-    // Re-render the relevant side
-    if (side === "one" && currentObject1) {
-      document.getElementById("compare-object-one-content").innerHTML =
-        renderObjectTreePanel(currentObject1, "one");
-    }
-    if (side === "two" && currentObject2) {
-      document.getElementById("compare-object-two-content").innerHTML =
-        renderObjectTreePanel(currentObject2, "two");
+    const containerId = side === "one" ? "compare-object-one-content" : "compare-object-two-content";
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const cssEscape =
+      typeof CSS !== "undefined" && typeof CSS.escape === "function"
+        ? CSS.escape
+        : (v) => String(v).replace(/[^a-zA-Z0-9_\-]/g, "\\$&");
+
+    const children = container.querySelector(`[data-children-for="${cssEscape(key)}"]`);
+    if (children) {
+      children.classList.toggle("collapsed", isExpanded);
+      // Update arrow icon (only if there are children)
+      expandEl.textContent = isExpanded ? "▸" : "▾";
     }
 
     event.stopPropagation();
@@ -392,7 +400,7 @@ function performSelectiveComparison(object1, object2) {
         status: "not-found",
         message: `Объект не найден в ${object2.objectType === "model" ? "модели" : "профиле"} "${object2.name}"`,
       });
-      selectiveDiffKeys.add(key);
+      addDiffKeyWithParents(key);
       return;
     }
 
@@ -411,23 +419,56 @@ function performSelectiveComparison(object1, object2) {
           : `Найдено расхождений: ${differences.length}`,
     });
 
-    if (differences.length > 0) selectiveDiffKeys.add(key);
+    if (differences.length > 0) addDiffKeyWithParents(key);
   });
 
   lastComparisonResults = { object1, object2, results };
 
-  // Re-render tree to show error icons
-  currentObject1 = object1;
-  document.getElementById("compare-object-one-content").innerHTML =
-    renderObjectTreePanel(object1, "one");
+  // Update diff icons in-place (no re-render)
+  syncTreeDiffIcons("one");
 
   // Show results button, keep results hidden until requested
   document.getElementById("show-results-btn")?.classList.remove("hidden");
   document.getElementById("comparison-results")?.classList.add("hidden");
 }
 
+function addDiffKeyWithParents(key) {
+  if (!key) return;
+  const parts = String(key).split("|");
+  for (let i = 1; i <= parts.length; i += 1) {
+    selectiveDiffKeys.add(parts.slice(0, i).join("|"));
+  }
+}
+
+function syncTreeDiffIcons(side) {
+  const containerId = side === "one" ? "compare-object-one-content" : "compare-object-two-content";
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const rows = container.querySelectorAll('.tree-item-with-checkbox[data-key]');
+  rows.forEach((row) => {
+    const key = row.getAttribute("data-key") || "";
+    const label = row.querySelector(".tree-item-label");
+    if (!label) return;
+
+    const existing = label.querySelector('[data-role="diff-icon"]');
+    const shouldHave = selectiveDiffKeys.has(key);
+
+    if (shouldHave && !existing) {
+      label.insertAdjacentHTML(
+        "beforeend",
+        '<span class="tree-item-error-icon" data-role="diff-icon" title="Обнаружены различия">⚠️</span>'
+      );
+    }
+
+    if (!shouldHave && existing) {
+      existing.remove();
+    }
+  });
+}
+
 function findMatchingItemInObject(sourceItem, targetObject) {
-  // Search packages/classes recursively
+  // Search packages/classes recursively (canonical structure only)
   const roots = Array.isArray(targetObject?.rootPackages) ? targetObject.rootPackages : [];
 
   // Canonical RootPackage[]
@@ -437,10 +478,6 @@ function findMatchingItemInObject(sourceItem, targetObject) {
       : null;
 
   if (rootPkgs) {
-    if (sourceItem.type === "rootPackage") {
-      const match = rootPkgs.find((rp) => rp?.name === sourceItem.name);
-      return match || null;
-    }
     for (const rp of rootPkgs) {
       const hit = searchPackagesForMatch(sourceItem, Array.isArray(rp.packages) ? rp.packages : []);
       if (hit) return hit;
@@ -448,8 +485,7 @@ function findMatchingItemInObject(sourceItem, targetObject) {
     return null;
   }
 
-  // Legacy: roots are packages
-  return searchPackagesForMatch(sourceItem, roots);
+  return null;
 }
 
 function searchPackagesForMatch(sourceItem, packages) {
@@ -459,9 +495,7 @@ function searchPackagesForMatch(sourceItem, packages) {
     if (sourceItem.type === "package" && pkg?.name === sourceItem.name) return pkg;
 
     const classes =
-      (Array.isArray(pkg?.classes) && pkg.classes) ||
-      (Array.isArray(pkg?.elements) && pkg.elements) ||
-      [];
+      (Array.isArray(pkg?.classes) && pkg.classes) || [];
 
     if (sourceItem.type === "class") {
       const match = classes.find((c) => (c?.name || c?.className) === sourceItem.name);
@@ -469,10 +503,7 @@ function searchPackagesForMatch(sourceItem, packages) {
     }
 
     const children =
-      (Array.isArray(pkg?.subPackages) && pkg.subPackages) ||
-      (Array.isArray(pkg?.children) && pkg.children) ||
-      (Array.isArray(pkg?.packages) && pkg.packages) ||
-      [];
+      (Array.isArray(pkg?.subPackages) && pkg.subPackages) || [];
 
     const childHit = searchPackagesForMatch(sourceItem, children);
     if (childHit) return childHit;
