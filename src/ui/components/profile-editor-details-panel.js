@@ -3,7 +3,25 @@
  * Manages the details panel with tabs
  */
 
-import { esc } from "../../utils/text-utils.js";
+import {
+  renderAttributesTable,
+  renderLinksTable,
+  renderLiteralsTable,
+} from "../renderers/profile-editor-details-tables-renderer.js";
+import {
+  renderModelItemDetailsForm,
+  renderProfileItemDetailsForm,
+} from "../renderers/profile-editor-item-form-renderer.js";
+
+export { renderAttributesTable, renderLinksTable, renderLiteralsTable };
+
+function renderEmpty(text) {
+  return `
+    <div class="text-muted">
+      ${text}
+    </div>
+  `;
+}
 
 /**
  * Initialize details panel component
@@ -19,6 +37,72 @@ export function initDetailsPanel(containerId, options = {}) {
     console.error(`Container #${containerId} not found`);
     return null;
   }
+
+  const TAB_RENDERERS = {
+    "model-item-general": (item) =>
+      item
+        ? renderModelItemDetailsForm(item)
+        : renderEmpty("Выберите элемент в дереве для просмотра информации."),
+
+    "model-item-attributes": (item) =>
+      item
+        ? renderAttributesTable(item.attributes)
+        : renderEmpty("Выберите элемент в дереве для просмотра атрибутов."),
+
+    "model-item-links": (item) =>
+      item
+        ? renderLinksTable(item.links)
+        : renderEmpty("Выберите элемент в дереве для просмотра связей."),
+
+    "model-item-enumeration": (item) => {
+      if (!item) {
+        return renderEmpty(
+          "Выберите элемент в дереве для просмотра значений перечисления."
+        );
+      }
+      if (item.type !== "Enumeration") {
+        return renderEmpty(
+          'Значения перечисления доступны только для объектов типа "Enumeration".'
+        );
+      }
+      return renderLiteralsTable(item.literals);
+    },
+
+    "profile-item-general": (item) =>
+      item
+        ? renderProfileItemDetailsForm(item)
+        : renderEmpty(
+            'Данный объект не найден в редактируемом профиле. Вы можете добавить его, используя кнопку "→ Перенести в профиль".'
+          ),
+
+    "profile-item-attributes": (item) =>
+      item
+        ? renderAttributesTable(item.attributes)
+        : renderEmpty(
+            "Объект отсутствует в профиле. Перенесите объект в профиль, чтобы работать с его атрибутами."
+          ),
+
+    "profile-item-links": (item) =>
+      item
+        ? renderLinksTable(item.links)
+        : renderEmpty(
+            "Объект отсутствует в профиле. Перенесите объект в профиль, чтобы работать с его связями."
+          ),
+
+    "profile-item-enumeration": (item) => {
+      if (!item) {
+        return renderEmpty(
+          "Объект отсутствует в профиле. Перенесите объект в профиль, чтобы работать со значениями перечисления."
+        );
+      }
+      if (item.type !== "Enumeration") {
+        return renderEmpty(
+          'Значения перечисления доступны только для объектов типа "Enumeration".'
+        );
+      }
+      return renderLiteralsTable(item.literals);
+    },
+  };
 
   const instance = {
     container,
@@ -96,176 +180,55 @@ export function initDetailsPanel(containerId, options = {}) {
       this.options.onTabSwitch(tabName);
     },
 
+    renderTabContent(tabName, item) {
+      const content = container.querySelector(`[data-tab-content="${tabName}"]`);
+      if (!content) return;
+
+      const renderer = TAB_RENDERERS[tabName];
+      if (!renderer) {
+        content.innerHTML = renderEmpty("Вкладка не поддерживается.");
+        return;
+      }
+
+      content.innerHTML = renderer(item);
+    },
+
     /**
      * Render item details in model tab
      */
     renderModelDetails(item) {
-      const content = container.querySelector(
-        '[data-tab-content="model-item-general"]'
-      );
-      if (!content) return;
-
-      if (!item) {
-        content.innerHTML = `
-          <div class="text-muted">
-            Выберите элемент в дереве для просмотра информации.
-          </div>
-        `;
-        return;
-      }
-
-      content.innerHTML =  renderItemForm(item, false);
+      this.renderTabContent("model-item-general", item);
     },
 
     renderModelAttributes(item) {
-      const content = container.querySelector(
-        '[data-tab-content="model-item-attributes"]'
-      );
-      if (!content) return;
-
-      if (!item) {
-        content.innerHTML = `
-          <div class="text-muted">
-            Выберите элемент в дереве для просмотра атрибутов.
-          </div>
-        `;
-        return;
-      }
-
-      content.innerHTML = renderAttributesTable(item.attributes);
+      this.renderTabContent("model-item-attributes", item);
     },
 
     renderModelLinks(item) {
-      const content = container.querySelector(
-        '[data-tab-content="model-item-links"]'
-      );
-      if (!content) return;
-
-      if (!item) {
-        content.innerHTML = `
-          <div class="text-muted">
-            Выберите элемент в дереве для просмотра связей.
-          </div>
-        `;
-        return;
-      }
-
-      content.innerHTML = renderLinksTable(item.links);
+      this.renderTabContent("model-item-links", item);
     },
 
     renderModelEnumeration(item) {
-      const content = container.querySelector(
-        '[data-tab-content="model-item-enumeration"]'
-      );
-      if (!content) return;
-
-      if (!item) {
-        content.innerHTML = `
-          <div class="text-muted">
-            Выберите элемент в дереве для просмотра значений перечисления.
-          </div>
-        `;
-        return;
-      }
-
-      if (item.type !== "Enumeration") {
-        content.innerHTML = `
-          <div class="text-muted">
-            Значения перечисления доступны только для объектов типа "Enumeration".
-          </div>
-        `;
-        return;
-      }
-
-      content.innerHTML = renderLiteralsTable(item.literals);
+      this.renderTabContent("model-item-enumeration", item);
     },
 
     /**
      * Render item details in profile tab
      */
     renderProfileDetails(item) {
-      const content = container.querySelector(
-        '[data-tab-content="profile-item-general"]'
-      );
-      if (!content) return;
-
-      if (!item) {
-        content.innerHTML = `
-          <div class="text-muted">
-           Данный объект не найден в редактируемом профиле. Вы можете добавить его, используя кнопку "→ Перенести в профиль".
-          </div>
-        `;
-        return;
-      }
-
-      content.innerHTML = renderProfileItemDetailsForm(item);
+      this.renderTabContent("profile-item-general", item);
     },
 
     renderProfileAttributes(item) {
-      // выбираем узел в HTML
-      const content = container.querySelector(
-        '[data-tab-content="profile-item-attributes"]'
-      );
-      if (!content) return;
-
-      // что делать если объекта нет
-      if (!item) {
-        content.innerHTML = `
-          <div class="text-muted">
-            Объект отсутствует в профиле. Перенесите объект в профиль, чтобы работать с его атрибутами.
-          </div>
-        `;
-        return;
-      }
-
-      content.innerHTML = renderAttributesTable(item.attributes);
-
+      this.renderTabContent("profile-item-attributes", item);
     },
 
     renderProfileLinks(item) {
-  const content = container.querySelector(
-    '[data-tab-content="profile-item-links"]'
-  );
-  if (!content) return;
-
-  if (!item) {
-    content.innerHTML = `
-      <div class="text-muted">
-        Объект отсутствует в профиле. Перенесите объект в профиль, чтобы работать с его связями.
-      </div>
-    `;
-    return;
-  }
-
-  // В данных классов связи обычно лежат в item.links
-  content.innerHTML = renderLinksTable(item.links);
+      this.renderTabContent("profile-item-links", item);
 },
 
 renderProfileEnumeration(item) {
-  const content = container.querySelector(
-    '[data-tab-content="profile-item-enumeration"]'
-  );
-  if (!content) return;
-
-  if (!item) {
-    content.innerHTML = `
-      <div class="text-muted">
-        Объект отсутствует в профиле. Перенесите объект в профиль, чтобы работать со значениями перечисления.
-      </div>
-    `;
-    return;
-  }
-
-  if (item.type !== "Enumeration") {
-    content.innerHTML = `
-      <div class="text-muted">
-        Значения перечисления доступны только для объектов типа "Enumeration".
-      </div>
-    `;
-    return;
-  }
-
-  content.innerHTML = renderLiteralsTable(item.literals);
+      this.renderTabContent("profile-item-enumeration", item);
 },
 
     /**
@@ -296,157 +259,6 @@ renderProfileEnumeration(item) {
   return instance;
 }
 
-/**
- * Render attributes table
- */
-export function renderAttributesTable(attributes) {
-  if (!Array.isArray(attributes) || attributes.length === 0) {
-    return `<div class="attributes-table-empty">Нет атрибутов</div>`;
-  }
-
-  let html = `
-    <div class="attributes-table">
-      <div class="attributes-table-header">
-        <div>☑️</div>
-        <div>Имя</div>
-        <div>Тип</div>
-        <div>Мн.</div>
-        <div>Описание</div>
-      </div>
-  `;
-
-  attributes.forEach((attribute) => {
-    const id = esc(attribute?.id ?? "");
-    const name = esc(attribute?.name ?? "—");
-    const dataType = esc(attribute?.dataType ?? "—");
-    const multiplicity = esc(attribute?.multiplicity ?? "—");
-    const doc = esc(attribute?.documentation ?? "—");
-    html += `
-      <div class="attributes-table-row">
-        <div class="attributes-table-cell-checkbox">
-          <input type="checkbox" class="attribute-checkbox" data-attr-id="${id}">
-        </div>
-        <div class="attributes-table-cell">
-          <strong>${name}</strong>
-        </div>
-        <div class="attributes-table-cell">
-          ${dataType}
-        </div>
-        <div class="attributes-table-cell">
-          ${multiplicity}
-        </div>
-        <div class="attributes-table-cell">
-          ${doc}
-        </div>
-      </div>
-    `;
-  });
-
-  html += `</div>`;
-  return html;
-}
-
-/**
- * Render links table
- */
-
-// todo - не проверял
-export function renderLinksTable(links) {
-  if (!Array.isArray(links) || links.length === 0) {
-    return `
-      <div class="attributes-table-empty">
-        Нет связей
-      </div>
-    `;
-  }
-
-  let html = `
-    <div class="links-table">
-      <div class="links-table-header">
-        <div>☑️</div>
-        <div>Роль</div>
-        <div>Тип</div>
-        <div>Целевой класс</div>
-        <div>Мн.</div>
-        <div>Описание</div>
-      </div>
-  `;
-
-  links.forEach((link) => {
-    const icon = link.relationKind === "Generalization" ? "⬆️" : "↔️";
-
-    const linkId = esc(link?.linkId ?? "");
-    const targetClassRoleName = esc(link?.targetClassRoleName ?? "—");
-    const relationKind = esc(link?.relationKind ?? "—");
-    const targetClassName = esc(link?.targetClassName ?? "—");
-    const multiplicity = esc(link?.multiplicity ?? "—");
-    const targetDescription = esc(link?.targetDescription ?? "—");
-    html += `
-      <div class="links-table-row">
-        <div class="links-table-cell-checkbox">
-          <input type="checkbox" class="link-checkbox" data-link-id="${
-            linkId
-          }">
-        </div>
-        <div class="links-table-cell">
-          <strong>${targetClassRoleName || "—"}</strong>
-        </div>
-        <div class="links-table-cell">
-          ${icon} ${relationKind || "—"}
-        </div>
-        <div class="links-table-cell">
-          ${targetClassName || "—"}
-        </div>
-        <div class="links-table-cell">
-          ${multiplicity || "—"}
-        </div>
-        <div class="links-table-cell">
-          ${targetDescription || "—"}
-        </div>
-      </div>
-    `;
-  });
-
-  html += `</div>`;
-  return html;
-}
-
-
-export function renderLiteralsTable(literals) {
-  if (!Array.isArray(literals) || literals.length === 0) {
-    return `<div class="attributes-table-empty">Нет значений перечисления</div>`;
-  }
-
-  let html = `
-    <table class="table literals-table">
-      <thead>
-        <tr>
-          <th style="width: 30%">Значение</th>
-          <th style="width: 45%">Описание</th>
-          <th style="width: 20%">Доп. значение</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  literals.forEach((lit) => {
-    const id = esc(lit?.id ?? "");
-    const name = esc(lit?.name ?? "—");
-    const doc = esc(lit?.documentation ?? "—");
-    const initialValue = esc(lit?.initialValue ?? "—");
-
-    html += `
-      <tr data-literal-id="${id}">
-        <td><strong>${name}</strong></td>
-        <td>${doc}</td>
-        <td>${initialValue}</td>
-      </tr>
-    `;
-  });
-
-  html += `</tbody></table>`;
-  return html;
-}
 // рендерит секцию панели деталей с вкладками
 
 export function renderDetailsPanelSection({
@@ -626,94 +438,4 @@ export function renderProfileEditorDetailsTabs(
         </div>
         </div>
   `);
-}
-
-function renderProfileItemDetailsForm(item) {
-  let html = renderItemForm(item,true);
-
-  html += `
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary  btn--class-details" id="profile-details-save-btn">💾 Сохранить изменения</button>
-        <button type="button" class="btn btn-secondary btn--class-details" id="profile-details-cancel-btn">↩️ Отмена</button>
-      </div>
-    </form>
-  `;
-
-  return html;
-}
-
-function renderItemForm(item, isProfile = true) {
-  let html = `
-    <form class="item-form" id="profile-item-form" data-item-id="${item.id}">
-      <div class="form-section">
-        <div class="form-section-title">
-          <div class="form-row">
-            <div class="form-cell">
-              <div class="form-group form-group__line">
-                <label class="form-label form-label__title" for="profile-item-name">
-                  ${item.type === "Enumeration" ? "Перечисление*" : item.type === "Package" ? "Пакет*" :  "Класс*"}
-                </label>
-                <input type="text" id="profile-item-name" class="form-input form-input__short"
-                  value="${item.name || ""}" required disabled />
-              </div>
-            </div>
-
-            <div class="form-cell form-cell__line">`;
-
-  if (item.type === "Class" || item.type === "Enumeration") {
-    html += `
-              <div class="form-group">
-                <label class="form-checkbox-label">
-                  <span>Абстрактный класс</span>
-                  <input type="checkbox" id="profile-item-isAbstract" class="form-checkbox"
-                         ${item.isAbstract ? "checked" : ""} disabled />
-                </label>
-              </div>
-              <div class="form-group form-group__line">
-                <label class="form-label" for="profile-item-stereotype">Стереотип</label>
-                <input type="text" id="profile-item-stereotype" class="form-input"
-                       value="${
-                         item.stereotype || ""
-                       }" placeholder="Например: rs, rf" disabled />
-              </div>
-            </div>`;
-  } else
-    html += `
-            </div>`;
-  html += `
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-cell">
-            <div class="form-group">
-              <label class="form-label" for="profile-item-documentation">Описание</label>
-              <textarea id="profile-item-documentation" class="form-textarea" rows="3" disabled>${
-                item.documentation || ""
-              }</textarea>
-            </div>
-          </div>
-          <div class="form-cell">
-            <div class="form-group">
-              <label class="form-label" for="profile-item-documentationRu">Описание (RU)</label>
-              <textarea id="profile-item-documentationRu" class="form-textarea" rows="3" ${isProfile ? "" : "disabled"}>${
-                item.documentationRu || ""
-              }</textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-cell">
-            <div class="form-group">
-              <label class="form-label" for="profile-item-addInfo">Детали</label>
-              <textarea id="profile-item-addInfo" class="form-textarea" rows="3" ${isProfile ? "" : "disabled"}>${
-                item.details || ""
-              }</textarea>
-            </div>
-          </div>
-        </div>
-      </div>`;
-
-  return html;
 }
