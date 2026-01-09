@@ -23,6 +23,11 @@
   background-color: #d1e7fd;
 }
 
+.page-compare .tree-item-with-checkbox{
+  font-size: 15px;
+  margin-bottom: 3px;
+}
+
 .tree-toggle {
   display: inline-block;
   margin-top: -4px;
