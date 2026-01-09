@@ -1,0 +1,122 @@
+/* Compare Page Styles (migrated from deprecated styles.css + removed inline styles) */
+
+.page-compare .compare-selection-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px;
+	line-height: 1;
+}
+
+.page-compare .comparison-results h3 {
+	margin-bottom: 15px;
+}
+
+.page-compare .differences-section {
+	margin-top: 20px;
+}
+
+.page-compare .differences-section h4 {
+	margin-bottom: 15px;
+}
+
+.page-compare .difference-icon {
+	margin-right: 10px;
+}
+
+.page-compare .difference-item {
+	padding: 10px;
+	margin: 10px;
+	line-height: 1;
+}
+
+.page-compare .diff-container {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 15px;
+}
+
+.page-compare .diff-panel {
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.page-compare .diff-header {
+	background: var(--bg-light);
+	padding: 12px 15px;
+	font-weight: 600;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.page-compare .diff-content {
+	padding: 15px;
+	max-height: 500px;
+	overflow-y: auto;
+}
+
+.page-compare .diff-added {
+	background: rgba(34, 197, 94, 0.1);
+	color: #15803d;
+	padding: 2px 4px;
+	border-radius: 3px;
+}
+
+.page-compare .diff-removed {
+	background: rgba(239, 68, 68, 0.1);
+	color: #991b1b;
+	padding: 2px 4px;
+	border-radius: 3px;
+}
+
+.page-compare .compare-actions {
+	margin-top: 20px;
+	text-align: center;
+}
+
+.page-compare .editor-panel-content {
+	padding: 10px;
+	overflow-y: auto;
+	max-height: 400px;
+}
+
+.page-compare .tree-item-error-icon {
+	color: #e74c3c;
+	font-size: 14px;
+	margin-left: 5px;
+	font-weight: bold;
+}
+
+.page-compare .diff-value-muted {
+	color: #999;
+	font-style: italic;
+}
+
+.page-compare .diff-table {
+	margin-top: 10px;
+}
+
+/* Column sizing for differences table */
+.page-compare .diff-table th:nth-child(1),
+.page-compare .diff-table td:nth-child(1) {
+	width: 20%;
+}
+
+.page-compare .diff-table th:nth-child(2),
+.page-compare .diff-table td:nth-child(2) {
+	width: 45%;
+}
+
+.page-compare .diff-table th:nth-child(3),
+.page-compare .diff-table td:nth-child(3) {
+	width: 20%;
+}
+
+.page-compare .diff-table th:nth-child(4),
+.page-compare .diff-table td:nth-child(4) {
+	width: 15%;
+}
+
+.page-compare .compare-k {
+	font-weight: 600;
+}
+
