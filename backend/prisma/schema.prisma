@@ -9,32 +9,32 @@ datasource db {
 }
 
 model Project {
-  id          String   @id
-  name        String
-  description String?
-  version     String
-  createDate  String
-  modifyDate  String
+  id           String  @id
+  name         String
+  description  String?
+  version      String
+  createDate   String
+  modifyDate   String
   accessRights String?
 
-  models      Model[]
-  profiles    Profile[]
+  models   Model[]
+  profiles Profile[]
 }
 
 model Model {
-  id          String   @id
-  projectId   String
-  name        String
-  description String?
-  type        String?
-  version     String
-  createDate  String
-  modifyDate  String
-  legalState  String?
-  legalAct    String?
+  id           String  @id
+  projectId    String
+  name         String
+  description  String?
+  type         String?
+  version      String
+  createDate   String
+  modifyDate   String
+  legalState   String?
+  legalAct     String?
   accessRights String?
 
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   rootPackages RootPackage[]
 
   relatedProfiles Profile[] @relation("ModelProfiles")
@@ -44,18 +44,18 @@ model Model {
 }
 
 model Profile {
-  id          String   @id
-  projectId   String
-  name        String
-  description String?
-  version     String
-  createDate  String
-  modifyDate  String
-  legalState  String?
-  legalAct    String?
+  id           String  @id
+  projectId    String
+  name         String
+  description  String?
+  version      String
+  createDate   String
+  modifyDate   String
+  legalState   String?
+  legalAct     String?
   accessRights String?
 
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   rootPackages RootPackage[]
 
   relatedModels Model[] @relation("ModelProfiles")
@@ -65,15 +65,15 @@ model Profile {
 }
 
 model RootPackage {
-  id        String @id @default(cuid())
+  id String @id @default(cuid())
 
   modelId   String?
   profileId String?
 
-  model     Model?    @relation(fields: [modelId], references: [id], onDelete: Cascade)
-  profile   Profile?  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  model   Model?   @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  profile Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  packages  Package[]
+  packages Package[]
 
   generalizationsList GeneralizationLink[]
   associationList     AssociationLink[]
@@ -87,20 +87,20 @@ model Package {
   rootPackageId String
   parentId      String?
 
-  name          String
-  type          String?
-  parentPackage String?
-  documentation String?
+  name            String
+  type            String?
+  parentPackage   String?
+  documentation   String?
   documentationRu String?
-  details       String?
-  modelId       String?
-  profileId     String?
+  details         String?
+  modelId         String?
+  profileId       String?
 
-  rootPackage   RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
-  parent        Package?    @relation("PackageTree", fields: [parentId], references: [id], onDelete: Cascade)
-  subPackages   Package[]   @relation("PackageTree")
+  rootPackage RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
+  parent      Package?    @relation("PackageTree", fields: [parentId], references: [id], onDelete: Cascade)
+  subPackages Package[]   @relation("PackageTree")
 
-  classes       Class[]
+  classes Class[]
 
   @@index([rootPackageId])
   @@index([parentId])
@@ -108,85 +108,85 @@ model Package {
 }
 
 model Class {
-  id            String @id
-  packageId     String
+  id        String @id
+  packageId String
 
-  name          String
-  type          String?
-  stereotype    String?
-  documentation String?
+  name            String
+  type            String?
+  stereotype      String?
+  documentation   String?
   documentationRu String?
-  details       String?
-  isAbstract    Boolean?
+  details         String?
+  isAbstract      Boolean?
 
-  modelId       String?
-  profileId     String?
-  refModelId    String?
+  modelId        String?
+  profileId      String?
+  refModelId     String?
   refModelItemId String?
 
-  pkg           Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  pkg Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
 
-  attributes    Attribute[]
-  links         Link[]
-  literals      Literal[]
+  attributes Attribute[]
+  links      Link[]
+  literals   Literal[]
 
   @@index([packageId])
   @@index([name])
 }
 
 model Attribute {
-  id         String @id
-  classId    String
+  id      String @id
+  classId String
 
-  name       String
-  type       String?
-  multiplicity String?
-  documentation String?
+  name            String
+  type            String?
+  multiplicity    String?
+  documentation   String?
   documentationRu String?
-  details    String?
+  details         String?
 
-  modelId       String?
-  profileId     String?
-  refModelId    String?
+  modelId        String?
+  profileId      String?
+  refModelId     String?
   refModelItemId String?
 
-  cls        Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  cls Class @relation(fields: [classId], references: [id], onDelete: Cascade)
 
   @@index([classId])
   @@index([name])
 }
 
 model Link {
-  id         String @id
-  classId    String
+  id      String @id
+  classId String
 
-  name       String?
-  type       String?
-  multiplicity String?
-  documentation String?
+  name            String?
+  type            String?
+  multiplicity    String?
+  documentation   String?
   documentationRu String?
-  details    String?
+  details         String?
 
-  modelId       String?
-  profileId     String?
-  refModelId    String?
+  modelId        String?
+  profileId      String?
+  refModelId     String?
   refModelItemId String?
 
-  cls        Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  cls Class @relation(fields: [classId], references: [id], onDelete: Cascade)
 
   @@index([classId])
 }
 
 model Literal {
-  id         String @id
-  classId    String
+  id      String @id
+  classId String
 
-  name       String
-  value      String?
-  documentation String?
+  name            String
+  value           String?
+  documentation   String?
   documentationRu String?
 
-  cls        Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  cls Class @relation(fields: [classId], references: [id], onDelete: Cascade)
 
   @@index([classId])
   @@index([name])
@@ -196,10 +196,10 @@ model GeneralizationLink {
   id            String @id @default(cuid())
   rootPackageId String
 
-  sourceId      String?
-  targetId      String?
+  sourceId String?
+  targetId String?
 
-  rootPackage   RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
+  rootPackage RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
 
   @@index([rootPackageId])
 }
@@ -208,10 +208,10 @@ model AssociationLink {
   id            String @id @default(cuid())
   rootPackageId String
 
-  sourceId      String?
-  targetId      String?
+  sourceId String?
+  targetId String?
 
-  rootPackage   RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
+  rootPackage RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
 
   @@index([rootPackageId])
 }
