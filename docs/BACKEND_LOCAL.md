@@ -35,6 +35,13 @@ localStorage.setItem("cim.backendBaseUrl", "http://localhost:5179");
   - инициализирует `MemoryStore`
 - Любые изменения проектов через `MemoryStore.addProject/updateProject/deleteProject` автоматически сохраняются в backend (debounce ~400ms).
 
+### Notes about links (relationships)
+
+- В каноническом контракте источником правды о связях являются:
+  - `GeneralizationLink` (наследование)
+  - `AssociationLink` + `AssociationLinkEnd[]` (ассоциации и их концы)
+- `Class.links` / `ClassLink` (и backend-таблица `Link`) считаются **производными/legacy** данными, которые строятся бизнес-логикой и в перспективе будут убраны.
+
 ### Quick checks
 
 - Проверка, что режим включен: `localStorage.getItem("cim.dataSource") === "backend"`

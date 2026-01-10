@@ -89,24 +89,63 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
   for (const rp of rootPackages) {
     const [packages, generalizationsList, associationList] = await Promise.all([
       exportPackagesTree(rp.id),
-      prisma.generalizationLink.findMany({ where: { rootPackageId: rp.id } }),
-      prisma.associationLink.findMany({ where: { rootPackageId: rp.id } }),
+      prisma.generalizationLink.findMany({
+        where: { rootPackageId: rp.id },
+        include: { ends: true },
+      }),
+      prisma.associationLink.findMany({
+        where: { rootPackageId: rp.id },
+        include: {
+          linkEnd: {
+            orderBy: { linkEndId: "asc" },
+          },
+        },
+      }),
     ]);
 
     out.push({
       packages,
       generalizationsList: generalizationsList.map((g) => ({
-        sourceId: g.sourceId,
-        targetId: g.targetId,
+        linkId: g.linkId,
+        linkType: g.linkType,
+        documentation: g.documentation ?? null,
+        documentationRu: g.documentationRu ?? null,
+        details: g.details ?? null,
+        stereotype: g.stereotype ?? "",
+        parent: mapGeneralizationEnd(g.ends, "parent"),
+        child: mapGeneralizationEnd(g.ends, "child"),
       })),
       associationList: associationList.map((a) => ({
-        sourceId: a.sourceId,
-        targetId: a.targetId,
+        linkId: a.linkId,
+        linkType: a.linkType,
+        documentation: a.documentation ?? null,
+        documentationRu: a.documentationRu ?? null,
+        details: a.details ?? null,
+        stereotype: a.stereotype ?? "",
+        linkEnd: (a.linkEnd || []).map((e) => ({
+          linkEndId: e.linkEndId,
+          linkEndName: e.linkEndName,
+          linkEndClassId: e.linkEndClassId,
+          linkEndClassName: e.linkEndClassName,
+          multiplicity: e.multiplicity ?? null,
+          documentation: e.documentation ?? null,
+          documentationRu: e.documentationRu ?? null,
+          details: e.details ?? null,
+          stereotype: e.stereotype ?? "",
+        })),
       })),
     });
   }
 
   return out;
+}
+
+function mapGeneralizationEnd(ends, role) {
+  const e = Array.isArray(ends) ? ends.find((x) => x?.role === role) : null;
+  return {
+    classId: e?.classId ?? null,
+    className: e?.className ?? "",
+  };
 }
 
 async function exportPackagesTree(rootPackageId) {

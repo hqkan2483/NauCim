@@ -1,4 +1,5 @@
 import { prisma } from "../db.js";
+import { randomUUID } from "node:crypto";
 
 function isRootPackageLike(rp) {
   return rp && typeof rp === "object" && Array.isArray(rp.packages);
@@ -7,6 +8,12 @@ function isRootPackageLike(rp) {
 function toStr(v) {
   if (v === undefined || v === null) return null;
   return String(v);
+}
+
+function toNonEmptyStr(v) {
+  if (v === undefined || v === null) return null;
+  const s = String(v).trim();
+  return s ? s : null;
 }
 
 export async function importProject(project) {
@@ -121,28 +128,87 @@ export async function importProject(project) {
 }
 
 async function importRootPackageGraph(tx, rootPackageId, rp) {
-  // links lists (minimal fields)
+  // links lists (canonical contract)
   const gen = Array.isArray(rp.generalizationsList) ? rp.generalizationsList : [];
   const assoc = Array.isArray(rp.associationList) ? rp.associationList : [];
 
-  if (gen.length) {
-    await tx.generalizationLink.createMany({
-      data: gen.map((g) => ({
+  for (const g of gen) {
+    const linkId = toNonEmptyStr(g?.linkId) || `gen_${randomUUID()}`;
+
+    const parentClassId = toNonEmptyStr(g?.parent?.classId);
+    const parentClassName = toNonEmptyStr(g?.parent?.className) || "";
+    const childClassId = toNonEmptyStr(g?.child?.classId);
+    const childClassName = toNonEmptyStr(g?.child?.className) || "";
+
+    if (!parentClassId || !childClassId) continue;
+
+    await tx.generalizationLink.create({
+      data: {
+        linkId,
         rootPackageId,
-        sourceId: toStr(g?.sourceId),
-        targetId: toStr(g?.targetId),
-      })),
+        linkType: toNonEmptyStr(g?.linkType) || "Generalization",
+        documentation: toStr(g?.documentation),
+        documentationRu: toStr(g?.documentationRu),
+        details: toStr(g?.details),
+        stereotype: toNonEmptyStr(g?.stereotype) || "",
+      },
+    });
+
+    await tx.generalizationClassRef.createMany({
+      data: [
+        {
+          generalizationLinkId: linkId,
+          role: "parent",
+          classId: parentClassId,
+          className: parentClassName,
+        },
+        {
+          generalizationLinkId: linkId,
+          role: "child",
+          classId: childClassId,
+          className: childClassName,
+        },
+      ],
     });
   }
 
-  if (assoc.length) {
-    await tx.associationLink.createMany({
-      data: assoc.map((a) => ({
+  for (const a of assoc) {
+    const linkId = toNonEmptyStr(a?.linkId) || `assoc_${randomUUID()}`;
+
+    await tx.associationLink.create({
+      data: {
+        linkId,
         rootPackageId,
-        sourceId: toStr(a?.sourceId),
-        targetId: toStr(a?.targetId),
-      })),
+        linkType: toNonEmptyStr(a?.linkType) || "Association",
+        documentation: toStr(a?.documentation),
+        documentationRu: toStr(a?.documentationRu),
+        details: toStr(a?.details),
+        stereotype: toNonEmptyStr(a?.stereotype) || "",
+      },
     });
+
+    const linkEnd = Array.isArray(a?.linkEnd) ? a.linkEnd : [];
+    for (const e of linkEnd) {
+      const linkEndId = toNonEmptyStr(e?.linkEndId) || `end_${randomUUID()}`;
+      const endClassId = toNonEmptyStr(e?.linkEndClassId);
+      const endClassName = toNonEmptyStr(e?.linkEndClassName) || "";
+      if (!endClassId) continue;
+
+      await tx.associationLinkEnd.create({
+        data: {
+          linkEndId,
+          associationLinkId: linkId,
+          linkEndName: String(e?.linkEndName || ""),
+          linkEndClassId: endClassId,
+          linkEndClassName: endClassName,
+          multiplicity: toNonEmptyStr(e?.multiplicity) || "",
+          documentation: toStr(e?.documentation),
+          documentationRu: toStr(e?.documentationRu),
+          details: toStr(e?.details),
+          stereotype: toNonEmptyStr(e?.stereotype) || "",
+        },
+      });
+    }
   }
 
   const topPackages = Array.isArray(rp.packages) ? rp.packages : [];

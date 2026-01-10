@@ -100,6 +100,8 @@ When backend mode is enabled, the frontend still uses `MemoryStore` as the singl
 
 Backend implementation lives in `backend/` (Express + SQLite + Prisma). See [BACKEND_LOCAL.md](BACKEND_LOCAL.md).
 
+Note: in the canonical data contract, relationships are defined by `GeneralizationLink` and `AssociationLink` + `AssociationLinkEnd[]`. Class-level `links`/`ClassLink` are considered derived/legacy data produced by business logic.
+
 #### ⚠️ Deprecated: `data.js`
 
 **Status**: LEGACY - Kept only for compatibility

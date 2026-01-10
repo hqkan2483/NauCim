@@ -2,6 +2,15 @@
 
 Local Node.js backend for NauCim with SQLite + Prisma.
 
+## Data model notes
+
+- Canonical data contract: see [docs/DATA_STRUCTURES.md](../docs/DATA_STRUCTURES.md).
+- **Source of truth for relationships**:
+  - `GeneralizationLink` (inheritance) and
+  - `AssociationLink` + `AssociationLinkEnd[]` (association ends)
+
+`Link` / `ClassLink` are treated as **derived/legacy** representations produced by business logic and are planned to be phased out.
+
 ## Setup
 
 ```bash

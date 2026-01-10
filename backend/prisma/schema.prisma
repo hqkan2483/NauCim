@@ -193,25 +193,70 @@ model Literal {
 }
 
 model GeneralizationLink {
-  id            String @id @default(cuid())
+  linkId        String @id
   rootPackageId String
 
-  sourceId String?
-  targetId String?
+  linkType        String
+  documentation   String?
+  documentationRu String?
+  details         String?
+  stereotype      String  @default("")
 
   rootPackage RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
+
+  ends GeneralizationClassRef[]
 
   @@index([rootPackageId])
 }
 
+model GeneralizationClassRef {
+  id String @id @default(cuid())
+
+  generalizationLinkId String
+  role                 String
+
+  classId   String
+  className String
+
+  generalizationLink GeneralizationLink @relation(fields: [generalizationLinkId], references: [linkId], onDelete: Cascade)
+
+  @@unique([generalizationLinkId, role])
+  @@index([generalizationLinkId])
+  @@index([classId])
+}
+
 model AssociationLink {
-  id            String @id @default(cuid())
+  linkId        String @id
   rootPackageId String
 
-  sourceId String?
-  targetId String?
+  linkType        String
+  documentation   String?
+  documentationRu String?
+  details         String?
+  stereotype      String  @default("")
 
-  rootPackage RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
+  rootPackage RootPackage          @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
+  linkEnd     AssociationLinkEnd[]
 
   @@index([rootPackageId])
+}
+
+model AssociationLinkEnd {
+  linkEndId String @id
+
+  associationLinkId String
+
+  linkEndName      String
+  linkEndClassId   String
+  linkEndClassName String
+  multiplicity     String  @default("")
+  documentation    String?
+  documentationRu  String?
+  details          String?
+  stereotype       String  @default("")
+
+  associationLink AssociationLink @relation(fields: [associationLinkId], references: [linkId], onDelete: Cascade)
+
+  @@index([associationLinkId])
+  @@index([linkEndClassId])
 }

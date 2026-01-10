@@ -306,6 +306,21 @@ User Action → Service → MemoryStore → Backend API (SQLite)
 - Persistence switching should happen in one place: `src/services/persistence/persistence-config.js`.
 - Backend sync (save-on-mutation) should be implemented via `src/services/persistence/memory-store-backend-sync.js`.
 
+#### Relationships (links): source of truth
+
+**Canonical source of truth** for relationships is the link structures defined in `docs/DATA_STRUCTURES.md`:
+
+- `GeneralizationLink` (and its ends)
+- `AssociationLink` + `AssociationLinkEnd[]`
+
+`Class.links: ClassLink[]` is **derived/legacy** and should be treated as a cached/compatibility view.
+
+Rules:
+
+- When importing/exporting or persisting data, store/transfer canonical `GeneralizationLink`/`AssociationLink` structures; do not treat `Class.links` as authoritative.
+- UI renderers may use `Class.links` for display, but services should be able to rebuild it from canonical link data when needed.
+- Backend DB schema should persist canonical link tables/relations; avoid adding endpoints that accept only `Class.links` as input.
+
 #### Backend code rules (Node.js)
 
 - Keep HTTP concerns in `backend/src/routes/*`.
