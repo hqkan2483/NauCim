@@ -1,0 +1,217 @@
+generator client {
+  provider   = "prisma-client"
+  output     = "../src/generated/prisma"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Project {
+  id           String  @id
+  name         String
+  description  String?
+  version      String
+  createDate   String
+  modifyDate   String
+  accessRights String?
+
+  models   Model[]
+  profiles Profile[]
+}
+
+model Model {
+  id           String  @id
+  projectId    String
+  name         String
+  description  String?
+  type         String?
+  version      String
+  createDate   String
+  modifyDate   String
+  legalState   String?
+  legalAct     String?
+  accessRights String?
+
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  rootPackages RootPackage[]
+
+  relatedProfiles Profile[] @relation("ModelProfiles")
+
+  @@index([projectId])
+  @@index([name])
+}
+
+model Profile {
+  id           String  @id
+  projectId    String
+  name         String
+  description  String?
+  version      String
+  createDate   String
+  modifyDate   String
+  legalState   String?
+  legalAct     String?
+  accessRights String?
+
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  rootPackages RootPackage[]
+
+  relatedModels Model[] @relation("ModelProfiles")
+
+  @@index([projectId])
+  @@index([name])
+}
+
+model RootPackage {
+  id String @id @default(cuid())
+
+  modelId   String?
+  profileId String?
+
+  model   Model?   @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  profile Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  packages Package[]
+
+  generalizationsList GeneralizationLink[]
+  associationList     AssociationLink[]
+
+  @@index([modelId])
+  @@index([profileId])
+}
+
+model Package {
+  id            String  @id
+  rootPackageId String
+  parentId      String?
+
+  name            String
+  type            String?
+  parentPackage   String?
+  documentation   String?
+  documentationRu String?
+  details         String?
+  modelId         String?
+  profileId       String?
+
+  rootPackage RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
+  parent      Package?    @relation("PackageTree", fields: [parentId], references: [id], onDelete: Cascade)
+  subPackages Package[]   @relation("PackageTree")
+
+  classes Class[]
+
+  @@index([rootPackageId])
+  @@index([parentId])
+  @@index([name])
+}
+
+model Class {
+  id        String @id
+  packageId String
+
+  name            String
+  type            String?
+  stereotype      String?
+  documentation   String?
+  documentationRu String?
+  details         String?
+  isAbstract      Boolean?
+
+  modelId        String?
+  profileId      String?
+  refModelId     String?
+  refModelItemId String?
+
+  pkg Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  attributes Attribute[]
+  links      Link[]
+  literals   Literal[]
+
+  @@index([packageId])
+  @@index([name])
+}
+
+model Attribute {
+  id      String @id
+  classId String
+
+  name            String
+  type            String?
+  multiplicity    String?
+  documentation   String?
+  documentationRu String?
+  details         String?
+
+  modelId        String?
+  profileId      String?
+  refModelId     String?
+  refModelItemId String?
+
+  cls Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@index([classId])
+  @@index([name])
+}
+
+model Link {
+  id      String @id
+  classId String
+
+  name            String?
+  type            String?
+  multiplicity    String?
+  documentation   String?
+  documentationRu String?
+  details         String?
+
+  modelId        String?
+  profileId      String?
+  refModelId     String?
+  refModelItemId String?
+
+  cls Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@index([classId])
+}
+
+model Literal {
+  id      String @id
+  classId String
+
+  name            String
+  value           String?
+  documentation   String?
+  documentationRu String?
+
+  cls Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@index([classId])
+  @@index([name])
+}
+
+model GeneralizationLink {
+  id            String @id @default(cuid())
+  rootPackageId String
+
+  sourceId String?
+  targetId String?
+
+  rootPackage RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
+
+  @@index([rootPackageId])
+}
+
+model AssociationLink {
+  id            String @id @default(cuid())
+  rootPackageId String
+
+  sourceId String?
+  targetId String?
+
+  rootPackage RootPackage @relation(fields: [rootPackageId], references: [id], onDelete: Cascade)
+
+  @@index([rootPackageId])
+}
