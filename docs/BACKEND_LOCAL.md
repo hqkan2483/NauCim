@@ -12,13 +12,13 @@ Frontend переключается в одном месте через localSto
 
 ```js
 // Enable
-localStorage.setItem('cim.dataSource', 'backend');
+localStorage.setItem("cim.dataSource", "backend");
 
 // Optional: change backend URL
-localStorage.setItem('cim.backendBaseUrl', 'http://localhost:5179');
+localStorage.setItem("cim.backendBaseUrl", "http://localhost:5179");
 
 // Disable (use local test data)
-localStorage.setItem('cim.dataSource', 'local');
+localStorage.setItem("cim.dataSource", "local");
 ```
 
 После смены значения перезагрузи страницу.
