@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { getEnv } from "./utils/env.js";
@@ -8,9 +9,23 @@ import { importExportRouter } from "./routes/import-export.js";
 const app = express();
 
 const corsOrigin = getEnv("CORS_ORIGIN", "*");
+const allowedOrigins = corsOrigin
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: corsOrigin === "*" ? true : corsOrigin,
+    origin:
+      corsOrigin === "*"
+        ? true
+        : (origin, callback) => {
+            // Allow non-browser clients and local file:// usage (origin may be undefined/null)
+            if (!origin) return callback(null, true);
+            if (origin === "null") return callback(null, true);
+            if (allowedOrigins.includes(origin)) return callback(null, true);
+            return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+          },
     credentials: false,
   })
 );
