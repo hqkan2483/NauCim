@@ -8,17 +8,21 @@ See [backend/README.md](../backend/README.md).
 
 ## 2) Enable backend mode in the frontend
 
-Frontend переключается в одном месте через localStorage:
+Backend-режим включается **одной строкой конфигурации на старте**:
+
+- Открой: [src/services/persistence/persistence-config.js](../src/services/persistence/persistence-config.js)
+- Поставь:
+  - `const BACKEND_ENABLED_ON_STARTUP = true;` — чтобы использовать backend
+  - `const BACKEND_ENABLED_ON_STARTUP = false;` — чтобы использовать локальные тестовые данные
+
+Важно: этот модуль **на каждом старте** вызывает `setBackendEnabled(BACKEND_ENABLED_ON_STARTUP)` и выставляет `localStorage.cim.dataSource` автоматически. Поэтому ручная правка `cim.dataSource` в DevTools переживёт только текущую сессию и будет перезаписана при перезагрузке.
+
+### (Optional) Change backend base URL
+
+По умолчанию используется `http://localhost:5179`, но URL можно переопределить через localStorage:
 
 ```js
-// Enable
-localStorage.setItem("cim.dataSource", "backend");
-
-// Optional: change backend URL
 localStorage.setItem("cim.backendBaseUrl", "http://localhost:5179");
-
-// Disable (use local test data)
-localStorage.setItem("cim.dataSource", "local");
 ```
 
 После смены значения перезагрузи страницу.
@@ -30,3 +34,8 @@ localStorage.setItem("cim.dataSource", "local");
   - подгружает полный JSON для каждого через `GET /api/export/project/:id`
   - инициализирует `MemoryStore`
 - Любые изменения проектов через `MemoryStore.addProject/updateProject/deleteProject` автоматически сохраняются в backend (debounce ~400ms).
+
+### Quick checks
+
+- Проверка, что режим включен: `localStorage.getItem("cim.dataSource") === "backend"`
+- Проверка URL: `localStorage.getItem("cim.backendBaseUrl")`
