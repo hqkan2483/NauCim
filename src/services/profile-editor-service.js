@@ -316,7 +316,7 @@ function findItemPathByKey(itemKey, availableData) {
   const id = idParts.join("-");
 
   const rootItem = availableData.find((item) =>
-    item.type === type && (item.id === id || item.id === parseInt(id) || String(item.id) === id)
+    item.type === type && (item.id === id )
   );
   if (!rootItem) return null;
 
@@ -523,9 +523,7 @@ function findItemByKey(itemKey, availableData) {
   // Find root item
   const rootItem = availableData.find(item => {
     const match = item.type === type && (
-      item.id === id ||
-      item.id === parseInt(id) ||
-      String(item.id) === id
+      item.id === id 
     );
     console.log(`    Checking ${item.type}-${item.id}:  ${match}`);
     return match;

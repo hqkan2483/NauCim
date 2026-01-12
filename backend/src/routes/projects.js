@@ -23,7 +23,7 @@ projectsRouter.get(
   "/",
   asyncHandler(async (req, res) => {
     const projects = await prisma.project.findMany({
-      orderBy: {name: "asc" },
+      orderBy: { name: "asc" },
       select: {
         id: true,
         name: true,
@@ -32,8 +32,57 @@ projectsRouter.get(
         createDate: true,
         modifyDate: true,
         accessRights: true,
+        models: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            version: true,
+            type: true,
+            createDate: true,
+            modifyDate: true,
+            accessRights: true,
+            legalAct: true,
+            legalState: true,
+
+            // ModelProfiles relation (schema.prisma: Model.relatedProfiles)
+            relatedProfiles: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+
+
+          },
+          orderBy: { name: "asc" },
+        },
+        profiles: {
+          select: {
+            id: true,
+            name: true,
+            version: true,
+            modifyDate: true,
+            accessRights: true,
+            description: true,
+            createDate: true,
+            legalAct: true,
+            legalState: true,
+
+            // ModelProfiles relation (schema.prisma: Profile.relatedModels)
+            relatedModels: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+
+          },
+          orderBy: { name: "asc" },
+        },
       },
     });
+
     res.json(projects);
   })
 );
