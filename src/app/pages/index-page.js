@@ -39,8 +39,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindEvents();
 
   // 6. Initial render
-  renderDashboard();
-  updateCurrentProjectDisplay();
+  await renderDashboard();
+  await updateCurrentProjectDisplay();
 });
 
 // ============================================================
@@ -115,16 +115,16 @@ const currentProjectEl = document.getElementById("current-project-card");
 // ============================================================
 // RENDER
 // ============================================================
-function renderDashboard() {
-  renderCurrentProject();
-  renderRecentProjects();
+async function renderDashboard() {
+  await renderCurrentProject();
+  await renderRecentProjects();
 }
 
-function renderRecentProjects() {
+async function renderRecentProjects() {
   const container = document.getElementById("recent-projects");
   if (!container) return;
 
-  const projects = getAllProjects();
+  const projects = await getAllProjects();
   // Сортируем по modifyDate (самые новые сначала) и берем первые 3
   const recent = projects
     .sort((a, b) => {
@@ -159,11 +159,11 @@ function renderRecentProjects() {
   container.innerHTML = html;
 }
 
-function renderCurrentProject() {
+async function renderCurrentProject() {
   const container = document.getElementById("current-project-card");
   if (!container) return;
   const currentProjectId = getCurrentProjectId();
-  const project = currentProjectId ? getProjectById(currentProjectId): null;
+  const project = currentProjectId ? await getProjectById(currentProjectId) : null;
   if (project) {
     container.innerHTML = renderProjectCard(project, {
         showActions: true,
@@ -180,33 +180,38 @@ function renderCurrentProject() {
   }
 }
 
-function updateCurrentProjectDisplay() {
+async function updateCurrentProjectDisplay() {
   const currentProjectEl = document.getElementById("current-project");
   if (!currentProjectEl) return;
 
   const projectId = getCurrentProjectId();
-  const project = projectId ? getAllProjects().find((p) => p.id === projectId) : null;
+  if (!projectId) {
+    currentProjectEl.classList.remove("sidebar__section-data");
+    currentProjectEl.classList.add("sidebar__section-info");
+    currentProjectEl.innerHTML = `<span>Нет проекта</span>`;
+    return;
+  }
 
+  const project = await getProjectById(projectId);
   if (project) {
     currentProjectEl.classList.remove("sidebar__section-info");
     currentProjectEl.classList.add("sidebar__section-data");
     currentProjectEl.innerHTML = `<span>${project.name}</span>`;
-    return;
+  } else {
+    currentProjectEl.classList.remove("sidebar__section-data");
+    currentProjectEl.classList.add("sidebar__section-info");
+    currentProjectEl.innerHTML = `<span>Нет проекта</span>`;
   }
-
-  currentProjectEl.classList.remove("sidebar__section-data");
-  currentProjectEl.classList.add("sidebar__section-info");
-  currentProjectEl.innerHTML = `<span>Нет проекта</span>`;
 }
 
 // ============================================================
 // HANDLERS
 // ============================================================
-function handleSelectProject(projectId) {
+async function handleSelectProject(projectId) {
   setCurrentProjectId(projectId);
-  updateCurrentProjectDisplay();
-  renderCurrentProject();
-  renderRecentProjects();
+  await updateCurrentProjectDisplay();
+  await renderCurrentProject();
+  await renderRecentProjects();
 }
 
 function handleOpenProject(projectId) {
@@ -214,30 +219,29 @@ function handleOpenProject(projectId) {
   window.location.href = `project-details.html?id=${projectId}`;
 }
 
-function handleProjectCreated(newProject) {
+async function handleProjectCreated(newProject) {
   // Re-render recent projects
-  renderCurrentProject();
-  renderRecentProjects();
+  await renderCurrentProject();
+  await renderRecentProjects();
 
   // Select new project
-  handleSelectProject(newProject.id);
-
+  await handleSelectProject(newProject.id);
 }
 
-function handleRefreshBtn() {
-      let projects =  getAllProjects();
-      // Сортируем: если modifyDate отсутствует, считаем её очень старой (в конец)
-      projects = projects.slice().sort((a, b) => {
-        const getTimestamp = (proj) =>
-          proj.modifyDate ? new Date(proj.modifyDate).getTime() : -Infinity;
-        return getTimestamp(b) - getTimestamp(a);
-      });
-      // Обновляем отображение недавних проектов (используем тот же RECENT_PROJECTS_COUNT)
-      renderCurrentProject();
-      renderRecentProjects(projects);
+async function handleRefreshBtn() {
+  const projects = await getAllProjects();
+  // Сортируем: если modifyDate отсутствует, считаем её очень старой (в конец)
+  const sorted = projects.slice().sort((a, b) => {
+    const getTimestamp = (proj) =>
+      proj.modifyDate ? new Date(proj.modifyDate).getTime() : -Infinity;
+    return getTimestamp(b) - getTimestamp(a);
+  });
+  // Обновляем отображение недавних проектов
+  await renderCurrentProject();
+  await renderRecentProjects();
 
-      // Обновляем информацию о текущем проекте
-      updateCurrentProjectDisplay();
+  // Обновляем информацию о текущем проекте
+  await updateCurrentProjectDisplay();
 }
 
 

@@ -2,45 +2,33 @@ import {
   getCurrentProjectId,
   setCurrentProjectId,
 } from "../state/current-project-state.js";
-import { MemoryStore } from "../store/memory-store.js";
-import { loadTestData } from "./dataloader.js";
 import { generateUUID } from "../utils/uuid.js";
-import { isBackendEnabled } from "./persistence/persistence-config.js";
 import {
-  listProjects as backendListProjects,
-  exportProject as backendExportProject,
-} from "./backend/project-backend-service.js";
-import { attachMemoryStoreBackendSync } from "./persistence/memory-store-backend-sync.js";
+  getAllProjects as repoGetAllProjects,
+  getProjectById as repoGetProjectById,
+  createProject as repoCreateProject,
+  updateProject as repoUpdateProject,
+  deleteProject as repoDeleteProject,
+} from "./repositories/project-repository.js";
+import {
+  validateCreateProjectPayload,
+  validateUpdateProjectPayload,
+} from "./business/project-validator.js";
 
 // ============================================================
-// PROJECT SERVICE - Manages Project Data Operations
+// PROJECT SERVICE - Service Layer
+// Manages Project Business Operations
 // ============================================================
+
+/**
+ * Initialize application data
+ * Checks current project state
+ */
 async function appDataInit() {
-  if (MemoryStore.getAllProjects().length === 0) {
-    if (isBackendEnabled()) {
-      try {
-        console.log("🔄 Loading projects from backend into MemoryStore...");
-        const meta = await backendListProjects();
-        const ids = Array.isArray(meta) ? meta.map((p) => p?.id).filter(Boolean) : [];
-        const fullProjects = await Promise.all(ids.map((id) => backendExportProject(id)));
-        MemoryStore.initialize({ projects: fullProjects.filter(Boolean) });
-      } catch (e) {
-        console.warn("⚠️ Backend unavailable, falling back to test data", e);
-        const testData = await loadTestData();
-        MemoryStore.initialize({ projects: testData });
-      }
-    } else {
-      console.log("🔄 Loading test data into MemoryStore...");
-      const testData = await loadTestData();
-      MemoryStore.initialize({ projects: testData });
-    }
-
-    // One-place switch: if backend enabled, any MemoryStore project mutations will persist.
-    attachMemoryStoreBackendSync(MemoryStore);
-
+  try {
     const savedProjectId = getCurrentProjectId();
     if (savedProjectId) {
-      const project = getProjectById(savedProjectId);
+      const project = await getProjectById(savedProjectId);
       if (project) {
         console.log(`✅ Restored current project ID: ${savedProjectId}`);
       } else {
@@ -50,84 +38,144 @@ async function appDataInit() {
         );
       }
     }
+  } catch (error) {
+    console.error("[appDataInit] Failed to initialize:", error);
   }
 }
 
-function getAllProjects() {
-  return MemoryStore.getAllProjects();
+/**
+ * Get all projects
+ * @returns {Promise<Array>} Array of projects
+ */
+async function getAllProjects() {
+  try {
+    return await repoGetAllProjects();
+  } catch (error) {
+    console.error("[getAllProjects] Failed:", error);
+    return [];
+  }
 }
 
-function getProjectById(id) {
-  const project = MemoryStore.getProjectById(String(id));
-  return project ? project : null;
-}
-
-function getCurrentProject() {
-  const projectId = getCurrentProjectId();
-  if (projectId) {
-    return getProjectById(projectId);
-  } else {
+/**
+ * Get project by ID
+ * @param {string} id - Project ID
+ * @returns {Promise<Object|null>} Project object or null
+ */
+async function getProjectById(id) {
+  if (!id) return null;
+  try {
+    return await repoGetProjectById(String(id));
+  } catch (error) {
+    console.error(`[getProjectById] Failed for ${id}:`, error);
     return null;
   }
 }
 
 /**
- * Create a new project.
- * @param {object} payload - { name, description?, version?  }
- * @returns {object|null} - Created project or null on error
+ * Get current project
+ * @returns {Promise<Object|null>} Current project or null
  */
-function createProject(payload) {
-  if (!payload || ! payload.name || !payload.name.trim()) {
-    console.error("[createProject] Name is required");
+async function getCurrentProject() {
+  const projectId = getCurrentProjectId();
+  if (projectId) {
+    return await getProjectById(projectId);
+  }
+  return null;
+}
+
+/**
+ * Check if project name is unique
+ * @param {string} name - Project name to check
+ * @param {string} excludeId - Project ID to exclude from check (for edit)
+ * @returns {Promise<boolean>} true if name is unique
+ */
+async function isProjectNameUnique(name, excludeId = null) {
+  try {
+    const projects = await repoGetAllProjects();
+    const trimmedName = name.trim().toLowerCase();
+
+    return !projects.some((p) => {
+      // Skip the project being edited
+      if (excludeId && String(p.id) === String(excludeId)) {
+        return false;
+      }
+      return p.name.trim().toLowerCase() === trimmedName;
+    });
+  } catch (error) {
+    console.error("[isProjectNameUnique] Failed:", error);
+    return false;
+  }
+}
+
+/**
+ * Create a new project
+ * @param {object} payload - { name, description?, version? }
+ * @returns {Promise<object|null>} Created project or null on error
+ */
+async function createProject(payload) {
+  // Validate payload
+  const validation = validateCreateProjectPayload(payload);
+  if (!validation.valid) {
+    console.error("[createProject]", validation.error);
     return null;
   }
 
   const trimmedName = payload.name.trim();
 
-  // Validate name length
-  if (trimmedName.length < 3) {
-    console.error("[createProject] Name must be at least 3 characters");
-    return null;
-  }
-
-  // Validate name uniqueness
-  if (!isProjectNameUnique(trimmedName)) {
+  // Check name uniqueness
+  const isUnique = await isProjectNameUnique(trimmedName);
+  if (!isUnique) {
     console.error(`[createProject] Project name "${trimmedName}" already exists`);
     return null;
   }
 
+  // Prepare project data
   const newProject = {
     id: generateUUID(),
     name: trimmedName,
-    description: payload.description ?  payload.description.trim() : "",
-    version: payload.version ?  payload.version.trim() : "0.1",
+    description: payload.description ? payload.description.trim() : "",
+    version: payload.version ? payload.version.trim() : "0.1",
     createDate: new Date().toISOString(),
     modifyDate: new Date().toISOString(),
     accessRights: "readWrite",
-    models: [],
-    profiles: [],
   };
 
-  MemoryStore.addProject(newProject);
-  console.log(`✅ Project created:  ${newProject.name} (id: ${newProject.id})`);
-
-  return newProject;
+  try {
+    const created = await repoCreateProject(newProject);
+    console.log(`✅ Project created: ${created.name} (id: ${created.id})`);
+    return created;
+  } catch (error) {
+    console.error("[createProject] Failed to create project:", error);
+    // Check for duplicate name error from backend
+    if (error.status === 409 || error.details?.name) {
+      console.error(`[createProject] Project name "${trimmedName}" already exists`);
+    }
+    return null;
+  }
 }
 
 /**
- * Update an existing project.
+ * Update an existing project
  * @param {string} projectId
- * @param {object} updates - { name?, description?, version?, models?, profiles? }
- * @returns {object|null} - Updated project or null on error
+ * @param {object} updates - { name?, description?, version? }
+ * @returns {Promise<object|null>} Updated project or null on error
  */
-function updateProject(projectId, updates) {
+async function updateProject(projectId, updates) {
   if (!projectId) {
     console.error("[updateProject] Project ID is required");
     return null;
   }
 
-  const project = MemoryStore.getProjectById(String(projectId));
-  if (!project) {
+  // Validate payload
+  const validation = validateUpdateProjectPayload(updates);
+  if (!validation.valid) {
+    console.error("[updateProject]", validation.error);
+    return null;
+  }
+
+  // Get existing project to check name uniqueness
+  const existingProject = await getProjectById(projectId);
+  if (!existingProject) {
     console.error(`[updateProject] Project not found: ${projectId}`);
     return null;
   }
@@ -136,81 +184,72 @@ function updateProject(projectId, updates) {
   if (updates.name !== undefined) {
     const trimmedName = updates.name.trim();
 
-    if (trimmedName.length < 3) {
-      console.error("[updateProject] Name must be at least 3 characters");
-      return null;
-    }
-
-    if (!isProjectNameUnique(trimmedName, projectId)) {
-      console.error(`[updateProject] Project name "${trimmedName}" already exists`);
-      return null;
+    // Check uniqueness if name changed
+    if (trimmedName.toLowerCase() !== existingProject.name.trim().toLowerCase()) {
+      const isUnique = await isProjectNameUnique(trimmedName, projectId);
+      if (!isUnique) {
+        console.error(`[updateProject] Project name "${trimmedName}" already exists`);
+        return null;
+      }
     }
 
     updates.name = trimmedName;
   }
 
-  const updatedProject = {
-    ...project,
+  // Prepare update data
+  const updateData = {
     ...updates,
-    id: project.id,
     modifyDate: new Date().toISOString(),
   };
 
-  MemoryStore.updateProject(String(projectId), updatedProject);
-  console.log(`✅ Project updated: ${updatedProject.name} (id: ${projectId})`);
-
-  return updatedProject;
+  try {
+    const updated = await repoUpdateProject(String(projectId), updateData);
+    console.log(`✅ Project updated: ${updated.name} (id: ${projectId})`);
+    return updated;
+  } catch (error) {
+    console.error(`[updateProject] Failed to update project ${projectId}:`, error);
+    // Check for duplicate name error from backend
+    if (error.status === 409 || error.details?.name) {
+      console.error(`[updateProject] Project name "${updates.name}" already exists`);
+    }
+    return null;
+  }
 }
 
 /**
- * Delete a project by ID.
- * If deleted project is current, select next available project.
+ * Delete a project by ID
+ * If deleted project is current, clear current project
  * @param {string} projectId
- * @returns {boolean} - true if deleted, false if not found
+ * @returns {Promise<boolean>} true if deleted, false if not found
  */
-function deleteProject(projectId) {
+async function deleteProject(projectId) {
   if (!projectId) {
     console.error("[deleteProject] Project ID is required");
     return false;
   }
 
-  const project = getProjectById(projectId);
+  const project = await getProjectById(projectId);
   if (!project) {
     console.error(`[deleteProject] Project not found: ${projectId}`);
     return false;
   }
 
-  MemoryStore.deleteProject(projectId);
-
-  // If deleted project was current, select another one
-  if (getCurrentProjectId() === projectId) {
-    {
-      setCurrentProjectId(null);
-      console.log("ℹ️ No projects remaining");
+  try {
+    const deleted = await repoDeleteProject(projectId);
+    if (deleted) {
+      // If deleted project was current, clear it
+      if (getCurrentProjectId() === projectId) {
+        setCurrentProjectId(null);
+        console.log("ℹ️ Current project cleared");
+      }
+      console.log(`✅ Project deleted: ${project.name} (id: ${projectId})`);
+      return true;
     }
+    return false;
+  } catch (error) {
+    console.error(`[deleteProject] Failed to delete project ${projectId}:`, error);
+    return false;
   }
-
-  console.log(`✅ Project deleted: ${project.name} (id: ${projectId})`);
-  return true;
-}
-
-/**
- * Check if project name is unique
- * @param {string} name - Project name to check
- * @param {string} excludeId - Project ID to exclude from check (for edit)
- * @returns {boolean} - true if name is unique
- */
-export function isProjectNameUnique(name, excludeId = null) {
-  const projects = MemoryStore.getAllProjects();
-  const trimmedName = name.trim().toLowerCase();
-
-  return !projects.some((p) => {
-    // Skip the project being edited
-    if (excludeId && String(p.id) === String(excludeId)) {
-      return false;
-    }
-    return p.name.trim().toLowerCase() === trimmedName;
-  });
 }
 
 // Exported functions
@@ -222,4 +261,5 @@ export {
   createProject,
   updateProject,
   deleteProject,
+  isProjectNameUnique,
 };

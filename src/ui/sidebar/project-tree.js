@@ -47,10 +47,12 @@ function initProjectsTree(options = {}) {
   bindProjectTreeEvents();
 
   // Restore tree state
-  restoreProjectsTreeState();
+  restoreProjectsTreeState().catch(err => {
+    console.error("[projectsTree] Failed to restore state:", err);
+  });
 }
 
-function toggleProjectsTree() {
+async function toggleProjectsTree() {
   if (!treeConfig) return;
 
   const container = document.querySelector(treeConfig.containerSelector);
@@ -69,11 +71,11 @@ function toggleProjectsTree() {
     container.classList.remove(treeConfig.collapsedClass);
     button.setAttribute("aria-expanded", "true");
     localStorage.setItem(treeConfig.storageKeyExpanded, "true");
-    renderProjectsTree();
+    await renderProjectsTree();
   }
 }
 
-function restoreProjectsTreeState() {
+async function restoreProjectsTreeState() {
   if (!treeConfig) return;
 
   const container = document.querySelector(treeConfig.containerSelector);
@@ -85,24 +87,26 @@ function restoreProjectsTreeState() {
   if (isExpanded) {
     container.classList.remove(treeConfig.collapsedClass);
     button.setAttribute("aria-expanded", "true");
-    renderProjectsTree();
+    await renderProjectsTree();
   } else {
     container.classList. add(treeConfig.collapsedClass);
     button.setAttribute("aria-expanded", "false");
   }
 }
 
-function renderProjectsTree() {
+async function renderProjectsTree() {
   if (!treeConfig) return;
 
   const projectsList = document.querySelector(treeConfig.listSelector);
   if (!projectsList) return;
 
-  const projects = treeConfig.getProjects();
+  const projectsResult = treeConfig.getProjects();
+  // Handle both sync and async getProjects
+  const projects = projectsResult instanceof Promise ? await projectsResult : projectsResult;
   const currentProjectId = treeConfig.getCurrentProjectId ?  treeConfig.getCurrentProjectId() : null;
   const expandedProjects = JSON.parse(localStorage.getItem(treeConfig.storageKeyExpandedProjects) || "{}");
 
-  if (! projects || projects.length === 0) {
+  if (! projects || !Array.isArray(projects) || projects.length === 0) {
     projectsList.innerHTML = '<div class="nav-tree-item-link no-projects-tree">Нет проектов</div>';
     return;
   }
@@ -218,7 +222,7 @@ function bindProjectTreeEvents() {
   eventsInitialized = true;
 }
 
-function toggleProjectStructure(projectId) {
+async function toggleProjectStructure(projectId) {
   if (!treeConfig) return;
 
   const expandedProjects = JSON.parse(localStorage.getItem(treeConfig. storageKeyExpandedProjects) || "{}");
@@ -237,7 +241,7 @@ function toggleProjectStructure(projectId) {
     treeConfig.onProjectExpand(projectId, ! wasExpanded);
   }
 
-  renderProjectsTree();
+  await renderProjectsTree();
 }
 
 export { initProjectsTree, renderProjectsTree, toggleProjectsTree };

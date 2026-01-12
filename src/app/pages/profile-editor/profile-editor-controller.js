@@ -138,14 +138,16 @@ export async function initProfileEditorPage() {
 // FIND PROJECT BY PROFILE ID
 // ============================================================
 
+
+
 /**
  * Find project ID by profile ID
  * @param {string|number} profileId - Profile ID
  * @returns {string|number|null} Project ID or null
  */
-function findProjectByProfileId(profileId) {
+async function findProjectByProfileId(profileId) {
   // ✅ Get all projects from memoryStorage
-  const projects = getAllProjects();
+  const projects = await getAllProjects();
 
   for (const project of projects) {
     if (project.profiles && Array.isArray(project.profiles)) {

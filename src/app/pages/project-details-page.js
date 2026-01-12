@@ -99,18 +99,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (currentProjectId) {
     initModelModal(currentProjectId, {
-      onCreate: (newModel) => {
-        renderModelsContainer();
-        renderProjectTreeSidebar();
-        selectModel(newModel.id);
+      onCreate: async (newModel) => {
+        await renderModelsContainer();
+        await renderProjectTreeSidebar();
+        await selectModel(newModel.id);
       },
-      onUpdate: () => {
-        renderModelsContainer();
-        renderProjectTreeSidebar();
+      onUpdate: async () => {
+        await renderModelsContainer();
+        await renderProjectTreeSidebar();
         if (selectedModelId) {
-          const model = getModel(currentProjectId, selectedModelId);
+          const model = await getModel(currentProjectId, selectedModelId);
           const modelDetails = document.getElementById("model-details");
-          if (modelDetails) {
+          if (modelDetails && model) {
             modelDetails.innerHTML = renderModelDetails(model);
           }
         }
@@ -118,18 +118,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     initProfileModal(currentProjectId, {
-      onCreate: (newProfile) => {
-        renderProfilesContainer();
-        renderProjectTreeSidebar();
-        selectProfile(newProfile.id);
+      onCreate: async (newProfile) => {
+        await renderProfilesContainer();
+        await renderProjectTreeSidebar();
+        await selectProfile(newProfile.id);
       },
-      onUpdate: () => {
-        renderProfilesContainer();
-        renderProjectTreeSidebar();
+      onUpdate: async () => {
+        await renderProfilesContainer();
+        await renderProjectTreeSidebar();
         if (selectedProfileId) {
-          const profile = getProfile(currentProjectId, selectedProfileId);
+          const profile = await getProfile(currentProjectId, selectedProfileId);
           const profileDetails = document.getElementById("profile-details");
-          if (profileDetails) {
+          if (profileDetails && profile) {
             profileDetails.innerHTML = renderProfileDetails(profile);
           }
         }
@@ -137,8 +137,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     initAttributeModal(currentProjectId, {
-      onUpdate: (attrId, updates) => {
-        const project = getProjectById(currentProjectId);
+      onUpdate: async (attrId, updates) => {
+        const project = await getProjectById(currentProjectId);
         if (!project) return;
 
         const tabToRestore = getActiveClassTabName() || lastClassTabName;
@@ -159,8 +159,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     initLinkModal(currentProjectId, {
-      onUpdate: (linkId, classId, updates) => {
-        const project = getProjectById(currentProjectId);
+      onUpdate: async (linkId, classId, updates) => {
+        const project = await getProjectById(currentProjectId);
         if (!project) return;
 
         const tabToRestore = getActiveClassTabName() || lastClassTabName;
@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   bindEvents();
-  checkProject();
+  await checkProject();
   diagramMode?.restoreFromStorage();
 });
 
@@ -202,7 +202,7 @@ function bindEvents() {
     toggleDiagramBtn.addEventListener("click", () => {
       diagramMode?.toggle();
       // If a class/package is already selected, re-render it in the new mode.
-      rerenderSelectedItemDetailsForCurrentMode();
+      rerenderSelectedItemDetailsForCurrentMode().catch(err => console.error("Failed to rerender:", err));
     });
   }
 
@@ -230,7 +230,7 @@ function bindEvents() {
         const projectId = toggleProjectBtn.getAttribute("data-project-id");
         if (projectId) {
           toggleProject(projectId);
-          renderProjectTreeSidebar();
+          renderProjectTreeSidebar().catch(err => console.error("Failed to render tree:", err));
         }
         return;
       }
@@ -241,7 +241,7 @@ function bindEvents() {
         const itemId = toggleItemBtn.getAttribute("data-item-id");
         if (itemId) {
           toggleTreeItem(itemId);
-          renderProjectTreeSidebar();
+          renderProjectTreeSidebar().catch(err => console.error("Failed to render tree:", err));
         }
         return;
       }
@@ -454,13 +454,13 @@ function bindEvents() {
 // ============================================================
 // PROJECT
 // ============================================================
-function checkProject() {
+async function checkProject() {
   if (!currentProjectId) {
     showNoProjectWarning();
     return;
   }
 
-  const project = getProjectById(currentProjectId);
+  const project = await getProjectById(currentProjectId);
   if (!project) {
     showNoProjectWarning();
     return;
@@ -469,9 +469,9 @@ function checkProject() {
   updatePageTitle(project);
   updateSidebarTitle(project);
   hideNoProjectWarning();
-  renderProjectTreeSidebar();
-  renderModelsContainer();
-  renderProfilesContainer();
+  await renderProjectTreeSidebar();
+  await renderModelsContainer();
+  await renderProfilesContainer();
 }
 
 function showNoProjectWarning() {
@@ -507,11 +507,11 @@ function updateSidebarTitle(project) {
   if (sidebarTitleElement) sidebarTitleElement.textContent = project.name;
 }
 
-function renderProjectTreeSidebar() {
+async function renderProjectTreeSidebar() {
   const container = document.getElementById("current-project-structure");
   if (!container) return;
 
-  const project = getProjectById(currentProjectId);
+  const project = await getProjectById(currentProjectId);
   if (!project) {
     container.innerHTML =
       '<div class="no-items text-muted">Проект не найден</div>';
@@ -524,13 +524,13 @@ function renderProjectTreeSidebar() {
 // ============================================================
 // MODELS
 // ============================================================
-function renderModelsContainer() {
+async function renderModelsContainer() {
   const modelsList = document.getElementById("models-list");
   if (!modelsList) return;
 
-  const models = getModels(currentProjectId);
+  const models = await getModels(currentProjectId);
 
-  if (!models || models.length === 0) {
+  if (!models || !Array.isArray(models) || models.length === 0) {
     modelsList.innerHTML = '<div class="no-items text-muted">Нет моделей</div>';
     return;
   }
@@ -562,16 +562,16 @@ function renderModelsContainer() {
   }
 }
 
-function selectModel(modelId) {
+async function selectModel(modelId) {
   selectedModelId = modelId;
-  renderModelsContainer();
+  await renderModelsContainer();
 
-  const model = getModel(currentProjectId, modelId);
+  const model = await getModel(currentProjectId, modelId);
   const modelDetails = document.getElementById("model-details");
   const modelDetailsControl = document.getElementById("model-details-control");
 
-  if (modelDetails) modelDetails.innerHTML = renderModelDetails(model);
-  if (modelDetailsControl)
+  if (modelDetails && model) modelDetails.innerHTML = renderModelDetails(model);
+  if (modelDetailsControl && model)
     modelDetailsControl.innerHTML = renderModelControls(model);
 
   if (diagramMode?.isEnabled()) {
@@ -588,13 +588,13 @@ function selectModel(modelId) {
 // ============================================================
 // PROFILES
 // ============================================================
-function renderProfilesContainer() {
+async function renderProfilesContainer() {
   const profilesList = document.getElementById("profiles-list");
   if (!profilesList) return;
 
-  const profiles = getProfiles(currentProjectId);
+  const profiles = await getProfiles(currentProjectId);
 
-  if (!profiles || profiles.length === 0) {
+  if (!profiles || !Array.isArray(profiles) || profiles.length === 0) {
     profilesList.innerHTML =
       '<div class="no-items text-muted">Нет профилей</div>';
     return;
@@ -627,18 +627,18 @@ function renderProfilesContainer() {
   }
 }
 
-function selectProfile(profileId) {
+async function selectProfile(profileId) {
   selectedProfileId = profileId;
-  renderProfilesContainer();
+  await renderProfilesContainer();
 
-  const profile = getProfile(currentProjectId, profileId);
+  const profile = await getProfile(currentProjectId, profileId);
   const profileDetails = document.getElementById("profile-details");
   const profileDetailsControl = document.getElementById(
     "profile-details-control"
   );
 
-  if (profileDetails) profileDetails.innerHTML = renderProfileDetails(profile);
-  if (profileDetailsControl)
+  if (profileDetails && profile) profileDetails.innerHTML = renderProfileDetails(profile);
+  if (profileDetailsControl && profile)
     profileDetailsControl.innerHTML = renderProfileControls(profile);
 
   if (diagramMode?.isEnabled()) {
@@ -710,8 +710,8 @@ function getSelectedTreeType() {
  * @returns {void}
  *
  */
-function handleSelectPackage(packageId, modelId = "", profileId = "") {
-  const project = getProjectById(currentProjectId);
+async function handleSelectPackage(packageId, modelId = "", profileId = "") {
+  const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const context =
@@ -754,13 +754,13 @@ function handleSelectPackage(packageId, modelId = "", profileId = "") {
  * @param {string} profileId - Profile ID
  * @param {string} activeTab - Active tab name (optional)
  */
-function handleSelectClass(
+async function handleSelectClass(
   classId,
   modelId = "",
   profileId = "",
   activeTab = null
 ) {
-  const project = getProjectById(currentProjectId);
+  const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const context =
@@ -814,14 +814,14 @@ function handleSelectEnumeration(classId, modelId = "", profileId = "") {
  * Handle select attribute from tree
  * Opens parent class with attributes tab active
  */
-function handleSelectAttribute(attrId, parentClassId = "", modelId = "", profileId = "") {
+async function handleSelectAttribute(attrId, parentClassId = "", modelId = "", profileId = "") {
   if (parentClassId) {
     selectParentClassInTree({ id: parentClassId, modelId, profileId });
-    handleSelectClass(parentClassId, modelId, profileId, "item-attributes");
+    await handleSelectClass(parentClassId, modelId, profileId, "item-attributes");
     return;
   }
 
-  const project = getProjectById(currentProjectId);
+  const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const parentClass = findClassByAttributeId(project, attrId);
@@ -844,14 +844,14 @@ function handleSelectAttribute(attrId, parentClassId = "", modelId = "", profile
  * Handle select link from tree
  * Opens parent class with links tab active
  */
-function handleSelectLink(linkId, parentClassId = "", modelId = "", profileId = "") {
+async function handleSelectLink(linkId, parentClassId = "", modelId = "", profileId = "") {
   if (parentClassId) {
     selectParentClassInTree({ id: parentClassId, modelId, profileId });
-    handleSelectClass(parentClassId, modelId, profileId, "item-links");
+    await handleSelectClass(parentClassId, modelId, profileId, "item-links");
     return;
   }
 
-  const project = getProjectById(currentProjectId);
+  const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const parentClass = findClassByLinkId(project, linkId);
@@ -874,14 +874,14 @@ function handleSelectLink(linkId, parentClassId = "", modelId = "", profileId = 
  * Handle select literal from tree
  * Opens parent class with literals tab active
  */
-function handleSelectLiteral(literalId, parentClassId = "", modelId = "", profileId = "") {
+async function handleSelectLiteral(literalId, parentClassId = "", modelId = "", profileId = "") {
   if (parentClassId) {
     selectParentClassInTree({ id: parentClassId, modelId, profileId });
-    handleSelectClass(parentClassId, modelId, profileId, "item-literals");
+    await handleSelectClass(parentClassId, modelId, profileId, "item-literals");
     return;
   }
 
-  const project = getProjectById(currentProjectId);
+  const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const parentClass = findClassByLiteralId(project, literalId);
@@ -1132,7 +1132,7 @@ function restoreClassTab(tabName) {
 // ============================================================
 // NAVIGATION
 // ============================================================
-function handleNavigateToPackage(packageId, modelId = "", profileId = "") {
+async function handleNavigateToPackage(packageId, modelId = "", profileId = "") {
   const context =
     modelId && modelId !== ""
       ? "model"
@@ -1141,7 +1141,7 @@ function handleNavigateToPackage(packageId, modelId = "", profileId = "") {
       : null;
   if (!context) return;
 
-  const project = getProjectById(currentProjectId);
+  const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const parentChain = findPackageParentChain(
@@ -1155,7 +1155,7 @@ function handleNavigateToPackage(packageId, modelId = "", profileId = "") {
 
   expandTreePath(parentChain);
 
-  requestAnimationFrame(() => {
+  requestAnimationFrame(async () => {
     const selector =
       context === "model"
         ? `[data-type="package"][data-package-id="${packageId}"][data-model-id="${modelId}"]`
@@ -1165,12 +1165,12 @@ function handleNavigateToPackage(packageId, modelId = "", profileId = "") {
     if (packageEl) {
       setSelectedTreeItem(packageEl);
       packageEl.scrollIntoView({ behavior: "smooth", block: "center" });
-      handleSelectPackage(packageId, modelId, profileId);
+      await handleSelectPackage(packageId, modelId, profileId);
     }
   });
 }
 
-function handleNavigateToClass(
+async function handleNavigateToClass(
   classId,
   modelId = "",
   profileId = "",
@@ -1192,7 +1192,7 @@ function handleNavigateToClass(
     return;
   }
 
-  const project = getProjectById(currentProjectId);
+  const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const parentChain = findClassParentChain(
@@ -1213,7 +1213,7 @@ function handleNavigateToClass(
 
   expandTreePath(parentChain);
 
-  requestAnimationFrame(() => {
+  requestAnimationFrame(async () => {
     const selector =
       context === "model"
         ? `[data-type="class"][data-class-id="${classId}"][data-model-id="${modelId}"]`
@@ -1225,7 +1225,7 @@ function handleNavigateToClass(
       classEl.scrollIntoView({ behavior: "smooth", block: "center" });
       const tabToActivate =
         activeTab || (diagramMode?.isEnabled() ? "item-general" : "item-attributes");
-      handleSelectClass(classId, modelId, profileId, tabToActivate);
+      await handleSelectClass(classId, modelId, profileId, tabToActivate);
     } else if (showAlertOnNotFound) {
       alert(
         "Класс не найден в дереве в пределах текущей модели/профиля (по targetClassId)."
@@ -1492,8 +1492,8 @@ function handleAddAttribute(classId) {
   alert("Функция добавления атрибута в разработке");
 }
 
-function handleEditAttribute(attrId) {
-  const project = getProjectById(currentProjectId);
+async function handleEditAttribute(attrId) {
+  const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const found = findAttributeWithParent(project, attrId);
@@ -1514,8 +1514,8 @@ function handleAddLink(classId) {
   alert("Функция добавления связи в разработке");
 }
 
-function handleEditLink(linkId, classId) {
-  const project = getProjectById(currentProjectId);
+async function handleEditLink(linkId, classId) {
+  const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const found = findLinkWithParent(project, classId, linkId);
@@ -1524,10 +1524,10 @@ function handleEditLink(linkId, classId) {
   openEditLinkModal(found.link, found.cls.id);
 }
 
-function handleDeleteLink(linkId, classId) {
+async function handleDeleteLink(linkId, classId) {
   if (!confirm("Удалить связь?")) return;
 
-  const project = getProjectById(currentProjectId);
+  const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const tabToRestore = getActiveClassTabName() || lastClassTabName;
@@ -1732,7 +1732,7 @@ function getItemDetailsViewMode() {
   return diagramMode?.isEnabled() ? "diagram" : "standard";
 }
 
-function rerenderSelectedItemDetailsForCurrentMode() {
+async function rerenderSelectedItemDetailsForCurrentMode() {
   const selected = document.querySelector(
     ".project-tree-item .tree-structure-name.selected"
   );
@@ -1743,7 +1743,7 @@ function rerenderSelectedItemDetailsForCurrentMode() {
     const packageId = selected.getAttribute("data-package-id");
     const modelId = selected.getAttribute("data-model-id") || "";
     const profileId = selected.getAttribute("data-profile-id") || "";
-    if (packageId) handleSelectPackage(packageId, modelId, profileId);
+    if (packageId) await handleSelectPackage(packageId, modelId, profileId);
     return;
   }
 
@@ -1758,7 +1758,7 @@ function rerenderSelectedItemDetailsForCurrentMode() {
       activeTab = null;
     }
 
-    if (classId) handleSelectClass(classId, modelId, profileId, activeTab);
+    if (classId) await handleSelectClass(classId, modelId, profileId, activeTab);
   }
 }
 
@@ -1781,15 +1781,15 @@ function handleCheckModel() {
   alert("Функция проверки в разработке");
 }
 
-function handleDeleteModel(modelId) {
-  const model = getModel(currentProjectId, modelId);
+async function handleDeleteModel(modelId) {
+  const model = await getModel(currentProjectId, modelId);
   if (!model) return;
 
   if (!confirm(`Удалить модель "${model.name}"?`)) return;
 
-  deleteModel(currentProjectId, modelId);
-  renderModelsContainer();
-  renderProjectTreeSidebar();
+  await deleteModel(currentProjectId, modelId);
+  await renderModelsContainer();
+  await renderProjectTreeSidebar();
 
   if (selectedModelId === modelId) {
     selectedModelId = null;
@@ -1815,15 +1815,15 @@ function handleCheckProfile() {
   alert("Функция проверки в разработке");
 }
 
-function handleDeleteProfile(profileId) {
-  const profile = getProfile(currentProjectId, profileId);
+async function handleDeleteProfile(profileId) {
+  const profile = await getProfile(currentProjectId, profileId);
   if (!profile) return;
 
   if (!confirm(`Удалить профиль "${profile.name}"?`)) return;
 
-  deleteProfile(currentProjectId, profileId);
-  renderProfilesContainer();
-  renderProjectTreeSidebar();
+  await deleteProfile(currentProjectId, profileId);
+  await renderProfilesContainer();
+  await renderProjectTreeSidebar();
 
   if (selectedProfileId === profileId) {
     selectedProfileId = null;

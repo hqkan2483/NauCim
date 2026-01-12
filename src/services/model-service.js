@@ -1,29 +1,58 @@
-import { MemoryStore } from "../store/memory-store.js";
 import { generateUUID } from "../utils/uuid.js";
+import {
+  getModels as repoGetModels,
+  getModel as repoGetModel,
+  createModel as repoCreateModel,
+  updateModel as repoUpdateModel,
+  deleteModel as repoDeleteModel,
+} from "./repositories/model-repository.js";
+import {
+  validateCreateModelPayload,
+  validateUpdateModelPayload,
+} from "./business/model-validator.js";
+import { getProjectById } from "./project-service.js";
 
 // ============================================================
-// MODEL SERVICE - Manages Model Data Operations
+// MODEL SERVICE - Service Layer
+// Manages Model Business Operations
 // ============================================================
 
 /**
  * Get all models for a project
  * @param {string} projectId
- * @returns {Array} - Array of models
+ * @returns {Promise<Array>} Array of models
  */
-function getModels(projectId) {
-  const project = MemoryStore.getProjectById(String(projectId));
-  return project ?  project.models || [] : [];
+async function getModels(projectId) {
+  if (!projectId) return [];
+  try {
+    return await repoGetModels(String(projectId));
+  } catch (error) {
+    console.error(`[getModels] Failed for project ${projectId}:`, error);
+    return [];
+  }
 }
 
 /**
  * Get single model by ID
  * @param {string} projectId
  * @param {string} modelId
- * @returns {object|null} - Model object or null
+ * @returns {Promise<object|null>} Model object or null
  */
-function getModel(projectId, modelId) {
-  const models = getModels(projectId);
-  return models.find((m) => String(m.id) === String(modelId)) || null;
+async function getModel(projectId, modelId) {
+  if (!projectId || !modelId) return null;
+  try {
+    // First try to get from project (to ensure it belongs to project)
+    const project = await getProjectById(projectId);
+    if (project && project.models) {
+      const model = project.models.find((m) => String(m.id) === String(modelId));
+      if (model) return model;
+    }
+    // Fallback to direct repository call
+    return await repoGetModel(String(modelId));
+  } catch (error) {
+    console.error(`[getModel] Failed for model ${modelId}:`, error);
+    return null;
+  }
 }
 
 /**
@@ -31,34 +60,48 @@ function getModel(projectId, modelId) {
  * @param {string} projectId
  * @param {string} name - Model name to check
  * @param {string} excludeId - Model ID to exclude from check (for edit)
- * @returns {boolean} - true if name is unique
+ * @returns {Promise<boolean>} true if name is unique
  */
-function isModelNameUnique(projectId, name, excludeId = null) {
-  const models = getModels(projectId);
-  const trimmedName = name.trim().toLowerCase();
+async function isModelNameUnique(projectId, name, excludeId = null) {
+  if (!projectId) return false;
+  try {
+    const models = await repoGetModels(String(projectId));
+    const trimmedName = name.trim().toLowerCase();
 
-  return !models.some((m) => {
-    // Skip the model being edited
-    if (excludeId && String(m.id) === String(excludeId)) {
-      return false;
-    }
-    return m.name.trim().toLowerCase() === trimmedName;
-  });
+    return !models.some((m) => {
+      // Skip the model being edited
+      if (excludeId && String(m.id) === String(excludeId)) {
+        return false;
+      }
+      return m.name.trim().toLowerCase() === trimmedName;
+    });
+  } catch (error) {
+    console.error(`[isModelNameUnique] Failed for project ${projectId}:`, error);
+    return false;
+  }
 }
 
 /**
  * Create new model
  * @param {string} projectId
- * @param {object} payload - { name, description, version }
- * @returns {object|null} - Created model or null
+ * @param {object} payload - { name, description?, version? }
+ * @returns {Promise<object|null>} Created model or null
  */
-function createModel(projectId, payload) {
-  if (!payload || !payload.name || !payload.name.trim()) {
-    console.error("[createModel] Name is required");
+async function createModel(projectId, payload) {
+  if (!projectId) {
+    console.error("[createModel] Project ID is required");
     return null;
   }
 
-  const project = MemoryStore.getProjectById(String(projectId));
+  // Validate payload
+  const validation = validateCreateModelPayload(payload);
+  if (!validation.valid) {
+    console.error("[createModel]", validation.error);
+    return null;
+  }
+
+  // Verify project exists
+  const project = await getProjectById(String(projectId));
   if (!project) {
     console.error(`[createModel] Project not found: ${projectId}`);
     return null;
@@ -66,40 +109,38 @@ function createModel(projectId, payload) {
 
   const trimmedName = payload.name.trim();
 
-  // Validate name length
-  if (trimmedName.length < 3) {
-    console.error("[createModel] Name must be at least 3 characters");
-    return null;
-  }
-
-  // Validate name uniqueness
-  if (! isModelNameUnique(projectId, trimmedName)) {
+  // Check name uniqueness
+  const isUnique = await isModelNameUnique(projectId, trimmedName);
+  if (!isUnique) {
     console.error(`[createModel] Model name "${trimmedName}" already exists in this project`);
     return null;
   }
 
+  // Prepare model data
   const newModel = {
-    id:  generateUUID(),
+    id: generateUUID(),
+    projectId: String(projectId),
     name: trimmedName,
-    description: payload.description ?  payload.description.trim() : "",
-    version: payload.version ?  payload.version.trim() : "0.1",
+    description: payload.description ? payload.description.trim() : "",
+    version: payload.version ? payload.version.trim() : "0.1",
     createDate: new Date().toISOString(),
     modifyDate: new Date().toISOString(),
     legalState: "project",
     accessRights: "readWrite",
-    relatedProfiles: [],
-    rootPackages: [],
   };
 
-  if (! project.models) {
-    project.models = [];
+  try {
+    const created = await repoCreateModel(newModel);
+    console.log(`✅ Model created: ${created.name} (id: ${created.id})`);
+    return created;
+  } catch (error) {
+    console.error("[createModel] Failed to create model:", error);
+    // Check for duplicate name error from backend
+    if (error.status === 409 || error.details?.name) {
+      console.error(`[createModel] Model name "${trimmedName}" already exists in this project`);
+    }
+    return null;
   }
-
-  project.models.push(newModel);
-  MemoryStore.updateProject(String(projectId), project);
-
-  console.log(`✅ Model created:  ${newModel.name} (id: ${newModel.id})`);
-  return newModel;
 }
 
 /**
@@ -107,22 +148,24 @@ function createModel(projectId, payload) {
  * @param {string} projectId
  * @param {string} modelId
  * @param {object} updates - Fields to update
- * @returns {object|null} - Updated model or null
+ * @returns {Promise<object|null>} Updated model or null
  */
-function updateModel(projectId, modelId, updates) {
-  if (!modelId) {
-    console.error("[updateModel] Model ID is required");
+async function updateModel(projectId, modelId, updates) {
+  if (!projectId || !modelId) {
+    console.error("[updateModel] Project ID and Model ID are required");
     return null;
   }
 
-  const project = MemoryStore.getProjectById(String(projectId));
-  if (!project) {
-    console.error(`[updateModel] Project not found: ${projectId}`);
+  // Validate payload
+  const validation = validateUpdateModelPayload(updates);
+  if (!validation.valid) {
+    console.error("[updateModel]", validation.error);
     return null;
   }
 
-  const modelIndex = project.models.findIndex((m) => String(m.id) === String(modelId));
-  if (modelIndex === -1) {
+  // Get existing model
+  const existingModel = await getModel(projectId, modelId);
+  if (!existingModel) {
     console.error(`[updateModel] Model not found: ${modelId}`);
     return null;
   }
@@ -131,61 +174,61 @@ function updateModel(projectId, modelId, updates) {
   if (updates.name !== undefined) {
     const trimmedName = updates.name.trim();
 
-    if (trimmedName.length < 3) {
-      console.error("[updateModel] Name must be at least 3 characters");
-      return null;
-    }
-
-    if (! isModelNameUnique(projectId, trimmedName, modelId)) {
-      console.error(`[updateModel] Model name "${trimmedName}" already exists in this project`);
-      return null;
+    // Check uniqueness if name changed
+    if (trimmedName.toLowerCase() !== existingModel.name.trim().toLowerCase()) {
+      const isUnique = await isModelNameUnique(projectId, trimmedName, modelId);
+      if (!isUnique) {
+        console.error(`[updateModel] Model name "${trimmedName}" already exists in this project`);
+        return null;
+      }
     }
 
     updates.name = trimmedName;
   }
 
-  project.models[modelIndex] = {
-    ...project.models[modelIndex],
+  // Prepare update data
+  const updateData = {
     ...updates,
-    id: project.models[modelIndex].id, // preserve ID
     modifyDate: new Date().toISOString(),
   };
 
-  MemoryStore.updateProject(String(projectId), project);
-  console.log(`✅ Model updated: ${project.models[modelIndex].name} (id: ${modelId})`);
-
-  return project.models[modelIndex];
+  try {
+    const updated = await repoUpdateModel(String(modelId), updateData);
+    console.log(`✅ Model updated: ${updated.name} (id: ${modelId})`);
+    return updated;
+  } catch (error) {
+    console.error(`[updateModel] Failed to update model ${modelId}:`, error);
+    // Check for duplicate name error from backend
+    if (error.status === 409 || error.details?.name) {
+      console.error(`[updateModel] Model name "${updates.name}" already exists in this project`);
+    }
+    return null;
+  }
 }
 
 /**
  * Delete model
  * @param {string} projectId
  * @param {string} modelId
- * @returns {boolean} - true if deleted, false otherwise
+ * @returns {Promise<boolean>} true if deleted, false otherwise
  */
-function deleteModel(projectId, modelId) {
-  if (!modelId) {
-    console.error("[deleteModel] Model ID is required");
+async function deleteModel(projectId, modelId) {
+  if (!projectId || !modelId) {
+    console.error("[deleteModel] Project ID and Model ID are required");
     return false;
   }
 
-  const project = MemoryStore.getProjectById(String(projectId));
-  if (!project) {
-    console.error(`[deleteModel] Project not found: ${projectId}`);
+  try {
+    const deleted = await repoDeleteModel(String(modelId));
+    if (deleted) {
+      console.log(`✅ Model deleted (id: ${modelId})`);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error(`[deleteModel] Failed to delete model ${modelId}:`, error);
     return false;
   }
-
-  const initialLength = project.models.length;
-  project.models = project.models.filter((m) => String(m.id) !== String(modelId));
-
-  if (project.models.length < initialLength) {
-    MemoryStore.updateProject(String(projectId), project);
-    console.log(`✅ Model deleted (id: ${modelId})`);
-    return true;
-  }
-
-  console.error(`[deleteModel] Model not found: ${modelId}`);
-  return false;
 }
 
 export { getModels, getModel, createModel, updateModel, deleteModel, isModelNameUnique };
