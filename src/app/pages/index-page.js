@@ -1,4 +1,4 @@
-import { getAllProjects, appDataInit } from "../../services/project-service.js";
+import { getAllProjects, appDataInit, getProjectById } from "../../services/project-service.js";
 import { getCurrentProjectId, setCurrentProjectId } from "../../state/current-project-state.js";
 import { initModalSystem, bindModalTriggers } from "../../ui/modal.js";
 import { loadModals } from "../../ui/modal-loader.js"; // ✅ Импорт
@@ -51,7 +51,8 @@ function bindEvents() {
   const refreshBtn = document.getElementById("refresh-btn");
   if (refreshBtn) {
     refreshBtn.addEventListener("click", () => {
-      location.reload();
+      // Получаем актуальный список проектов
+      handleRefreshBtn();
     });
   }
 
@@ -93,12 +94,29 @@ function bindEvents() {
       }
     });
   }
+const currentProjectEl = document.getElementById("current-project-card");
+  if (currentProjectEl) {
+    currentProjectEl.addEventListener("click", (e) => {
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      if (! target) return;
+
+      // Open project details
+      const openBtn = target.closest("[data-action='open-project-details']");
+      if (openBtn) {
+        const projectId = openBtn.getAttribute("data-project-id");
+        if (projectId) handleOpenProject(projectId);
+        return;
+      }
+
+    });
+  }
 }
 
 // ============================================================
 // RENDER
 // ============================================================
 function renderDashboard() {
+  renderCurrentProject();
   renderRecentProjects();
 }
 
@@ -107,7 +125,15 @@ function renderRecentProjects() {
   if (!container) return;
 
   const projects = getAllProjects();
-  const recent = projects.slice(0, RECENT_PROJECTS_COUNT);
+  // Сортируем по modifyDate (самые новые сначала) и берем первые 3
+  const recent = projects
+    .sort((a, b) => {
+      // Обработка случая, когда modifyDate не задана (считаем ее очень древней)
+      const aDate = a.modifyDate ? new Date(a.modifyDate) : new Date(0);
+      const bDate = b.modifyDate ? new Date(b.modifyDate) : new Date(0);
+      return bDate - aDate;
+    })
+    .slice(0, RECENT_PROJECTS_COUNT);
   const currentProjectId = getCurrentProjectId();
 
   if (recent.length === 0) {
@@ -131,6 +157,27 @@ function renderRecentProjects() {
     .join("");
 
   container.innerHTML = html;
+}
+
+function renderCurrentProject() {
+  const container = document.getElementById("current-project-card");
+  if (!container) return;
+  const currentProjectId = getCurrentProjectId();
+  const project = currentProjectId ? getProjectById(currentProjectId): null;
+  if (project) {
+    container.innerHTML = renderProjectCard(project, {
+        showActions: true,
+        showDescription: true,
+        showMeta: true,
+        showStats: false, // На главной не показываем статистику моделей/профилей
+        currentProjectId:  currentProjectId,
+        cardClickAction: "select",
+        actionsTemplate: renderSimpleAction(project),
+        compact: true,
+    });
+  } else {
+    container.innerHTML = '<div class="no-data">Нет проектов. </div>';
+  }
 }
 
 function updateCurrentProjectDisplay() {
@@ -158,6 +205,7 @@ function updateCurrentProjectDisplay() {
 function handleSelectProject(projectId) {
   setCurrentProjectId(projectId);
   updateCurrentProjectDisplay();
+  renderCurrentProject();
   renderRecentProjects();
 }
 
@@ -168,11 +216,30 @@ function handleOpenProject(projectId) {
 
 function handleProjectCreated(newProject) {
   // Re-render recent projects
+  renderCurrentProject();
   renderRecentProjects();
 
   // Select new project
   handleSelectProject(newProject.id);
+
 }
+
+function handleRefreshBtn() {
+      let projects =  getAllProjects();
+      // Сортируем: если modifyDate отсутствует, считаем её очень старой (в конец)
+      projects = projects.slice().sort((a, b) => {
+        const getTimestamp = (proj) =>
+          proj.modifyDate ? new Date(proj.modifyDate).getTime() : -Infinity;
+        return getTimestamp(b) - getTimestamp(a);
+      });
+      // Обновляем отображение недавних проектов (используем тот же RECENT_PROJECTS_COUNT)
+      renderCurrentProject();
+      renderRecentProjects(projects);
+
+      // Обновляем информацию о текущем проекте
+      updateCurrentProjectDisplay();
+}
+
 
 console.log("Index Page Module Loaded");
 

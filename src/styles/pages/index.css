@@ -11,3 +11,9 @@
   gap: 15px;
   margin-bottom: 30px;
 }
+
+.page-index .projects-grid--compact {
+
+  grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+
+}
