@@ -86,7 +86,7 @@ function createModel(projectId, payload) {
     createDate: new Date().toISOString(),
     modifyDate: new Date().toISOString(),
     legalState: "project",
-    accessRight: "readWrite",
+    accessRights: "readWrite",
     relatedProfiles: [],
     rootPackages: [],
   };

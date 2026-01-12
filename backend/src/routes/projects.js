@@ -23,7 +23,7 @@ projectsRouter.get(
   "/",
   asyncHandler(async (req, res) => {
     const projects = await prisma.project.findMany({
-      orderBy: { modifyDate: "desc" },
+      orderBy: {name: "asc" },
       select: {
         id: true,
         name: true,
