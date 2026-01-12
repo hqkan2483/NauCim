@@ -4,11 +4,11 @@
 function getLegalStateValue(key) {
   const legalStateList = [
     { project: "В разработке" },
-    { draft: "Черновик" },
+    { draft: "Обсуждение" },
     { approved: "Утверждено" },
-    { deprecated: "Устарело" }
+    { deprecated: "Архив" }
   ];
-  if (! key) return "—";
+  if (!key) return "—";
   for (const item of legalStateList) {
     if (item[key]) return item[key];
   }
@@ -39,7 +39,7 @@ function getRoleLabel(role) {
     'source': 'Источник',
     'target': 'Цель'
   };
-  
+
   return roleMap[role] || role || "—";
 }
 

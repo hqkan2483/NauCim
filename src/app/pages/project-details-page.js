@@ -209,6 +209,7 @@ function bindEvents() {
   document.addEventListener("modal:beforeopen", (e) => {
     const modalId = e.detail.modalId;
     if (modalId === "new-model-modal") {
+      // todo: универсальная функция для очистки модальных форм
       clearNewModelModal();
     } else if (modalId === "new-profile-modal") {
       clearNewProfileModal();
