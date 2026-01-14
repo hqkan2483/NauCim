@@ -6,6 +6,7 @@ import {
   createProfile as repoCreateProfile,
   updateProfile as repoUpdateProfile,
   deleteProfile as repoDeleteProfile,
+  importProfileRootPackages as repoImportProfileRootPackages,
 } from "./repositories/profile-repository.js";
 import {
   validateCreateProfilePayload,
@@ -253,6 +254,31 @@ async function deleteProfile(projectId, profileId) {
   }
 }
 
+/**
+ * Import rootPackages into an existing profile (replaces current graph)
+ * Returns full updated project (as returned by backend export)
+ */
+async function importProfileRootPackages(projectId, profileId, payload) {
+  if (!projectId || !profileId) {
+    console.error("[importProfileRootPackages] Project ID and Profile ID are required");
+    return null;
+  }
+
+  // Ensure profile belongs to project
+  const profile = await getProfile(projectId, profileId);
+  if (!profile) {
+    console.error(`[importProfileRootPackages] Profile not found: ${profileId}`);
+    return null;
+  }
+
+  try {
+    return await repoImportProfileRootPackages(String(profileId), payload);
+  } catch (error) {
+    console.error(`[importProfileRootPackages] Failed for profile ${profileId}:`, error);
+    return null;
+  }
+}
+
 export {
   getProfiles,
   getProfile,
@@ -260,5 +286,6 @@ export {
   createProfile,
   updateProfile,
   deleteProfile,
+  importProfileRootPackages,
   isProfileNameUnique,
 };

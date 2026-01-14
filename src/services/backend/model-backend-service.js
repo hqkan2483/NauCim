@@ -28,3 +28,12 @@ export async function updateModel(modelId, updates) {
 export async function deleteModel(modelId) {
   return apiClient.del(`/api/models/${encodeURIComponent(String(modelId))}`);
 }
+
+// Import rootPackages into existing model (replaces current graph)
+// payload: { path?: string, rootPackages?: any }
+export async function importModelRootPackages(modelId, payload) {
+  return apiClient.post(
+    `/api/models/${encodeURIComponent(String(modelId))}/import`,
+    payload
+  );
+}

@@ -10,6 +10,7 @@ import {
   createProfile as backendCreateProfile,
   updateProfile as backendUpdateProfile,
   deleteProfile as backendDeleteProfile,
+  importProfileRootPackages as backendImportProfileRootPackages,
 } from "../backend/profile-backend-service.js";
 
 /**
@@ -107,6 +108,20 @@ export async function deleteProfile(profileId) {
   } catch (error) {
     if (error.status === 404) return false;
     console.error(`[ProfileRepository] Failed to delete profile ${profileId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Import rootPackages into an existing profile (replaces current graph)
+ * Returns full updated project
+ */
+export async function importProfileRootPackages(profileId, payload) {
+  if (!profileId) throw new Error("Profile ID is required");
+  try {
+    return await backendImportProfileRootPackages(String(profileId), payload);
+  } catch (error) {
+    console.error(`[ProfileRepository] Failed to import into profile ${profileId}:`, error);
     throw error;
   }
 }

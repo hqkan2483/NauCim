@@ -6,6 +6,7 @@ import {
   createModel as repoCreateModel,
   updateModel as repoUpdateModel,
   deleteModel as repoDeleteModel,
+  importModelRootPackages as repoImportModelRootPackages,
 } from "./repositories/model-repository.js";
 import {
   validateCreateModelPayload,
@@ -253,6 +254,31 @@ async function deleteModel(projectId, modelId) {
   }
 }
 
+/**
+ * Import rootPackages into an existing model (replaces current graph)
+ * Returns full updated project (as returned by backend export)
+ */
+async function importModelRootPackages(projectId, modelId, payload) {
+  if (!projectId || !modelId) {
+    console.error("[importModelRootPackages] Project ID and Model ID are required");
+    return null;
+  }
+
+  // Ensure model belongs to project
+  const model = await getModel(projectId, modelId);
+  if (!model) {
+    console.error(`[importModelRootPackages] Model not found: ${modelId}`);
+    return null;
+  }
+
+  try {
+    return await repoImportModelRootPackages(String(modelId), payload);
+  } catch (error) {
+    console.error(`[importModelRootPackages] Failed for model ${modelId}:`, error);
+    return null;
+  }
+}
+
 export {
   getModels,
   getModel,
@@ -260,5 +286,6 @@ export {
   createModel,
   updateModel,
   deleteModel,
+  importModelRootPackages,
   isModelNameUnique,
 };

@@ -38,6 +38,12 @@ import {
   openEditProfileModal,
 } from "../../ui/components/profile-modal.js";
 import {
+  initModelImportModal,
+  openModelImportModal,
+  initProfileImportModal,
+  openProfileImportModal,
+} from "../../ui/components/import-rootpackages-modal.js";
+import {
   initAttributeModal,
   openEditAttributeModal,
 } from "../../ui/components/attribute-modal.js";
@@ -80,6 +86,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     "edit-model-header-modal",
     "new-profile-modal",
     "edit-profile-header-modal",
+    "import-model-modal",
+    "import-profile-modal",
     "edit-attribute-modal",
     "edit-link-modal",
   ]);
@@ -120,6 +128,51 @@ document.addEventListener("DOMContentLoaded", async () => {
       onUpdate: async (updatedProfile) => {
         if (updatedProfile?.id) selectedProfileId = updatedProfile.id;
         await refreshSelectedProfileUI();
+      },
+    });
+
+    initModelImportModal(currentProjectId, {
+      onImported: async (project, modelId) => {
+        // Preserve selection + ensure model panel stays visible
+        selectedModelId = modelId;
+        selectedProfileId = null;
+        selectedTreeSnapshot = { type: "model", modelId };
+
+        await renderModelsContainer(project);
+        await renderProfilesContainer(project);
+        await renderProjectTreeSidebar(project);
+        await refreshSelectedModelUI();
+
+        if (diagramMode?.isEnabled()) {
+          clearItemDetailsContent();
+          diagramMode.sync({ clearItem: true });
+        } else {
+          hideItemContainer();
+          showModelContainer();
+          showProfileContainer();
+        }
+      },
+    });
+
+    initProfileImportModal(currentProjectId, {
+      onImported: async (project, profileId) => {
+        selectedProfileId = profileId;
+        selectedModelId = null;
+        selectedTreeSnapshot = { type: "profile", profileId };
+
+        await renderModelsContainer(project);
+        await renderProfilesContainer(project);
+        await renderProjectTreeSidebar(project);
+        await refreshSelectedProfileUI();
+
+        if (diagramMode?.isEnabled()) {
+          clearItemDetailsContent();
+          diagramMode.sync({ clearItem: true });
+        } else {
+          hideItemContainer();
+          showModelContainer();
+          showProfileContainer();
+        }
       },
     });
 
@@ -500,11 +553,11 @@ function updateSidebarTitle(project) {
   if (sidebarTitleElement) sidebarTitleElement.textContent = project.name;
 }
 
-async function renderProjectTreeSidebar() {
+async function renderProjectTreeSidebar(projectOverride = null) {
   const container = document.getElementById("current-project-structure");
   if (!container) return;
 
-  const project = await getProjectById(currentProjectId);
+  const project = projectOverride || (await getProjectById(currentProjectId));
   if (!project) {
     container.innerHTML =
       '<div class="no-items text-muted">Проект не найден</div>';
@@ -650,11 +703,13 @@ async function refreshSelectedProfileUI() {
 // ============================================================
 // MODELS
 // ============================================================
-async function renderModelsContainer() {
+async function renderModelsContainer(projectOverride = null) {
   const modelsList = document.getElementById("models-list");
   if (!modelsList) return;
 
-  const models = await getModels(currentProjectId);
+  const models = projectOverride?.models
+    ? [...projectOverride.models].sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")))
+    : await getModels(currentProjectId);
 
   if (!models || !Array.isArray(models) || models.length === 0) {
     modelsList.innerHTML = '<div class="no-items text-muted">Нет моделей</div>';
@@ -719,11 +774,13 @@ async function selectModel(modelId) {
 // ============================================================
 // PROFILES
 // ============================================================
-async function renderProfilesContainer() {
+async function renderProfilesContainer(projectOverride = null) {
   const profilesList = document.getElementById("profiles-list");
   if (!profilesList) return;
 
-  const profiles = await getProfiles(currentProjectId);
+  const profiles = projectOverride?.profiles
+    ? [...projectOverride.profiles].sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")))
+    : await getProfiles(currentProjectId);
 
   if (!profiles || !Array.isArray(profiles) || profiles.length === 0) {
     profilesList.innerHTML =
@@ -1903,8 +1960,9 @@ function handleEditModel(modelId) {
   return openEditModelModal(modelId);
 }
 
-function handleImportModel() {
-  alert("Функция импорта в разработке");
+function handleImportModel(modelId) {
+  if (!modelId) return;
+  return openModelImportModal(modelId);
 }
 
 function handleExportModel() {
@@ -1942,8 +2000,9 @@ function handleEditProfile(profileId) {
   )}`;
 }
 
-function handleImportProfile() {
-  alert("Функция импорта в разработке");
+function handleImportProfile(profileId) {
+  if (!profileId) return;
+  return openProfileImportModal(profileId);
 }
 
 function handleExportProfile() {

@@ -28,3 +28,12 @@ export async function updateProfile(profileId, updates) {
 export async function deleteProfile(profileId) {
   return apiClient.del(`/api/profiles/${encodeURIComponent(String(profileId))}`);
 }
+
+// Import rootPackages into existing profile (replaces current graph)
+// payload: { path?: string, rootPackages?: any }
+export async function importProfileRootPackages(profileId, payload) {
+  return apiClient.post(
+    `/api/profiles/${encodeURIComponent(String(profileId))}/import`,
+    payload
+  );
+}

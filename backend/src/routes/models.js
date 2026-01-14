@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { asyncHandler, sendError } from "../utils/http.js";
+import { importModelRootPackages } from "../services/import-into-existing.js";
 
 export const modelsRouter = Router();
 
@@ -23,6 +24,14 @@ const updateModelSchema = createModelSchema.partial().extend({
   id: z.string().min(1).optional(),
   projectId: z.string().min(1).optional(),
 });
+
+const importRootPackagesSchema = z
+  .object({
+    path: z.string().optional(),
+    rootPackages: z.any().optional(),
+    rootPackage: z.any().optional(),
+  })
+  .passthrough();
 
 // Get all models for a project
 modelsRouter.get(
@@ -148,6 +157,32 @@ modelsRouter.put(
       data: parsed.data,
     });
     res.json(updated);
+  })
+);
+
+// Import rootPackages into existing model (replaces current graph)
+// Accepts either:
+// - { path: "C:/.../file.json" } (backend reads from FS)
+// - { rootPackages: [...] } or { rootPackage: {...} } (frontend sends JSON)
+modelsRouter.post(
+  "/:id/import",
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id);
+    const parsed = importRootPackagesSchema.safeParse(req.body);
+    if (!parsed.success) return sendError(res, 400, "Invalid import payload", parsed.error.flatten());
+
+    try {
+      const project = await importModelRootPackages({
+        modelId: id,
+        path: parsed.data.path,
+        rootPackages: parsed.data.rootPackages ?? parsed.data.rootPackage,
+      });
+      res.json(project);
+    } catch (e) {
+      const status = e?.status ? Number(e.status) : 500;
+      const msg = e?.message ? String(e.message) : "Import failed";
+      return sendError(res, status, msg);
+    }
   })
 );
 

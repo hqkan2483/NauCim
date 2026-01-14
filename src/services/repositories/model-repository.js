@@ -10,6 +10,7 @@ import {
   createModel as backendCreateModel,
   updateModel as backendUpdateModel,
   deleteModel as backendDeleteModel,
+  importModelRootPackages as backendImportModelRootPackages,
 } from "../backend/model-backend-service.js";
 
 /**
@@ -107,6 +108,20 @@ export async function deleteModel(modelId) {
   } catch (error) {
     if (error.status === 404) return false;
     console.error(`[ModelRepository] Failed to delete model ${modelId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Import rootPackages into an existing model (replaces current graph)
+ * Returns full updated project
+ */
+export async function importModelRootPackages(modelId, payload) {
+  if (!modelId) throw new Error("Model ID is required");
+  try {
+    return await backendImportModelRootPackages(String(modelId), payload);
+  } catch (error) {
+    console.error(`[ModelRepository] Failed to import into model ${modelId}:`, error);
     throw error;
   }
 }
