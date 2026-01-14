@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "new-model-modal",
     "edit-model-header-modal",
     "new-profile-modal",
-    "edit-profile-modal",
+    "edit-profile-header-modal",
     "edit-attribute-modal",
     "edit-link-modal",
   ]);
@@ -396,6 +396,12 @@ function bindEvents() {
     profileControlEl.addEventListener("click", (e) => {
       const target = e.target instanceof HTMLElement ? e.target : null;
       if (!target) return;
+
+      const editHeaderBtn = target.closest("[data-action='edit-profile-header']");
+      if (editHeaderBtn) {
+        handleEditProfileHeader(editHeaderBtn.getAttribute("data-profile-id"));
+        return;
+      }
 
       const editBtn = target.closest("[data-action='edit-profile']");
       if (editBtn) {
@@ -1922,6 +1928,11 @@ async function handleDeleteModel(modelId) {
   if (String(selectedModelId) === String(modelId)) {
     selectedModelId = null;
   }
+}
+
+function handleEditProfileHeader(profileId) {
+  if (!profileId) return;
+  return openEditProfileModal(profileId);
 }
 
 function handleEditProfile(profileId) {

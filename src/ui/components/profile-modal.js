@@ -207,7 +207,7 @@ function openEditProfileModal(profileId) {
 
   editingProfileId = profileId;
 
-  const modal = document.getElementById("edit-profile-modal");
+  const modal = document.getElementById("edit-profile-header-modal");
   if (modal) {
     openModal(modal);
   }
@@ -339,7 +339,7 @@ async function handleSaveProfileEdit() {
 
   if (updated) {
     // Close modal
-    const modal = document.getElementById("edit-profile-modal");
+    const modal = document.getElementById("edit-profile-header-modal");
     if (modal) closeModal(modal);
 
     editingProfileId = null;
