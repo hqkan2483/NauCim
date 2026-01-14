@@ -2,11 +2,13 @@ import { getProjectById, appDataInit } from "../../services/project-service.js";
 import {
   getModels,
   getModel,
+  getModelHeader,
   deleteModel,
 } from "../../services/model-service.js";
 import {
   getProfiles,
   getProfile,
+  getProfileHeader,
   deleteProfile,
 } from "../../services/profile-service.js";
 import { getQueryParam } from "../../utils/url-helper.js";
@@ -51,8 +53,6 @@ import {
 import { renderPackageDetails } from "../../ui/renderers/package-details-renderer.js";
 import { renderClassDetails } from "../../ui/renderers/class-details-renderer.js";
 import { initDiagramMode } from "./project-details/diagram-mode.js";
-// import { renderAttributeDetails } from "../../ui/renderers/attribute-details-renderer.js";
-// import { renderLinkDetails } from "../../ui/renderers/link-details-renderer.js";
 
 // ============================================================
 // STATE
@@ -60,6 +60,7 @@ import { initDiagramMode } from "./project-details/diagram-mode.js";
 let currentProjectId = null;
 let selectedModelId = null;
 let selectedProfileId = null;
+let selectedTreeSnapshot = null;
 let originalItemData = null;
 let lastClassTabName = null;
 
@@ -76,7 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await loadModals([
     "new-model-modal",
-    "edit-model-modal",
+    "edit-model-header-modal",
     "new-profile-modal",
     "edit-profile-modal",
     "edit-attribute-modal",
@@ -104,16 +105,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         await renderProjectTreeSidebar();
         await selectModel(newModel.id);
       },
-      onUpdate: async () => {
-        await renderModelsContainer();
-        await renderProjectTreeSidebar();
-        if (selectedModelId) {
-          const model = await getModel(currentProjectId, selectedModelId);
-          const modelDetails = document.getElementById("model-details");
-          if (modelDetails && model) {
-            modelDetails.innerHTML = renderModelDetails(model);
-          }
-        }
+      onUpdate: async (updatedModel) => {
+        if (updatedModel?.id) selectedModelId = updatedModel.id;
+        await refreshSelectedModelUI();
       },
     });
 
@@ -123,16 +117,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         await renderProjectTreeSidebar();
         await selectProfile(newProfile.id);
       },
-      onUpdate: async () => {
-        await renderProfilesContainer();
-        await renderProjectTreeSidebar();
-        if (selectedProfileId) {
-          const profile = await getProfile(currentProjectId, selectedProfileId);
-          const profileDetails = document.getElementById("profile-details");
-          if (profileDetails && profile) {
-            profileDetails.innerHTML = renderProfileDetails(profile);
-          }
-        }
+      onUpdate: async (updatedProfile) => {
+        if (updatedProfile?.id) selectedProfileId = updatedProfile.id;
+        await refreshSelectedProfileUI();
       },
     });
 
@@ -353,13 +340,13 @@ function bindEvents() {
   // Model controls
   const modelControlEl = document.getElementById("model-details-control");
   if (modelControlEl) {
-    modelControlEl.addEventListener("click", (e) => {
+    modelControlEl.addEventListener("click", async (e) => {
       const target = e.target instanceof HTMLElement ? e.target : null;
       if (!target) return;
 
-      const editBtn = target.closest("[data-action='edit-model']");
+      const editBtn = target.closest("[data-action='edit-model-header']");
       if (editBtn) {
-        handleEditModel(editBtn.getAttribute("data-model-id"));
+        await handleEditModel(editBtn.getAttribute("data-model-id"));
         return;
       }
 
@@ -519,6 +506,139 @@ async function renderProjectTreeSidebar() {
   }
 
   container.innerHTML = renderProjectTree(project, currentProjectId);
+  restoreSelectedTreeItemInTree();
+}
+
+function cssEscape(value) {
+  if (globalThis.CSS && typeof globalThis.CSS.escape === "function") {
+    return globalThis.CSS.escape(String(value));
+  }
+  // Minimal fallback (good enough for UUID-like ids)
+  return String(value).replace(/"/g, "\\\"");
+}
+
+function snapshotTreeEl(el) {
+  if (!(el instanceof HTMLElement)) return null;
+  const type = el.getAttribute("data-type") || null;
+  return {
+    type,
+    modelId: el.getAttribute("data-model-id") || null,
+    profileId: el.getAttribute("data-profile-id") || null,
+    packageId: el.getAttribute("data-package-id") || null,
+    classId: el.getAttribute("data-class-id") || null,
+  };
+}
+
+function restoreSelectedTreeItemInTree() {
+  const container = document.getElementById("current-project-structure");
+  if (!container) return;
+
+  const snapshot =
+    selectedTreeSnapshot ||
+    (selectedModelId
+      ? { type: "model", modelId: selectedModelId }
+      : selectedProfileId
+      ? { type: "profile", profileId: selectedProfileId }
+      : null);
+
+  if (!snapshot?.type) return;
+
+  let selector = null;
+  if (snapshot.type === "model" && snapshot.modelId) {
+    selector = `.tree-structure-name[data-type="model"][data-model-id="${cssEscape(
+      snapshot.modelId
+    )}"]`;
+  } else if (snapshot.type === "profile" && snapshot.profileId) {
+    selector = `.tree-structure-name[data-type="profile"][data-profile-id="${cssEscape(
+      snapshot.profileId
+    )}"]`;
+  } else if (snapshot.type === "package" && snapshot.packageId) {
+    const ctxAttr = snapshot.modelId ? "data-model-id" : "data-profile-id";
+    const ctxVal = snapshot.modelId || snapshot.profileId;
+    if (ctxVal) {
+      selector = `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(
+        snapshot.packageId
+      )}"][${ctxAttr}="${cssEscape(ctxVal)}"]`;
+    }
+  } else if (snapshot.type === "class" && snapshot.classId) {
+    const ctxAttr = snapshot.modelId ? "data-model-id" : "data-profile-id";
+    const ctxVal = snapshot.modelId || snapshot.profileId;
+    if (ctxVal) {
+      selector = `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(
+        snapshot.classId
+      )}"][${ctxAttr}="${cssEscape(ctxVal)}"]`;
+    }
+  }
+
+  if (!selector) return;
+
+  const el = container.querySelector(selector);
+  if (!el) return;
+  setSelectedTreeItem(el);
+}
+
+async function refreshSelectedModelUI() {
+  if (!currentProjectId || !selectedModelId) return;
+
+  const model =
+    (await getModelHeader(currentProjectId, selectedModelId)) ||
+    (await getModel(currentProjectId, selectedModelId));
+  if (!model) return;
+
+  const modelDetails = document.getElementById("model-details");
+  const modelDetailsControl = document.getElementById("model-details-control");
+  if (modelDetails) modelDetails.innerHTML = renderModelDetails(model);
+  if (modelDetailsControl) modelDetailsControl.innerHTML = renderModelControls(model);
+
+  // Update name in list without re-rendering
+  const listNameEl = document.querySelector(
+    `#models-list .list-item[data-model-id="${CSS.escape(String(selectedModelId))}"] .list-item-name`
+  );
+  if (listNameEl) listNameEl.textContent = model.name || "";
+
+  // Update name in tree without re-rendering
+  const treeNameEl = document.querySelector(
+    `.tree-structure-name[data-type="model"][data-model-id="${CSS.escape(String(selectedModelId))}"]`
+  );
+  if (treeNameEl) {
+    treeNameEl.textContent = model.name || "";
+    treeNameEl.setAttribute("title", model.description || model.name || "");
+    setSelectedTreeItem(treeNameEl);
+  }
+}
+
+async function refreshSelectedProfileUI() {
+  if (!currentProjectId || !selectedProfileId) return;
+
+  const profile =
+    (await getProfileHeader(currentProjectId, selectedProfileId)) ||
+    (await getProfile(currentProjectId, selectedProfileId));
+  if (!profile) return;
+
+  const profileDetails = document.getElementById("profile-details");
+  const profileDetailsControl = document.getElementById(
+    "profile-details-control"
+  );
+
+  if (profileDetails) profileDetails.innerHTML = renderProfileDetails(profile);
+  if (profileDetailsControl)
+    profileDetailsControl.innerHTML = renderProfileControls(profile);
+
+  // Update name in list without re-rendering
+  const listNameEl = document.querySelector(
+    `#profiles-list .list-item[data-profile-id="${CSS.escape(String(selectedProfileId))}"] .list-item-name`
+  );
+  if (listNameEl) listNameEl.textContent = profile.name || "";
+
+  // Update name in tree without re-rendering
+  const treeNameEl = document.querySelector(
+    `.tree-structure-name[data-type="profile"][data-profile-id="${CSS.escape(String(selectedProfileId))}"]`
+  );
+  if (treeNameEl) {
+    treeNameEl.textContent = profile.name || "";
+    treeNameEl.setAttribute("title", profile.description || profile.name || "");
+    setSelectedTreeItem(treeNameEl);
+  }
 }
 
 // ============================================================
@@ -537,7 +657,7 @@ async function renderModelsContainer() {
 
   const html = models
     .map((m) => {
-      const isSelected = selectedModelId === m.id;
+      const isSelected = String(selectedModelId) === String(m.id);
       return `
         <div class="list-item ${isSelected ? "selected" : ""}" data-model-id="${
         m.id
@@ -583,6 +703,11 @@ async function selectModel(modelId) {
     showModelContainer();
     showProfileContainer();
   }
+
+  const treeNameEl = document.querySelector(
+    `.tree-structure-name[data-type="model"][data-model-id="${CSS.escape(String(modelId))}"]`
+  );
+  if (treeNameEl) setSelectedTreeItem(treeNameEl);
 }
 
 // ============================================================
@@ -602,7 +727,7 @@ async function renderProfilesContainer() {
 
   const html = profiles
     .map((p) => {
-      const isSelected = selectedProfileId === p.id;
+      const isSelected = String(selectedProfileId) === String(p.id);
       return `
         <div class="list-item ${
           isSelected ? "selected" : ""
@@ -649,6 +774,11 @@ async function selectProfile(profileId) {
     showModelContainer();
     showProfileContainer();
   }
+
+  const treeNameEl = document.querySelector(
+    `.tree-structure-name[data-type="profile"][data-profile-id="${CSS.escape(String(profileId))}"]`
+  );
+  if (treeNameEl) setSelectedTreeItem(treeNameEl);
 }
 
 // ============================================================
@@ -1096,7 +1226,6 @@ function handleTabSwitch(tabBtn) {
   const selectedContent = document.querySelector(
     `[data-tab-content="${tabName}"]`
   );
-  console.log("Selected content for tab:", tabName, selectedContent);
   if (selectedContent) {
     selectedContent.classList.add("active");
   }
@@ -1437,7 +1566,6 @@ function handleSavePackage(form) {
     details: document.getElementById("pkg-details").value.trim(),
   };
 
-  console.log("💾 Сохранение пакета:", packageId, updatedData);
   alert("Функция сохранения пакета в разработке");
 }
 
@@ -1469,7 +1597,6 @@ function handleSaveClass(form) {
     details: document.getElementById("cls-details").value.trim(),
   };
 
-  console.log("💾 Сохранение класса:", classId, updatedData);
   alert("Функция сохранения класса в разработке");
 }
 
@@ -1766,7 +1893,8 @@ async function rerenderSelectedItemDetailsForCurrentMode() {
 // MODEL/PROFILE CRUD
 // ============================================================
 function handleEditModel(modelId) {
-  openEditModelModal(modelId);
+  if (!modelId) return;
+  return openEditModelModal(modelId);
 }
 
 function handleImportModel() {
@@ -1791,7 +1919,7 @@ async function handleDeleteModel(modelId) {
   await renderModelsContainer();
   await renderProjectTreeSidebar();
 
-  if (selectedModelId === modelId) {
+  if (String(selectedModelId) === String(modelId)) {
     selectedModelId = null;
   }
 }
@@ -1825,7 +1953,7 @@ async function handleDeleteProfile(profileId) {
   await renderProfilesContainer();
   await renderProjectTreeSidebar();
 
-  if (selectedProfileId === profileId) {
+  if (String(selectedProfileId) === String(profileId)) {
     selectedProfileId = null;
   }
 }
@@ -2057,7 +2185,8 @@ function setSelectedTreeItem(el) {
     ".project-tree-item * .tree-structure-name.selected"
   );
   if (previouslySelected) previouslySelected.classList.remove("selected");
-  if (el) el.classList.add("selected");
+  if (el) {
+    el.classList.add("selected");
+    selectedTreeSnapshot = snapshotTreeEl(el);
+  }
 }
-
-console.log("Project Details Page Module Loaded");

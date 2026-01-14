@@ -504,5 +504,3 @@ function handleOpenCurrentProject() {
 
   window.location.href = `project-details.html?id=${currentProjectId}`;
 }
-
-console.log("Projects Page Module Loaded");

@@ -31,9 +31,51 @@ modelsRouter.get(
     const projectId = String(req.params.projectId);
     const models = await prisma.model.findMany({
       where: { projectId },
-      orderBy: { modifyDate: "desc" },
+      orderBy: { name: "asc" },
     });
     res.json(models);
+  })
+);
+
+// Get model header (everything except rootPackages)
+modelsRouter.get(
+  "/:id/header",
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id);
+    const model = await prisma.model.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        projectId: true,
+        name: true,
+        description: true,
+        type: true,
+        version: true,
+        createDate: true,
+        modifyDate: true,
+        legalState: true,
+        legalAct: true,
+        accessRights: true,
+
+        relatedProfiles: {
+          select: {
+            id: true,
+            projectId: true,
+            name: true,
+            description: true,
+            version: true,
+            createDate: true,
+            modifyDate: true,
+            legalState: true,
+            legalAct: true,
+            accessRights: true,
+          },
+          orderBy: { name: "asc" },
+        },
+      },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+    res.json(model);
   })
 );
 

@@ -6,6 +6,7 @@
 import {
   listModels as backendListModels,
   getModel as backendGetModel,
+  getModelHeader as backendGetModelHeader,
   createModel as backendCreateModel,
   updateModel as backendUpdateModel,
   deleteModel as backendDeleteModel,
@@ -40,6 +41,23 @@ export async function getModel(modelId) {
   } catch (error) {
     if (error.status === 404) return null;
     console.error(`[ModelRepository] Failed to fetch model ${modelId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get model header by ID (everything except rootPackages)
+ * @param {string} modelId
+ * @returns {Promise<Object|null>}
+ */
+export async function getModelHeader(modelId) {
+  if (!modelId) return null;
+  try {
+    const model = await backendGetModelHeader(modelId);
+    return model || null;
+  } catch (error) {
+    if (error.status === 404) return null;
+    console.error(`[ModelRepository] Failed to fetch model header ${modelId}:`, error);
     throw error;
   }
 }

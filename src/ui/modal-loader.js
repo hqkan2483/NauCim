@@ -29,12 +29,10 @@ export async function loadModal(modalName) {
       // Check if modal already exists
       const existingModal = document.getElementById(modalElement.id);
       if (existingModal) {
-        console.warn(`⚠️ Modal already exists: ${modalElement.id}`);
         return true;
       }
 
       document.body.appendChild(modalElement);
-      console.log(`✅ Modal loaded: ${modalName}`);
       return true;
     } else {
       console.error(`❌ Invalid modal HTML: ${modalName}`);

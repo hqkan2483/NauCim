@@ -2,6 +2,7 @@ import { generateUUID } from "../utils/uuid.js";
 import {
   getModels as repoGetModels,
   getModel as repoGetModel,
+  getModelHeader as repoGetModelHeader,
   createModel as repoCreateModel,
   updateModel as repoUpdateModel,
   deleteModel as repoDeleteModel,
@@ -51,6 +52,30 @@ async function getModel(projectId, modelId) {
     return await repoGetModel(String(modelId));
   } catch (error) {
     console.error(`[getModel] Failed for model ${modelId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get model header by ID (everything except rootPackages)
+ * @param {string} projectId
+ * @param {string} modelId
+ * @returns {Promise<object|null>} Model header or null
+ */
+async function getModelHeader(projectId, modelId) {
+  if (!projectId || !modelId) return null;
+  try {
+    const header = await repoGetModelHeader(String(modelId));
+    if (!header) return null;
+    if (String(header.projectId) !== String(projectId)) {
+      console.warn(
+        `[getModelHeader] Model ${modelId} does not belong to project ${projectId}`
+      );
+      return null;
+    }
+    return header;
+  } catch (error) {
+    console.error(`[getModelHeader] Failed for model ${modelId}:`, error);
     return null;
   }
 }
@@ -131,7 +156,6 @@ async function createModel(projectId, payload) {
 
   try {
     const created = await repoCreateModel(newModel);
-    console.log(`✅ Model created: ${created.name} (id: ${created.id})`);
     return created;
   } catch (error) {
     console.error("[createModel] Failed to create model:", error);
@@ -194,7 +218,6 @@ async function updateModel(projectId, modelId, updates) {
 
   try {
     const updated = await repoUpdateModel(String(modelId), updateData);
-    console.log(`✅ Model updated: ${updated.name} (id: ${modelId})`);
     return updated;
   } catch (error) {
     console.error(`[updateModel] Failed to update model ${modelId}:`, error);
@@ -221,7 +244,6 @@ async function deleteModel(projectId, modelId) {
   try {
     const deleted = await repoDeleteModel(String(modelId));
     if (deleted) {
-      console.log(`✅ Model deleted (id: ${modelId})`);
       return true;
     }
     return false;
@@ -231,4 +253,12 @@ async function deleteModel(projectId, modelId) {
   }
 }
 
-export { getModels, getModel, createModel, updateModel, deleteModel, isModelNameUnique };
+export {
+  getModels,
+  getModel,
+  getModelHeader,
+  createModel,
+  updateModel,
+  deleteModel,
+  isModelNameUnique,
+};

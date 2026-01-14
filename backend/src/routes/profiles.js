@@ -30,7 +30,7 @@ profilesRouter.get(
     const projectId = String(req.params.projectId);
     const profiles = await prisma.profile.findMany({
       where: { projectId },
-      orderBy: { modifyDate: "desc" },
+      orderBy: { name: "asc" },
     });
     res.json(profiles);
   })
@@ -43,6 +43,48 @@ profilesRouter.get(
     const id = String(req.params.id);
     const profile = await prisma.profile.findUnique({
       where: { id },
+    });
+    if (!profile) return sendError(res, 404, "Profile not found");
+    res.json(profile);
+  })
+);
+
+// Get profile header (everything except rootPackages)
+profilesRouter.get(
+  "/:id/header",
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id);
+    const profile = await prisma.profile.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        projectId: true,
+        name: true,
+        description: true,
+        version: true,
+        createDate: true,
+        modifyDate: true,
+        legalState: true,
+        legalAct: true,
+        accessRights: true,
+
+        relatedModels: {
+          select: {
+            id: true,
+            projectId: true,
+            name: true,
+            description: true,
+            type: true,
+            version: true,
+            createDate: true,
+            modifyDate: true,
+            legalState: true,
+            legalAct: true,
+            accessRights: true,
+          },
+          orderBy: { name: "asc" },
+        },
+      },
     });
     if (!profile) return sendError(res, 404, "Profile not found");
     res.json(profile);

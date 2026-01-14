@@ -2,6 +2,7 @@ import { generateUUID } from "../utils/uuid.js";
 import {
   getProfiles as repoGetProfiles,
   getProfile as repoGetProfile,
+  getProfileHeader as repoGetProfileHeader,
   createProfile as repoCreateProfile,
   updateProfile as repoUpdateProfile,
   deleteProfile as repoDeleteProfile,
@@ -51,6 +52,30 @@ async function getProfile(projectId, profileId) {
     return await repoGetProfile(String(profileId));
   } catch (error) {
     console.error(`[getProfile] Failed for profile ${profileId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get profile header by ID (everything except rootPackages)
+ * @param {string} projectId
+ * @param {string} profileId
+ * @returns {Promise<object|null>} Profile header or null
+ */
+async function getProfileHeader(projectId, profileId) {
+  if (!projectId || !profileId) return null;
+  try {
+    const header = await repoGetProfileHeader(String(profileId));
+    if (!header) return null;
+    if (String(header.projectId) !== String(projectId)) {
+      console.warn(
+        `[getProfileHeader] Profile ${profileId} does not belong to project ${projectId}`
+      );
+      return null;
+    }
+    return header;
+  } catch (error) {
+    console.error(`[getProfileHeader] Failed for profile ${profileId}:`, error);
     return null;
   }
 }
@@ -131,7 +156,6 @@ async function createProfile(projectId, payload) {
 
   try {
     const created = await repoCreateProfile(newProfile);
-    console.log(`✅ Profile created: ${created.name} (id: ${created.id})`);
     return created;
   } catch (error) {
     console.error("[createProfile] Failed to create profile:", error);
@@ -194,7 +218,6 @@ async function updateProfile(projectId, profileId, updates) {
 
   try {
     const updated = await repoUpdateProfile(String(profileId), updateData);
-    console.log(`✅ Profile updated: ${updated.name} (id: ${profileId})`);
     return updated;
   } catch (error) {
     console.error(`[updateProfile] Failed to update profile ${profileId}:`, error);
@@ -221,7 +244,6 @@ async function deleteProfile(projectId, profileId) {
   try {
     const deleted = await repoDeleteProfile(String(profileId));
     if (deleted) {
-      console.log(`✅ Profile deleted (id: ${profileId})`);
       return true;
     }
     return false;
@@ -231,4 +253,12 @@ async function deleteProfile(projectId, profileId) {
   }
 }
 
-export { getProfiles, getProfile, createProfile, updateProfile, deleteProfile, isProfileNameUnique };
+export {
+  getProfiles,
+  getProfile,
+  getProfileHeader,
+  createProfile,
+  updateProfile,
+  deleteProfile,
+  isProfileNameUnique,
+};

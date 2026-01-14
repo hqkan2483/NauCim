@@ -6,6 +6,7 @@
 import {
   listProfiles as backendListProfiles,
   getProfile as backendGetProfile,
+  getProfileHeader as backendGetProfileHeader,
   createProfile as backendCreateProfile,
   updateProfile as backendUpdateProfile,
   deleteProfile as backendDeleteProfile,
@@ -40,6 +41,23 @@ export async function getProfile(profileId) {
   } catch (error) {
     if (error.status === 404) return null;
     console.error(`[ProfileRepository] Failed to fetch profile ${profileId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get profile header by ID (everything except rootPackages)
+ * @param {string} profileId
+ * @returns {Promise<Object|null>}
+ */
+export async function getProfileHeader(profileId) {
+  if (!profileId) return null;
+  try {
+    const profile = await backendGetProfileHeader(profileId);
+    return profile || null;
+  } catch (error) {
+    if (error.status === 404) return null;
+    console.error(`[ProfileRepository] Failed to fetch profile header ${profileId}:`, error);
     throw error;
   }
 }

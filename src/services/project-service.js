@@ -30,12 +30,8 @@ async function appDataInit() {
     if (savedProjectId) {
       const project = await getProjectById(savedProjectId);
       if (project) {
-        console.log(`✅ Restored current project ID: ${savedProjectId}`);
       } else {
         setCurrentProjectId(null);
-        console.log(
-          `⚠️ Saved current project ID ${savedProjectId} not found in loaded projects.`
-        );
       }
     }
   } catch (error) {
@@ -142,7 +138,6 @@ async function createProject(payload) {
 
   try {
     const created = await repoCreateProject(newProject);
-    console.log(`✅ Project created: ${created.name} (id: ${created.id})`);
     return created;
   } catch (error) {
     console.error("[createProject] Failed to create project:", error);
@@ -204,7 +199,6 @@ async function updateProject(projectId, updates) {
 
   try {
     const updated = await repoUpdateProject(String(projectId), updateData);
-    console.log(`✅ Project updated: ${updated.name} (id: ${projectId})`);
     return updated;
   } catch (error) {
     console.error(`[updateProject] Failed to update project ${projectId}:`, error);
@@ -240,9 +234,7 @@ async function deleteProject(projectId) {
       // If deleted project was current, clear it
       if (getCurrentProjectId() === projectId) {
         setCurrentProjectId(null);
-        console.log("ℹ️ Current project cleared");
       }
-      console.log(`✅ Project deleted: ${project.name} (id: ${projectId})`);
       return true;
     }
     return false;

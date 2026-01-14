@@ -249,7 +249,6 @@ renderProfileEnumeration(item) {
      * Destroy component
      */
     destroy() {
-      console.log("Details panel destroyed");
     },
   };
 

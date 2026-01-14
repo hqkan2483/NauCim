@@ -244,6 +244,3 @@ async function handleRefreshBtn() {
   await updateCurrentProjectDisplay();
 }
 
-
-console.log("Index Page Module Loaded");
-

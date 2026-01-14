@@ -11,7 +11,6 @@ async function fetchPackages(url, fallback, { expectArray = false } = {}) {
       return fallback;
     }
 
-    console.log(`✅ ${url} loaded successfully`);
     return data;
   } catch (error) {
     console.error(`❌ Error loading ${url}:`, error);

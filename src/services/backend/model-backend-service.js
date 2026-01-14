@@ -13,6 +13,10 @@ export async function getModel(modelId) {
   return apiClient.get(`/api/models/${encodeURIComponent(String(modelId))}`);
 }
 
+export async function getModelHeader(modelId) {
+  return apiClient.get(`/api/models/${encodeURIComponent(String(modelId))}/header`);
+}
+
 export async function createModel(model) {
   return apiClient.post("/api/models", model);
 }

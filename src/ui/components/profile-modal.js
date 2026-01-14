@@ -1,4 +1,10 @@
-import { createProfile, updateProfile, getProfile, isProfileNameUnique } from "../../services/profile-service.js";
+import {
+  createProfile,
+  updateProfile,
+  getProfile,
+  getProfileHeader,
+  isProfileNameUnique,
+} from "../../services/profile-service.js";
 import { closeModal, openModal } from "../modal.js";
 
 /**
@@ -8,6 +14,9 @@ import { closeModal, openModal } from "../modal.js";
 
 let editingProfileId = null;
 let currentProjectId = null;
+
+let isCreatingProfile = false;
+let isSavingProfile = false;
 
 // Callbacks from pages
 let onCreateCallback = null;
@@ -26,13 +35,19 @@ function initProfileModal(projectId, callbacks = {}) {
   // Bind create button
   const createBtn = document.getElementById("create-profile-btn");
   if (createBtn) {
-    createBtn.addEventListener("click", handleCreateProfile);
+    createBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      void handleCreateProfile();
+    });
   }
 
   // Bind save edit button
   const saveEditBtn = document.getElementById("save-profile-edit-btn");
   if (saveEditBtn) {
-    saveEditBtn.addEventListener("click", handleSaveProfileEdit);
+    saveEditBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      void handleSaveProfileEdit();
+    });
   }
 
   // Initialize real-time validation
@@ -47,11 +62,11 @@ function initValidation() {
   const nameInput = document.getElementById("profile-name");
   if (nameInput) {
     nameInput.addEventListener("input", () => {
-      validateNameField(nameInput, null);
+      void validateNameField(nameInput, null);
     });
 
     nameInput.addEventListener("blur", () => {
-      validateNameField(nameInput, null);
+      void validateNameField(nameInput, null);
     });
   }
 
@@ -59,11 +74,11 @@ function initValidation() {
   const editNameInput = document.getElementById("edit-profile-name");
   if (editNameInput) {
     editNameInput.addEventListener("input", () => {
-      validateNameField(editNameInput, editingProfileId);
+      void validateNameField(editNameInput, editingProfileId);
     });
 
     editNameInput.addEventListener("blur", () => {
-      validateNameField(editNameInput, editingProfileId);
+      void validateNameField(editNameInput, editingProfileId);
     });
   }
 }
@@ -74,10 +89,11 @@ function initValidation() {
  * @param {string|null} excludeId - Profile ID to exclude (for edit)
  * @returns {boolean} - true if valid
  */
-function validateNameField(input, excludeId = null) {
+async function validateNameField(input, excludeId = null) {
   if (!currentProjectId) return false;
 
   const name = input.value.trim();
+  const nameSnapshot = name;
 
   // Remove previous feedback
   clearValidationFeedback(input);
@@ -94,7 +110,14 @@ function validateNameField(input, excludeId = null) {
   }
 
   // Uniqueness check
-  if (! isProfileNameUnique(currentProjectId, name, excludeId)) {
+  const isUnique = await isProfileNameUnique(currentProjectId, name, excludeId);
+
+  // Avoid showing stale results if user kept typing during async check
+  if (input.value.trim() !== nameSnapshot) {
+    return false;
+  }
+
+  if (!isUnique) {
     showValidationError(input, "Профиль с таким названием уже существует");
     return false;
   }
@@ -163,10 +186,13 @@ function clearNewProfileModal() {
  * @param {string} profileId
  */
 function openEditProfileModal(profileId) {
-  if (!currentProjectId) return;
+  return (async () => {
+    if (!currentProjectId) return;
 
-  const profile = getProfile(currentProjectId, profileId);
-  if (!profile) return;
+    const profile =
+      (await getProfileHeader(currentProjectId, profileId)) ||
+      (await getProfile(currentProjectId, profileId));
+    if (!profile) return;
 
   const nameInput = document.getElementById("edit-profile-name");
   const descInput = document.getElementById("edit-profile-desc");
@@ -185,12 +211,24 @@ function openEditProfileModal(profileId) {
   if (modal) {
     openModal(modal);
   }
+  })();
 }
 
 /**
  * Handle create profile
  */
-function handleCreateProfile() {
+async function handleCreateProfile() {
+  if (isCreatingProfile) return;
+  isCreatingProfile = true;
+
+  const createBtn = document.getElementById("create-profile-btn");
+  const originalCreateBtnText = createBtn?.textContent;
+  if (createBtn) {
+    createBtn.disabled = true;
+    createBtn.textContent = "Создание...";
+  }
+
+  try {
   if (!currentProjectId) {
     alert("Не выбран проект");
     return;
@@ -212,7 +250,7 @@ function handleCreateProfile() {
   }
 
   // Validate with visual feedback
-  const isValid = validateNameField(nameInput, null);
+  const isValid = await validateNameField(nameInput, null);
   if (!isValid) {
     nameInput.focus();
     return;
@@ -226,7 +264,7 @@ function handleCreateProfile() {
   };
 
   // Call service
-  const newProfile = createProfile(currentProjectId, payload);
+  const newProfile = await createProfile(currentProjectId, payload);
 
   if (newProfile) {
     // Close modal
@@ -241,12 +279,30 @@ function handleCreateProfile() {
     // Service-level error
     showValidationError(nameInput, "Не удалось создать профиль. Проверьте данные.");
   }
+  } finally {
+    isCreatingProfile = false;
+    if (createBtn) {
+      createBtn.disabled = false;
+      if (typeof originalCreateBtnText === "string") createBtn.textContent = originalCreateBtnText;
+    }
+  }
 }
 
 /**
  * Handle save profile edit
  */
-function handleSaveProfileEdit() {
+async function handleSaveProfileEdit() {
+  if (isSavingProfile) return;
+  isSavingProfile = true;
+
+  const saveBtn = document.getElementById("save-profile-edit-btn");
+  const originalSaveBtnText = saveBtn?.textContent;
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Сохранение...";
+  }
+
+  try {
   if (!currentProjectId || !editingProfileId) return;
 
   const nameInput = document.getElementById("edit-profile-name");
@@ -265,7 +321,7 @@ function handleSaveProfileEdit() {
   }
 
   // Validate with visual feedback
-  const isValid = validateNameField(nameInput, editingProfileId);
+  const isValid = await validateNameField(nameInput, editingProfileId);
   if (!isValid) {
     nameInput.focus();
     return;
@@ -275,11 +331,11 @@ function handleSaveProfileEdit() {
   const updates = {
     name,
     description: descInput ? descInput.value.trim() : "",
-    version: versionInput ?  versionInput.value.trim() : "0.1",
+    version: versionInput ? versionInput.value.trim() : "1.0",
   };
 
   // Call service
-  const updated = updateProfile(currentProjectId, editingProfileId, updates);
+  const updated = await updateProfile(currentProjectId, editingProfileId, updates);
 
   if (updated) {
     // Close modal
@@ -290,11 +346,18 @@ function handleSaveProfileEdit() {
 
     // Notify page
     if (onUpdateCallback) {
-      onUpdateCallback(updated);
+      await onUpdateCallback(updated);
     }
   } else {
     // Service-level error
     showValidationError(nameInput, "Не удалось обновить профиль. Проверьте данные.");
+  }
+  } finally {
+    isSavingProfile = false;
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      if (typeof originalSaveBtnText === "string") saveBtn.textContent = originalSaveBtnText;
+    }
   }
 }
 

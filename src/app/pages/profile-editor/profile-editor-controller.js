@@ -103,8 +103,6 @@ export async function initProfileEditorPage() {
   // ✅ Get profile ID from URL
   currentProfileId = getQueryParam("id");
 
-  console.log("Current Profile ID:", currentProfileId);
-
   if (!currentProfileId) {
     showNoProfileWarning();
     return;
@@ -132,8 +130,6 @@ export async function initProfileEditorPage() {
 
   // ✅ Finally bind global events
   bindEvents();
-
-  console.log("Profile Editor Controller Initialized");
 }
 
 // ============================================================
@@ -148,13 +144,8 @@ export async function initProfileEditorPage() {
  * @returns {string|number|null} Project ID or null
  */
 async function findProjectByProfileId(profileId) {
-
-  console.log("Finding project for profile ID:", profileId);
-
   // ✅ Get all projects from memoryStorage
   const projects = await getAllProjects();
-
-  console.log( projects);
 
 
   for (const project of projects) {
@@ -162,7 +153,6 @@ async function findProjectByProfileId(profileId) {
       const profile = project.profiles.find((p) => String(p.id) === profileId);
 
       if (profile) {
-        console.log(`Found project ${project.id} for profile ${profileId}`);
         return project.id;
       }
     }
@@ -739,7 +729,6 @@ function filterLeftTree() {
   const query = searchInput.value;
 
   // TODO: Implement visual filtering (hide non-matching items)
-  console.log("Filtering left tree:", query);
 }
 
 function filterRightTree() {
@@ -748,5 +737,4 @@ function filterRightTree() {
   const query = searchInput.value;
 
   // TODO:  Implement visual filtering
-  console.log("Filtering right tree:", query);
 }

@@ -36,8 +36,6 @@ export async function initComparePage() {
   // Apply initial mode (default checked)
   const checked = document.querySelector('input[name="compareMode"]:checked');
   applyMode(checked ? checked.value : "full");
-
-  console.log("Compare Page Module Loaded");
 }
 
 // ============================================================

@@ -13,6 +13,10 @@ export async function getProfile(profileId) {
   return apiClient.get(`/api/profiles/${encodeURIComponent(String(profileId))}`);
 }
 
+export async function getProfileHeader(profileId) {
+  return apiClient.get(`/api/profiles/${encodeURIComponent(String(profileId))}/header`);
+}
+
 export async function createProfile(profile) {
   return apiClient.post("/api/profiles", profile);
 }
