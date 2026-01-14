@@ -4,9 +4,8 @@
  * ALL nodes are rendered, visibility controlled by CSS
  */
 
-import { buildTitleAttribute } from '../../utils/title-attribute-builder.js';
-
-const STORAGE_KEY_EXPANDED = "cim.expandedTreeItems";
+import { buildTitleAttribute } from "../../utils/title-attribute-builder.js";
+import { TREE_STORAGE_KEYS } from "../trees/tree-storage-keys.js";
 
 /**
  * Render full project tree
@@ -14,7 +13,9 @@ const STORAGE_KEY_EXPANDED = "cim.expandedTreeItems";
 function renderProjectTree(project, projectId) {
   if (!project) return '<div class="no-items text-muted">Проект не найден</div>';
 
-  const expandedProjects = JSON.parse(localStorage.getItem("cim.expandedProjects") || "{}");
+  const expandedProjects = JSON.parse(
+    localStorage.getItem(TREE_STORAGE_KEYS.expandedProjects) || "{}"
+  );
   const isExpanded = expandedProjects[projectId];
 
   let html = `
@@ -89,7 +90,9 @@ function renderProjectTree(project, projectId) {
  * Render model tree
  */
 function renderModelTree(model, projectId, index) {
-  const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
+  const expandedItems = JSON.parse(
+    localStorage.getItem(TREE_STORAGE_KEYS.expandedTreeItems) || "{}"
+  );
   const itemId = `model-${projectId}-${model.id}`;
   const isExpanded = expandedItems[itemId];
 
@@ -141,7 +144,9 @@ function renderModelTree(model, projectId, index) {
  * Render profile tree
  */
 function renderProfileTree(profile, projectId, index) {
-  const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
+  const expandedItems = JSON.parse(
+    localStorage.getItem(TREE_STORAGE_KEYS.expandedTreeItems) || "{}"
+  );
   const itemId = `profile-${projectId}-${profile.id}`;
   const isExpanded = expandedItems[itemId];
 
@@ -193,7 +198,9 @@ function renderProfileTree(profile, projectId, index) {
  * Render package tree
  */
 function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
-  const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
+  const expandedItems = JSON.parse(
+    localStorage.getItem(TREE_STORAGE_KEYS.expandedTreeItems) || "{}"
+  );
   const isExpanded = expandedItems[itemId];
   const hasChildren =
     (pkg.subPackages && pkg.subPackages.length > 0) ||
@@ -260,7 +267,9 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
  * Render class tree
  */
 function renderClassTree(cls, itemId, modelId = null, profileId = null) {
-  const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
+  const expandedItems = JSON.parse(
+    localStorage.getItem(TREE_STORAGE_KEYS.expandedTreeItems) || "{}"
+  );
   const isExpanded = expandedItems[itemId];
 
   // ✅ Class has children if it has attributes, links, OR literals
@@ -468,7 +477,9 @@ function renderLiteralTree(literal, itemId, parentClassId, modelId = null, profi
  * Toggle tree item (expand/collapse) - NOW ONLY TOGGLES CSS CLASS
  */
 function toggleTreeItem(itemId) {
-  const expandedItems = JSON.parse(localStorage.getItem(STORAGE_KEY_EXPANDED) || "{}");
+  const expandedItems = JSON.parse(
+    localStorage.getItem(TREE_STORAGE_KEYS.expandedTreeItems) || "{}"
+  );
 
   if (expandedItems[itemId]) {
     delete expandedItems[itemId];
@@ -476,14 +487,19 @@ function toggleTreeItem(itemId) {
     expandedItems[itemId] = true;
   }
 
-  localStorage.setItem(STORAGE_KEY_EXPANDED, JSON.stringify(expandedItems));
+  localStorage.setItem(
+    TREE_STORAGE_KEYS.expandedTreeItems,
+    JSON.stringify(expandedItems)
+  );
 }
 
 /**
  * Toggle project (expand/collapse)
  */
 function toggleProject(projectId) {
-  const expandedProjects = JSON.parse(localStorage.getItem("cim.expandedProjects") || "{}");
+  const expandedProjects = JSON.parse(
+    localStorage.getItem(TREE_STORAGE_KEYS.expandedProjects) || "{}"
+  );
 
   if (expandedProjects[projectId]) {
     delete expandedProjects[projectId];
@@ -491,7 +507,10 @@ function toggleProject(projectId) {
     expandedProjects[projectId] = true;
   }
 
-  localStorage.setItem("cim.expandedProjects", JSON.stringify(expandedProjects));
+  localStorage.setItem(
+    TREE_STORAGE_KEYS.expandedProjects,
+    JSON.stringify(expandedProjects)
+  );
 }
 
 export { renderProjectTree, toggleTreeItem, toggleProject };

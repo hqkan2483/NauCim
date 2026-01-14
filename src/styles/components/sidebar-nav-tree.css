@@ -211,18 +211,18 @@
   min-height: 25px;
 }
 
-.tree-structure-header.projects-page-tree {
+/* .tree-structure-header.projects-page-tree {
   cursor: default;
   transition: none;
-}
+} */
 
 .tree-structure-header:hover {
   background: var(--white-01);
 }
-
+/*
 .tree-structure-header.projects-page-tree:hover {
   background: none;
-}
+} */
 
 .tree-structure-name {
   flex: 1;
@@ -236,9 +236,9 @@
   transition: background 0.2s;
 }
 
-.tree-structure-name.projects-page-tree:hover {
+/* .tree-structure-name.projects-page-tree:hover {
   background: none;
-}
+} */
 
 .tree-structure-name.selected {
   background: var(--hover);

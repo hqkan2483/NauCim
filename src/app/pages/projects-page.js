@@ -51,6 +51,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     onProjectSelect: (projectId) => {
       selectProject(projectId);
     },
+    onModelSelect: async (projectId, modelId) => {
+      await openModelFromTree(projectId, modelId);
+    },
+    onProfileSelect: async (projectId, profileId) => {
+      await openProfileFromTree(projectId, profileId);
+    },
     onLabelClick: () => {
       showProjectsList();
     },
@@ -267,6 +273,18 @@ async function selectProject(projectId) {
   if (openProjectAction) {
     openProjectAction.classList.remove("hidden");
   }
+}
+
+async function openModelFromTree(projectId, modelId) {
+  if (!projectId || !modelId) return;
+  await selectProject(projectId);
+  await selectModel(modelId);
+}
+
+async function openProfileFromTree(projectId, profileId) {
+  if (!projectId || !profileId) return;
+  await selectProject(projectId);
+  await selectProfile(profileId);
 }
 
 async function showProjectDetails(projectId) {
