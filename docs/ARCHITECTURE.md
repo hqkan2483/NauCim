@@ -19,7 +19,14 @@ The application follows a modular architecture with clear separation of concerns
 - **Data Storage**: Browser localStorage
 - **APIs**: Drag and Drop API for interactive elements
 
+Optional (local backend mode):
+
+- **Backend**: Node.js + Express (local API)
+- **Database**: SQLite (file DB)
+- **ORM/Migrations**: Prisma
+
 ### Browser Support
+
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
@@ -32,6 +39,7 @@ The application follows a modular architecture with clear separation of concerns
 #### MemoryStore (`src/store/memory-store.js`)
 
 Global in-memory data storage that holds all application state:
+
 - Projects collection
 - Current project context
 
@@ -52,6 +60,7 @@ const MemoryStore = {
 #### Data Loader (`src/services/dataloader.js`)
 
 **Primary data initialization file** responsible for:
+
 - Loading test/demo data from JSON files
 - Fetching package definitions
 - Initializing MemoryStore with data
@@ -62,11 +71,13 @@ const MemoryStore = {
 Business logic and CRUD operations organized by domain:
 
 - **`model-service.js`** - Model-related operations
+
   - Create, read, update, delete models
   - Model search and filtering
   - Model validation
 
 - **`profile-service.js`** - Profile-related operations
+
   - Profile CRUD operations
   - Profile comparison logic
   - Profile generation
@@ -78,11 +89,25 @@ Business logic and CRUD operations organized by domain:
 
 **Service Pattern**: All services interact with MemoryStore and provide domain-specific operations.
 
+#### Optional: Persistence + Backend integration
+
+When backend mode is enabled, the frontend still uses `MemoryStore` as the single source of truth in memory, but persistence is handled via a thin backend integration layer:
+
+- **Persistence switch**: `src/services/persistence/persistence-config.js` (single switch point)
+- **Backend API client**: `src/services/backend/api-client.js`
+- **Backend project operations**: `src/services/backend/project-backend-service.js` and `src/services/backend/project-repository.js`
+- **Auto-sync**: `src/services/persistence/memory-store-backend-sync.js` (save-on-mutation)
+
+Backend implementation lives in `backend/` (Express + SQLite + Prisma). See [BACKEND_LOCAL.md](BACKEND_LOCAL.md).
+
+Note: in the canonical data contract, relationships are defined by `GeneralizationLink` and `AssociationLink` + `AssociationLinkEnd[]`. Class-level `links`/`ClassLink` are considered derived/legacy data produced by business logic.
+
 #### ⚠️ Deprecated: `data.js`
 
 **Status**: LEGACY - Kept only for compatibility
 
 **DO NOT USE** for new development. This file contains the old monolithic data management approach. All new code should use:
+
 - `src/store/memory-store.js` for data storage
 - `src/services/dataloader.js` for data initialization
 - Service files in `src/services/` for CRUD operations
@@ -112,6 +137,7 @@ Modular sidebar functionality:
 **Strategy**: When creating or refactoring rendering logic, prefer extracting it into separate modules here.
 
 Current renderers:
+
 - **`attribute-details-renderer.js`** - Attribute detail views
 - **`class-details-renderer.js`** - Class detail views
 - **`link-details-renderer.js`** - Association/link rendering
@@ -122,7 +148,8 @@ Current renderers:
 - **`project-list-renderers.js`** - Project list rendering
 - **`project-tree-renderer.js`** - Project tree rendering logic
 
-**Renderer Pattern**: 
+**Renderer Pattern**:
+
 - Renderers are pure rendering functions
 - They receive data and return DOM elements or HTML strings
 - They do not contain business logic
@@ -135,6 +162,7 @@ Current renderers:
 **Strategy**: When creating or refactoring pages or blocks, prefer extracting reusable components.
 
 Current components:
+
 - **`attribute-modal.js`** - Attribute editor modal
 - **`link-modal.js`** - Link/association editor modal
 - **`model-modal.js`** - Model editor modal
@@ -142,6 +170,7 @@ Current components:
 - **`project-modal.js`** - Project editor modal
 
 **Component Pattern**:
+
 - Components encapsulate both rendering and interaction logic
 - They can manage their own state
 - They provide public APIs for initialization and interaction
@@ -161,6 +190,7 @@ Current components:
 All CSS is organized in a modular structure:
 
 **Base Styles** (numbered for load order):
+
 - `00-fonts.css` - Font definitions
 - `01-tokens.css` - CSS custom properties and design tokens
 - `02-body.css` - Body and base element styles
@@ -171,12 +201,15 @@ All CSS is organized in a modular structure:
 - `07-info-style.css` - Information display styles
 
 **Component Styles**:
+
 - `components/` - Component-specific styles
 
 **Page Styles**:
+
 - `pages/` - Page-specific styles
 
 **Style Organization Strategy**:
+
 1. Global tokens and variables in `01-tokens.css`
 2. Base element styles in numbered files
 3. Component-specific styles in `components/`
@@ -206,6 +239,7 @@ Shared utility functions used across the application.
 ## Data Flow
 
 1. **Initialization**:
+
    ```
    dataloader.js → MemoryStore.initialize() → MemoryStore.store
    ```
@@ -215,7 +249,16 @@ Shared utility functions used across the application.
    User Action → Service (project/model/profile) → MemoryStore → localStorage
    ```
 
+Optional (backend mode):
+
+```
+User Action → Service → MemoryStore → Backend API (SQLite)
+        ↓
+      Renderer → DOM
+```
+
 3. **Rendering**:
+
    ```
    Service → Renderer → DOM → User
    ```
@@ -235,7 +278,9 @@ NauCim/
 │   ├── ARCHITECTURE.md             # This file
 │   ├── CONVENTIONS.md              # Development conventions
 │   ├── DATA_STRUCTURES.md          # Data contract (canonical)
+│   ├── BACKEND_LOCAL.md             # How to run local backend
 │   └── ...
+├── backend/                         # Local backend (Express + SQLite + Prisma)
 ├── src/
 │   ├── services/                   # Business logic
 │   │   ├── dataloader.js          # Primary data loader
@@ -269,15 +314,19 @@ NauCim/
 ## Key Design Patterns
 
 ### 1. Service Pattern
+
 Services encapsulate business logic and data operations for specific domains (projects, models, profiles).
 
 ### 2. Renderer Pattern
+
 Renderers are pure functions that transform data into DOM elements, keeping rendering logic separate from business logic.
 
 ### 3. Component Pattern
+
 Components combine rendering and interaction logic for reusable UI elements.
 
 ### 4. Module Pattern
+
 ES6 modules with explicit imports/exports for clear dependencies.
 
 ## Data Contract
@@ -285,6 +334,7 @@ ES6 modules with explicit imports/exports for clear dependencies.
 **Canonical Reference**: `docs/DATA_STRUCTURES.md`
 
 This document defines all data structures:
+
 - Project
 - Model
 - Profile
@@ -323,7 +373,7 @@ The application is in a transition phase:
 
 ## Security Considerations
 
-- No server-side component - all data is client-side
-- Data stored in browser localStorage
-- No authentication system in prototype
-- Input validation in services before storing data
+- By default (local mode) the app is fully client-side (demo data + browser storage)
+- Optional backend mode runs a local server on `localhost` (no authentication in the prototype)
+- Data validation should exist both in frontend services and backend routes/services
+- CORS is enabled for local development; do not expose the local backend publicly without adding auth

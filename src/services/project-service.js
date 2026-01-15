@@ -5,15 +5,39 @@ import {
 import { MemoryStore } from "../store/memory-store.js";
 import { loadTestData } from "./dataloader.js";
 import { generateUUID } from "../utils/uuid.js";
+import { isBackendEnabled } from "./persistence/persistence-config.js";
+import {
+  listProjects as backendListProjects,
+  exportProject as backendExportProject,
+} from "./backend/project-backend-service.js";
+import { attachMemoryStoreBackendSync } from "./persistence/memory-store-backend-sync.js";
 
 // ============================================================
 // PROJECT SERVICE - Manages Project Data Operations
 // ============================================================
 async function appDataInit() {
   if (MemoryStore.getAllProjects().length === 0) {
-    console.log("🔄 Loading test data into MemoryStore...");
-    const testData = await loadTestData();
-    MemoryStore.initialize({ projects: testData });
+    if (isBackendEnabled()) {
+      try {
+        console.log("🔄 Loading projects from backend into MemoryStore...");
+        const meta = await backendListProjects();
+        const ids = Array.isArray(meta) ? meta.map((p) => p?.id).filter(Boolean) : [];
+        const fullProjects = await Promise.all(ids.map((id) => backendExportProject(id)));
+        MemoryStore.initialize({ projects: fullProjects.filter(Boolean) });
+      } catch (e) {
+        console.warn("⚠️ Backend unavailable, falling back to test data", e);
+        const testData = await loadTestData();
+        MemoryStore.initialize({ projects: testData });
+      }
+    } else {
+      console.log("🔄 Loading test data into MemoryStore...");
+      const testData = await loadTestData();
+      MemoryStore.initialize({ projects: testData });
+    }
+
+    // One-place switch: if backend enabled, any MemoryStore project mutations will persist.
+    attachMemoryStoreBackendSync(MemoryStore);
+
     const savedProjectId = getCurrentProjectId();
     if (savedProjectId) {
       const project = getProjectById(savedProjectId);

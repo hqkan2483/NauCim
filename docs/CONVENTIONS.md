@@ -18,6 +18,8 @@ This document outlines the coding standards, conventions, and best practices for
 ```
 src/
 ├── services/       # Business logic and data operations
+│   ├── backend/     # Thin frontend backend-client layer (fetch wrappers)
+│   ├── persistence/ # Persistence switching + sync helpers
 ├── store/          # Data storage (MemoryStore)
 ├── ui/
 │   ├── components/ # Reusable UI components (modals)
@@ -31,6 +33,12 @@ src/
 ├── enums/          # Enumerations
 └── app/            # Application initialization
 │   ├── pages/      # Page entrypoint
+
+backend/
+├── src/             # Express app
+│   ├── routes/      # HTTP routes/controllers
+│   └── services/    # Import/export and DB-oriented operations
+└── prisma/          # Prisma schema and migrations
 ```
 
 ### File Naming
@@ -284,6 +292,41 @@ User Action → Service → MemoryStore → localStorage
          Renderer → DOM
 ```
 
+Optional (backend mode):
+
+```
+User Action → Service → MemoryStore → Backend API (SQLite)
+        ↓
+      Renderer → DOM
+```
+
+#### Backend integration rules (frontend)
+
+- UI/controllers should not call `fetch()` directly for persistence; use the thin layer in `src/services/backend/*`.
+- Persistence switching should happen in one place: `src/services/persistence/persistence-config.js`.
+- Backend sync (save-on-mutation) should be implemented via `src/services/persistence/memory-store-backend-sync.js`.
+
+#### Relationships (links): source of truth
+
+**Canonical source of truth** for relationships is the link structures defined in `docs/DATA_STRUCTURES.md`:
+
+- `GeneralizationLink` (and its ends)
+- `AssociationLink` + `AssociationLinkEnd[]`
+
+`Class.links: ClassLink[]` is **derived/legacy** and should be treated as a cached/compatibility view.
+
+Rules:
+
+- When importing/exporting or persisting data, store/transfer canonical `GeneralizationLink`/`AssociationLink` structures; do not treat `Class.links` as authoritative.
+- UI renderers may use `Class.links` for display, but services should be able to rebuild it from canonical link data when needed.
+- Backend DB schema should persist canonical link tables/relations; avoid adding endpoints that accept only `Class.links` as input.
+
+#### Backend code rules (Node.js)
+
+- Keep HTTP concerns in `backend/src/routes/*`.
+- Keep DB/import/export logic in `backend/src/services/*`.
+- Schema changes go through Prisma (`backend/prisma/*`) and migrations; avoid manual SQLite edits.
+
 ### UI Layer
 
 #### Separate Rendering from Logic
@@ -385,6 +428,11 @@ When adding new features:
 1. Update relevant documentation in `docs/`
 2. Add examples if introducing new patterns
 3. Update `docs/ARCHITECTURE.md` if changing structure
+
+When changing backend or persistence behavior:
+
+- Update `docs/BACKEND_LOCAL.md` (how to run backend and how the frontend talks to it)
+- Update `backend/README.md` if endpoints or setup steps change
 
 ## Deprecated Files
 
