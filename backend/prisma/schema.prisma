@@ -82,6 +82,7 @@ model Profile {
 
 model PackageModel {
   id       String  @id
+  srcId    String?
   modelId  String
   parentId String?
 
@@ -106,6 +107,7 @@ model PackageModel {
 
 model PackageProfile {
   id        String  @id
+  srcId     String?
   profileId String
   parentId  String?
 
@@ -131,7 +133,8 @@ model PackageProfile {
 // ===== CLASS =====
 
 model ClassModel {
-  id        String @id
+  id        String  @id
+  srcId     String?
   modelId   String
   packageId String
 
@@ -160,7 +163,8 @@ model ClassModel {
 }
 
 model ClassProfile {
-  id        String @id
+  id        String  @id
+  srcId     String?
   profileId String
   packageId String
 
@@ -191,7 +195,8 @@ model ClassProfile {
 // ===== ATTRIBUTE =====
 
 model AttributeModel {
-  id      String @id
+  id      String  @id
+  srcId   String?
   modelId String
   classId String
 
@@ -214,7 +219,8 @@ model AttributeModel {
 }
 
 model AttributeProfile {
-  id        String @id
+  id        String  @id
+  srcId     String?
   profileId String
   classId   String
 
@@ -239,7 +245,8 @@ model AttributeProfile {
 // ===== LINK =====
 
 model LinkModel {
-  id      String @id
+  id      String  @id
+  srcId   String?
   modelId String
   classId String
 
@@ -261,7 +268,8 @@ model LinkModel {
 }
 
 model LinkProfile {
-  id        String @id
+  id        String  @id
+  srcId     String?
   profileId String
   classId   String
 
@@ -285,7 +293,8 @@ model LinkProfile {
 // ===== LITERAL =====
 
 model LiteralModel {
-  id      String @id
+  id      String  @id
+  srcId   String?
   modelId String
   classId String
 
@@ -303,7 +312,8 @@ model LiteralModel {
 }
 
 model LiteralProfile {
-  id        String @id
+  id        String  @id
+  srcId     String?
   profileId String
   classId   String
 
@@ -323,7 +333,8 @@ model LiteralProfile {
 // ===== GENERALIZATION LINK =====
 
 model GeneralizationLinkModel {
-  id      String @id
+  id      String  @id
+  srcId   String?
   modelId String
 
   linkType        String
@@ -340,7 +351,8 @@ model GeneralizationLinkModel {
 }
 
 model GeneralizationLinkProfile {
-  id        String @id
+  id        String  @id
+  srcId     String?
   profileId String
 
   linkType        String
@@ -393,7 +405,8 @@ model GeneralizationClassRefProfile {
 // ===== ASSOCIATION LINK =====
 
 model AssociationLinkModel {
-  id      String @id
+  id      String  @id
+  srcId   String?
   modelId String
 
   linkType        String
@@ -410,7 +423,8 @@ model AssociationLinkModel {
 }
 
 model AssociationLinkProfile {
-  id        String @id
+  id        String  @id
+  srcId     String?
   profileId String
 
   linkType        String
@@ -427,7 +441,8 @@ model AssociationLinkProfile {
 }
 
 model AssociationLinkEndModel {
-  linkEndId String @id
+  linkEndId String  @id
+  srcId     String?
 
   associationLinkId String
   modelId           String
@@ -448,7 +463,8 @@ model AssociationLinkEndModel {
 }
 
 model AssociationLinkEndProfile {
-  linkEndId String @id
+  linkEndId String  @id
+  srcId     String?
 
   associationLinkId String
   profileId         String
