@@ -107,7 +107,7 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
     {
       packages,
       generalizationsList: generalizationsList.map((g) => ({
-        linkId: g.linkId,
+        linkId: g.id,
         linkType: g.linkType,
         documentation: g.documentation ?? null,
         documentationRu: g.documentationRu ?? null,
@@ -117,7 +117,7 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
         child: mapGeneralizationEnd(g.ends, "child"),
       })),
       associationList: associationList.map((a) => ({
-        linkId: a.linkId,
+        linkId: a.id,
         linkType: a.linkType,
         documentation: a.documentation ?? null,
         documentationRu: a.documentationRu ?? null,

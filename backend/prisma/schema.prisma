@@ -81,8 +81,8 @@ model Profile {
 // ===== PACKAGE =====
 
 model PackageModel {
-  id      String
-  modelId String
+  id       String  @id
+  modelId  String
   parentId String?
 
   name            String
@@ -98,14 +98,14 @@ model PackageModel {
   subPackages PackageModel[] @relation("PackageModelTree")
   classes     ClassModel[]
 
-  @@id([id, modelId])
+  @@unique([id, modelId])
   @@index([modelId])
   @@index([parentId, modelId])
   @@index([name])
 }
 
 model PackageProfile {
-  id        String
+  id        String  @id
   profileId String
   parentId  String?
 
@@ -116,13 +116,13 @@ model PackageProfile {
   documentationRu String?
   details         String?
 
-  profile Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
   parent  PackageProfile? @relation("PackageProfileTree", fields: [parentId, profileId], references: [id, profileId], onDelete: Cascade)
 
   subPackages PackageProfile[] @relation("PackageProfileTree")
   classes     ClassProfile[]
 
-  @@id([id, profileId])
+  @@unique([id, profileId])
   @@index([profileId])
   @@index([parentId, profileId])
   @@index([name])
@@ -131,7 +131,7 @@ model PackageProfile {
 // ===== CLASS =====
 
 model ClassModel {
-  id        String
+  id        String @id
   modelId   String
   packageId String
 
@@ -146,21 +146,21 @@ model ClassModel {
   refModelId     String?
   refModelItemId String?
 
-  model   Model         @relation(fields: [modelId], references: [id], onDelete: Cascade)
-  pkg     PackageModel @relation(fields: [packageId, modelId], references: [id, modelId], onDelete: Cascade)
+  model Model        @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  pkg   PackageModel @relation(fields: [packageId, modelId], references: [id, modelId], onDelete: Cascade)
 
   attributes AttributeModel[]
   links      LinkModel[]
   literals   LiteralModel[]
 
-  @@id([id, modelId])
+  @@unique([id, modelId])
   @@index([modelId])
   @@index([packageId, modelId])
   @@index([name])
 }
 
 model ClassProfile {
-  id        String
+  id        String @id
   profileId String
   packageId String
 
@@ -175,14 +175,14 @@ model ClassProfile {
   refModelId     String?
   refModelItemId String?
 
-  profile Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
   pkg     PackageProfile @relation(fields: [packageId, profileId], references: [id, profileId], onDelete: Cascade)
 
   attributes AttributeProfile[]
   links      LinkProfile[]
   literals   LiteralProfile[]
 
-  @@id([id, profileId])
+  @@unique([id, profileId])
   @@index([profileId])
   @@index([packageId, profileId])
   @@index([name])
@@ -191,7 +191,7 @@ model ClassProfile {
 // ===== ATTRIBUTE =====
 
 model AttributeModel {
-  id      String
+  id      String @id
   modelId String
   classId String
 
@@ -208,14 +208,13 @@ model AttributeModel {
   model Model      @relation(fields: [modelId], references: [id], onDelete: Cascade)
   cls   ClassModel @relation(fields: [classId, modelId], references: [id, modelId], onDelete: Cascade)
 
-  @@id([id, modelId])
   @@index([modelId])
   @@index([classId, modelId])
   @@index([name])
 }
 
 model AttributeProfile {
-  id        String
+  id        String @id
   profileId String
   classId   String
 
@@ -229,10 +228,9 @@ model AttributeProfile {
   refModelId     String?
   refModelItemId String?
 
-  profile Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
   cls     ClassProfile @relation(fields: [classId, profileId], references: [id, profileId], onDelete: Cascade)
 
-  @@id([id, profileId])
   @@index([profileId])
   @@index([classId, profileId])
   @@index([name])
@@ -241,7 +239,7 @@ model AttributeProfile {
 // ===== LINK =====
 
 model LinkModel {
-  id      String
+  id      String @id
   modelId String
   classId String
 
@@ -258,13 +256,12 @@ model LinkModel {
   model Model      @relation(fields: [modelId], references: [id], onDelete: Cascade)
   cls   ClassModel @relation(fields: [classId, modelId], references: [id, modelId], onDelete: Cascade)
 
-  @@id([id, modelId])
   @@index([modelId])
   @@index([classId, modelId])
 }
 
 model LinkProfile {
-  id        String
+  id        String @id
   profileId String
   classId   String
 
@@ -278,10 +275,9 @@ model LinkProfile {
   refModelId     String?
   refModelItemId String?
 
-  profile Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
   cls     ClassProfile @relation(fields: [classId, profileId], references: [id, profileId], onDelete: Cascade)
 
-  @@id([id, profileId])
   @@index([profileId])
   @@index([classId, profileId])
 }
@@ -289,7 +285,7 @@ model LinkProfile {
 // ===== LITERAL =====
 
 model LiteralModel {
-  id      String
+  id      String @id
   modelId String
   classId String
 
@@ -301,14 +297,13 @@ model LiteralModel {
   model Model      @relation(fields: [modelId], references: [id], onDelete: Cascade)
   cls   ClassModel @relation(fields: [classId, modelId], references: [id, modelId], onDelete: Cascade)
 
-  @@id([id, modelId])
   @@index([modelId])
   @@index([classId, modelId])
   @@index([name])
 }
 
 model LiteralProfile {
-  id        String
+  id        String @id
   profileId String
   classId   String
 
@@ -317,10 +312,9 @@ model LiteralProfile {
   documentation   String?
   documentationRu String?
 
-  profile Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
   cls     ClassProfile @relation(fields: [classId, profileId], references: [id, profileId], onDelete: Cascade)
 
-  @@id([id, profileId])
   @@index([profileId])
   @@index([classId, profileId])
   @@index([name])
@@ -329,7 +323,7 @@ model LiteralProfile {
 // ===== GENERALIZATION LINK =====
 
 model GeneralizationLinkModel {
-  linkId  String
+  id      String @id
   modelId String
 
   linkType        String
@@ -338,15 +332,15 @@ model GeneralizationLinkModel {
   details         String?
   stereotype      String  @default("")
 
-  model Model                           @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  model Model                         @relation(fields: [modelId], references: [id], onDelete: Cascade)
   ends  GeneralizationClassRefModel[]
 
-  @@id([linkId, modelId])
+  @@unique([id, modelId])
   @@index([modelId])
 }
 
 model GeneralizationLinkProfile {
-  linkId    String
+  id        String @id
   profileId String
 
   linkType        String
@@ -355,10 +349,10 @@ model GeneralizationLinkProfile {
   details         String?
   stereotype      String  @default("")
 
-  profile Profile                           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile Profile                         @relation(fields: [profileId], references: [id], onDelete: Cascade)
   ends    GeneralizationClassRefProfile[]
 
-  @@id([linkId, profileId])
+  @@unique([id, profileId])
   @@index([profileId])
 }
 
@@ -372,7 +366,7 @@ model GeneralizationClassRefModel {
   classId   String
   className String
 
-  generalizationLink GeneralizationLinkModel @relation(fields: [generalizationLinkId, modelId], references: [linkId, modelId], onDelete: Cascade)
+  generalizationLink GeneralizationLinkModel @relation(fields: [generalizationLinkId, modelId], references: [id, modelId], onDelete: Cascade)
 
   @@unique([generalizationLinkId, modelId, role])
   @@index([generalizationLinkId, modelId])
@@ -389,7 +383,7 @@ model GeneralizationClassRefProfile {
   classId   String
   className String
 
-  generalizationLink GeneralizationLinkProfile @relation(fields: [generalizationLinkId, profileId], references: [linkId, profileId], onDelete: Cascade)
+  generalizationLink GeneralizationLinkProfile @relation(fields: [generalizationLinkId, profileId], references: [id, profileId], onDelete: Cascade)
 
   @@unique([generalizationLinkId, profileId, role])
   @@index([generalizationLinkId, profileId])
@@ -399,7 +393,7 @@ model GeneralizationClassRefProfile {
 // ===== ASSOCIATION LINK =====
 
 model AssociationLinkModel {
-  linkId  String
+  id      String @id
   modelId String
 
   linkType        String
@@ -408,15 +402,15 @@ model AssociationLinkModel {
   details         String?
   stereotype      String  @default("")
 
-  model   Model                        @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  model   Model                     @relation(fields: [modelId], references: [id], onDelete: Cascade)
   linkEnd AssociationLinkEndModel[]
 
-  @@id([linkId, modelId])
+  @@unique([id, modelId])
   @@index([modelId])
 }
 
 model AssociationLinkProfile {
-  linkId    String
+  id        String @id
   profileId String
 
   linkType        String
@@ -425,10 +419,10 @@ model AssociationLinkProfile {
   details         String?
   stereotype      String  @default("")
 
-  profile Profile                        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile Profile                     @relation(fields: [profileId], references: [id], onDelete: Cascade)
   linkEnd AssociationLinkEndProfile[]
 
-  @@id([linkId, profileId])
+  @@unique([id, profileId])
   @@index([profileId])
 }
 
@@ -447,7 +441,7 @@ model AssociationLinkEndModel {
   details          String?
   stereotype       String  @default("")
 
-  associationLink AssociationLinkModel @relation(fields: [associationLinkId, modelId], references: [linkId, modelId], onDelete: Cascade)
+  associationLink AssociationLinkModel @relation(fields: [associationLinkId, modelId], references: [id, modelId], onDelete: Cascade)
 
   @@index([associationLinkId, modelId])
   @@index([linkEndClassId])
@@ -468,7 +462,7 @@ model AssociationLinkEndProfile {
   details          String?
   stereotype       String  @default("")
 
-  associationLink AssociationLinkProfile @relation(fields: [associationLinkId, profileId], references: [linkId, profileId], onDelete: Cascade)
+  associationLink AssociationLinkProfile @relation(fields: [associationLinkId, profileId], references: [id, profileId], onDelete: Cascade)
 
   @@index([associationLinkId, profileId])
   @@index([linkEndClassId])

@@ -79,7 +79,7 @@ async function importLinksModel(tx, modelId, rp) {
 
     await tx.generalizationLinkModel.create({
       data: {
-        linkId,
+        id: linkId,
         modelId,
         linkType: toNonEmptyStr(g?.linkType) || "Generalization",
         documentation: toStr(g?.documentation),
@@ -114,7 +114,7 @@ async function importLinksModel(tx, modelId, rp) {
 
     await tx.associationLinkModel.create({
       data: {
-        linkId,
+        id: linkId,
         modelId,
         linkType: toNonEmptyStr(a?.linkType) || "Association",
         documentation: toStr(a?.documentation),
@@ -166,7 +166,7 @@ async function importLinksProfile(tx, profileId, rp) {
 
     await tx.generalizationLinkProfile.create({
       data: {
-        linkId,
+        id: linkId,
         profileId,
         linkType: toNonEmptyStr(g?.linkType) || "Generalization",
         documentation: toStr(g?.documentation),
@@ -201,7 +201,7 @@ async function importLinksProfile(tx, profileId, rp) {
 
     await tx.associationLinkProfile.create({
       data: {
-        linkId,
+        id: linkId,
         profileId,
         linkType: toNonEmptyStr(a?.linkType) || "Association",
         documentation: toStr(a?.documentation),
@@ -238,7 +238,7 @@ async function importLinksProfile(tx, profileId, rp) {
 }
 
 async function importPackageTreeModel(tx, modelId, parentId, pkg) {
-  const pkgId = String(pkg.id);
+  const pkgId = toNonEmptyStr(pkg?.id) || `pkg_${randomUUID()}`;
 
   await tx.packageModel.create({
     data: {
@@ -256,7 +256,7 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
 
   const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
   for (const cls of classes) {
-    const classId = String(cls.id);
+    const classId = toNonEmptyStr(cls?.id) || `cls_${randomUUID()}`;
     await tx.classModel.create({
       data: {
         id: classId,
@@ -278,7 +278,7 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
     for (const attr of attributes) {
       await tx.attributeModel.create({
         data: {
-          id: String(attr.id),
+          id: toNonEmptyStr(attr?.id) || `attr_${randomUUID()}`,
           modelId,
           classId,
           name: String(attr.name || ""),
@@ -295,9 +295,10 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
 
     const links = Array.isArray(cls.links) ? cls.links : [];
     for (const link of links) {
+      const linkRowId = toNonEmptyStr(link?.id) || toNonEmptyStr(link?.linkId) || `link_${randomUUID()}`;
       await tx.linkModel.create({
         data: {
-          id: String(link.id),
+          id: linkRowId,
           modelId,
           classId,
           name: link?.name === undefined ? null : toStr(link?.name),
@@ -316,7 +317,7 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
     for (const literal of literals) {
       await tx.literalModel.create({
         data: {
-          id: String(literal.id),
+          id: toNonEmptyStr(literal?.id) || `lit_${randomUUID()}`,
           modelId,
           classId,
           name: String(literal.name || ""),
@@ -335,7 +336,7 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
 }
 
 async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
-  const pkgId = String(pkg.id);
+  const pkgId = toNonEmptyStr(pkg?.id) || `pkg_${randomUUID()}`;
 
   await tx.packageProfile.create({
     data: {
@@ -353,7 +354,7 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
 
   const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
   for (const cls of classes) {
-    const classId = String(cls.id);
+    const classId = toNonEmptyStr(cls?.id) || `cls_${randomUUID()}`;
     await tx.classProfile.create({
       data: {
         id: classId,
@@ -375,7 +376,7 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
     for (const attr of attributes) {
       await tx.attributeProfile.create({
         data: {
-          id: String(attr.id),
+          id: toNonEmptyStr(attr?.id) || `attr_${randomUUID()}`,
           profileId,
           classId,
           name: String(attr.name || ""),
@@ -392,9 +393,10 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
 
     const links = Array.isArray(cls.links) ? cls.links : [];
     for (const link of links) {
+      const linkRowId = toNonEmptyStr(link?.id) || toNonEmptyStr(link?.linkId) || `link_${randomUUID()}`;
       await tx.linkProfile.create({
         data: {
-          id: String(link.id),
+          id: linkRowId,
           profileId,
           classId,
           name: link?.name === undefined ? null : toStr(link?.name),
@@ -413,7 +415,7 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
     for (const literal of literals) {
       await tx.literalProfile.create({
         data: {
-          id: String(literal.id),
+          id: toNonEmptyStr(literal?.id) || `lit_${randomUUID()}`,
           profileId,
           classId,
           name: String(literal.name || ""),
