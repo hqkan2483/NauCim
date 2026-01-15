@@ -29,7 +29,7 @@ export async function exportProject(projectId) {
       legalAct: true,
       accessRights: true,
     },
-    orderBy: { modifyDate: "desc" },
+    orderBy: {name: "asc" },
   });
 
   const profiles = await prisma.profile.findMany({
@@ -45,7 +45,7 @@ export async function exportProject(projectId) {
       legalAct: true,
       accessRights: true,
     },
-    orderBy: { modifyDate: "desc" },
+    orderBy: { name: "asc" },
   });
 
   const exportedModels = [];
@@ -147,8 +147,23 @@ function mapGeneralizationEnd(ends, role) {
   };
 }
 
+function sortClassLinks(list) {
+  const arr = Array.isArray(list) ? [...list] : [];
+  arr.sort((a, b) => {
+    const aRole = String(a?.role ?? "");
+    const bRole = String(b?.role ?? "");
+    const roleCmp = aRole.localeCompare(bRole, undefined, { sensitivity: "base" });
+    if (roleCmp !== 0) return roleCmp;
+
+    const aName = String(a?.targetClassName ?? "");
+    const bName = String(b?.targetClassName ?? "");
+    return aName.localeCompare(bName, undefined, { sensitivity: "base" });
+  });
+  return arr;
+}
+
 async function exportPackagesTreeModel(modelId) {
-  const [packages, classes, attributes, links, literals] = await Promise.all([
+  const [packages, classes, attributes, literals, generalizationLinks] = await Promise.all([
     prisma.packageModel.findMany({
       where: { modelId },
       select: {
@@ -193,21 +208,6 @@ async function exportPackagesTreeModel(modelId) {
         refModelItemId: true,
       },
     }),
-    prisma.linkModel.findMany({
-      where: { modelId },
-      select: {
-        id: true,
-        classId: true,
-        name: true,
-        type: true,
-        multiplicity: true,
-        documentation: true,
-        documentationRu: true,
-        details: true,
-        refModelId: true,
-        refModelItemId: true,
-      },
-    }),
     prisma.literalModel.findMany({
       where: { modelId },
       select: {
@@ -219,6 +219,19 @@ async function exportPackagesTreeModel(modelId) {
         documentationRu: true,
       },
     }),
+    prisma.generalizationLinkModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        linkType: true,
+        ends: {
+          select: {
+            role: true,
+            classId: true,
+          },
+        },
+      },
+    }),
   ]);
 
   const classesByPackage = new Map();
@@ -228,8 +241,36 @@ async function exportPackagesTreeModel(modelId) {
     classesByPackage.set(c.packageId, list);
   }
 
+  const classNameById = new Map();
+  for (const c of classes) {
+    classNameById.set(c.id, c.name);
+  }
+
+  const generalizationLinksByClassId = new Map();
+  for (const g of generalizationLinks) {
+    const ends = Array.isArray(g?.ends) ? g.ends : [];
+    for (const e of ends) {
+      if (!e?.classId) continue;
+      const other = ends.find((x) => x?.classId && x.classId !== e.classId) || null;
+      if (!other?.classId) continue;
+
+      const list = generalizationLinksByClassId.get(e.classId) || [];
+      list.push({
+        linkId: g.id,
+        relationKind: g.linkType,
+        role: e.role,
+        targetClassId: other.classId,
+        targetClassName: classNameById.get(other.classId) ?? "",
+        targetClassRoleName: null,
+        srcClassRoleName: null,
+        targetDescription: null,
+        multiplicity: "1",
+      });
+      generalizationLinksByClassId.set(e.classId, list);
+    }
+  }
+
   const attrsByClass = groupBy(attributes, (a) => a.classId);
-  const linksByClass = groupBy(links, (l) => l.classId);
   const litsByClass = groupBy(literals, (l) => l.classId);
 
   const nodesById = new Map();
@@ -267,11 +308,7 @@ async function exportPackagesTreeModel(modelId) {
         modelId,
         profileId: null,
       })),
-      links: (linksByClass.get(c.id) || []).map((l) => ({
-        ...mapLink(l),
-        modelId,
-        profileId: null,
-      })),
+      links: sortClassLinks(generalizationLinksByClassId.get(c.id) || []),
       literals: (litsByClass.get(c.id) || []).map(mapLiteral),
       profileRelations: [],
       modelId,
@@ -300,7 +337,7 @@ async function exportPackagesTreeModel(modelId) {
 }
 
 async function exportPackagesTreeProfile(profileId) {
-  const [packages, classes, attributes, links, literals] = await Promise.all([
+  const [packages, classes, attributes, literals, generalizationLinks] = await Promise.all([
     prisma.packageProfile.findMany({
       where: { profileId },
       select: {
@@ -345,21 +382,6 @@ async function exportPackagesTreeProfile(profileId) {
         refModelItemId: true,
       },
     }),
-    prisma.linkProfile.findMany({
-      where: { profileId },
-      select: {
-        id: true,
-        classId: true,
-        name: true,
-        type: true,
-        multiplicity: true,
-        documentation: true,
-        documentationRu: true,
-        details: true,
-        refModelId: true,
-        refModelItemId: true,
-      },
-    }),
     prisma.literalProfile.findMany({
       where: { profileId },
       select: {
@@ -371,6 +393,19 @@ async function exportPackagesTreeProfile(profileId) {
         documentationRu: true,
       },
     }),
+    prisma.generalizationLinkProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        linkType: true,
+        ends: {
+          select: {
+            role: true,
+            classId: true,
+          },
+        },
+      },
+    }),
   ]);
 
   const classesByPackage = new Map();
@@ -380,8 +415,36 @@ async function exportPackagesTreeProfile(profileId) {
     classesByPackage.set(c.packageId, list);
   }
 
+  const classNameById = new Map();
+  for (const c of classes) {
+    classNameById.set(c.id, c.name);
+  }
+
+  const generalizationLinksByClassId = new Map();
+  for (const g of generalizationLinks) {
+    const ends = Array.isArray(g?.ends) ? g.ends : [];
+    for (const e of ends) {
+      if (!e?.classId) continue;
+      const other = ends.find((x) => x?.classId && x.classId !== e.classId) || null;
+      if (!other?.classId) continue;
+
+      const list = generalizationLinksByClassId.get(e.classId) || [];
+      list.push({
+        linkId: g.id,
+        relationKind: g.linkType,
+        role: e.role,
+        targetClassId: other.classId,
+        targetClassName: classNameById.get(other.classId) ?? "",
+        targetClassRoleName: null,
+        srcClassRoleName: null,
+        targetDescription: null,
+        multiplicity: "1",
+      });
+      generalizationLinksByClassId.set(e.classId, list);
+    }
+  }
+
   const attrsByClass = groupBy(attributes, (a) => a.classId);
-  const linksByClass = groupBy(links, (l) => l.classId);
   const litsByClass = groupBy(literals, (l) => l.classId);
 
   const nodesById = new Map();
@@ -419,11 +482,7 @@ async function exportPackagesTreeProfile(profileId) {
         modelId: null,
         profileId,
       })),
-      links: (linksByClass.get(c.id) || []).map((l) => ({
-        ...mapLink(l),
-        modelId: null,
-        profileId,
-      })),
+      links: sortClassLinks(generalizationLinksByClassId.get(c.id) || []),
       literals: (litsByClass.get(c.id) || []).map(mapLiteral),
       profileRelations: [],
       modelId: null,
@@ -475,22 +534,6 @@ function mapAttr(a) {
     profileId: a.profileId ?? null,
     refModelId: a.refModelId ?? null,
     refModelItemId: a.refModelItemId ?? null,
-  };
-}
-
-function mapLink(l) {
-  return {
-    id: l.id,
-    name: l.name ?? null,
-    type: l.type ?? null,
-    multiplicity: l.multiplicity ?? null,
-    documentation: l.documentation ?? null,
-    documentationRu: l.documentationRu ?? null,
-    details: l.details ?? null,
-    modelId: l.modelId ?? null,
-    profileId: l.profileId ?? null,
-    refModelId: l.refModelId ?? null,
-    refModelItemId: l.refModelItemId ?? null,
   };
 }
 
