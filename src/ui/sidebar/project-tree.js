@@ -1,14 +1,19 @@
+import { renderProjectsSidebarTree } from "../renderers/projects-sidebar-tree-renderer.js";
+import { TREE_STORAGE_KEYS } from "../trees/tree-storage-keys.js";
+
  const DEFAULTS = {
   containerSelector: "#projects-tree-container",
   listSelector: "#projects-list-tree",
   toggleBtnSelector: ".nav-tree-toggle",
-  storageKeyExpanded: "cim.projectsTreeExpanded",
-  storageKeyExpandedProjects: "cim.expandedProjects",
+  storageKeyExpanded: TREE_STORAGE_KEYS.projectsTreeExpanded,
+  storageKeyExpandedProjects: TREE_STORAGE_KEYS.expandedProjects,
   collapsedClass: "nav-tree-collapsed",
   // Callbacks (must be provided by page)
   getProjects: () => [],
   getCurrentProjectId: () => null,
   onProjectSelect: null, // (projectId) => void
+  onModelSelect: null, // (projectId, modelId) => void
+  onProfileSelect: null, // (projectId, profileId) => void
   onProjectExpand: null, // (projectId, isExpanded) => void
   onLabelClick: null, //
 };
@@ -39,7 +44,7 @@ function initProjectsTree(options = {}) {
   const labelEl = document.querySelector(".nav-tree-label");
   if (labelEl && treeConfig.onLabelClick) {
     labelEl.addEventListener("click", () => {
-      treeConfig. onLabelClick();
+      treeConfig.onLabelClick();
     });
   }
 
@@ -47,10 +52,12 @@ function initProjectsTree(options = {}) {
   bindProjectTreeEvents();
 
   // Restore tree state
-  restoreProjectsTreeState();
+  restoreProjectsTreeState().catch(err => {
+    console.error("[projectsTree] Failed to restore state:", err);
+  });
 }
 
-function toggleProjectsTree() {
+async function toggleProjectsTree() {
   if (!treeConfig) return;
 
   const container = document.querySelector(treeConfig.containerSelector);
@@ -63,122 +70,51 @@ function toggleProjectsTree() {
     // Collapse
     container.classList.add(treeConfig.collapsedClass);
     button.setAttribute("aria-expanded", "false");
-    localStorage.setItem(treeConfig. storageKeyExpanded, "false");
+    localStorage.setItem(treeConfig.storageKeyExpanded, "false");
   } else {
     // Expand
     container.classList.remove(treeConfig.collapsedClass);
     button.setAttribute("aria-expanded", "true");
     localStorage.setItem(treeConfig.storageKeyExpanded, "true");
-    renderProjectsTree();
+    await renderProjectsTree();
   }
 }
 
-function restoreProjectsTreeState() {
+async function restoreProjectsTreeState() {
   if (!treeConfig) return;
 
   const container = document.querySelector(treeConfig.containerSelector);
   const button = document.querySelector(treeConfig.toggleBtnSelector);
-  if (!container || ! button) return;
+  if (!container || !button) return;
 
-  const isExpanded = localStorage.getItem(treeConfig. storageKeyExpanded) === "true";
+  const isExpanded = localStorage.getItem(treeConfig.storageKeyExpanded) === "true";
 
   if (isExpanded) {
     container.classList.remove(treeConfig.collapsedClass);
     button.setAttribute("aria-expanded", "true");
-    renderProjectsTree();
+    await renderProjectsTree();
   } else {
-    container.classList. add(treeConfig.collapsedClass);
+    container.classList.add(treeConfig.collapsedClass);
     button.setAttribute("aria-expanded", "false");
   }
 }
 
-function renderProjectsTree() {
+async function renderProjectsTree() {
   if (!treeConfig) return;
 
   const projectsList = document.querySelector(treeConfig.listSelector);
   if (!projectsList) return;
 
-  const projects = treeConfig.getProjects();
+  const projectsResult = treeConfig.getProjects();
+  // Handle both sync and async getProjects
+  const projects = projectsResult instanceof Promise ? await projectsResult : projectsResult;
   const currentProjectId = treeConfig.getCurrentProjectId ?  treeConfig.getCurrentProjectId() : null;
   const expandedProjects = JSON.parse(localStorage.getItem(treeConfig.storageKeyExpandedProjects) || "{}");
 
-  if (! projects || projects.length === 0) {
-    projectsList.innerHTML = '<div class="nav-tree-item-link no-projects-tree">Нет проектов</div>';
-    return;
-  }
-
-  const html = projects
-    . map((p) => {
-      const isExpanded = expandedProjects[p.id];
-      const isCurrentProject = currentProjectId === p.id;
-
-      return `
-      <div class="project-tree-item">
-        <div class="project-tree-header ${isCurrentProject ? "active" : ""}">
-          <button class="project-expand-btn"
-                  data-project-id="${p.id}"
-                  data-action="expand"
-                  aria-expanded="${isExpanded ?  "true" : "false"}">
-            <span class="tree-expand-icon">${isExpanded ? "▼" : "▶"}</span>
-          </button>
-          <span class="project-name"
-                data-project-id="${p.id}"
-                data-action="select"
-                title="${p.name}">
-            📦 ${p.name}
-          </span>
-        </div>
-        ${
-          isExpanded
-            ? `
-          <div class="project-structure">
-            ${
-              p.models && p.models.length > 0
-                ? `
-              <div class="structure-section">
-                <div class="structure-title">📋 Модели (${p.models.length})</div>
-                <div class="structure-items">
-                  ${p.models.map((m) => `
-                    <div class="tree-structure-item">
-                      <div class="tree-structure-header projects-page-tree">
-                        <div class="tree-structure-name projects-page-tree" data-id="${m.id || ""}">🔷 ${m.name || "Модель без названия"}</div>
-                      </div>
-                    </div>
-                  `).join("")}
-                </div>
-              </div>
-            `
-                : ""
-            }
-            ${
-              p.profiles && p.profiles.length > 0
-                ? `
-              <div class="structure-section">
-                <div class="structure-title">⚙️ Профили (${p.profiles.length})</div>
-                <div class="structure-items">
-                  ${p.profiles.map((pr) => `
-                    <div class="tree-structure-item">
-                      <div class="tree-structure-header projects-page-tree">
-                        <div class="tree-structure-name projects-page-tree" data-id="${pr.id || ""}">⚙️ ${pr.name || "Профиль без названия"}</div>
-                      </div>
-                    </div>
-                  `).join("")}
-                </div>
-              </div>
-            `
-                : ""
-            }
-            ${(! p.models || p.models. length === 0) && (! p.profiles || p.profiles. length === 0) ? `<div class="structure-empty">Нет моделей и профилей</div>` : ""}
-          </div>
-        `
-            : ""
-        }
-      </div>
-    `;
-    })
-    .join("");
-
-  projectsList.innerHTML = html;
+  projectsList.innerHTML = renderProjectsSidebarTree(projects, {
+    currentProjectId,
+    expandedProjects,
+  });
 
 }
 
@@ -194,9 +130,9 @@ function bindProjectTreeEvents() {
     if (!target) return;
 
     // Expand/collapse project structure
-    const expandBtn = target. closest("[data-action='expand']");
+    const expandBtn = target.closest("[data-action='toggle-project']");
     if (expandBtn) {
-      const projectId = expandBtn. getAttribute("data-project-id");
+      const projectId = expandBtn.getAttribute("data-project-id");
       if (projectId) {
         toggleProjectStructure(projectId);
         e.stopPropagation();
@@ -205,23 +141,48 @@ function bindProjectTreeEvents() {
     }
 
     // Select project
-    const selectEl = target.closest("[data-action='select']");
+    const selectEl = target.closest("[data-action='select-project']");
     if (selectEl) {
       const projectId = selectEl.getAttribute("data-project-id");
-      if (projectId && treeConfig. onProjectSelect) {
+      if (projectId && treeConfig.onProjectSelect) {
         treeConfig.onProjectSelect(projectId);
         e.stopPropagation();
       }
+      return;
+    }
+
+    // Select model inside project tree
+    const selectModelEl = target.closest("[data-action='select-model']");
+    if (selectModelEl) {
+      const projectId = selectModelEl.getAttribute("data-project-id");
+      const modelId = selectModelEl.getAttribute("data-model-id");
+      if (projectId && modelId && treeConfig.onModelSelect) {
+        treeConfig.onModelSelect(projectId, modelId);
+        e.stopPropagation();
+      }
+      return;
+    }
+
+    // Select profile inside project tree
+    const selectProfileEl = target.closest("[data-action='select-profile']");
+    if (selectProfileEl) {
+      const projectId = selectProfileEl.getAttribute("data-project-id");
+      const profileId = selectProfileEl.getAttribute("data-profile-id");
+      if (projectId && profileId && treeConfig.onProfileSelect) {
+        treeConfig.onProfileSelect(projectId, profileId);
+        e.stopPropagation();
+      }
+      return;
     }
   });
 
   eventsInitialized = true;
 }
 
-function toggleProjectStructure(projectId) {
+async function toggleProjectStructure(projectId) {
   if (!treeConfig) return;
 
-  const expandedProjects = JSON.parse(localStorage.getItem(treeConfig. storageKeyExpandedProjects) || "{}");
+  const expandedProjects = JSON.parse(localStorage.getItem(treeConfig.storageKeyExpandedProjects) || "{}");
 
   const wasExpanded = !!expandedProjects[projectId];
 
@@ -231,13 +192,13 @@ function toggleProjectStructure(projectId) {
     expandedProjects[projectId] = true;
   }
 
-  localStorage.setItem(treeConfig. storageKeyExpandedProjects, JSON.stringify(expandedProjects));
+  localStorage.setItem(treeConfig.storageKeyExpandedProjects, JSON.stringify(expandedProjects));
 
   if (treeConfig.onProjectExpand) {
-    treeConfig.onProjectExpand(projectId, ! wasExpanded);
+    treeConfig.onProjectExpand(projectId, !wasExpanded);
   }
 
-  renderProjectsTree();
+  await renderProjectsTree();
 }
 
 export { initProjectsTree, renderProjectsTree, toggleProjectsTree };

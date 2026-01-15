@@ -1,19 +1,20 @@
-<div id="edit-profile-modal" class="modal">
+<div id="edit-model-header-modal" class="modal">
   <div class="modal-content">
     <button
+        type="button"
         class="modal-close"
         data-modal-close
         aria-label="Закрыть"
       >
         ×
     </button>
-    <div class="modal-title">Редактировать профиль</div>
+    <div class="modal-title">Редактировать модель</div>
 
     <div class="form-group">
-      <label class="form-label">Название профиля *</label>
+      <label class="form-label">Название модели *</label>
       <input
         type="text"
-        id="edit-profile-name"
+        id="edit-model-name"
         class="form-input"
         required
         minlength="3"
@@ -23,7 +24,7 @@
     <div class="form-group">
       <label class="form-label">Описание</label>
       <textarea
-        id="edit-profile-desc"
+        id="edit-model-desc"
         class="form-textarea"
       ></textarea>
     </div>
@@ -32,15 +33,15 @@
       <label class="form-label">Версия</label>
       <input
         type="text"
-        id="edit-profile-version"
+        id="edit-model-version"
         class="form-input"
         required
       />
     </div>
 
     <div class="modal-buttons">
-      <button class="btn btn-secondary" data-modal-close>Отмена</button>
-      <button class="btn btn-primary" id="save-profile-edit-btn">Сохранить</button>
+      <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+      <button type="button" class="btn btn-primary" id="save-model-edit-btn">Сохранить</button>
     </div>
   </div>
 </div>

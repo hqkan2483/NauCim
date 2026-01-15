@@ -51,6 +51,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     onProjectSelect: (projectId) => {
       selectProject(projectId);
     },
+    onModelSelect: async (projectId, modelId) => {
+      await openModelFromTree(projectId, modelId);
+    },
+    onProfileSelect: async (projectId, profileId) => {
+      await openProfileFromTree(projectId, profileId);
+    },
     onLabelClick: () => {
       showProjectsList();
     },
@@ -58,15 +64,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Initialize project modal
   initProjectModal({
-    onCreate: (newProject) => {
-      renderProjectsList();
-      renderProjectsTree();
-      selectProject(newProject.id);
+    onCreate: async (newProject) => {
+      await renderProjectsList();
+      await renderProjectsTree();
+      await selectProject(newProject.id);
     },
-    onUpdate: () => {
-      renderProjectsList();
-      renderProjectsTree();
-      updateCurrentProjectDisplay();
+    onUpdate: async () => {
+      await renderProjectsList();
+      await renderProjectsTree();
+      await updateCurrentProjectDisplay();
     },
   });
 
@@ -74,8 +80,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindEvents();
 
   // 5. Initial render
-  renderProjectsList();
-  updateCurrentProjectDisplay();
+  await renderProjectsList();
+  await updateCurrentProjectDisplay();
 });
 
 // ============================================================
@@ -193,11 +199,11 @@ if (profilesListEl) {
 // ============================================================
 // RENDER - PROJECTS
 // ============================================================
-function renderProjectsList() {
+async function renderProjectsList() {
   const container = document.getElementById("projects-list");
   if (!container) return;
 
-  const projects = getAllProjects();
+  const projects = await getAllProjects();
   const currentProjectId = getCurrentProjectId();
 
   // Filter
@@ -230,11 +236,11 @@ function renderProjectsList() {
   container.innerHTML = html;
 }
 
-function updateCurrentProjectDisplay() {
+async function updateCurrentProjectDisplay() {
   const currentProjectEl = document.getElementById("current-project");
   if (!currentProjectEl) return;
 
-  const project = getCurrentProject();
+  const project = await getCurrentProject();
   if (project) {
     currentProjectEl.classList.remove("sidebar__section-info");
     currentProjectEl.classList.add("sidebar__section-data");
@@ -246,21 +252,21 @@ function updateCurrentProjectDisplay() {
   }
 }
 
-function selectProject(projectId) {
+async function selectProject(projectId) {
   setCurrentProjectId(projectId);
 
   // Re-render to highlight selected
-  renderProjectsList();
-  updateCurrentProjectDisplay();
+  await renderProjectsList();
+  await updateCurrentProjectDisplay();
 
   // Re-render tree to update active state
-  renderProjectsTree();
+  await renderProjectsTree();
 
   // Hide projects list
   hideProjectsList();
 
   // Show project details (models/profiles)
-  showProjectDetails(projectId);
+  await showProjectDetails(projectId);
 
   // Show "Open project" button
   const openProjectAction = document.getElementById("open-project-action");
@@ -269,8 +275,20 @@ function selectProject(projectId) {
   }
 }
 
-function showProjectDetails(projectId) {
-  const project = getProjectById(projectId);
+async function openModelFromTree(projectId, modelId) {
+  if (!projectId || !modelId) return;
+  await selectProject(projectId);
+  await selectModel(modelId);
+}
+
+async function openProfileFromTree(projectId, profileId) {
+  if (!projectId || !profileId) return;
+  await selectProject(projectId);
+  await selectProfile(profileId);
+}
+
+async function showProjectDetails(projectId) {
+  const project = await getProjectById(projectId);
   if (!project) return;
 
   // Reset selection
@@ -281,14 +299,14 @@ function showProjectDetails(projectId) {
   const modelsContainer = document.getElementById("models-container");
   if (modelsContainer) {
     modelsContainer.classList.remove("hidden");
-    renderModelsContainer(); // ✅ Обновлено
+    await renderModelsContainer();
   }
 
   // Show profiles
   const profilesContainer = document.getElementById("profiles-container");
   if (profilesContainer) {
     profilesContainer.classList.remove("hidden");
-    renderProfilesContainer(); // ✅ Обновлено
+    await renderProfilesContainer();
   }
 }
 
@@ -343,14 +361,14 @@ function hideProjectsList() {
 // ============================================================
 // RENDER - MODELS
 // ============================================================
-function renderModelsContainer() {
+async function renderModelsContainer() {
   const projectId = getCurrentProjectId();
   if (!projectId) return;
 
   const modelsList = document.getElementById("models-list");
   if (!modelsList) return;
 
-  const models = getModels(projectId);
+  const models = await getModels(projectId);
 
   if (! models || models.length === 0) {
     modelsList.innerHTML = '<div class="no-items text-muted">Нет моделей</div>';
@@ -379,15 +397,15 @@ function renderModelsContainer() {
   }
 }
 
-function selectModel(modelId) {
+async function selectModel(modelId) {
   selectedModelId = modelId;
 
   // Re-render list to highlight selected
-  renderModelsContainer();
+  await renderModelsContainer();
 
   // Render details
   const projectId = getCurrentProjectId();
-  const model = getModel(projectId, modelId);
+  const model = await getModel(projectId, modelId);
   const modelDetails = document.getElementById("model-details");
 
   if (modelDetails) {
@@ -398,14 +416,14 @@ function selectModel(modelId) {
 // ============================================================
 // RENDER - PROFILES
 // ============================================================
-function renderProfilesContainer() {
+async function renderProfilesContainer() {
   const projectId = getCurrentProjectId();
   if (!projectId) return;
 
   const profilesList = document.getElementById("profiles-list");
   if (!profilesList) return;
 
-  const profiles = getProfiles(projectId);
+  const profiles = await getProfiles(projectId);
 
   if (!profiles || profiles.length === 0) {
     profilesList.innerHTML = '<div class="no-items text-muted">Нет профилей</div>';
@@ -434,15 +452,15 @@ function renderProfilesContainer() {
   }
 }
 
-function selectProfile(profileId) {
+async function selectProfile(profileId) {
   selectedProfileId = profileId;
 
   // Re-render list to highlight selected
-  renderProfilesContainer();
+  await renderProfilesContainer();
 
   // Render details
   const projectId = getCurrentProjectId();
-  const profile = getProfile(projectId, profileId);
+  const profile = await getProfile(projectId, profileId);
   const profileDetails = document.getElementById("profile-details");
 
   if (profileDetails) {
@@ -457,19 +475,19 @@ function handleEditProject(projectId) {
   openEditProjectModal(projectId);
 }
 
-function handleDeleteProject(projectId) {
-  const project = getProjectById(projectId);
+async function handleDeleteProject(projectId) {
+  const project = await getProjectById(projectId);
   if (! project) return;
 
   const confirmed = confirm(`Удалить проект "${project.name}"?`);
   if (!confirmed) return;
 
-  deleteProject(projectId);
+  await deleteProject(projectId);
 
   // Re-render
-  renderProjectsList();
-  renderProjectsTree();
-  updateCurrentProjectDisplay();
+  await renderProjectsList();
+  await renderProjectsTree();
+  await updateCurrentProjectDisplay();
 
   // Hide details if deleted project was selected
   if (getCurrentProjectId() === projectId) {
@@ -486,5 +504,3 @@ function handleOpenCurrentProject() {
 
   window.location.href = `project-details.html?id=${currentProjectId}`;
 }
-
-console.log("Projects Page Module Loaded");

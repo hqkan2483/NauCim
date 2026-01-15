@@ -316,7 +316,7 @@ function findItemPathByKey(itemKey, availableData) {
   const id = idParts.join("-");
 
   const rootItem = availableData.find((item) =>
-    item.type === type && (item.id === id || item.id === parseInt(id) || String(item.id) === id)
+    item.type === type && (item.id === id )
   );
   if (!rootItem) return null;
 
@@ -392,22 +392,15 @@ function navigateToChildWithAncestors(children, pathParts, ancestors) {
  * @returns {Object} Updated profile data
  */
 export function removeItemsFromProfile(selectedItems, profileData) {
-  console.log("🗑️ Removing items from profile...");
-  console.log("  - Selected items:", Array.from(selectedItems));
-
   const itemsToRemove = [];
 
   selectedItems.forEach(itemKey => {
-    console.log(`  - Processing: ${itemKey}`);
-
     // Parse key to find item
     const pathInfo = parseProfileItemKey(itemKey);
     if (pathInfo) {
       itemsToRemove.push(pathInfo);
     }
   });
-
-  console.log("  - Items to remove:", itemsToRemove.length);
 
   // Sort by depth (deepest first) to avoid index shifting issues
   itemsToRemove.sort((a, b) => b.depth - a.depth);
@@ -416,9 +409,6 @@ export function removeItemsFromProfile(selectedItems, profileData) {
   itemsToRemove.forEach(pathInfo => {
     removeItemByPath(profileData.items, pathInfo);
   });
-
-  console.log("✅ Removal complete");
-  console.log("  - Profile items count:", profileData.items.length);
 
   return profileData;
 }
@@ -463,7 +453,6 @@ function removeItemByPath(items, pathInfo) {
     if (rest.length === 0) {
       // Remove package
       const removed = items.splice(index, 1);
-      console.log(`  ✅ Removed package at index ${index}: `, removed[0]?.name);
     } else {
       const pkg = items[index];
       if (! pkg) return;
@@ -475,7 +464,6 @@ function removeItemByPath(items, pathInfo) {
         const clsIndex = parseInt(rest[1]);
         const classes = pkg.classes || [];
         const removed = classes.splice(clsIndex, 1);
-        console.log(`  ✅ Removed class at index ${clsIndex}:`, removed[0]?.name);
       } else if (nextType === "pkg") {
         // Recurse into sub-packages
         const subPackages = pkg.subPackages || pkg.children || [];
@@ -496,12 +484,9 @@ function removeItemByPath(items, pathInfo) {
  * @returns {Object|null} Found item or null
  */
 function findItemByKey(itemKey, availableData) {
-  console.log("🔎 Finding item by key:", itemKey);
-
   // Parse key: left-{type}-{id}-{path...}
   // IMPORTANT: {id} can contain dashes (e.g. UUID-like), so we can't assume parts[2] is the full id.
   const parts = itemKey.split("-");
-  console.log("  - Parts:", parts);
 
   if (parts.length < 3) {
     console.warn("  ⚠️ Invalid key format");
@@ -517,17 +502,11 @@ function findItemByKey(itemKey, availableData) {
   const idParts = pathStartIndex === -1 ? parts.slice(2) : parts.slice(2, pathStartIndex);
   const id = idParts.join("-");
 
-  console.log("  - Type:", type);
-  console.log("  - ID:", id);
-
   // Find root item
   const rootItem = availableData.find(item => {
     const match = item.type === type && (
-      item.id === id ||
-      item.id === parseInt(id) ||
-      String(item.id) === id
+      item.id === id
     );
-    console.log(`    Checking ${item.type}-${item.id}:  ${match}`);
     return match;
   });
 
@@ -536,20 +515,15 @@ function findItemByKey(itemKey, availableData) {
     return null;
   }
 
-  console.log("  ✅ Root item found:", rootItem.name);
-
   // If it's just the root item (e.g., "left-model-<id>")
   if (pathStartIndex === -1) {
-    console.log("  ✅ Returning root item");
     return rootItem;
   }
 
   // Navigate to child item
   const pathParts = parts.slice(pathStartIndex); // ["pkg", "1", "cls", "2"]
-  console.log("  - Path parts:", pathParts);
 
   const childItem = navigateToChild(rootItem.children, pathParts);
-  console.log("  - Child item found:", childItem);
 
   return childItem;
 }
@@ -561,10 +535,6 @@ function findItemByKey(itemKey, availableData) {
  * @returns {Object|null} Found item or null
  */
 function navigateToChild(children, pathParts) {
-  console.log("🧭 Navigating to child:");
-  console.log("  - Children count:", children?.length || 0);
-  console.log("  - Path parts:", pathParts);
-
   if (!children || ! Array.isArray(children) || pathParts.length === 0) {
     console.warn("  ⚠️ Invalid children or empty path");
     return null;
@@ -573,16 +543,12 @@ function navigateToChild(children, pathParts) {
   const [type, indexStr, ...rest] = pathParts;
   const index = parseInt(indexStr);
 
-  console.log(`  - Navigating:  ${type}[${index}]`);
-
   if (type === "pkg") {
     const pkg = children[index];
     if (! pkg) {
       console.warn(`  ⚠️ Package not found at index ${index}`);
       return null;
     }
-
-    console.log(`  ✅ Found package: ${pkg.name}`);
 
     // If this is the target
     if (rest.length === 0) {
@@ -596,11 +562,8 @@ function navigateToChild(children, pathParts) {
       const clsIndex = parseInt(rest[1]);
       const classes = pkg.classes || pkg.elements || [];
 
-      console.log(`  - Looking for class at index ${clsIndex} (total:  ${classes.length})`);
-
       const cls = classes[clsIndex];
       if (cls) {
-        console.log(`  ✅ Found class: ${cls.name}`);
       } else {
         console.warn(`  ⚠️ Class not found at index ${clsIndex}`);
       }
@@ -608,7 +571,6 @@ function navigateToChild(children, pathParts) {
 
     } else if (nextType === "pkg") {
       const subPackages = pkg.subPackages || pkg.children || [];
-      console.log(`  - Recursing into subPackages (${subPackages.length})`);
       return navigateToChild(subPackages, rest);
     }
   }
@@ -634,7 +596,6 @@ function addPackageToProfile(pkg, profileData) {
   );
 
   if (exists) {
-    console.log(`  ⚠️ Package "${pkg.name}" already in profile, skipping`);
     return;
   }
 
@@ -645,7 +606,6 @@ function addPackageToProfile(pkg, profileData) {
   clonedPkg.profileId = profileData.id;
 
   profileData.items.push(clonedPkg);
-  console.log(`  ✅ Added package: ${clonedPkg.name}`);
 }
 
 /**
@@ -673,7 +633,6 @@ function addClassesToProfile(classes, profileData) {
       subPackages: []
     };
     profileData.items.push(defaultPackage);
-    console.log("  ✅ Created default package for classes");
   }
 
   // Add classes to default package
@@ -686,83 +645,8 @@ function addClassesToProfile(classes, profileData) {
       const clonedCls = JSON.parse(JSON.stringify(cls));
       clonedCls.profileId = profileData.id;
       defaultPackage.classes.push(clonedCls);
-      console.log(`  ✅ Added class: ${clonedCls.name}`);
-    } else {
-      console.log(`  ⚠️ Class "${cls.name}" already in profile, skipping`);
     }
   });
-}
-
-/**
- * Add item to profile
- * @param {Object} item - Item to add
- * @param {Object} profileData - Profile data
- */
-function addItemToProfile(item, profileData) {
-  if (!profileData.items) {
-    profileData.items = [];
-  }
-
-  // Check if item already exists
-  const exists = profileData.items.some(existingItem =>
-    existingItem.id === item.id && existingItem.type === item.type
-  );
-
-  if (!exists) {
-    // Deep clone the item
-    const clonedItem = JSON.parse(JSON.stringify(item));
-    profileData.items.push(clonedItem);
-  }
-}
-
-/**
- * Remove item from profile by key
- * @param {string} itemKey - Item key
- * @param {Object} profileData - Profile data
- */
-function removeItemByKey(itemKey, profileData) {
-  const parts = itemKey.split("-");
-
-  // Parse key:  profile-root-pkg-0-elem-2
-  if (parts.length < 3) return;
-
-  // Navigate and remove
-  const pathParts = parts.slice(2); // Remove "profile-root"
-  removeFromPath(profileData.items, pathParts);
-}
-
-/**
- * Remove item from path
- * @param {Array} items - Items array
- * @param {Array} pathParts - Path parts
- */
-function removeFromPath(items, pathParts) {
-  if (!items || pathParts.length === 0) return;
-
-  const [type, indexStr, ...rest] = pathParts;
-  const index = parseInt(indexStr);
-
-  if (type === "pkg") {
-    if (rest.length === 0) {
-      // Remove package
-      items.splice(index, 1);
-    } else {
-      const pkg = items[index];
-      if (!pkg) return;
-
-      const nextType = rest[0];
-
-      // ✅ Support both "cls" and "elem"
-      if (nextType === "cls" || nextType === "elem") {
-        const clsIndex = parseInt(rest[1]);
-        const classes = pkg.classes || pkg.elements || [];
-        classes.splice(clsIndex, 1);
-      } else if (nextType === "pkg") {
-        const subPackages = pkg.subPackages || pkg.children || [];
-        removeFromPath(subPackages, rest);
-      }
-    }
-  }
 }
 
 /**
@@ -788,52 +672,21 @@ export function isItemInProfile(itemId, itemType, profileData) {
  * @returns {Object|null} Item details
  */
 export function getItemDetailsByKey(itemKey, availableData, profileData) {
-  console.log("🔍 Getting item details for key:", itemKey);
-  console.log("  - Available data:", availableData);
-  console.log("  - Profile data:", profileData);
-
   const side = itemKey.startsWith("left") ? "left" : "right";
-  console.log("  - Side:", side);
 
   if (side === "left") {
     const item = findItemByKey(itemKey, availableData);
-    console.log("  - Found item (left):", item);
     return item;
   } else {
     // Find in profile data
     const parts = itemKey.split("-");
-    console.log("  - Key parts:", parts);
 
     const pathParts = parts.slice(2); // Remove "profile-root"
-    console.log("  - Path parts:", pathParts);
 
     const item = navigateToChild(profileData.items, pathParts);
-    console.log("  - Found item (right):", item);
     return item;
   }
 }
-
-/**
- * Get item type from key
- * @param {string} itemKey - Item key
- * @returns {string} Item type
- */
-function getItemType(itemKey) {
-  const parts = itemKey.split("-");
-
-  // left-model-3 → "model"
-  // left-model-3-pkg-1 → "package"
-  // left-model-3-pkg-1-cls-2 → "class"
-
-  if (parts.includes("cls")) return "class";
-  if (parts.includes("pkg")) return "package";
-  if (parts.includes("model")) return "model";
-  if (parts.includes("profile")) return "profile";
-
-  return "unknown";
-}
-
-
 
 /**
  * Filter tree items by search query

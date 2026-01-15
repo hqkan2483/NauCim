@@ -237,13 +237,9 @@ function initEditorTree(containerId, options = {}) {
      * Destroy component
      */
     destroy() {
-      console.log(`🗑️ Destroying tree component for #${this.container.id}`);
-
       // Remove event listeners
       const newContainer = this.container.cloneNode(false);
       this.container.parentNode.replaceChild(newContainer, this.container);
-
-      console.log("✅ Component destroyed");
     },
   };
 

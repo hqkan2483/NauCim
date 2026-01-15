@@ -109,7 +109,7 @@ export async function initProfileEditorPage() {
   }
 
   // ✅ Find project that contains this profile
-  const projectId = findProjectByProfileId(currentProfileId);
+  const projectId = await findProjectByProfileId(currentProfileId);
 
   if (!projectId) {
     showNoProjectWarning();
@@ -118,8 +118,8 @@ export async function initProfileEditorPage() {
 
   currentProjectId = projectId;
 
-  loadProfileFromUrl();
-  loadAvailableData();
+  await loadProfileFromUrl();
+  await loadAvailableData();
 
   // ✅ Render trees FIRST
   renderAvailableTree();
@@ -130,34 +130,27 @@ export async function initProfileEditorPage() {
 
   // ✅ Finally bind global events
   bindEvents();
-
-  console.log("Profile Editor Controller Initialized");
 }
 
 // ============================================================
 // FIND PROJECT BY PROFILE ID
 // ============================================================
 
+
+
 /**
  * Find project ID by profile ID
  * @param {string|number} profileId - Profile ID
  * @returns {string|number|null} Project ID or null
  */
-function findProjectByProfileId(profileId) {
+async function findProjectByProfileId(profileId) {
   // ✅ Get all projects from memoryStorage
-  const projects = getAllProjects();
+  const projects = await getAllProjects();
+
 
   for (const project of projects) {
     if (project.profiles && Array.isArray(project.profiles)) {
-      const profile = project.profiles.find((p) => {
-        // ✅ Compare as both string and number
-        return (
-          p.id === profileId ||
-          p.id === parseInt(profileId) ||
-          p.id === String(profileId) ||
-          String(p.id) === String(profileId)
-        );
-      });
+      const profile = project.profiles.find((p) => String(p.id) === profileId);
 
       if (profile) {
         return project.id;
@@ -317,15 +310,15 @@ function updateDetailsTabsForSide(side, item) {
 /**
  * Load profile from URL parameters
  */
-function loadProfileFromUrl() {
+async function loadProfileFromUrl() {
   if (!currentProfileId || !currentProjectId) {
     console.error("❌ Missing IDs");
     return;
   }
 
   // ✅ Parse profileId to number for getProfile
-  const profileIdNum = parseInt(currentProfileId);
-  const profile = getProfile(currentProjectId, profileIdNum);
+  // const profileIdNum = parseInt(currentProfileId);
+  const profile = await getProfile(currentProjectId, currentProfileId);
 
   if (profile) {
     profileData.id = profile.id;
@@ -350,8 +343,8 @@ function loadProfileFromUrl() {
 /**
  * Load available models and profiles
  */
-function loadAvailableData() {
-  const project = getProjectById(currentProjectId);
+async function loadAvailableData() {
+  const project = await getProjectById(currentProjectId);
 
   if (!project) {
     console.error("❌ Project not found:", currentProjectId);
@@ -380,10 +373,14 @@ function loadAvailableData() {
   if (project.profiles && Array.isArray(project.profiles)) {
     project.profiles.forEach((profile) => {
       // ✅ Don't include the profile being edited
+      const currentProfileIdStr = String(currentProfileId);
+      const profileIdStr = String(profile.id);
+
       const isCurrentProfile =
-        profile.id === profileData.id ||
-        profile.id === parseInt(currentProfileId) ||
-        String(profile.id) === String(currentProfileId);
+        profileIdStr === currentProfileIdStr ||
+        (profileData?.id !== null &&
+          profileData?.id !== undefined &&
+          profileIdStr === String(profileData.id));
 
       if (!isCurrentProfile) {
         // ✅ NEW STRUCTURE:  rootPackages[0].packages
@@ -635,7 +632,7 @@ function removeFromProfile() {
 /**
  * Save profile
  */
-function handleSaveProfile() {
+async function handleSaveProfile() {
   // Validate profile
   const validation = validateProfile(profileData);
 
@@ -652,12 +649,24 @@ function handleSaveProfile() {
   try {
     if (preparedProfile.id && preparedProfile.id !== null) {
       // Update existing profile
-      updateProfile(currentProjectId, preparedProfile.id, preparedProfile);
+      const updated = await updateProfile(
+        currentProjectId,
+        preparedProfile.id,
+        preparedProfile
+      );
+
+      if (!updated) {
+        throw new Error("Не удалось обновить профиль");
+      }
 
       alert("Профиль успешно обновлён!");
     } else {
       // Create new profile
-      const newProfile = createProfile(currentProjectId, preparedProfile);
+      const newProfile = await createProfile(currentProjectId, preparedProfile);
+      if (!newProfile) {
+        throw new Error("Не удалось создать профиль");
+      }
+
       profileData.id = newProfile.id;
 
       alert("Профиль успешно создан!");
@@ -720,7 +729,6 @@ function filterLeftTree() {
   const query = searchInput.value;
 
   // TODO: Implement visual filtering (hide non-matching items)
-  console.log("Filtering left tree:", query);
 }
 
 function filterRightTree() {
@@ -729,5 +737,4 @@ function filterRightTree() {
   const query = searchInput.value;
 
   // TODO:  Implement visual filtering
-  console.log("Filtering right tree:", query);
 }

@@ -69,9 +69,9 @@ function initValidation() {
  * Validate name field and show visual feedback
  * @param {HTMLInputElement} input
  * @param {string|null} excludeId - Project ID to exclude (for edit)
- * @returns {boolean} - true if valid
+ * @returns {Promise<boolean>} - true if valid
  */
-function validateNameField(input, excludeId = null) {
+async function validateNameField(input, excludeId = null) {
   const name = input.value.trim();
 
   // Remove previous feedback
@@ -89,7 +89,8 @@ function validateNameField(input, excludeId = null) {
   }
 
   // Uniqueness check
-  if (!isProjectNameUnique(name, excludeId)) {
+  const isUnique = await isProjectNameUnique(name, excludeId);
+  if (!isUnique) {
     showValidationError(input, "Проект с таким названием уже существует");
     return false;
   }
@@ -157,8 +158,8 @@ export function clearNewProjectModal() {
  * Open edit project modal
  * @param {string} projectId
  */
-export function openEditProjectModal(projectId) {
-  const project = getProjectById(projectId);
+export async function openEditProjectModal(projectId) {
+  const project = await getProjectById(projectId);
   if (!project) return;
 
   const nameInput = document.getElementById("edit-project-name");
@@ -189,7 +190,7 @@ export function openEditProjectModal(projectId) {
 /**
  * Handle create project
  */
-function handleCreateProject() {
+async function handleCreateProject() {
   const nameInput = document.getElementById("project-name");
   const descInput = document.getElementById("project-desc");
   const versionInput = document.getElementById("project-version");
@@ -206,7 +207,7 @@ function handleCreateProject() {
   }
 
   // Validate with visual feedback
-  const isValid = validateNameField(nameInput, null);
+  const isValid = await validateNameField(nameInput, null);
   if (!isValid) {
     nameInput.focus();
     return;
@@ -220,7 +221,7 @@ function handleCreateProject() {
   };
 
   // Call service
-  const newProject = createProject(payload);
+  const newProject = await createProject(payload);
 
   if (newProject) {
     // Close modal
@@ -240,7 +241,7 @@ function handleCreateProject() {
 /**
  * Handle save project edit
  */
-function handleSaveProjectEdit() {
+async function handleSaveProjectEdit() {
   if (!editingProjectId) return;
 
   const nameInput = document.getElementById("edit-project-name");
@@ -259,7 +260,7 @@ function handleSaveProjectEdit() {
   }
 
   // Validate with visual feedback
-  const isValid = validateNameField(nameInput, editingProjectId);
+  const isValid = await validateNameField(nameInput, editingProjectId);
   if (!isValid) {
     nameInput.focus();
     return;
@@ -273,7 +274,7 @@ function handleSaveProjectEdit() {
   };
 
   // Call service
-  const updated = updateProject(editingProjectId, updates);
+  const updated = await updateProject(editingProjectId, updates);
 
   if (updated) {
     // Close modal

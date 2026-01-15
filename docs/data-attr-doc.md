@@ -31,7 +31,7 @@
 
 ```html
 <span data-type="model" data-model-id="model-789" data-action="select-model">
-  <button data-action="edit-model" data-model-id="model-789"></button
+  <button data-action="edit-model-header" data-model-id="model-789"></button
 ></span>
 ```
 
@@ -212,7 +212,7 @@
 
 | Data-атрибут      | Источник данных | Описание                        | Использование                                              |
 | ----------------- | --------------- | ------------------------------- | ---------------------------------------------------------- |
-| `data-modal-open` | —               | ID модального окна для открытия | `new-model-modal`, `new-profile-modal`, `edit-model-modal` |
+| `data-modal-open` | —               | ID модального окна для открытия | `new-model-modal`, `new-profile-modal`, `edit-model-header-modal` |
 
 **Пример:**
 
@@ -330,7 +330,7 @@
 ### Model Actions
 
 - `select-model` — Выбор модели
-- `edit-model` — Редактирование модели
+- `edit-model-header` — Редактирование свойств модели
 - `delete-model` — Удаление модели
 - `import-model` — Импорт модели
 - `export-model` — Экспорт модели
@@ -339,7 +339,7 @@
 ### Profile Actions
 
 - `select-profile` — Выбор профиля
-- `edit-profile` — Редактирование профиля
+- `edit-profile-header` — Редактирование свойств профиля
 - `delete-profile` — Удаление профиля
 - `import-profile` — Импорт профиля
 - `export-profile` — Экспорт профиля

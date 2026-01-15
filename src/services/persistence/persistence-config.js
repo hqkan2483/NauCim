@@ -3,7 +3,8 @@ const DEFAULT_BACKEND_BASE_URL = "http://localhost:5179";
 // === CONFIG ===
 // Single config line: switch backend persistence on/off.
 // Set to true to use local backend API, false to use local test data.
-const BACKEND_ENABLED_ON_STARTUP = false;
+// NOTE: MemoryStore is deprecated. Backend is now the only data source.
+const BACKEND_ENABLED_ON_STARTUP = true;
 
 export function getBackendBaseUrl() {
   const v = localStorage.getItem("cim.backendBaseUrl");

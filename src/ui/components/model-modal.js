@@ -1,4 +1,10 @@
-import { createModel, updateModel, getModel, isModelNameUnique } from "../../services/model-service.js";
+import {
+  createModel,
+  updateModel,
+  getModel,
+  getModelHeader,
+  isModelNameUnique,
+} from "../../services/model-service.js";
 import { closeModal, openModal } from "../modal.js";
 
 /**
@@ -8,6 +14,9 @@ import { closeModal, openModal } from "../modal.js";
 
 let editingModelId = null;
 let currentProjectId = null;
+
+let isCreatingModel = false;
+let isSavingModel = false;
 
 // Callbacks from pages
 let onCreateCallback = null;
@@ -26,13 +35,19 @@ function initModelModal(projectId, callbacks = {}) {
   // Bind create button
   const createBtn = document.getElementById("create-model-btn");
   if (createBtn) {
-    createBtn.addEventListener("click", handleCreateModel);
+    createBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      void handleCreateModel();
+    });
   }
 
   // Bind save edit button
   const saveEditBtn = document.getElementById("save-model-edit-btn");
   if (saveEditBtn) {
-    saveEditBtn.addEventListener("click", handleSaveModelEdit);
+    saveEditBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      void handleSaveModelEdit();
+    });
   }
 
   // Initialize real-time validation
@@ -46,25 +61,15 @@ function initValidation() {
   // New model modal
   const nameInput = document.getElementById("model-name");
   if (nameInput) {
-    nameInput.addEventListener("input", () => {
-      validateNameField(nameInput, null);
-    });
-
-    nameInput.addEventListener("blur", () => {
-      validateNameField(nameInput, null);
-    });
+    nameInput.addEventListener("input", () => { void validateNameField(nameInput, null); });
+    nameInput.addEventListener("blur", () => { void validateNameField(nameInput, null); });
   }
 
   // Edit model modal
   const editNameInput = document.getElementById("edit-model-name");
   if (editNameInput) {
-    editNameInput.addEventListener("input", () => {
-      validateNameField(editNameInput, editingModelId);
-    });
-
-    editNameInput.addEventListener("blur", () => {
-      validateNameField(editNameInput, editingModelId);
-    });
+    editNameInput.addEventListener("input", () => { void validateNameField(editNameInput, editingModelId); });
+    editNameInput.addEventListener("blur", () => { void validateNameField(editNameInput, editingModelId); });
   }
 }
 
@@ -74,10 +79,11 @@ function initValidation() {
  * @param {string|null} excludeId - Model ID to exclude (for edit)
  * @returns {boolean} - true if valid
  */
-function validateNameField(input, excludeId = null) {
+async function validateNameField(input, excludeId = null) {
   if (!currentProjectId) return false;
 
   const name = input.value.trim();
+  const nameSnapshot = name;
 
   // Remove previous feedback
   clearValidationFeedback(input);
@@ -94,7 +100,14 @@ function validateNameField(input, excludeId = null) {
   }
 
   // Uniqueness check
-  if (!isModelNameUnique(currentProjectId, name, excludeId)) {
+  const isUnique = await isModelNameUnique(currentProjectId, name, excludeId);
+
+  // Avoid showing stale results if user kept typing during async check
+  if (input.value.trim() !== nameSnapshot) {
+    return false;
+  }
+
+  if (!isUnique) {
     showValidationError(input, "Модель с таким названием уже существует");
     return false;
   }
@@ -155,7 +168,7 @@ function clearNewModelModal() {
     clearValidationFeedback(nameInput);
   }
   if (descInput) descInput.value = "";
-  if (versionInput) versionInput.value = "1.0";
+  if (versionInput) versionInput.value = "0.10";
 }
 
 /**
@@ -163,10 +176,13 @@ function clearNewModelModal() {
  * @param {string} modelId
  */
 function openEditModelModal(modelId) {
-  if (! currentProjectId) return;
+  return (async () => {
+    if (!currentProjectId) return;
 
-  const model = getModel(currentProjectId, modelId);
-  if (!model) return;
+    const model =
+      (await getModelHeader(currentProjectId, modelId)) ||
+      (await getModel(currentProjectId, modelId));
+    if (!model) return;
 
   const nameInput = document.getElementById("edit-model-name");
   const descInput = document.getElementById("edit-model-desc");
@@ -181,16 +197,28 @@ function openEditModelModal(modelId) {
 
   editingModelId = modelId;
 
-  const modal = document.getElementById("edit-model-modal");
+  const modal = document.getElementById("edit-model-header-modal");
   if (modal) {
     openModal(modal);
   }
+  })();
 }
 
 /**
  * Handle create model
  */
-function handleCreateModel() {
+async function handleCreateModel() {
+  if (isCreatingModel) return;
+  isCreatingModel = true;
+
+  const createBtn = document.getElementById("create-model-btn");
+  const originalCreateBtnText = createBtn?.textContent;
+  if (createBtn) {
+    createBtn.disabled = true;
+    createBtn.textContent = "Добавление...";
+  }
+
+  try {
   if (!currentProjectId) {
     alert("Не выбран проект");
     return;
@@ -212,7 +240,7 @@ function handleCreateModel() {
   }
 
   // Validate with visual feedback
-  const isValid = validateNameField(nameInput, null);
+  const isValid = await validateNameField(nameInput, null);
   if (!isValid) {
     nameInput.focus();
     return;
@@ -226,7 +254,7 @@ function handleCreateModel() {
   };
 
   // Call service
-  const newModel = createModel(currentProjectId, payload);
+  const newModel = await createModel(currentProjectId, payload);
 
   if (newModel) {
     // Close modal
@@ -241,12 +269,30 @@ function handleCreateModel() {
     // Service-level error
     showValidationError(nameInput, "Не удалось создать модель.  Проверьте данные.");
   }
+  } finally {
+    isCreatingModel = false;
+    if (createBtn) {
+      createBtn.disabled = false;
+      if (typeof originalCreateBtnText === "string") createBtn.textContent = originalCreateBtnText;
+    }
+  }
 }
 
 /**
  * Handle save model edit
  */
-function handleSaveModelEdit() {
+async function handleSaveModelEdit() {
+  if (isSavingModel) return;
+  isSavingModel = true;
+
+  const saveBtn = document.getElementById("save-model-edit-btn");
+  const originalSaveBtnText = saveBtn?.textContent;
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Сохранение...";
+  }
+
+  try {
   if (!currentProjectId || !editingModelId) return;
 
   const nameInput = document.getElementById("edit-model-name");
@@ -265,7 +311,7 @@ function handleSaveModelEdit() {
   }
 
   // Validate with visual feedback
-  const isValid = validateNameField(nameInput, editingModelId);
+  const isValid = await validateNameField(nameInput, editingModelId);
   if (!isValid) {
     nameInput.focus();
     return;
@@ -279,22 +325,29 @@ function handleSaveModelEdit() {
   };
 
   // Call service
-  const updated = updateModel(currentProjectId, editingModelId, updates);
+  const updatedModel = await updateModel(currentProjectId, editingModelId, updates);
 
-  if (updated) {
+  if (updatedModel) {
     // Close modal
-    const modal = document.getElementById("edit-model-modal");
+    const modal = document.getElementById("edit-model-header-modal");
     if (modal) closeModal(modal);
 
     editingModelId = null;
 
     // Notify page
     if (onUpdateCallback) {
-      onUpdateCallback(updated);
+      await onUpdateCallback(updatedModel);
     }
   } else {
     // Service-level error
     showValidationError(nameInput, "Не удалось обновить модель. Проверьте данные.");
+  }
+  } finally {
+    isSavingModel = false;
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      if (typeof originalSaveBtnText === "string") saveBtn.textContent = originalSaveBtnText;
+    }
   }
 }
 

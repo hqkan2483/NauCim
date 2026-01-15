@@ -13,22 +13,21 @@ import { formatDate } from "../../utils/date.js";
  * @returns {string} HTML string
  */
 function renderProfileDetails(profile, options = {}) {
-  const {
-    showTabs = true,
-    activeTab = 'properties',
-  } = options;
+  const { showTabs = true, activeTab = "properties" } = options;
 
   if (!profile) {
     return '<div class="text-center">Выберите профиль для просмотра деталей</div>';
   }
 
-  let html = '';
+  let html = "";
 
   // Tabs
   if (showTabs) {
     html += `
       <div class="tabs">
-        <div class="tab ${activeTab === 'properties' ? 'active' : ''}">Свойства</div>
+        <div class="tab ${
+          activeTab === "properties" ? "active" : ""
+        }">Свойства</div>
       </div>
     `;
   }
@@ -80,38 +79,52 @@ function renderProfileDetails(profile, options = {}) {
   return html;
 }
 
-
 function renderProfileControls(profile) {
-
   if (!profile) {
-    return ;
+    return;
   }
 
-  let html = '';
+  let html = "";
 
-  if (profile.accessRights === 'readWrite') {
-    html += `
-      <button class="btn btn-primary" data-action="edit-profile" data-profile-id="${profile.id}">✏️ Редактировать</button>
-    `;
-  } else html += `<button class="btn btn-secondary" disabled>✏️ Редактировать</button>`;
+  const isReadWrite = profile.accessRights === "readWrite";
 
-  if (profile.accessRights === 'readWrite') {
-    html += `
-      <button class="btn btn-primary" data-action="import-profile" data-profile-id="${profile.id}">📥 Импорт</button>
-    `;
-  } else html += `<button class="btn btn-secondary" disabled>📥 Импорт</button>`;
+  html += `
+<button class="btn ${isReadWrite ? "btn-primary" : "btn-secondary"}" ${
+    !isReadWrite ? "disabled" : ""
+  } data-action="edit-profile-header" data-profile-id="${
+    profile.id
+  }">✏️ Изменить свойства</button>
+
+  <button class="btn ${isReadWrite ? "btn-primary" : "btn-secondary"}" ${
+    !isReadWrite ? "disabled" : ""
+  } data-action="edit-profile" data-profile-id="${
+    profile.id
+  }">✏️ Редактировать</button>
+  `;
+
+  html += `
+    <button class="btn ${isReadWrite ? "btn-primary" : "btn-secondary"}" ${
+    !isReadWrite ? "disabled" : ""
+  } data-action="import-profile" data-profile-id="${
+    profile.id
+  }">📥 Импорт</button>
+  `;
 
   html += ` <button class="btn btn-primary" data-action="export-profile" data-profile-id="${profile.id}">📤 Экспорт</button>
    <button class="btn btn-primary" data-action="check-profile" data-profile-id="${profile.id}">✓ Проверка</button>`;
 
-  if (profile.accessRights === 'readWrite') {
+  if (profile.accessRights === "readWrite") {
     html += `
-      <button class="btn btn-primary" data-action="delete-profile" data-profile-id="${profile.id}">🗑️ Удалить</button>
+      <button class="btn ${isReadWrite ? "btn-primary" : "btn-secondary"}" ${
+      !isReadWrite ? "disabled" : ""
+    } data-action="delete-profile" data-profile-id="${
+      profile.id
+    }">🗑️ Удалить</button>
     `;
-  } else html += `<button class="btn btn-secondary" disabled>🗑️ Удалить</button>`;
+  } else
+    html += `<button class="btn btn-secondary" disabled>🗑️ Удалить</button>`;
 
   return html;
 }
 
 export { renderProfileDetails, renderProfileControls };
-

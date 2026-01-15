@@ -1,0 +1,2199 @@
+[
+  {
+    "packages": [
+      {
+        "id": "EAPK_3A110153_F6A3_4221_B366_4739C56265BE",
+        "name": "TC57CIM",
+        "type": "Package",
+        "documentation": "Пакет верхнего уровня для IEC TC57 CIM.",
+        "documentationRu": null,
+        "details": null,
+        "elementCount": 0,
+        "modelId": "7",
+        "profileId": null,
+        "classes": [],
+        "subPackages": [
+          {
+            "id": "EAPK_566B73D4_ED02_4d03_B450_704BD1F935D5",
+            "name": "IEC61970",
+            "type": "Package",
+            "documentation": "Пакет верхнего уровня для IEC 61970.",
+            "documentationRu": null,
+            "details": null,
+            "elementCount": 1,
+            "modelId": "7",
+            "profileId": null,
+            "classes": [
+              {
+                "id": "EAID_1842260B_249C_426b_A3BC_BE36CC7ADEDE",
+                "name": "Integer",
+                "type": "Class",
+                "stereotype": "Primitive",
+                "documentation": "Целое число. Диапазон не указан и не ограничен.",
+                "documentationRu": null,
+                "details": null,
+                "visibility": "public",
+                "isAbstract": false,
+                "attributeCount": 0,
+                "linkCount": 0,
+                "attributes": [],
+                "links": [],
+                "literals": [],
+                "profileRelations": [],
+                "modelId": "7",
+                "profileId": null,
+                "refModelId": null,
+                "refModelItemId": null
+              },
+              {
+                "id": "EAID_18EC8DEC_494B_4284_B5B4_F9556DE47106",
+                "name": "Boolean",
+                "type": "Class",
+                "stereotype": "Primitive",
+                "documentation": "Тип со значением \"true\" или \"false\".",
+                "documentationRu": null,
+                "details": null,
+                "visibility": "public",
+                "isAbstract": false,
+                "attributeCount": 0,
+                "linkCount": 0,
+                "attributes": [],
+                "links": [],
+                "literals": [],
+                "profileRelations": [],
+                "modelId": "7",
+                "profileId": null,
+                "refModelId": null,
+                "refModelItemId": null
+              },
+              {
+                "id": "EAID_A7D1F17C_1CF9_4265_92BD_972F2183EFE2",
+                "name": "UnitMultiplier",
+                "type": "Enumeration",
+                "stereotype": "",
+                "documentation": "Приставки кратности-дольности для единиц измерения.",
+                "documentationRu": null,
+                "details": null,
+                "visibility": "public",
+                "isAbstract": false,
+                "attributeCount": 0,
+                "linkCount": 0,
+                "attributes": [],
+                "links": [],
+                "literals": [
+                  {
+                    "name": "k",
+                    "id": "EAID_79263ED2_8C6C_4e87_AC7C_2B88D0C9E660",
+                    "documentation": "Кило 10^3.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "none",
+                    "id": "EAID_56AC8D64_455B_40b5_8EFD_F60BF58BB2C3",
+                    "documentation": "Без множителя или эквивалентно умножению на 1.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "micro",
+                    "id": "EAID_542299C4_1B1A_496a_8EE7_D9C702B63B29",
+                    "documentation": "Микро 10^-6.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "m",
+                    "id": "EAID_372D448E_8376_4889_8E79_C3EE116E0A8B",
+                    "documentation": "Милли 10^-3.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "M",
+                    "id": "EAID_4091DB86_E3CB_474c_8F13_137E96FFAD7F",
+                    "documentation": "Мега 10^6.",
+                    "initialValue": ""
+                  }
+                ],
+                "profileRelations": [],
+                "modelId": "7",
+                "profileId": null,
+                "refModelId": null,
+                "refModelItemId": null
+              },
+              {
+                "id": "EAID_1821E692_DFA2_4c1b_B5CE_FB85374E0704",
+                "name": "UnitSymbol",
+                "type": "Enumeration",
+                "stereotype": "",
+                "documentation": "Единицы измерения.",
+                "documentationRu": null,
+                "details": null,
+                "visibility": "public",
+                "isAbstract": false,
+                "attributeCount": 0,
+                "linkCount": 0,
+                "attributes": [],
+                "links": [],
+                "literals": [
+                  {
+                    "name": "V",
+                    "id": "EAID_5E01AC1E_5265_42d5_9B4B_6BE6C8C10B61",
+                    "documentation": "Разность потенциалов в вольтах (Вт/А).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "min",
+                    "id": "EAID_D1E94293_D1D3_4cb8_B48D_3E2D3BCD17F3",
+                    "documentation": "Время в минутах, минута = 60 с.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "F",
+                    "id": "EAID_C996771D_E8F5_46c6_BBEF_3397D3E34336",
+                    "documentation": "Электрическая емкость в фарадах (Кл/В).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "H",
+                    "id": "EAID_2E2AB169_8BD5_4756_9D56_9E53ACC1C72C",
+                    "documentation": "Электрическая индуктивность в генри (Вб/А).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "ohm",
+                    "id": "EAID_6CCEDF30_A8AA_47a8_B01B_822A4BD7E446",
+                    "documentation": "Электрическое сопротивление в омах (В/А).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "m",
+                    "id": "EAID_2A4872BA_4959_4ca9_A2D4_FC01B3B696D4",
+                    "documentation": "Длина в метрах.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "S",
+                    "id": "EAID_12DD8BFA_FBD6_4189_A336_D209F5E83CAE",
+                    "documentation": "Проводимость в сименсах.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "ohmPerm",
+                    "id": "EAID_B1AB5087_CFBF_42dc_864E_908871CCD3ED",
+                    "documentation": "Электрическое сопротивление относительно длины в омах на метр ((В/А)/м).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "VA",
+                    "id": "EAID_911616DE_4274_45a6_BA7F_7D6BA3743A14",
+                    "documentation": "Полная мощность в вольт-амперах.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "degC",
+                    "id": "EAID_BE45AE71_F9AB_4b06_9E64_381F300F1655",
+                    "documentation": "Значение температуры в градусах Цельсия.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "s",
+                    "id": "EAID_05BF944F_34F7_44ea_A33D_F06A09B9CDA5",
+                    "documentation": "Время в секундах.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "A",
+                    "id": "EAID_D517C215_6AC5_4ac2_9F7A_8EF2FD2783B2",
+                    "documentation": "Ток в амперах.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "m2",
+                    "id": "EAID_6B47B183_344C_4b85_8B75_748E77653157",
+                    "documentation": "Площадь в квадратных метрах.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "none",
+                    "id": "EAID_A3BADC61_DE6E_41f1_B95B_7DE0B77397AB",
+                    "documentation": "Безразмерная единица, например, результат прямого подсчёта, отношение двух величин одинаковой размерности и т.д.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "VAr",
+                    "id": "EAID_A463DA25_B0F5_4f94_9D3D_3CF1355C4CC6",
+                    "documentation": "Реактивная мощность в вольт-амперах реактивных.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "J",
+                    "id": "EAID_5B7E4333_719C_4c81_980D_93A82B6256D1",
+                    "documentation": "Энергия в джоулях (Н&#183;м = Кл&#183;В = Вт&#183;с).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "VPerVAr",
+                    "id": "EAID_E0CF0B00_98B4_4e04_830D_73EE706EBF62",
+                    "documentation": "Скорость изменения напряжения при изменении реактивной мощности (В/ВАр).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "W",
+                    "id": "EAID_277E929B_6CE8_4225_9240_A16370ABF6C8",
+                    "documentation": "Активная мощность в ваттах.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "SPerm",
+                    "id": "EAID_6A53FF8A_9C3E_4d57_B68B_972E4515A316",
+                    "documentation": "Проводимость на единицу длины (См/м).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "deg",
+                    "id": "EAID_400960AC_58EB_47a6_97A9_9C2C9A0548DD",
+                    "documentation": "Угол в градусах.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "Hz",
+                    "id": "EAID_1C2D2002_86E2_46a5_818D_D0561EAB80A5",
+                    "documentation": "Частота в герцах (1/с).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "kgm2",
+                    "id": "EAID_AD1461BF_7FB4_4fab_9B99_9EBA92FA070F",
+                    "documentation": "Момент инерции (или момент силы) в кг&#183;м&#178;.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "WPers",
+                    "id": "EAID_172F4908_BEC6_456c_A086_3F7A400A97CD",
+                    "documentation": "Скорость изменения активной мощности (Вт/с).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "m3Pers",
+                    "id": "EAID_D369D140_F6C1_47a2_9F89_02AD23104B6B",
+                    "documentation": "Расход в кубических метрах в секунду (м<sup>3</sup>/с).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "unitPers",
+                    "id": "EAID_2893BA04_8314_4fd3_9C02_B9C0AC0F1333",
+                    "documentation": "Единица в секунду (1/с или с<sup>-1</sup>).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "VArPers",
+                    "id": "EAID_D0A9D457_8F4A_4d4a_A3C3_5878B8FC6C43",
+                    "documentation": "Скорость изменения реактивной мощности (ВАр/с).",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "Wh",
+                    "id": "EAID_33BBBC02_0613_4333_B8E7_DFBFF7105994",
+                    "documentation": "Количество энергии, (Вт&#183;ч).",
+                    "initialValue": ""
+                  }
+                ],
+                "profileRelations": [],
+                "modelId": "7",
+                "profileId": null,
+                "refModelId": null,
+                "refModelItemId": null
+              },
+              {
+                "id": "EAID_A7D30EF4_BE29_459f_8159_00D4E40B495D",
+                "name": "Float",
+                "type": "Class",
+                "stereotype": "Primitive",
+                "documentation": "Число с плавающей запятой. Диапазон не указан и не ограничен.",
+                "documentationRu": null,
+                "details": null,
+                "visibility": "public",
+                "isAbstract": false,
+                "attributeCount": 0,
+                "linkCount": 0,
+                "attributes": [],
+                "links": [],
+                "literals": [],
+                "profileRelations": [],
+                "modelId": "7",
+                "profileId": null,
+                "refModelId": null,
+                "refModelItemId": null
+              },
+              {
+                "id": "EAID_0D1A3F95_D504_46dd_ADC4_FE40461D5C1B",
+                "name": "Voltage",
+                "type": "Class",
+                "stereotype": "CIMDatatype",
+                "documentation": "Электрическое напряжение (может быть как переменным, так и постоянным).",
+                "documentationRu": null,
+                "details": null,
+                "visibility": "public",
+                "isAbstract": false,
+                "attributeCount": 3,
+                "linkCount": 0,
+                "attributes": [
+                  {
+                    "name": "multiplier",
+                    "id": "EAID_DC512B3F_A800_4044_BA29_78B242A23D8C",
+                    "dataType": "UnitMultiplier",
+                    "dataTypeId": "EAID_A7D1F17C_1CF9_4265_92BD_972F2183EFE2",
+                    "stereotype": "",
+                    "documentation": null,
+                    "documentationRu": null,
+                    "details": null,
+                    "multiplicity": "0..1",
+                    "visibility": "public",
+                    "initialValue": "k"
+                  },
+                  {
+                    "name": "unit",
+                    "id": "EAID_F8B97D31_19D9_440d_B06A_38D7F7543733",
+                    "dataType": "UnitSymbol",
+                    "dataTypeId": "EAID_1821E692_DFA2_4c1b_B5CE_FB85374E0704",
+                    "stereotype": "",
+                    "documentation": null,
+                    "documentationRu": null,
+                    "details": null,
+                    "multiplicity": "0..1",
+                    "visibility": "public",
+                    "initialValue": "V"
+                  },
+                  {
+                    "name": "value",
+                    "id": "EAID_9BF6BEA2_FF2F_418b_BEA0_524EAD8C0407",
+                    "dataType": "Float",
+                    "dataTypeId": "EAID_A7D30EF4_BE29_459f_8159_00D4E40B495D",
+                    "stereotype": "",
+                    "documentation": null,
+                    "documentationRu": null,
+                    "details": null,
+                    "multiplicity": "0..1",
+                    "visibility": "public",
+                    "initialValue": ""
+                  }
+                ],
+                "links": [],
+                "literals": [],
+                "profileRelations": [],
+                "modelId": "7",
+                "profileId": null,
+                "refModelId": null,
+                "refModelItemId": null
+              },
+              {
+                "id": "EAID_93E96222_F562_43d1_AAE5_02803B96BC03",
+                "name": "BreakerConfiguration",
+                "type": "Enumeration",
+                "stereotype": "",
+                "documentation": "Тип присоединения.",
+                "documentationRu": null,
+                "details": null,
+                "visibility": "public",
+                "isAbstract": false,
+                "attributeCount": 0,
+                "linkCount": 0,
+                "attributes": [],
+                "links": [],
+                "literals": [
+                  {
+                    "name": "breakerAndAHalf",
+                    "id": "EAID_5C60E052_CF1B_4159_A287_7F7620E7F490",
+                    "documentation": "Полтора выключателя на присоединение.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "doubleBreaker",
+                    "id": "EAID_DCBCA148_9C3B_48a1_A992_D04404B1666C",
+                    "documentation": "Два выключателя на присоединение.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "groundSwitchWithDisconnector",
+                    "id": "EAID_9357C438_11B6_472a_8899_479EE74E768F",
+                    "documentation": "Присоединение без выключателя с отделителем и короткозамыкателем.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "noBreaker",
+                    "id": "EAID_C58C7FBE_964A_4dfd_A737_74D5B978A992",
+                    "documentation": "Присоединение без выключателей.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "singleBreaker",
+                    "id": "EAID_067C921E_E97A_4409_A881_E6861264578B",
+                    "documentation": "Один выключатель на присоединение.",
+                    "initialValue": ""
+                  }
+                ],
+                "profileRelations": [],
+                "modelId": "7",
+                "profileId": null,
+                "refModelId": null,
+                "refModelItemId": null
+              },
+              {
+                "id": "EAID_CF3EBAB8_566D_4599_A60D_59A242E0D635",
+                "name": "BusbarConfiguration",
+                "type": "Enumeration",
+                "stereotype": "",
+                "documentation": "Конфигурация шины присоединения.",
+                "documentationRu": null,
+                "details": null,
+                "visibility": "public",
+                "isAbstract": false,
+                "attributeCount": 0,
+                "linkCount": 0,
+                "attributes": [],
+                "links": [],
+                "literals": [
+                  {
+                    "name": "doubleBus",
+                    "id": "EAID_C06E5C81_EB5A_4b01_AF7D_6DE025C42E51",
+                    "documentation": "Две рабочие системы шин.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "mainWithTransfer",
+                    "id": "EAID_F39DFC0B_B65F_481d_A5D3_D7C6E66C35AF",
+                    "documentation": "Одна система шин с обходной.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "ringBus",
+                    "id": "EAID_805B8E0B_7F3F_496d_B62D_BD6D7D602591",
+                    "documentation": "Схема многоугольника.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "singleBus",
+                    "id": "EAID_2D7D9373_7730_493f_B7DA_7DDE4DF2741C",
+                    "documentation": "Одна система шин.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "doubleMainWithTransfer",
+                    "id": "EAID_7292617E_7864_4c74_8689_B7E2F15CD086",
+                    "documentation": "Две рабочие системы шин с обходной.",
+                    "initialValue": ""
+                  },
+                  {
+                    "name": "noBus",
+                    "id": "EAID_779B6B28_FCCC_4f28_A975_4A112ED71CAB",
+                    "documentation": "Шина отсутствует",
+                    "initialValue": ""
+                  }
+                ],
+                "profileRelations": [],
+                "modelId": "7",
+                "profileId": null,
+                "refModelId": null,
+                "refModelItemId": null
+              },
+              {
+                "id": "EAID_8E807839_8E82_4166_8B01_F0633C95DAA7",
+                "name": "String",
+                "type": "Class",
+                "stereotype": "Primitive",
+                "documentation": "Строка, состоящая из последовательности символов. Кодировка символов - UTF-8. Длина строки не указана и не ограничена.",
+                "documentationRu": null,
+                "details": null,
+                "visibility": "public",
+                "isAbstract": false,
+                "attributeCount": 0,
+                "linkCount": 0,
+                "attributes": [],
+                "links": [],
+                "literals": [],
+                "profileRelations": [],
+                "modelId": "7",
+                "profileId": null,
+                "refModelId": null,
+                "refModelItemId": null
+              }
+            ],
+            "subPackages": [
+              {
+                "id": "EAPK_F4A98993_8222_43a4_8E1E_B9BDC365F1F9",
+                "name": "Base",
+                "type": "Package",
+                "documentation": "Содержание базового CIM, опубликованное как IEC 61970-301.",
+                "documentationRu": null,
+                "details": null,
+                "elementCount": 0,
+                "modelId": "7",
+                "profileId": null,
+                "classes": [],
+                "subPackages": [
+                  {
+                    "id": "EAPK_CE9851B0_8E38_4b48_8F62_E78E9C31767A",
+                    "name": "Core",
+                    "type": "Package",
+                    "documentation": "Содержит основные объекты PowerSystemResource и ConductingEquipment, общие для всех приложений, а также общие коллекции этих объектов. Не для всех приложений требуются все основные объекты.  Этот пакет не зависит ни от какого другого пакета, кроме пакета домена, но большинство других пакетов имеют ассоциации и обобщения, которые зависят от него.",
+                    "documentationRu": null,
+                    "details": null,
+                    "elementCount": 24,
+                    "modelId": "7",
+                    "profileId": null,
+                    "classes": [
+                      {
+                        "id": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
+                        "name": "PowerSystemResource",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Обобщенный объект энергосистемы.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": true,
+                        "attributeCount": 0,
+                        "linkCount": 16,
+                        "attributes": [],
+                        "links": [
+                          {
+                            "linkId": "EAID_F59A1021_3375_49d9_AC73_E12D4C8B0287",
+                            "relationKind": "Generalization",
+                            "role": "child",
+                            "targetClassId": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                            "targetClassName": "IdentifiedObject",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_09E1D860_72D5_481e_911A_CD6DD254B5E9",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_4B0D8650_9FAB_4469_B419_929D38AB2EF7",
+                            "targetClassName": "PSRType",
+                            "targetClassRoleName": "PSRType",
+                            "srcClassRoleName": "PowerSystemResources",
+                            "targetDescription": "Дополнительный классификатор",
+                            "multiplicity": "0..1"
+                          },
+                          {
+                            "linkId": "EAID_A3484315_CE18_4e75_A28D_8C52818F9862",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_1D1470F1_F5C8_4731_94E4_19A25CA7FEEE",
+                            "targetClassName": "Measurement",
+                            "targetClassRoleName": "Measurements",
+                            "srcClassRoleName": "PowerSystemResource",
+                            "targetDescription": "Параметры измерений, которые относятся к обобщенному объекту энергосистемы.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_225423CB_CE47_4a28_9EE3_6D19E58F0B8B",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_2855D338_0ACD_4a6e_9B09_C2942CFD2FD5",
+                            "targetClassName": "Location",
+                            "targetClassRoleName": "Location",
+                            "srcClassRoleName": "PowerSystemResources",
+                            "targetDescription": "Расположение объекта энергосистемы.",
+                            "multiplicity": "0..1"
+                          },
+                          {
+                            "linkId": "EAID_61E1954E_F09E_4e1d_A079_6DF5E8C00743",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_F9A5606C_0571_43e1_A21A_7691F2583BC6",
+                            "targetClassName": "Asset",
+                            "targetClassRoleName": "Assets",
+                            "srcClassRoleName": "PowerSystemResources",
+                            "targetDescription": "Материальные объекты, ассоциированные с объектом энергосистемы.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_FCB32C14_7DFC_4ed7_87AF_C0D6202E0644",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_F3903666_388F_4547_8970_C989D7A0D873",
+                            "targetClassName": "AssetInfo",
+                            "targetClassRoleName": "AssetDatasheet",
+                            "srcClassRoleName": "PowerSystemResources",
+                            "targetDescription": "Информация о материальном объекте для соответствующего объекта, потомка обощенного объекта энергосистемы.",
+                            "multiplicity": "0..1"
+                          },
+                          {
+                            "linkId": "EAID_0542F1C7_E338_43fd_B3BF_14685EBD71FA",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_D52805C0_7B60_4eed_9E50_C45B9740D321",
+                            "targetClassName": "CogenerationPlant",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_408C4D9D_37F2_4206_A13C_2B2C0966ABAA",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_6ACCADDC_6CEC_40eb_A0E3_3C5108AA78AC",
+                            "targetClassName": "TapChanger",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_461519C5_BC93_4218_AAD4_BBD48B934F4C",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_BBEDB211_CA96_4ee1_830D_A4746B6FCCC7",
+                            "targetClassName": "SteamSupply",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_5256D2F4_3AF3_4b2d_A588_5B741DE960B3",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_9C6A3FDF_FAA0_43f5_A62D_C2D5440E5CAE",
+                            "targetClassName": "CombinedCyclePlant",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_63500093_4F2A_4020_A804_4EF2AD735520",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_32673BB0_AE9B_4d02_B476_BB3AB3D8DF0B",
+                            "targetClassName": "PrimeMover",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_72AB378A_51A7_4655_BFE1_8BB56AFCF844",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_B0D067B5_E753_4031_B99B_C972759B988B",
+                            "targetClassName": "Equipment",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_8D41EC72_C6B2_4f3b_90EB_60136C7F21F0",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_E3CD7975_020D_4f10_8E77_E7DF88BB018C",
+                            "targetClassName": "ACLineSegmentPhase",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_D12B7F12_1643_4d72_8FDD_9CE46C3D2395",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_3372AC7E_617A_41c6_8566_51E7A6DAD1FD",
+                            "targetClassName": "ConnectivityNodeContainer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_D25F7190_CC78_4014_82CA_24314857DCDE",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_AD16653D_D2C4_4942_80F1_98B4DAC004BF",
+                            "targetClassName": "RegulatingControl",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_EDDF9BD8_8234_42f3_9F68_155725D55950",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_74B2EC5F_5FFA_4ab8_BBC0_04ACFDFA382D",
+                            "targetClassName": "HydroPowerPlant",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_54896FF0_3E97_4762_8929_9BAB337953B0",
+                        "name": "ACDCTerminal",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Полюс постоянного и переменного тока.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": true,
+                        "attributeCount": 1,
+                        "linkCount": 5,
+                        "attributes": [
+                          {
+                            "name": "sequenceNumber",
+                            "id": "EAID_072872B9_5944_4de2_9CA9_AA9811B248DA",
+                            "dataType": "Integer",
+                            "dataTypeId": "EAID_1842260B_249C_426b_A3BC_BE36CC7ADEDE",
+                            "stereotype": "",
+                            "documentation": "Порядковый номер полюса электропроводящего оборудования",
+                            "documentationRu": null,
+                            "details": null,
+                            "multiplicity": "1",
+                            "visibility": "public",
+                            "initialValue": ""
+                          }
+                        ],
+                        "links": [
+                          {
+                            "linkId": "EAID_30261C98_0E2F_491a_B1D8_7151B6F1B294",
+                            "relationKind": "Generalization",
+                            "role": "child",
+                            "targetClassId": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                            "targetClassName": "IdentifiedObject",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_070BF7E4_D276_45e4_8DE2_2A9F91BBA734",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_A4B2659A_BFE2_41d0_A195_281C431BB1B8",
+                            "targetClassName": "OperationalLimitSet",
+                            "targetClassRoleName": "OperationalLimitSet",
+                            "srcClassRoleName": "Terminal",
+                            "targetDescription": "Эксплуатационные ограничения/пределы, относящиеся к полюсу.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_3A42799F_3A9A_4a1e_AB49_9CD4330CA115",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_1D1470F1_F5C8_4731_94E4_19A25CA7FEEE",
+                            "targetClassName": "Measurement",
+                            "targetClassRoleName": "Measurements",
+                            "srcClassRoleName": "Terminal",
+                            "targetDescription": "Параметры измерений, которые относятся к полюсу электропроводящего оборудования.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_8792F4B7_4678_4908_8CB0_DF9281055EB3",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_41429F07_2146_43df_8E7E_CD57103ACADE",
+                            "targetClassName": "Terminal",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_89EBEBD6_F121_4a0c_BCCE_D5071D0DBEFF",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_67979C3F_BAC4_4127_AAF1_5904C6242F80",
+                            "targetClassName": "DCBaseTerminal",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_A40E5870_2CE1_4630_B472_C63241F9603D",
+                        "name": "BaseVoltage",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Стандартное номинальное напряжение.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": false,
+                        "attributeCount": 2,
+                        "linkCount": 5,
+                        "attributes": [
+                          {
+                            "name": "isDC",
+                            "id": "EAID_69874E3F_DF3B_4165_849F_0425403CFE20",
+                            "dataType": "Boolean",
+                            "dataTypeId": "EAID_18EC8DEC_494B_4284_B5B4_F9556DE47106",
+                            "stereotype": "rf",
+                            "documentation": "Признак того, что значение номинального напряжения является напряжением постоянного тока.",
+                            "documentationRu": null,
+                            "details": null,
+                            "multiplicity": "0..1",
+                            "visibility": "public",
+                            "initialValue": ""
+                          },
+                          {
+                            "name": "nominalVoltage",
+                            "id": "EAID_4C2EFD32_0A16_4615_AA50_5DBC1F6E38EC",
+                            "dataType": "Voltage",
+                            "dataTypeId": "EAID_0D1A3F95_D504_46dd_ADC4_FE40461D5C1B",
+                            "stereotype": "",
+                            "documentation": "Значение номинального напряжения, кВ.",
+                            "documentationRu": null,
+                            "details": null,
+                            "multiplicity": "0..1",
+                            "visibility": "public",
+                            "initialValue": ""
+                          }
+                        ],
+                        "links": [
+                          {
+                            "linkId": "EAID_F0C4E4E3_B263_493e_86B5_AF2E155DEF53",
+                            "relationKind": "Generalization",
+                            "role": "child",
+                            "targetClassId": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                            "targetClassName": "IdentifiedObject",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_DC1595E5_36B4_47e8_9E17_7E9256621B9F",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_EB534BB1_4810_421d_8CAB_CC1D40CA4015",
+                            "targetClassName": "ConductingEquipment",
+                            "targetClassRoleName": "ConductingEquipment",
+                            "srcClassRoleName": "BaseVoltage",
+                            "targetDescription": "Электропроводящее оборудование, относящееся к стандартному номинальному напряжению.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_4436BBC3_93D6_4303_A79E_FA505428543A",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_F911C51B_57D4_4433_BE3D_63CB46669482",
+                            "targetClassName": "VoltageLevel",
+                            "targetClassRoleName": "VoltageLevel",
+                            "srcClassRoleName": "BaseVoltage",
+                            "targetDescription": "Распределительные устройства, относящиеся к стандартному номинальному напряжению.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_A7013730_399F_4301_87BA_6835642CE860",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_6A2D54CE_9CBC_4434_A9B7_480ACAD0062A",
+                            "targetClassName": "AssetDeployment",
+                            "targetClassRoleName": "NetworkAssetDeployment",
+                            "srcClassRoleName": "BaseVoltage",
+                            "targetDescription": "Материальные объекты, внедряемые на номинальном напряжении.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_EB209A92_4EE6_4b61_BCEF_9A6D1E63ABEA",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_8C09CC0E_835B_4120_BF44_93D1EAC112DA",
+                            "targetClassName": "TransformerEnd",
+                            "targetClassRoleName": "TransformerEnds",
+                            "srcClassRoleName": "BaseVoltage",
+                            "targetDescription": "Вводы трансформатора, относящиеся к стандартному номинальному напряжению.",
+                            "multiplicity": "0..*"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_47E8E46F_3163_4ab0_995E_F6E2F40491B1",
+                        "name": "Bay",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Ячейка распределительного устройства.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": false,
+                        "attributeCount": 2,
+                        "linkCount": 2,
+                        "attributes": [
+                          {
+                            "name": "breakerConfiguration",
+                            "id": "EAID_5B522A2A_CBB6_488f_ACD2_CE8DD85D7C5C",
+                            "dataType": "BreakerConfiguration",
+                            "dataTypeId": "EAID_93E96222_F562_43d1_AAE5_02803B96BC03",
+                            "stereotype": "",
+                            "documentation": "Конфигурация соединения выключателей.",
+                            "documentationRu": null,
+                            "details": null,
+                            "multiplicity": "0..1",
+                            "visibility": "public",
+                            "initialValue": ""
+                          },
+                          {
+                            "name": "busBarConfiguration",
+                            "id": "EAID_495496FC_4B49_42da_9C46_81385E5400C2",
+                            "dataType": "BusbarConfiguration",
+                            "dataTypeId": "EAID_CF3EBAB8_566D_4599_A60D_59A242E0D635",
+                            "stereotype": "",
+                            "documentation": "Конфигурация шин присоединения.",
+                            "documentationRu": null,
+                            "details": null,
+                            "multiplicity": "0..1",
+                            "visibility": "public",
+                            "initialValue": ""
+                          }
+                        ],
+                        "links": [
+                          {
+                            "linkId": "EAID_060370F6_EFCA_4fb0_B85D_FA444E979230",
+                            "relationKind": "Generalization",
+                            "role": "child",
+                            "targetClassId": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
+                            "targetClassName": "EquipmentContainer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_DE7E59D5_4421_4fbf_9FA9_AAA3A14901AD",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_F911C51B_57D4_4433_BE3D_63CB46669482",
+                            "targetClassName": "VoltageLevel",
+                            "targetClassRoleName": "VoltageLevel",
+                            "srcClassRoleName": "Bays",
+                            "targetDescription": "Распределительное устройство, к которому относится присоединение.",
+                            "multiplicity": "1"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_EB534BB1_4810_421d_8CAB_CC1D40CA4015",
+                        "name": "ConductingEquipment",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Электропроводящее оборудование.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": true,
+                        "attributeCount": 1,
+                        "linkCount": 13,
+                        "attributes": [
+                          {
+                            "name": "isThreePhaseEquipment",
+                            "id": "EAID_4C7C89A6_0E84_4013_82D8_5F4F4EB7C4A9",
+                            "dataType": "Boolean",
+                            "dataTypeId": "EAID_18EC8DEC_494B_4284_B5B4_F9556DE47106",
+                            "stereotype": "rf",
+                            "documentation": "Трехфазное исполнение оборудования.",
+                            "documentationRu": null,
+                            "details": null,
+                            "multiplicity": "0..1",
+                            "visibility": "public",
+                            "initialValue": ""
+                          }
+                        ],
+                        "links": [
+                          {
+                            "linkId": "EAID_2D510902_471E_44a8_AEC2_878C6A2C8762",
+                            "relationKind": "Generalization",
+                            "role": "child",
+                            "targetClassId": "EAID_B0D067B5_E753_4031_B99B_C972759B988B",
+                            "targetClassName": "Equipment",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_DC1595E5_36B4_47e8_9E17_7E9256621B9F",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_A40E5870_2CE1_4630_B472_C63241F9603D",
+                            "targetClassName": "BaseVoltage",
+                            "targetClassRoleName": "BaseVoltage",
+                            "srcClassRoleName": "ConductingEquipment",
+                            "targetDescription": "Стандартное номинальное напряжение электропроводящего оборудования.",
+                            "multiplicity": "0..1"
+                          },
+                          {
+                            "linkId": "EAID_1D86CDE9_E025_4507_9C33_749C9D099FE0",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_41429F07_2146_43df_8E7E_CD57103ACADE",
+                            "targetClassName": "Terminal",
+                            "targetClassRoleName": "Terminals",
+                            "srcClassRoleName": "ConductingEquipment",
+                            "targetDescription": "Полюса электропроводящего оборудования.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_01CB6E8C_58AD_432c_A012_050DE7F46548",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_6E0E2D31_81B3_4a59_AF99_CA794F0B0E02",
+                            "targetClassName": "Switch",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_02DCBCD8_74EF_4136_8810_60BA7419D48F",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_EF97223D_5392_4c88_AF9F_26256A9E4377",
+                            "targetClassName": "PowerTransformer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_0CE3F9D8_20C0_48ae_BADB_73EB9C7C0E52",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_A31090AD_6D2A_4bc7_A194_3A122BAF4DA3",
+                            "targetClassName": "EarthFaultCompensator",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_27CE14CF_0953_4f2d_B2FB_F0FE29568D2E",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_F238EE99_C8FB_4ee6_952E_37C49A26F17C",
+                            "targetClassName": "EnergySource",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_288AC87A_C212_4de3_888A_C9C633CEECB2",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_F4E79FAE_12CE_4fd1_9E1E_03B284CBCE44",
+                            "targetClassName": "EnergyConsumer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_2D10869E_FB78_4556_9506_BC353C12784B",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_83CEE48A_D9B5_4e8e_B638_B9EC10E64CFD",
+                            "targetClassName": "Conductor",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_3AA81FF1_202D_4a8b_AFF4_878A1F8C4555",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_734F8748_6121_4685_B1B9_56D15D8AF2AC",
+                            "targetClassName": "Connector",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_7CE0DF42_84E0_4dfc_8128_6C94931EEF18",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_7C9EA896_2D72_4ae5_A6C1_7537A70C548F",
+                            "targetClassName": "RegulatingCondEq",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_924EEBC8_F80B_4b3a_A270_00B1A2E5A9EA",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_7775BF45_66B6_40ba_877D_8275F250CF0B",
+                            "targetClassName": "FOConductingEquipment",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_989D1F2D_0FE5_4966_927C_5BAEC5E65A5D",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_602BE96F_5810_4d31_AF12_055DB98291C9",
+                            "targetClassName": "SeriesCompensator",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_5603AB56_6444_444d_81B2_852EB45BF787",
+                        "name": "ConnectivityNode",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Соединительный узел.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": false,
+                        "attributeCount": 0,
+                        "linkCount": 4,
+                        "attributes": [],
+                        "links": [
+                          {
+                            "linkId": "EAID_EB821BCF_7487_4ea4_B1D6_3931EDBF8E61",
+                            "relationKind": "Generalization",
+                            "role": "child",
+                            "targetClassId": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                            "targetClassName": "IdentifiedObject",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_425B85B2_B88F_4e76_BF18_737FDB6864D7",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_FB0C5F75_3143_4004_8A49_8F76D410CD2E",
+                            "targetClassName": "OpticalFiberConnection",
+                            "targetClassRoleName": "",
+                            "srcClassRoleName": "ConnectivityNode",
+                            "targetDescription": "",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_277D4E63_31D5_4adb_B97B_A97FD296F479",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_3372AC7E_617A_41c6_8566_51E7A6DAD1FD",
+                            "targetClassName": "ConnectivityNodeContainer",
+                            "targetClassRoleName": "ConnectivityNodeContainer",
+                            "srcClassRoleName": "ConnectivityNodes",
+                            "targetDescription": "Контейнер соединительных узлов.",
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_FB4BA181_D8D4_44cd_A6D6_90934E761992",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_41429F07_2146_43df_8E7E_CD57103ACADE",
+                            "targetClassName": "Terminal",
+                            "targetClassRoleName": "Terminals",
+                            "srcClassRoleName": "ConnectivityNode",
+                            "targetDescription": "Соединенные полюса.",
+                            "multiplicity": "0..*"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_3372AC7E_617A_41c6_8566_51E7A6DAD1FD",
+                        "name": "ConnectivityNodeContainer",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Контейнер соединительных узлов.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": true,
+                        "attributeCount": 0,
+                        "linkCount": 3,
+                        "attributes": [],
+                        "links": [
+                          {
+                            "linkId": "EAID_D12B7F12_1643_4d72_8FDD_9CE46C3D2395",
+                            "relationKind": "Generalization",
+                            "role": "child",
+                            "targetClassId": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
+                            "targetClassName": " PowerSystemResource",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_277D4E63_31D5_4adb_B97B_A97FD296F479",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_5603AB56_6444_444d_81B2_852EB45BF787",
+                            "targetClassName": "ConnectivityNode",
+                            "targetClassRoleName": "ConnectivityNodes",
+                            "srcClassRoleName": "ConnectivityNodeContainer",
+                            "targetDescription": "Соединительные узлы, входящие в контейнер соединительных узлов.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_D09A8A21_431A_4097_AE9E_466AE04C2D87",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
+                            "targetClassName": "EquipmentContainer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_B0D067B5_E753_4031_B99B_C972759B988B",
+                        "name": "Equipment",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Оборудование.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": true,
+                        "attributeCount": 1,
+                        "linkCount": 17,
+                        "attributes": [
+                          {
+                            "name": "normallyInService",
+                            "id": "EAID_C69C0E05_5BE2_40dd_8D8A_9B748A24B721",
+                            "dataType": "Boolean",
+                            "dataTypeId": "EAID_18EC8DEC_494B_4284_B5B4_F9556DE47106",
+                            "stereotype": "",
+                            "documentation": "Если присвоено значение &#171;Истина&#187;, оборудование находится в работе.",
+                            "documentationRu": null,
+                            "details": null,
+                            "multiplicity": "1",
+                            "visibility": "public",
+                            "initialValue": ""
+                          }
+                        ],
+                        "links": [
+                          {
+                            "linkId": "EAID_72AB378A_51A7_4655_BFE1_8BB56AFCF844",
+                            "relationKind": "Generalization",
+                            "role": "child",
+                            "targetClassId": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
+                            "targetClassName": " PowerSystemResource",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_6AF07214_F7C5_430e_BB08_18A1E7645048",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_66D89558_2AB9_4218_8194_9664F69CC4F8",
+                            "targetClassName": "VoltageLimitDurationCurve",
+                            "targetClassRoleName": "VoltageLimitDurationCurve",
+                            "srcClassRoleName": "Equipments",
+                            "targetDescription": "Допустимая длительность значения напряжения в зависимости от его диапазона.",
+                            "multiplicity": "0..1"
+                          },
+                          {
+                            "linkId": "EAID_08055F85_B109_4e63_8441_F10E8AEFD8AA",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
+                            "targetClassName": "EquipmentContainer",
+                            "targetClassRoleName": "EquipmentContainer",
+                            "srcClassRoleName": "Equipments",
+                            "targetDescription": "Контейнер оборудования, к которому относится единица оборудования.",
+                            "multiplicity": "0..1"
+                          },
+                          {
+                            "linkId": "EAID_8082C60C_6897_4630_9BB9_D83C411286B3",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_E0D91A4C_D7C6_416e_A93A_0D43791E979A",
+                            "targetClassName": "LimitDependency",
+                            "targetClassRoleName": "LimitDependencyModel",
+                            "srcClassRoleName": "Equipment",
+                            "targetDescription": "Зависимости эксплуатационных  \nограничений/пределов.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_98C2194D_A95F_481f_9CB9_2A3A619FF45C",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
+                            "targetClassName": "EquipmentContainer",
+                            "targetClassRoleName": "AdditionalEquipmentContainer",
+                            "srcClassRoleName": "AdditionalGroupedEquipment",
+                            "targetDescription": "Дополнительная ассоциация оборудования с другим контейнером.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_DBEB8C8B_FE8C_4330_9F39_015848ED6BEC",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_A25C3A3A_D0B4_478c_BE07_05A04C46863B",
+                            "targetClassName": "UsagePoint",
+                            "targetClassRoleName": "UsagePoints",
+                            "srcClassRoleName": "Equipments",
+                            "targetDescription": "Точки учета, относящиеся к данному оборудованию.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_E95BD033_61DD_4968_A8E3_FFA9AAA1281C",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_A4B2659A_BFE2_41d0_A195_281C431BB1B8",
+                            "targetClassName": "OperationalLimitSet",
+                            "targetClassRoleName": "OperationalLimitSet",
+                            "srcClassRoleName": "Equipment",
+                            "targetDescription": "Набор эксплуатационных ограничений/пределов оборудования.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_14B243BC_B6CD_4041_BA77_4DB0654C07CA",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_0A436A16_18DD_4730_8675_DB6DB9368C06",
+                            "targetClassName": "ExcitationControl",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_2D510902_471E_44a8_AEC2_878C6A2C8762",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_EB534BB1_4810_421d_8CAB_CC1D40CA4015",
+                            "targetClassName": "ConductingEquipment",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_358B3AEB_B5C5_45cf_AFB9_80FA1BAA061C",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_13099AB8_D078_42dd_8257_35984A0E6F6C",
+                            "targetClassName": "FOEquipment",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_4F705AF6_F017_46b6_9367_7D8D1217C843",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_A94E87C6_14DF_4d61_86E8_D6F485D7A664",
+                            "targetClassName": "DCConductingEquipment",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_53332843_881A_4ff5_AA87_8373C68A4EA0",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_0143BDF8_20E4_4a1b_820D_CC9C49EADC47",
+                            "targetClassName": "ExcitationSystem",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_70B8412F_E309_411b_9CBA_0525EC05221E",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_6EEDE91F_AF99_49f7_9009_B98D33FE1C02",
+                            "targetClassName": "ACLineSeriesSection",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_96268AED_EF1D_4569_957B_0E41C58B4044",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_861148AD_C6AF_4ea3_9B20_642DA7738661",
+                            "targetClassName": "TransformerTank",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_B814C0AB_71F8_4cf2_9376_E18E57519F28",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_22DC730C_3BE9_476a_BC67_FC4CA11785B9",
+                            "targetClassName": "PowerElectronicsUnit",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_E4EB2B39_48D8_4a10_9B6A_D9DF6BF71F62",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_DE2B6673_6576_4811_90FD_338742EB2592",
+                            "targetClassName": "GeneratingUnit",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_E7838824_8516_4c3c_B0B0_BE32B0D85E32",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_3241CF1E_03C4_4c0e_8DCD_16E1599521E3",
+                            "targetClassName": "AuxiliaryEquipment",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
+                        "name": "EquipmentContainer",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Контейнер оборудования.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": true,
+                        "attributeCount": 0,
+                        "linkCount": 18,
+                        "attributes": [],
+                        "links": [
+                          {
+                            "linkId": "EAID_D09A8A21_431A_4097_AE9E_466AE04C2D87",
+                            "relationKind": "Generalization",
+                            "role": "child",
+                            "targetClassId": "EAID_3372AC7E_617A_41c6_8566_51E7A6DAD1FD",
+                            "targetClassName": "ConnectivityNodeContainer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_08055F85_B109_4e63_8441_F10E8AEFD8AA",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_B0D067B5_E753_4031_B99B_C972759B988B",
+                            "targetClassName": "Equipment",
+                            "targetClassRoleName": "Equipments",
+                            "srcClassRoleName": "EquipmentContainer",
+                            "targetDescription": "Единицы оборудования, относящиеся к контейнеру оборудования.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_98C2194D_A95F_481f_9CB9_2A3A619FF45C",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_B0D067B5_E753_4031_B99B_C972759B988B",
+                            "targetClassName": "Equipment",
+                            "targetClassRoleName": "AdditionalGroupedEquipment",
+                            "srcClassRoleName": "AdditionalEquipmentContainer",
+                            "targetDescription": "Единицы оборудования, имеющие дополнительную ассоциацию с контейнером оборудования.",
+                            "multiplicity": "0..*"
+                          },
+                          {
+                            "linkId": "EAID_03549ACF_1E41_4e83_8DFC_FC99B53771A6",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_690E79E9_E569_4e24_93FE_C8285F984848",
+                            "targetClassName": "CommutationModuleContainer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_060370F6_EFCA_4fb0_B85D_FA444E979230",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_47E8E46F_3163_4ab0_995E_F6E2F40491B1",
+                            "targetClassName": "Bay",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_066FF251_9AE9_460c_A79E_ECEBA3A0ABA5",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_52F0C701_A2A9_42cc_87CD_C3931DD2AE46",
+                            "targetClassName": "SpliceClosureContainer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_1BF62C66_9ABC_4fc6_8658_0CFF1B99F1A6",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_4CA7CA9A_AA00_485d_B7AF_7E9C1431C2BC",
+                            "targetClassName": "Line",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_1F899013_B181_4e86_B0B5_1C7DA4543FFB",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_5249A2DC_06F2_4324_AAE7_045A89740526",
+                            "targetClassName": "DCEquipmentContainer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_32AFE928_69D3_4fef_9B18_40AF29F2CB6D",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_D9571317_0EF5_4b47_A8FC_4FE283541DD3",
+                            "targetClassName": "FiberOpticLine",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_746493AE_B2CA_47c8_BA89_DED20F009E27",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_43480A5E_2CE6_41e6_AE2B_84386AC482F5",
+                            "targetClassName": "FOEndDeviceModulesContainer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_7834AEA6_46E0_47e2_82FE_8A457EB2287D",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_508BE7E9_B25A_4b42_9613_6762AEF3D60B",
+                            "targetClassName": "Plant",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_97077B54_028B_4915_8C4F_8FBD5D720176",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_EFE1D841_FBA6_47c3_8B5C_06CE6FF1889A",
+                            "targetClassName": "FOLineSegment",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_A162AE86_DEED_41f9_92BB_720B3E95CB44",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_547155F8_978F_4487_84C9_548E94483ADE",
+                            "targetClassName": "Substation",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_A5E51628_952B_43b8_8E5B_75A2DB0769E3",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_027F3811_3AF0_4a4c_BE4E_0D9E06E54565",
+                            "targetClassName": "FOEndDeviceContainer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_B68646D3_D885_4d4e_B92B_ED58DCE74A77",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_D7F1F94D_5B7B_4a1c_9067_662C39C61292",
+                            "targetClassName": "FOCableInstance",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_BD80DD2E_7CE5_4519_B96D_EFB83A8E0031",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_063CA8EC_C0CF_4805_B714_E4AA14345A73",
+                            "targetClassName": "CommutationContainer",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_E5B767C1_7D5D_4fe0_B3CB_B310203711F0",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_F911C51B_57D4_4433_BE3D_63CB46669482",
+                            "targetClassName": "VoltageLevel",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_F0B0CF0D_57E6_4209_AF2C_8F71A3D864DF",
+                            "relationKind": "Generalization",
+                            "role": "parent",
+                            "targetClassId": "EAID_33585E8A_EBD1_408d_B859_E20022516AA4",
+                            "targetClassName": "OpticalPatchCord",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_17DF665F_3E3F_4999_9173_E12F817803D8",
+                        "name": "Name",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Типизированное дополнительное наименование.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": false,
+                        "attributeCount": 1,
+                        "linkCount": 2,
+                        "attributes": [
+                          {
+                            "name": "name",
+                            "id": "EAID_7B777FB6_8D2E_42de_AF78_8438D7B64AF3",
+                            "dataType": "String",
+                            "dataTypeId": "EAID_8E807839_8E82_4166_8B01_F0633C95DAA7",
+                            "stereotype": "",
+                            "documentation": "Типизированное дополнительное наименование объекта информационной модели.",
+                            "documentationRu": null,
+                            "details": null,
+                            "multiplicity": "1",
+                            "visibility": "public",
+                            "initialValue": ""
+                          }
+                        ],
+                        "links": [
+                          {
+                            "linkId": "EAID_A890A9F1_79F6_4345_A9FB_A96FFCFA4EFD",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                            "targetClassName": "IdentifiedObject",
+                            "targetClassRoleName": "IdentifiedObject",
+                            "srcClassRoleName": "Names",
+                            "targetDescription": "Объект, имеющий типизированное наименование",
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_D06F8ADC_CB5B_4eff_80B5_C3480F03ACF9",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_57E4C9DC_A35F_444a_8AA3_AAA670FA4A97",
+                            "targetClassName": "NameType",
+                            "targetClassRoleName": "NameType",
+                            "srcClassRoleName": "Names",
+                            "targetDescription": "Тип наименования.",
+                            "multiplicity": "1"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_57E4C9DC_A35F_444a_8AA3_AAA670FA4A97",
+                        "name": "NameType",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Тип наименования.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": false,
+                        "attributeCount": 2,
+                        "linkCount": 1,
+                        "attributes": [
+                          {
+                            "name": "description",
+                            "id": "EAID_36CB07DC_9CC1_46c3_8083_5D852EB8478F",
+                            "dataType": "String",
+                            "dataTypeId": "EAID_8E807839_8E82_4166_8B01_F0633C95DAA7",
+                            "stereotype": "",
+                            "documentation": "Описатель типа наименования.",
+                            "documentationRu": null,
+                            "details": null,
+                            "multiplicity": "0..1",
+                            "visibility": "public",
+                            "initialValue": ""
+                          },
+                          {
+                            "name": "name",
+                            "id": "EAID_8FBBB7E1_F5DE_478e_8FED_E1264CF725EC",
+                            "dataType": "String",
+                            "dataTypeId": "EAID_8E807839_8E82_4166_8B01_F0633C95DAA7",
+                            "stereotype": "",
+                            "documentation": "Тип наименования.",
+                            "documentationRu": null,
+                            "details": null,
+                            "multiplicity": "1",
+                            "visibility": "public",
+                            "initialValue": ""
+                          }
+                        ],
+                        "links": [
+                          {
+                            "linkId": "EAID_D06F8ADC_CB5B_4eff_80B5_C3480F03ACF9",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_17DF665F_3E3F_4999_9173_E12F817803D8",
+                            "targetClassName": "Name",
+                            "targetClassRoleName": "Names",
+                            "srcClassRoleName": "NameType",
+                            "targetDescription": "Наименование заданного типа.",
+                            "multiplicity": "0..*"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      },
+                      {
+                        "id": "EAID_4B0D8650_9FAB_4469_B419_929D38AB2EF7",
+                        "name": "PSRType",
+                        "type": "Class",
+                        "stereotype": "",
+                        "documentation": "Тип объекта энергосистемы.",
+                        "documentationRu": null,
+                        "details": null,
+                        "visibility": "public",
+                        "isAbstract": false,
+                        "attributeCount": 0,
+                        "linkCount": 2,
+                        "attributes": [],
+                        "links": [
+                          {
+                            "linkId": "EAID_BDB0F90C_5930_4ad3_A574_E683590C62D9",
+                            "relationKind": "Generalization",
+                            "role": "child",
+                            "targetClassId": "EAID_69526261_F2D9_4f06_86B3_638695E07849",
+                            "targetClassName": "IdentifiedObject",
+                            "targetClassRoleName": null,
+                            "srcClassRoleName": null,
+                            "targetDescription": null,
+                            "multiplicity": "1"
+                          },
+                          {
+                            "linkId": "EAID_09E1D860_72D5_481e_911A_CD6DD254B5E9",
+                            "relationKind": "Association",
+                            "role": "unspecified",
+                            "targetClassId": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
+                            "targetClassName": " PowerSystemResource",
+                            "targetClassRoleName": "PowerSystemResources",
+                            "srcClassRoleName": "PSRType",
+                            "targetDescription": "Энергообъекты с дополнительным классификатором.",
+                            "multiplicity": "0..*"
+                          }
+                        ],
+                        "literals": [],
+                        "profileRelations": [],
+                        "modelId": "7",
+                        "profileId": null,
+                        "refModelId": null,
+                        "refModelItemId": null
+                      }
+                    ],
+                    "subPackages": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "generalizationsList": [
+      {
+        "linkId": "EAID_060370F6_EFCA_4fb0_B85D_FA444E979230",
+        "linkType": "Generalization",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "parent": {
+          "classId": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
+          "className": "EquipmentContainer"
+        },
+        "child": {
+          "classId": "EAID_47E8E46F_3163_4ab0_995E_F6E2F40491B1",
+          "className": "Bay"
+        }
+      },
+      {
+        "linkId": "EAID_2D510902_471E_44a8_AEC2_878C6A2C8762",
+        "linkType": "Generalization",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "parent": {
+          "classId": "EAID_B0D067B5_E753_4031_B99B_C972759B988B",
+          "className": "Equipment"
+        },
+        "child": {
+          "classId": "EAID_EB534BB1_4810_421d_8CAB_CC1D40CA4015",
+          "className": "ConductingEquipment"
+        }
+      },
+      {
+        "linkId": "EAID_D12B7F12_1643_4d72_8FDD_9CE46C3D2395",
+        "linkType": "Generalization",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "parent": {
+          "classId": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
+          "className": " PowerSystemResource"
+        },
+        "child": {
+          "classId": "EAID_3372AC7E_617A_41c6_8566_51E7A6DAD1FD",
+          "className": "ConnectivityNodeContainer"
+        }
+      },
+      {
+        "linkId": "EAID_72AB378A_51A7_4655_BFE1_8BB56AFCF844",
+        "linkType": "Generalization",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "parent": {
+          "classId": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
+          "className": " PowerSystemResource"
+        },
+        "child": {
+          "classId": "EAID_B0D067B5_E753_4031_B99B_C972759B988B",
+          "className": "Equipment"
+        }
+      },
+      {
+        "linkId": "EAID_D09A8A21_431A_4097_AE9E_466AE04C2D87",
+        "linkType": "Generalization",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "parent": {
+          "classId": "EAID_3372AC7E_617A_41c6_8566_51E7A6DAD1FD",
+          "className": "ConnectivityNodeContainer"
+        },
+        "child": {
+          "classId": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
+          "className": "EquipmentContainer"
+        }
+      }
+    ],
+    "associationList": [
+      {
+        "linkId": "EAID_09E1D860_72D5_481e_911A_CD6DD254B5E9",
+        "linkType": "Association",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "linkEnd": [
+          {
+            "linkEndId": "EAID_dstE1D860_72D5_481e_911A_CD6DD254B5E9",
+            "linkEndName": "PSRType",
+            "linkEndClassId": "EAID_4B0D8650_9FAB_4469_B419_929D38AB2EF7",
+            "linkEndClassName": "PSRType",
+            "multiplicity": "0..1",
+            "documentation": "Дополнительный классификатор",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          },
+          {
+            "linkEndId": "EAID_srcE1D860_72D5_481e_911A_CD6DD254B5E9",
+            "linkEndName": "PowerSystemResources",
+            "linkEndClassId": "EAID_354F3161_B347_492e_AA95_DF9E00BCCB2E",
+            "linkEndClassName": " PowerSystemResource",
+            "multiplicity": "0..*",
+            "documentation": "Энергообъекты с дополнительным классификатором.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          }
+        ]
+      },
+      {
+        "linkId": "EAID_DC1595E5_36B4_47e8_9E17_7E9256621B9F",
+        "linkType": "Association",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "linkEnd": [
+          {
+            "linkEndId": "EAID_dst1595E5_36B4_47e8_9E17_7E9256621B9F",
+            "linkEndName": "ConductingEquipment",
+            "linkEndClassId": "EAID_EB534BB1_4810_421d_8CAB_CC1D40CA4015",
+            "linkEndClassName": "ConductingEquipment",
+            "multiplicity": "0..*",
+            "documentation": "Электропроводящее оборудование, относящееся к стандартному номинальному напряжению.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          },
+          {
+            "linkEndId": "EAID_src1595E5_36B4_47e8_9E17_7E9256621B9F",
+            "linkEndName": "BaseVoltage",
+            "linkEndClassId": "EAID_A40E5870_2CE1_4630_B472_C63241F9603D",
+            "linkEndClassName": "BaseVoltage",
+            "multiplicity": "0..1",
+            "documentation": "Стандартное номинальное напряжение электропроводящего оборудования.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          }
+        ]
+      },
+      {
+        "linkId": "EAID_277D4E63_31D5_4adb_B97B_A97FD296F479",
+        "linkType": "Association",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "linkEnd": [
+          {
+            "linkEndId": "EAID_dst7D4E63_31D5_4adb_B97B_A97FD296F479",
+            "linkEndName": "ConnectivityNodeContainer",
+            "linkEndClassId": "EAID_3372AC7E_617A_41c6_8566_51E7A6DAD1FD",
+            "linkEndClassName": "ConnectivityNodeContainer",
+            "multiplicity": "1",
+            "documentation": "Контейнер соединительных узлов.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          },
+          {
+            "linkEndId": "EAID_src7D4E63_31D5_4adb_B97B_A97FD296F479",
+            "linkEndName": "ConnectivityNodes",
+            "linkEndClassId": "EAID_5603AB56_6444_444d_81B2_852EB45BF787",
+            "linkEndClassName": "ConnectivityNode",
+            "multiplicity": "0..*",
+            "documentation": "Соединительные узлы, входящие в контейнер соединительных узлов.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          }
+        ]
+      },
+      {
+        "linkId": "EAID_08055F85_B109_4e63_8441_F10E8AEFD8AA",
+        "linkType": "Association",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "linkEnd": [
+          {
+            "linkEndId": "EAID_src055F85_B109_4e63_8441_F10E8AEFD8AA",
+            "linkEndName": "EquipmentContainer",
+            "linkEndClassId": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
+            "linkEndClassName": "EquipmentContainer",
+            "multiplicity": "0..1",
+            "documentation": "Контейнер оборудования, к которому относится единица оборудования.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          },
+          {
+            "linkEndId": "EAID_dst055F85_B109_4e63_8441_F10E8AEFD8AA",
+            "linkEndName": "Equipments",
+            "linkEndClassId": "EAID_B0D067B5_E753_4031_B99B_C972759B988B",
+            "linkEndClassName": "Equipment",
+            "multiplicity": "0..*",
+            "documentation": "Единицы оборудования, относящиеся к контейнеру оборудования.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          }
+        ]
+      },
+      {
+        "linkId": "EAID_98C2194D_A95F_481f_9CB9_2A3A619FF45C",
+        "linkType": "Association",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "linkEnd": [
+          {
+            "linkEndId": "EAID_srcC2194D_A95F_481f_9CB9_2A3A619FF45C",
+            "linkEndName": "AdditionalEquipmentContainer",
+            "linkEndClassId": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
+            "linkEndClassName": "EquipmentContainer",
+            "multiplicity": "0..*",
+            "documentation": "Дополнительная ассоциация оборудования с другим контейнером.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          },
+          {
+            "linkEndId": "EAID_dstC2194D_A95F_481f_9CB9_2A3A619FF45C",
+            "linkEndName": "AdditionalGroupedEquipment",
+            "linkEndClassId": "EAID_B0D067B5_E753_4031_B99B_C972759B988B",
+            "linkEndClassName": "Equipment",
+            "multiplicity": "0..*",
+            "documentation": "Единицы оборудования, имеющие дополнительную ассоциацию с контейнером оборудования.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          }
+        ]
+      },
+      {
+        "linkId": "EAID_D06F8ADC_CB5B_4eff_80B5_C3480F03ACF9",
+        "linkType": "Association",
+        "documentation": null,
+        "documentationRu": null,
+        "details": null,
+        "stereotype": "",
+        "linkEnd": [
+          {
+            "linkEndId": "EAID_dst6F8ADC_CB5B_4eff_80B5_C3480F03ACF9",
+            "linkEndName": "NameType",
+            "linkEndClassId": "EAID_57E4C9DC_A35F_444a_8AA3_AAA670FA4A97",
+            "linkEndClassName": "NameType",
+            "multiplicity": "1",
+            "documentation": "Тип наименования.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          },
+          {
+            "linkEndId": "EAID_src6F8ADC_CB5B_4eff_80B5_C3480F03ACF9",
+            "linkEndName": "Names",
+            "linkEndClassId": "EAID_17DF665F_3E3F_4999_9173_E12F817803D8",
+            "linkEndClassName": "Name",
+            "multiplicity": "0..*",
+            "documentation": "Наименование заданного типа.",
+            "documentationRu": null,
+            "details": null,
+            "stereotype": ""
+          }
+        ]
+      }
+    ]
+  }
+]

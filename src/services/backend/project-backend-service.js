@@ -8,6 +8,18 @@ export async function listProjects() {
   return apiClient.get("/api/projects");
 }
 
+export async function getProject(projectId) {
+  return apiClient.get(`/api/projects/${encodeURIComponent(String(projectId))}`);
+}
+
+export async function createProject(project) {
+  return apiClient.post("/api/projects", project);
+}
+
+export async function updateProject(projectId, updates) {
+  return apiClient.put(`/api/projects/${encodeURIComponent(String(projectId))}`, updates);
+}
+
 export async function deleteProject(projectId) {
   return apiClient.del(`/api/projects/${encodeURIComponent(String(projectId))}`);
 }

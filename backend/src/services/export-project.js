@@ -76,34 +76,35 @@ export async function exportProject(projectId) {
 }
 
 async function exportRootPackagesFor({ modelId = null, profileId = null }) {
-  const where = modelId
-    ? { modelId: String(modelId) }
-    : { profileId: String(profileId) };
+  if (!modelId && !profileId) return [];
 
-  const rootPackages = await prisma.rootPackage.findMany({
-    where,
-    select: { id: true },
-  });
+  const isModel = Boolean(modelId);
+  const id = String(isModel ? modelId : profileId);
 
-  const out = [];
-  for (const rp of rootPackages) {
-    const [packages, generalizationsList, associationList] = await Promise.all([
-      exportPackagesTree(rp.id),
-      prisma.generalizationLink.findMany({
-        where: { rootPackageId: rp.id },
-        include: { ends: true },
-      }),
-      prisma.associationLink.findMany({
-        where: { rootPackageId: rp.id },
-        include: {
-          linkEnd: {
-            orderBy: { linkEndId: "asc" },
-          },
-        },
-      }),
-    ]);
+  const [packages, generalizationsList, associationList] = await Promise.all([
+    isModel ? exportPackagesTreeModel(id) : exportPackagesTreeProfile(id),
+    isModel
+      ? prisma.generalizationLinkModel.findMany({ where: { modelId: id }, include: { ends: true } })
+      : prisma.generalizationLinkProfile.findMany({ where: { profileId: id }, include: { ends: true } }),
+    isModel
+      ? prisma.associationLinkModel.findMany({
+          where: { modelId: id },
+          include: { linkEnd: { orderBy: { linkEndId: "asc" } } },
+        })
+      : prisma.associationLinkProfile.findMany({
+          where: { profileId: id },
+          include: { linkEnd: { orderBy: { linkEndId: "asc" } } },
+        }),
+  ]);
 
-    out.push({
+  const hasAny =
+    (Array.isArray(packages) && packages.length > 0) ||
+    (Array.isArray(generalizationsList) && generalizationsList.length > 0) ||
+    (Array.isArray(associationList) && associationList.length > 0);
+  if (!hasAny) return [];
+
+  return [
+    {
       packages,
       generalizationsList: generalizationsList.map((g) => ({
         linkId: g.linkId,
@@ -134,10 +135,8 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
           stereotype: e.stereotype ?? "",
         })),
       })),
-    });
-  }
-
-  return out;
+    },
+  ];
 }
 
 function mapGeneralizationEnd(ends, role) {
@@ -148,62 +147,79 @@ function mapGeneralizationEnd(ends, role) {
   };
 }
 
-async function exportPackagesTree(rootPackageId) {
-  // Load all packages for rootPackage, then build adjacency tree in JS
-  const packages = await prisma.package.findMany({
-    where: { rootPackageId },
-    select: {
-      id: true,
-      parentId: true,
-      name: true,
-      type: true,
-      parentPackage: true,
-      documentation: true,
-      documentationRu: true,
-      details: true,
-      modelId: true,
-      profileId: true,
-    },
-  });
-
-  const classes = await prisma.class.findMany({
-    where: {
-      pkg: { rootPackageId },
-    },
-    select: {
-      id: true,
-      packageId: true,
-      name: true,
-      type: true,
-      stereotype: true,
-      documentation: true,
-      documentationRu: true,
-      details: true,
-      isAbstract: true,
-      modelId: true,
-      profileId: true,
-      refModelId: true,
-      refModelItemId: true,
-    },
-  });
-
-  const attributes = await prisma.attribute.findMany({
-    where: {
-      cls: { pkg: { rootPackageId } },
-    },
-  });
-
-  const links = await prisma.link.findMany({
-    where: {
-      cls: { pkg: { rootPackageId } },
-    },
-  });
-
-  const literals = await prisma.literal.findMany({
-    where: {
-      cls: { pkg: { rootPackageId } },
-    },
-  });
+async function exportPackagesTreeModel(modelId) {
+  const [packages, classes, attributes, links, literals] = await Promise.all([
+    prisma.packageModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        parentId: true,
+        name: true,
+        type: true,
+        parentPackage: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
+      },
+    }),
+    prisma.classModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        packageId: true,
+        name: true,
+        type: true,
+        stereotype: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
+        isAbstract: true,
+        refModelId: true,
+        refModelItemId: true,
+      },
+    }),
+    prisma.attributeModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        classId: true,
+        name: true,
+        type: true,
+        multiplicity: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
+        refModelId: true,
+        refModelItemId: true,
+      },
+    }),
+    prisma.linkModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        classId: true,
+        name: true,
+        type: true,
+        multiplicity: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
+        refModelId: true,
+        refModelItemId: true,
+      },
+    }),
+    prisma.literalModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        classId: true,
+        name: true,
+        value: true,
+        documentation: true,
+        documentationRu: true,
+      },
+    }),
+  ]);
 
   const classesByPackage = new Map();
   for (const c of classes) {
@@ -226,14 +242,13 @@ async function exportPackagesTree(rootPackageId) {
       documentation: p.documentation ?? null,
       documentationRu: p.documentationRu ?? null,
       details: p.details ?? null,
-      modelId: p.modelId ?? null,
-      profileId: p.profileId ?? null,
+      modelId,
+      profileId: null,
       classes: [],
       subPackages: [],
     });
   }
 
-  // Fill classes
   for (const [packageId, clsList] of classesByPackage.entries()) {
     const pkgNode = nodesById.get(packageId);
     if (!pkgNode) continue;
@@ -247,18 +262,177 @@ async function exportPackagesTree(rootPackageId) {
       documentationRu: c.documentationRu ?? null,
       details: c.details ?? null,
       isAbstract: c.isAbstract ?? null,
-      attributes: (attrsByClass.get(c.id) || []).map(mapAttr),
-      links: (linksByClass.get(c.id) || []).map(mapLink),
+      attributes: (attrsByClass.get(c.id) || []).map((a) => ({
+        ...mapAttr(a),
+        modelId,
+        profileId: null,
+      })),
+      links: (linksByClass.get(c.id) || []).map((l) => ({
+        ...mapLink(l),
+        modelId,
+        profileId: null,
+      })),
       literals: (litsByClass.get(c.id) || []).map(mapLiteral),
       profileRelations: [],
-      modelId: c.modelId ?? null,
-      profileId: c.profileId ?? null,
+      modelId,
+      profileId: null,
       refModelId: c.refModelId ?? null,
       refModelItemId: c.refModelItemId ?? null,
     }));
   }
 
-  // Build tree
+  const top = [];
+  for (const p of packages) {
+    const node = nodesById.get(p.id);
+    if (!node) continue;
+
+    if (!p.parentId) {
+      top.push(node);
+      continue;
+    }
+
+    const parent = nodesById.get(p.parentId);
+    if (parent) parent.subPackages.push(node);
+    else top.push(node);
+  }
+
+  return top;
+}
+
+async function exportPackagesTreeProfile(profileId) {
+  const [packages, classes, attributes, links, literals] = await Promise.all([
+    prisma.packageProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        parentId: true,
+        name: true,
+        type: true,
+        parentPackage: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
+      },
+    }),
+    prisma.classProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        packageId: true,
+        name: true,
+        type: true,
+        stereotype: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
+        isAbstract: true,
+        refModelId: true,
+        refModelItemId: true,
+      },
+    }),
+    prisma.attributeProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        classId: true,
+        name: true,
+        type: true,
+        multiplicity: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
+        refModelId: true,
+        refModelItemId: true,
+      },
+    }),
+    prisma.linkProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        classId: true,
+        name: true,
+        type: true,
+        multiplicity: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
+        refModelId: true,
+        refModelItemId: true,
+      },
+    }),
+    prisma.literalProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        classId: true,
+        name: true,
+        value: true,
+        documentation: true,
+        documentationRu: true,
+      },
+    }),
+  ]);
+
+  const classesByPackage = new Map();
+  for (const c of classes) {
+    const list = classesByPackage.get(c.packageId) || [];
+    list.push(c);
+    classesByPackage.set(c.packageId, list);
+  }
+
+  const attrsByClass = groupBy(attributes, (a) => a.classId);
+  const linksByClass = groupBy(links, (l) => l.classId);
+  const litsByClass = groupBy(literals, (l) => l.classId);
+
+  const nodesById = new Map();
+  for (const p of packages) {
+    nodesById.set(p.id, {
+      id: p.id,
+      name: p.name,
+      type: p.type ?? "Package",
+      parentPackage: p.parentPackage ?? null,
+      documentation: p.documentation ?? null,
+      documentationRu: p.documentationRu ?? null,
+      details: p.details ?? null,
+      modelId: null,
+      profileId,
+      classes: [],
+      subPackages: [],
+    });
+  }
+
+  for (const [packageId, clsList] of classesByPackage.entries()) {
+    const pkgNode = nodesById.get(packageId);
+    if (!pkgNode) continue;
+
+    pkgNode.classes = clsList.map((c) => ({
+      id: c.id,
+      name: c.name,
+      type: c.type ?? "Class",
+      stereotype: c.stereotype ?? null,
+      documentation: c.documentation ?? null,
+      documentationRu: c.documentationRu ?? null,
+      details: c.details ?? null,
+      isAbstract: c.isAbstract ?? null,
+      attributes: (attrsByClass.get(c.id) || []).map((a) => ({
+        ...mapAttr(a),
+        modelId: null,
+        profileId,
+      })),
+      links: (linksByClass.get(c.id) || []).map((l) => ({
+        ...mapLink(l),
+        modelId: null,
+        profileId,
+      })),
+      literals: (litsByClass.get(c.id) || []).map(mapLiteral),
+      profileRelations: [],
+      modelId: null,
+      profileId,
+      refModelId: c.refModelId ?? null,
+      refModelItemId: c.refModelItemId ?? null,
+    }));
+  }
+
   const top = [];
   for (const p of packages) {
     const node = nodesById.get(p.id);

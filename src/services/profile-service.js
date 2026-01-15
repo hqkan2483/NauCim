@@ -1,29 +1,84 @@
-import { MemoryStore } from "../store/memory-store.js";
 import { generateUUID } from "../utils/uuid.js";
+import {
+  getProfiles as repoGetProfiles,
+  getProfile as repoGetProfile,
+  getProfileHeader as repoGetProfileHeader,
+  createProfile as repoCreateProfile,
+  updateProfile as repoUpdateProfile,
+  deleteProfile as repoDeleteProfile,
+  importProfileRootPackages as repoImportProfileRootPackages,
+} from "./repositories/profile-repository.js";
+import {
+  validateCreateProfilePayload,
+  validateUpdateProfilePayload,
+} from "./business/profile-validator.js";
+import { getProjectById } from "./project-service.js";
 
 // ============================================================
-// PROFILE SERVICE - Manages Profile Data Operations
+// PROFILE SERVICE - Service Layer
+// Manages Profile Business Operations
 // ============================================================
 
 /**
  * Get all profiles for a project
  * @param {string} projectId
- * @returns {Array} - Array of profiles
+ * @returns {Promise<Array>} Array of profiles
  */
-function getProfiles(projectId) {
-  const project = MemoryStore.getProjectById(String(projectId));
-  return project ? project.profiles || [] : [];
+async function getProfiles(projectId) {
+  if (!projectId) return [];
+  try {
+    return await repoGetProfiles(String(projectId));
+  } catch (error) {
+    console.error(`[getProfiles] Failed for project ${projectId}:`, error);
+    return [];
+  }
 }
 
 /**
  * Get single profile by ID
  * @param {string} projectId
  * @param {string} profileId
- * @returns {object|null} - Profile object or null
+ * @returns {Promise<object|null>} Profile object or null
  */
-function getProfile(projectId, profileId) {
-  const profiles = getProfiles(projectId);
-  return profiles.find((p) => String(p.id) === String(profileId)) || null;
+async function getProfile(projectId, profileId) {
+  if (!projectId || !profileId) return null;
+  try {
+    // First try to get from project (to ensure it belongs to project)
+    const project = await getProjectById(projectId);
+    if (project && project.profiles) {
+      const profile = project.profiles.find((p) => String(p.id) === String(profileId));
+      if (profile) return profile;
+    }
+    // Fallback to direct repository call
+    return await repoGetProfile(String(profileId));
+  } catch (error) {
+    console.error(`[getProfile] Failed for profile ${profileId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get profile header by ID (everything except rootPackages)
+ * @param {string} projectId
+ * @param {string} profileId
+ * @returns {Promise<object|null>} Profile header or null
+ */
+async function getProfileHeader(projectId, profileId) {
+  if (!projectId || !profileId) return null;
+  try {
+    const header = await repoGetProfileHeader(String(profileId));
+    if (!header) return null;
+    if (String(header.projectId) !== String(projectId)) {
+      console.warn(
+        `[getProfileHeader] Profile ${profileId} does not belong to project ${projectId}`
+      );
+      return null;
+    }
+    return header;
+  } catch (error) {
+    console.error(`[getProfileHeader] Failed for profile ${profileId}:`, error);
+    return null;
+  }
 }
 
 /**
@@ -31,34 +86,48 @@ function getProfile(projectId, profileId) {
  * @param {string} projectId
  * @param {string} name - Profile name to check
  * @param {string} excludeId - Profile ID to exclude from check (for edit)
- * @returns {boolean} - true if name is unique
+ * @returns {Promise<boolean>} true if name is unique
  */
-function isProfileNameUnique(projectId, name, excludeId = null) {
-  const profiles = getProfiles(projectId);
-  const trimmedName = name.trim().toLowerCase();
+async function isProfileNameUnique(projectId, name, excludeId = null) {
+  if (!projectId) return false;
+  try {
+    const profiles = await repoGetProfiles(String(projectId));
+    const trimmedName = name.trim().toLowerCase();
 
-  return !profiles.some((p) => {
-    // Skip the profile being edited
-    if (excludeId && String(p.id) === String(excludeId)) {
-      return false;
-    }
-    return p.name.trim().toLowerCase() === trimmedName;
-  });
+    return !profiles.some((p) => {
+      // Skip the profile being edited
+      if (excludeId && String(p.id) === String(excludeId)) {
+        return false;
+      }
+      return p.name.trim().toLowerCase() === trimmedName;
+    });
+  } catch (error) {
+    console.error(`[isProfileNameUnique] Failed for project ${projectId}:`, error);
+    return false;
+  }
 }
 
 /**
  * Create new profile
  * @param {string} projectId
- * @param {object} payload - { name, description, version }
- * @returns {object|null} - Created profile or null
+ * @param {object} payload - { name, description?, version? }
+ * @returns {Promise<object|null>} Created profile or null
  */
-function createProfile(projectId, payload) {
-  if (!payload || !payload.name || !payload.name.trim()) {
-    console.error("[createProfile] Name is required");
+async function createProfile(projectId, payload) {
+  if (!projectId) {
+    console.error("[createProfile] Project ID is required");
     return null;
   }
 
-  const project = MemoryStore.getProjectById(String(projectId));
+  // Validate payload
+  const validation = validateCreateProfilePayload(payload);
+  if (!validation.valid) {
+    console.error("[createProfile]", validation.error);
+    return null;
+  }
+
+  // Verify project exists
+  const project = await getProjectById(String(projectId));
   if (!project) {
     console.error(`[createProfile] Project not found: ${projectId}`);
     return null;
@@ -66,40 +135,37 @@ function createProfile(projectId, payload) {
 
   const trimmedName = payload.name.trim();
 
-  // Validate name length
-  if (trimmedName.length < 3) {
-    console.error("[createProfile] Name must be at least 3 characters");
-    return null;
-  }
-
-  // Validate name uniqueness
-  if (!isProfileNameUnique(projectId, trimmedName)) {
+  // Check name uniqueness
+  const isUnique = await isProfileNameUnique(projectId, trimmedName);
+  if (!isUnique) {
     console.error(`[createProfile] Profile name "${trimmedName}" already exists in this project`);
     return null;
   }
 
+  // Prepare profile data
   const newProfile = {
     id: generateUUID(),
+    projectId: String(projectId),
     name: trimmedName,
-    description: payload.description ?  payload.description.trim() : "",
-    version: payload.version ?  payload.version.trim() : "0.1",
+    description: payload.description ? payload.description.trim() : "",
+    version: payload.version ? payload.version.trim() : "0.1",
     createDate: new Date().toISOString(),
     modifyDate: new Date().toISOString(),
     legalState: "project",
     accessRights: "readWrite",
-    relatedModels: [],
-    rootPackages: [],
   };
 
-  if (!project.profiles) {
-    project.profiles = [];
+  try {
+    const created = await repoCreateProfile(newProfile);
+    return created;
+  } catch (error) {
+    console.error("[createProfile] Failed to create profile:", error);
+    // Check for duplicate name error from backend
+    if (error.status === 409 || error.details?.name) {
+      console.error(`[createProfile] Profile name "${trimmedName}" already exists in this project`);
+    }
+    return null;
   }
-
-  project.profiles.push(newProfile);
-  MemoryStore.updateProject(String(projectId), project);
-
-  console.log(`✅ Profile created: ${newProfile.name} (id: ${newProfile.id})`);
-  return newProfile;
 }
 
 /**
@@ -107,22 +173,24 @@ function createProfile(projectId, payload) {
  * @param {string} projectId
  * @param {string} profileId
  * @param {object} updates - Fields to update
- * @returns {object|null} - Updated profile or null
+ * @returns {Promise<object|null>} Updated profile or null
  */
-function updateProfile(projectId, profileId, updates) {
-  if (!profileId) {
-    console.error("[updateProfile] Profile ID is required");
+async function updateProfile(projectId, profileId, updates) {
+  if (!projectId || !profileId) {
+    console.error("[updateProfile] Project ID and Profile ID are required");
     return null;
   }
 
-  const project = MemoryStore.getProjectById(String(projectId));
-  if (!project) {
-    console.error(`[updateProfile] Project not found:  ${projectId}`);
+  // Validate payload
+  const validation = validateUpdateProfilePayload(updates);
+  if (!validation.valid) {
+    console.error("[updateProfile]", validation.error);
     return null;
   }
 
-  const profileIndex = project.profiles.findIndex((p) => String(p.id) === String(profileId));
-  if (profileIndex === -1) {
+  // Get existing profile
+  const existingProfile = await getProfile(projectId, profileId);
+  if (!existingProfile) {
     console.error(`[updateProfile] Profile not found: ${profileId}`);
     return null;
   }
@@ -131,61 +199,93 @@ function updateProfile(projectId, profileId, updates) {
   if (updates.name !== undefined) {
     const trimmedName = updates.name.trim();
 
-    if (trimmedName.length < 3) {
-      console.error("[updateProfile] Name must be at least 3 characters");
-      return null;
-    }
-
-    if (!isProfileNameUnique(projectId, trimmedName, profileId)) {
-      console.error(`[updateProfile] Profile name "${trimmedName}" already exists in this project`);
-      return null;
+    // Check uniqueness if name changed
+    if (trimmedName.toLowerCase() !== existingProfile.name.trim().toLowerCase()) {
+      const isUnique = await isProfileNameUnique(projectId, trimmedName, profileId);
+      if (!isUnique) {
+        console.error(`[updateProfile] Profile name "${trimmedName}" already exists in this project`);
+        return null;
+      }
     }
 
     updates.name = trimmedName;
   }
 
-  project.profiles[profileIndex] = {
-    ...project.profiles[profileIndex],
+  // Prepare update data
+  const updateData = {
     ...updates,
-    id: project.profiles[profileIndex].id, // preserve ID
     modifyDate: new Date().toISOString(),
   };
 
-  MemoryStore.updateProject(String(projectId), project);
-  console.log(`✅ Profile updated: ${project.profiles[profileIndex].name} (id: ${profileId})`);
-
-  return project.profiles[profileIndex];
+  try {
+    const updated = await repoUpdateProfile(String(profileId), updateData);
+    return updated;
+  } catch (error) {
+    console.error(`[updateProfile] Failed to update profile ${profileId}:`, error);
+    // Check for duplicate name error from backend
+    if (error.status === 409 || error.details?.name) {
+      console.error(`[updateProfile] Profile name "${updates.name}" already exists in this project`);
+    }
+    return null;
+  }
 }
 
 /**
  * Delete profile
  * @param {string} projectId
  * @param {string} profileId
- * @returns {boolean} - true if deleted, false otherwise
+ * @returns {Promise<boolean>} true if deleted, false otherwise
  */
-function deleteProfile(projectId, profileId) {
-  if (!profileId) {
-    console.error("[deleteProfile] Profile ID is required");
+async function deleteProfile(projectId, profileId) {
+  if (!projectId || !profileId) {
+    console.error("[deleteProfile] Project ID and Profile ID are required");
     return false;
   }
 
-  const project = MemoryStore.getProjectById(String(projectId));
-  if (!project) {
-    console.error(`[deleteProfile] Project not found: ${projectId}`);
+  try {
+    const deleted = await repoDeleteProfile(String(profileId));
+    if (deleted) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error(`[deleteProfile] Failed to delete profile ${profileId}:`, error);
     return false;
   }
-
-  const initialLength = project.profiles.length;
-  project.profiles = project.profiles.filter((p) => String(p.id) !== String(profileId));
-
-  if (project.profiles.length < initialLength) {
-    MemoryStore.updateProject(String(projectId), project);
-    console.log(`✅ Profile deleted (id: ${profileId})`);
-    return true;
-  }
-
-  console.error(`[deleteProfile] Profile not found:  ${profileId}`);
-  return false;
 }
 
-export { getProfiles, getProfile, createProfile, updateProfile, deleteProfile, isProfileNameUnique };
+/**
+ * Import rootPackages into an existing profile (replaces current graph)
+ * Returns full updated project (as returned by backend export)
+ */
+async function importProfileRootPackages(projectId, profileId, payload) {
+  if (!projectId || !profileId) {
+    console.error("[importProfileRootPackages] Project ID and Profile ID are required");
+    return null;
+  }
+
+  // Ensure profile belongs to project
+  const profile = await getProfile(projectId, profileId);
+  if (!profile) {
+    console.error(`[importProfileRootPackages] Profile not found: ${profileId}`);
+    return null;
+  }
+
+  try {
+    return await repoImportProfileRootPackages(String(profileId), payload);
+  } catch (error) {
+    console.error(`[importProfileRootPackages] Failed for profile ${profileId}:`, error);
+    return null;
+  }
+}
+
+export {
+  getProfiles,
+  getProfile,
+  getProfileHeader,
+  createProfile,
+  updateProfile,
+  deleteProfile,
+  importProfileRootPackages,
+  isProfileNameUnique,
+};
