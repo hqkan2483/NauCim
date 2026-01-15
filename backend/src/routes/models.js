@@ -160,10 +160,14 @@ modelsRouter.put(
   })
 );
 
-// Import rootPackages into existing model (replaces current graph)
+// Import rootPackage graph into existing model (replaces current graph)
+// Notes:
+// - Before importing, backend deletes all existing graph records for this model.
+// - Input must represent exactly ONE rootPackage.
 // Accepts either:
-// - { path: "C:/.../file.json" } (backend reads from FS)
-// - { rootPackages: [...] } or { rootPackage: {...} } (frontend sends JSON)
+// - { rootPackage: { ... } } (recommended)
+// - { rootPackages: [ { ... } ] } (must contain exactly one item)
+// - { path: "C:/.../file.json" } (backend reads JSON from disk; file must contain one rootPackage)
 modelsRouter.post(
   "/:id/import",
   asyncHandler(async (req, res) => {

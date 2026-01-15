@@ -3,7 +3,13 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { prisma } from "../db.js";
 import { exportProject } from "./export-project.js";
-import { isRootPackageLike, importRootPackageGraph } from "./import-root-package-graph.js";
+import {
+  clearModelGraph,
+  clearProfileGraph,
+  importModelGraph,
+  importProfileGraph,
+  isRootPackageLike,
+} from "./import-root-package-graph.js";
 
 function normalizeRootPackages(payload) {
   if (payload === null || payload === undefined) return null;
@@ -14,7 +20,8 @@ function normalizeRootPackages(payload) {
   // - file JSON that is rootPackages array (common for models-data/*.json)
   if (Array.isArray(payload)) {
     const list = payload.filter(Boolean);
-    if (list.length === 0) return [];
+    // New contract: exactly one rootPackage per import
+    if (list.length !== 1) return null;
     if (!list.every(isRootPackageLike)) return null;
     return list;
   }
@@ -190,18 +197,19 @@ export async function importModelRootPackages({ modelId, path: filePath = null, 
   }
 
   if (normalized === null) {
-    const err = new Error("Invalid import payload: expected rootPackage(s) or path to .json");
+    const err = new Error(
+      "Invalid import payload: expected exactly one rootPackage (or rootPackages array with a single item), or path to .json"
+    );
     err.status = 400;
     throw err;
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.rootPackage.deleteMany({ where: { modelId: id } });
+    await clearModelGraph(tx, id);
 
     for (const rp of normalized) {
       const rpToImport = remapRootPackageGraph(rp, { targetModelId: id, targetProfileId: null });
-      const createdRp = await tx.rootPackage.create({ data: { modelId: id } });
-      await importRootPackageGraph(tx, createdRp.id, rpToImport);
+      await importModelGraph(tx, id, rpToImport);
     }
 
     await tx.model.update({
@@ -245,18 +253,19 @@ export async function importProfileRootPackages({ profileId, path: filePath = nu
   }
 
   if (normalized === null) {
-    const err = new Error("Invalid import payload: expected rootPackage(s) or path to .json");
+    const err = new Error(
+      "Invalid import payload: expected exactly one rootPackage (or rootPackages array with a single item), or path to .json"
+    );
     err.status = 400;
     throw err;
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.rootPackage.deleteMany({ where: { profileId: id } });
+    await clearProfileGraph(tx, id);
 
     for (const rp of normalized) {
       const rpToImport = remapRootPackageGraph(rp, { targetModelId: null, targetProfileId: id });
-      const createdRp = await tx.rootPackage.create({ data: { profileId: id } });
-      await importRootPackageGraph(tx, createdRp.id, rpToImport);
+      await importProfileGraph(tx, id, rpToImport);
     }
 
     await tx.profile.update({

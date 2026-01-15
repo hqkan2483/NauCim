@@ -46,3 +46,12 @@ localStorage.setItem("cim.backendBaseUrl", "http://localhost:5179");
 
 - Проверка, что режим включен: `localStorage.getItem("cim.dataSource") === "backend"`
 - Проверка URL: `localStorage.getItem("cim.backendBaseUrl")`
+
+### Import/Export notes
+
+- Экспорт проекта: `GET /api/export/project/:id`
+- Импорт проекта: `POST /api/import/project`
+- Импорт графа в существующую модель/профиль:
+  - `POST /api/models/:id/import`
+  - `POST /api/profiles/:id/import`
+- Ограничение: во входящих данных `rootPackages` должен содержать **ровно один** элемент (или используйте поле `rootPackage`).

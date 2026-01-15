@@ -33,4 +33,12 @@ npm run dev
 - `POST /api/import/project` (canonical Project JSON)
 - `GET /api/export/project/:id`
 
+### Import notes
+
+- `POST /api/models/:id/import` and `POST /api/profiles/:id/import` accept either:
+  - `{ "rootPackage": { ... } }` (recommended), or
+  - `{ "rootPackages": [ { ... } ] }` (must contain **exactly one** item), or
+  - `{ "path": "C:/.../file.json" }` (backend reads JSON from disk; file must represent a single rootPackage or rootPackages with exactly one item)
+- Before importing, the backend deletes all existing graph records for that model/profile.
+
 By default the server listens on `PORT` from `.env`.

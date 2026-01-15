@@ -159,7 +159,14 @@ profilesRouter.put(
   })
 );
 
-// Import rootPackages into existing profile (replaces current graph)
+// Import rootPackage graph into existing profile (replaces current graph)
+// Notes:
+// - Before importing, backend deletes all existing graph records for this profile.
+// - Input must represent exactly ONE rootPackage.
+// Accepts either:
+// - { rootPackage: { ... } } (recommended)
+// - { rootPackages: [ { ... } ] } (must contain exactly one item)
+// - { path: "C:/.../file.json" } (backend reads JSON from disk; file must contain one rootPackage)
 profilesRouter.post(
   "/:id/import",
   asyncHandler(async (req, res) => {

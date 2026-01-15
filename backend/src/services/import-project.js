@@ -1,5 +1,11 @@
 import { prisma } from "../db.js";
-import { isRootPackageLike, importRootPackageGraph } from "./import-root-package-graph.js";
+import {
+  clearModelGraph,
+  clearProfileGraph,
+  importModelGraph,
+  importProfileGraph,
+  isRootPackageLike,
+} from "./import-root-package-graph.js";
 
 export async function importProject(project) {
   // Minimal validation; frontend can send canonical contract from docs/DATA_STRUCTURES.md
@@ -60,14 +66,16 @@ export async function importProject(project) {
       });
 
       // Replace rootPackages graph for this model
-      await tx.rootPackage.deleteMany({ where: { modelId: String(model.id) } });
+      await clearModelGraph(tx, String(model.id));
       const rootPackages = Array.isArray(model.rootPackages) ? model.rootPackages : [];
+      if (rootPackages.length > 1) {
+        const err = new Error("Invalid import payload: model.rootPackages must contain at most one item");
+        err.status = 400;
+        throw err;
+      }
       for (const rp of rootPackages) {
         if (!isRootPackageLike(rp)) continue;
-        const createdRp = await tx.rootPackage.create({
-          data: { modelId: String(model.id) },
-        });
-        await importRootPackageGraph(tx, createdRp.id, rp);
+        await importModelGraph(tx, String(model.id), rp);
       }
     }
 
@@ -99,14 +107,16 @@ export async function importProject(project) {
       });
 
       // Replace rootPackages graph for this profile
-      await tx.rootPackage.deleteMany({ where: { profileId: String(profile.id) } });
+      await clearProfileGraph(tx, String(profile.id));
       const rootPackages = Array.isArray(profile.rootPackages) ? profile.rootPackages : [];
+      if (rootPackages.length > 1) {
+        const err = new Error("Invalid import payload: profile.rootPackages must contain at most one item");
+        err.status = 400;
+        throw err;
+      }
       for (const rp of rootPackages) {
         if (!isRootPackageLike(rp)) continue;
-        const createdRp = await tx.rootPackage.create({
-          data: { profileId: String(profile.id) },
-        });
-        await importRootPackageGraph(tx, createdRp.id, rp);
+        await importProfileGraph(tx, String(profile.id), rp);
       }
     }
 

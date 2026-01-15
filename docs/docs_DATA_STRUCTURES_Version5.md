@@ -73,7 +73,7 @@ interface Model {
   legalAct: string;              // нормативный акт, которым утверждена модель
   accessRights: AccessRights;      // Права доступа (см. Enums)
   relatedProfiles: ProfileRef[]; // Профили, использующие эту модель
-  rootPackages: RootPackage[]; // корневой пакет модели
+  rootPackages: RootPackage[]; // корневой пакет модели (в backend-импорте/экспорте: массив должен содержать ровно 1 элемент)
 }
 ```
 
@@ -114,7 +114,7 @@ interface Profile {
   legalState: LegalState;        // Статус разработки
   legalAct: string;              // нормативный акт, которым утвержден профиль
   accessRights: AccessRights;      // Права доступа
-  rootPackages: RootPackage[]; // корневой пакет профиля
+  rootPackages: RootPackage[]; // корневой пакет профиля (в backend-импорте/экспорте: массив должен содержать ровно 1 элемент)
 }
 ```
 
