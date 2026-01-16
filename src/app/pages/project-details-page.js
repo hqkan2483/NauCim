@@ -46,6 +46,7 @@ import {
 import {
   initAttributeModal,
   openEditAttributeModal,
+  openCreateAttributeModal,
 } from "../../ui/components/attribute-modal.js";
 import {
   initLinkModal,
@@ -73,6 +74,8 @@ import {
 import {
   updateModelAttribute as updateModelAttributeInBackend,
   updateProfileAttribute as updateProfileAttributeInBackend,
+  createModelAttribute as createModelAttributeInBackend,
+  createProfileAttribute as createProfileAttributeInBackend,
 } from "../../services/attribute-service.js";
 
 // ============================================================
@@ -310,12 +313,108 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
 
           // Re-open modal so user does not lose edits context.
+          const existingNames = (originalClsSnapshot?.attributes || [])
+            .filter((a) => String(a?.id) !== String(attrId))
+            .map((a) => a?.name)
+            .filter(Boolean);
+
           openEditAttributeModal({
             ...originalAttrSnapshot,
             ...updates,
             modelId: modelId || null,
             profileId: profileId || null,
-          });
+          }, { existingNames });
+        }
+      },
+
+      onCreate: async ({ classId, context, updates }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const tabToRestore = "item-attributes";
+
+        const foundClass = findClassWithContext(project, classId);
+        if (!foundClass) return;
+
+        const modelId = foundClass.modelId || context?.modelId || "";
+        const profileId = foundClass.profileId || context?.profileId || "";
+
+        try {
+          const payload = {
+            name: updates.name,
+            dataTypeId: updates.dataTypeId,
+            stereotype: updates.stereotype,
+            multiplicity: updates.multiplicity,
+            documentation: updates.documentation,
+            documentationRu: updates.documentationRu,
+            details: updates.details,
+            initialValue: updates.initialValue,
+          };
+
+          const updatedProject = modelId
+            ? await createModelAttributeInBackend(
+                currentProjectId,
+                modelId,
+                classId,
+                payload
+              )
+            : await createProfileAttributeInBackend(
+                currentProjectId,
+                profileId,
+                classId,
+                payload
+              );
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: modelId || null,
+            profileId: profileId || null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          const chain = findClassParentChain(
+            updatedProject,
+            classId,
+            modelId,
+            profileId,
+            modelId ? "model" : "profile"
+          );
+          expandTreePath(chain);
+          restoreSelectedTreeItemInTree();
+
+          const updatedCls = findClassById(
+            updatedProject,
+            classId,
+            modelId,
+            profileId,
+            modelId ? "model" : "profile"
+          );
+
+          const itemDetailsContent = document.getElementById("item-details-content");
+          if (itemDetailsContent && updatedCls) {
+            const clsView = {
+              ...updatedCls,
+              modelId: modelId || "",
+              profileId: profileId || "",
+            };
+            originalItemData = JSON.parse(JSON.stringify(clsView));
+            itemDetailsContent.innerHTML = renderClassDetails(clsView, {
+              viewMode: getItemDetailsViewMode(),
+            });
+            restoreClassTab(tabToRestore);
+          }
+
+          showToast("Атрибут добавлен", { type: "success" });
+        } catch (error) {
+          console.error("[attributeModal.onCreate] Create failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка добавления";
+          showToast(`Ошибка добавления атрибута: ${msg}`, { type: "error" });
         }
       },
     });
@@ -1987,7 +2086,25 @@ function handleCancelClassEdit() {
 // ATTRIBUTE HANDLERS
 // ============================================================
 function handleAddAttribute(classId) {
-  alert("Функция добавления атрибута в разработке");
+  if (!classId) return;
+
+  getProjectById(currentProjectId).then((project) => {
+    if (!project) return;
+
+    const found = findClassWithContext(project, String(classId));
+    if (!found) return;
+
+    const existingNames = (found.cls?.attributes || [])
+      .map((a) => a?.name)
+      .filter(Boolean);
+
+    openCreateAttributeModal({
+      classId: String(classId),
+      modelId: found.modelId || "",
+      profileId: found.profileId || "",
+      existingNames,
+    });
+  });
 }
 
 async function handleEditAttribute(attrId) {
@@ -1997,7 +2114,12 @@ async function handleEditAttribute(attrId) {
   const found = findAttributeWithParent(project, attrId);
   if (!found) return;
 
-  openEditAttributeModal(found.attr);
+  const existingNames = (found.cls?.attributes || [])
+    .filter((a) => String(a?.id) !== String(attrId))
+    .map((a) => a?.name)
+    .filter(Boolean);
+
+  openEditAttributeModal(found.attr, { existingNames });
 }
 
 function handleDeleteAttribute(attrId) {
@@ -2134,6 +2256,56 @@ function findClassById(
     const profile = project.profiles?.find((p) => p.id === profileId);
     if (profile?.rootPackages?.[0]?.packages) {
       return searchInPackages(profile.rootPackages[0].packages);
+    }
+  }
+
+  return null;
+}
+
+function findClassWithContext(project, classId) {
+  const searchInPackages = (packages) => {
+    for (const pkg of packages) {
+      if (pkg.classes) {
+        const cls = pkg.classes.find((c) => c.id === classId);
+        if (cls) return cls;
+      }
+      if (pkg.subPackages) {
+        const found = searchInPackages(pkg.subPackages);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  if (project.models) {
+    for (const model of project.models) {
+      if (model.rootPackages?.[0]?.packages) {
+        const cls = searchInPackages(model.rootPackages[0].packages);
+        if (cls) {
+          return {
+            cls,
+            context: "model",
+            modelId: model.id,
+            profileId: null,
+          };
+        }
+      }
+    }
+  }
+
+  if (project.profiles) {
+    for (const profile of project.profiles) {
+      if (profile.rootPackages?.[0]?.packages) {
+        const cls = searchInPackages(profile.rootPackages[0].packages);
+        if (cls) {
+          return {
+            cls,
+            context: "profile",
+            modelId: null,
+            profileId: profile.id,
+          };
+        }
+      }
     }
   }
 

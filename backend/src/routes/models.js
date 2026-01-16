@@ -4,8 +4,34 @@ import { prisma } from "../db.js";
 import { asyncHandler, sendError } from "../utils/http.js";
 import { importModelRootPackages } from "../services/import-into-existing.js";
 import { exportProject } from "../services/export-project.js";
+import { newId } from "../utils/id-generation.js";
 
 export const modelsRouter = Router();
+
+function normalizeAttrName(name) {
+  return String(name ?? "").trim().toLocaleLowerCase();
+}
+
+async function assertUniqueAttributeNameInModelClass({ modelId, classId, name, excludeAttributeId = null }) {
+  const normalized = normalizeAttrName(name);
+  if (!normalized) return;
+
+  const attrs = await prisma.attributeModel.findMany({
+    where: { modelId: String(modelId), classId: String(classId) },
+    select: { id: true, name: true },
+  });
+
+  const conflict = attrs.find((a) => {
+    if (excludeAttributeId && String(a.id) === String(excludeAttributeId)) return false;
+    return normalizeAttrName(a.name) === normalized;
+  });
+
+  if (conflict) {
+    const err = new Error("Attribute name already exists in this class");
+    err.status = 409;
+    throw err;
+  }
+}
 
 const createModelSchema = z.object({
   id: z.string().min(1),
@@ -88,6 +114,19 @@ const updateAttributeSchema = z
 
     refModelId: z.string().nullable().optional(),
     refModelItemId: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+const createAttributeSchema = z
+  .object({
+    name: z.string().min(1),
+    dataTypeId: z.string().min(1),
+    stereotype: z.string().nullable().optional(),
+    multiplicity: z.string().nullable().optional(),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+    initialValue: z.string().nullable().optional(),
   })
   .passthrough();
 
@@ -341,9 +380,27 @@ modelsRouter.put(
 
     const existing = await prisma.attributeModel.findFirst({
       where: { id: attributeId, modelId },
-      select: { id: true, modelId: true },
+      select: { id: true, modelId: true, classId: true },
     });
     if (!existing) return sendError(res, 404, "Attribute not found");
+
+    // Validate unique attribute name inside the same class (if name is being changed)
+    if (parsed.data.name !== undefined) {
+      const trimmed = String(parsed.data.name ?? "").trim();
+      if (!trimmed) return sendError(res, 400, "Attribute name is required");
+
+      try {
+        await assertUniqueAttributeNameInModelClass({
+          modelId,
+          classId: existing.classId,
+          name: trimmed,
+          excludeAttributeId: attributeId,
+        });
+      } catch (e) {
+        if (e?.status === 409) return sendError(res, 409, e.message);
+        throw e;
+      }
+    }
 
     // Normalize dataTypeId (treat empty string as null)
     const rawDataTypeId = parsed.data.dataTypeId;
@@ -379,6 +436,79 @@ modelsRouter.put(
     await prisma.attributeModel.update({
       where: { id: attributeId },
       data,
+    });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Create an attribute inside a model class.
+// Returns full updated project (export payload).
+modelsRouter.post(
+  "/:modelId/classes/:classId/attributes",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const classId = String(req.params.classId);
+
+    const parsed = createAttributeSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid attribute create", parsed.error.flatten());
+    }
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const cls = await prisma.classModel.findFirst({
+      where: { id: classId, modelId },
+      select: { id: true },
+    });
+    if (!cls) return sendError(res, 404, "Class not found");
+
+    const normalizedName = String(parsed.data.name ?? "").trim();
+    if (!normalizedName) return sendError(res, 400, "Attribute name is required");
+
+    try {
+      await assertUniqueAttributeNameInModelClass({
+        modelId,
+        classId,
+        name: normalizedName,
+      });
+    } catch (e) {
+      if (e?.status === 409) return sendError(res, 409, e.message);
+      throw e;
+    }
+
+    const normalizedDataTypeId = String(parsed.data.dataTypeId).trim();
+    if (!normalizedDataTypeId) return sendError(res, 400, "dataTypeId is required");
+
+    const existsType = await prisma.classModel.findFirst({
+      where: { id: normalizedDataTypeId, modelId },
+      select: { id: true },
+    });
+    if (!existsType) return sendError(res, 400, "Invalid dataTypeId (class not found in model)");
+
+    await prisma.attributeModel.create({
+      data: {
+        id: newId("attr"),
+        srcId: null,
+        modelId,
+        classId,
+        name: normalizedName,
+        dataTypeId: normalizedDataTypeId,
+        stereotype: parsed.data.stereotype ?? null,
+        multiplicity: parsed.data.multiplicity ?? null,
+        documentation: parsed.data.documentation ?? null,
+        documentationRu: parsed.data.documentationRu ?? null,
+        details: parsed.data.details ?? null,
+        initialValue: parsed.data.initialValue ?? null,
+        refModelId: null,
+        refModelItemId: null,
+      },
     });
 
     const project = await exportProject(model.projectId);

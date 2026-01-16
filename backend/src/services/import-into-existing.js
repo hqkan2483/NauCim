@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { randomUUID } from "node:crypto";
 import { prisma } from "../db.js";
 import { exportProject } from "./export-project.js";
+import { newId } from "../utils/id-generation.js";
 import {
   clearModelGraph,
   clearProfileGraph,
@@ -46,10 +46,6 @@ async function readJsonFromPath(filePath) {
 
   const raw = await fs.readFile(p, "utf8");
   return JSON.parse(raw);
-}
-
-function newId(prefix) {
-  return `${prefix}_${randomUUID()}`;
 }
 
 function toOptionalString(v) {

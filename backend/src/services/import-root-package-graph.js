@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { newId } from "../utils/id-generation.js";
 
 export function isRootPackageLike(rp) {
   return rp && typeof rp === "object" && Array.isArray(rp.packages);
@@ -67,7 +67,7 @@ async function importLinksModel(tx, modelId, rp) {
 
   for (const g of gen) {
     const srcId = toNonEmptyStr(g?.srcId) || toNonEmptyStr(g?.linkId);
-    const linkId = toNonEmptyStr(g?.linkId) || `gen_${randomUUID()}`;
+    const linkId = toNonEmptyStr(g?.linkId) || newId("gen");
 
     const parentClassId = toNonEmptyStr(g?.parent?.classId);
     const parentClassName = toNonEmptyStr(g?.parent?.className) || "";
@@ -111,7 +111,7 @@ async function importLinksModel(tx, modelId, rp) {
 
   for (const a of assoc) {
     const srcId = toNonEmptyStr(a?.srcId) || toNonEmptyStr(a?.linkId);
-    const linkId = toNonEmptyStr(a?.linkId) || `assoc_${randomUUID()}`;
+    const linkId = toNonEmptyStr(a?.linkId) || newId("assoc");
 
     await tx.associationLinkModel.create({
       data: {
@@ -129,7 +129,7 @@ async function importLinksModel(tx, modelId, rp) {
     const linkEnd = Array.isArray(a?.linkEnd) ? a.linkEnd : [];
     for (const e of linkEnd) {
       const srcId = toNonEmptyStr(e?.srcId) || toNonEmptyStr(e?.linkEndId);
-      const linkEndId = toNonEmptyStr(e?.linkEndId) || `end_${randomUUID()}`;
+      const linkEndId = toNonEmptyStr(e?.linkEndId) || newId("end");
       const endClassId = toNonEmptyStr(e?.linkEndClassId);
       const endClassName = toNonEmptyStr(e?.linkEndClassName) || "";
       if (!endClassId) continue;
@@ -160,7 +160,7 @@ async function importLinksProfile(tx, profileId, rp) {
 
   for (const g of gen) {
     const srcId = toNonEmptyStr(g?.srcId) || toNonEmptyStr(g?.linkId);
-    const linkId = toNonEmptyStr(g?.linkId) || `gen_${randomUUID()}`;
+    const linkId = toNonEmptyStr(g?.linkId) || newId("gen");
 
     const parentClassId = toNonEmptyStr(g?.parent?.classId);
     const parentClassName = toNonEmptyStr(g?.parent?.className) || "";
@@ -204,7 +204,7 @@ async function importLinksProfile(tx, profileId, rp) {
 
   for (const a of assoc) {
     const srcId = toNonEmptyStr(a?.srcId) || toNonEmptyStr(a?.linkId);
-    const linkId = toNonEmptyStr(a?.linkId) || `assoc_${randomUUID()}`;
+    const linkId = toNonEmptyStr(a?.linkId) || newId("assoc");
 
     await tx.associationLinkProfile.create({
       data: {
@@ -222,7 +222,7 @@ async function importLinksProfile(tx, profileId, rp) {
     const linkEnd = Array.isArray(a?.linkEnd) ? a.linkEnd : [];
     for (const e of linkEnd) {
       const srcId = toNonEmptyStr(e?.srcId) || toNonEmptyStr(e?.linkEndId);
-      const linkEndId = toNonEmptyStr(e?.linkEndId) || `end_${randomUUID()}`;
+      const linkEndId = toNonEmptyStr(e?.linkEndId) || newId("end");
       const endClassId = toNonEmptyStr(e?.linkEndClassId);
       const endClassName = toNonEmptyStr(e?.linkEndClassName) || "";
       if (!endClassId) continue;
@@ -249,7 +249,7 @@ async function importLinksProfile(tx, profileId, rp) {
 
 async function importPackageTreeModel(tx, modelId, parentId, pkg) {
   const srcId = toNonEmptyStr(pkg?.srcId) || toNonEmptyStr(pkg?.id);
-  const pkgId = toNonEmptyStr(pkg?.id) || `pkg_${randomUUID()}`;
+  const pkgId = toNonEmptyStr(pkg?.id) || newId("pkg");
 
   await tx.packageModel.create({
     data: {
@@ -269,7 +269,7 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
   const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
   for (const cls of classes) {
     const srcId = toNonEmptyStr(cls?.srcId) || toNonEmptyStr(cls?.id);
-    const classId = toNonEmptyStr(cls?.id) || `cls_${randomUUID()}`;
+    const classId = toNonEmptyStr(cls?.id) || newId("cls");
     await tx.classModel.create({
       data: {
         id: classId,
@@ -293,7 +293,7 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
       const srcId = toNonEmptyStr(attr?.srcId) || toNonEmptyStr(attr?.id);
       await tx.attributeModel.create({
         data: {
-          id: toNonEmptyStr(attr?.id) || `attr_${randomUUID()}`,
+          id: toNonEmptyStr(attr?.id) || newId("attr"),
           srcId,
           modelId,
           classId,
@@ -317,7 +317,7 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
       const srcId = toNonEmptyStr(literal?.srcId) || toNonEmptyStr(literal?.id);
       await tx.literalModel.create({
         data: {
-          id: toNonEmptyStr(literal?.id) || `lit_${randomUUID()}`,
+          id: toNonEmptyStr(literal?.id) || newId("lit"),
           srcId,
           modelId,
           classId,
@@ -338,7 +338,7 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
 
 async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
   const srcId = toNonEmptyStr(pkg?.srcId) || toNonEmptyStr(pkg?.id);
-  const pkgId = toNonEmptyStr(pkg?.id) || `pkg_${randomUUID()}`;
+  const pkgId = toNonEmptyStr(pkg?.id) || newId("pkg");
 
   await tx.packageProfile.create({
     data: {
@@ -358,7 +358,7 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
   const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
   for (const cls of classes) {
     const srcId = toNonEmptyStr(cls?.srcId) || toNonEmptyStr(cls?.id);
-    const classId = toNonEmptyStr(cls?.id) || `cls_${randomUUID()}`;
+    const classId = toNonEmptyStr(cls?.id) || newId("cls");
     await tx.classProfile.create({
       data: {
         id: classId,
@@ -382,7 +382,7 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
       const srcId = toNonEmptyStr(attr?.srcId) || toNonEmptyStr(attr?.id);
       await tx.attributeProfile.create({
         data: {
-          id: toNonEmptyStr(attr?.id) || `attr_${randomUUID()}`,
+          id: toNonEmptyStr(attr?.id) || newId("attr"),
           srcId,
           profileId,
           classId,
@@ -406,7 +406,7 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
       const srcId = toNonEmptyStr(literal?.srcId) || toNonEmptyStr(literal?.id);
       await tx.literalProfile.create({
         data: {
-          id: toNonEmptyStr(literal?.id) || `lit_${randomUUID()}`,
+          id: toNonEmptyStr(literal?.id) || newId("lit"),
           srcId,
           profileId,
           classId,

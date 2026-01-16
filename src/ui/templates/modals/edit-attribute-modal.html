@@ -9,6 +9,12 @@
           >Название атрибута*</label
         >
         <input type="text" id="edit-attr-name" class="form-input" required />
+        <div
+          id="edit-attr-name-error"
+          class="validation-feedback validation-error hidden"
+          role="alert"
+          aria-live="polite"
+        ></div>
       </div>
 
       <div class="form-group">
@@ -33,6 +39,12 @@
             </svg>
           </button>
         </div>
+        <div
+          id="edit-attr-dataType-error"
+          class="validation-feedback validation-error hidden"
+          role="alert"
+          aria-live="polite"
+        ></div>
       </div>
     </div>
 
@@ -45,6 +57,12 @@
           class="form-input"
           placeholder="Например: 1, 0..1, 0..*"
         />
+        <div
+          id="edit-attr-multiplicity-error"
+          class="validation-feedback validation-error hidden"
+          role="alert"
+          aria-live="polite"
+        ></div>
       </div>
 
       <div class="form-group">

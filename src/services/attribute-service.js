@@ -1,4 +1,6 @@
 import {
+  createModelAttribute as repoCreateModelAttribute,
+  createProfileAttribute as repoCreateProfileAttribute,
   updateModelAttribute as repoUpdateModelAttribute,
   updateProfileAttribute as repoUpdateProfileAttribute,
 } from "./repositories/attribute-repository.js";
@@ -35,4 +37,35 @@ async function updateProfileAttribute(projectId, profileId, attributeId, updates
   }
 }
 
-export { updateModelAttribute, updateProfileAttribute };
+async function createModelAttribute(projectId, modelId, classId, payload) {
+  if (!projectId || !modelId || !classId) return null;
+  try {
+    return await repoCreateModelAttribute(String(modelId), String(classId), payload);
+  } catch (error) {
+    console.error(
+      `[createModelAttribute] Failed for model ${modelId}, class ${classId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+async function createProfileAttribute(projectId, profileId, classId, payload) {
+  if (!projectId || !profileId || !classId) return null;
+  try {
+    return await repoCreateProfileAttribute(String(profileId), String(classId), payload);
+  } catch (error) {
+    console.error(
+      `[createProfileAttribute] Failed for profile ${profileId}, class ${classId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+export {
+  updateModelAttribute,
+  updateProfileAttribute,
+  createModelAttribute,
+  createProfileAttribute,
+};

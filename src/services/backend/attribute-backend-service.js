@@ -22,3 +22,21 @@ export async function updateProfileAttribute(profileId, attributeId, payload) {
     payload
   );
 }
+
+export async function createModelAttribute(modelId, classId, payload) {
+  return apiClient.post(
+    `/api/models/${encodeURIComponent(String(modelId))}/classes/${encodeURIComponent(
+      String(classId)
+    )}/attributes`,
+    payload
+  );
+}
+
+export async function createProfileAttribute(profileId, classId, payload) {
+  return apiClient.post(
+    `/api/profiles/${encodeURIComponent(String(profileId))}/classes/${encodeURIComponent(
+      String(classId)
+    )}/attributes`,
+    payload
+  );
+}
