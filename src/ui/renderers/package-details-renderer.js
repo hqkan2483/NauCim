@@ -8,7 +8,10 @@ import { buildTitleAttribute } from '../../utils/title-attribute-builder.js';
 function renderPackageForm(pkg) {
   return `
 
-      <form class="item-form" id="package-form" data-package-id="${pkg.id}">
+      <form class="item-form" id="package-form" data-package-id="${pkg.id}"
+            data-model-id="${pkg.modelId || ''}"
+            data-profile-id="${pkg.profileId || ''}"
+            data-parent-id="${pkg.parentId || ''}">
         <div class="form-section">
           <div class="form-section-title">
             <div class="form-row">
@@ -68,7 +71,7 @@ function renderPackageForm(pkg) {
           </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary btn--project-details">
+          <button type="submit" class="btn btn-primary btn--project-details" id="pkg-save-btn">
             💾 Сохранить изменения
           </button>
           <button type="button" class="btn btn-secondary btn--project-details" id="pkg-cancel-btn">

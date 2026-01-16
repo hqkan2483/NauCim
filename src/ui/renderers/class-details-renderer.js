@@ -42,7 +42,9 @@ function renderClassDetails(cls, { viewMode = 'standard' } = {}) {
  */
 function renderClassForm(cls) {
   return `
-    <form class="item-form" id="class-form" data-class-id="${cls.id}">
+    <form class="item-form" id="class-form" data-class-id="${cls.id}"
+          data-model-id="${cls.modelId || ''}"
+          data-profile-id="${cls.profileId || ''}">
       <div class="form-section">
         <div class="form-section-title">
           <div class="form-row">
@@ -96,7 +98,7 @@ function renderClassForm(cls) {
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary btn--class-details">💾 Сохранить изменения</button>
+        <button type="submit" class="btn btn-primary btn--class-details" id="cls-save-btn">💾 Сохранить изменения</button>
         <button type="button" class="btn btn-secondary btn--class-details" id="cls-cancel-btn">↩️ Отмена</button>
       </div>
     </form>

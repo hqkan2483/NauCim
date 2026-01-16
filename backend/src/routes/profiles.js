@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../db.js";
 import { asyncHandler, sendError } from "../utils/http.js";
 import { importProfileRootPackages } from "../services/import-into-existing.js";
+import { exportProject } from "../services/export-project.js";
 
 export const profilesRouter = Router();
 
@@ -29,6 +30,42 @@ const importRootPackagesSchema = z
     path: z.string().optional(),
     rootPackages: z.any().optional(),
     rootPackage: z.any().optional(),
+  })
+  .passthrough();
+
+const updatePackageSchema = z
+  .object({
+    id: z.string().min(1).optional(),
+    profileId: z.string().min(1).optional(),
+    parentId: z.string().nullable().optional(),
+    srcId: z.string().nullable().optional(),
+
+    name: z.string().optional(),
+    type: z.string().nullable().optional(),
+    parentPackage: z.string().nullable().optional(),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+const updateClassSchema = z
+  .object({
+    id: z.string().min(1).optional(),
+    profileId: z.string().min(1).optional(),
+    packageId: z.string().min(1).optional(),
+    srcId: z.string().nullable().optional(),
+
+    name: z.string().optional(),
+    type: z.string().nullable().optional(),
+    stereotype: z.string().nullable().optional(),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+    isAbstract: z.boolean().nullable().optional(),
+
+    refModelId: z.string().nullable().optional(),
+    refModelItemId: z.string().nullable().optional(),
   })
   .passthrough();
 
@@ -156,6 +193,109 @@ profilesRouter.put(
       data: parsed.data,
     });
     res.json(updated);
+  })
+);
+
+// Update a package inside a profile graph.
+// Returns full updated project (export payload).
+profilesRouter.put(
+  "/:profileId/packages/:packageId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const packageId = String(req.params.packageId);
+    const parsed = updatePackageSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid package update", parsed.error.flatten());
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { id: profileId },
+      select: { id: true, projectId: true },
+    });
+    if (!profile) return sendError(res, 404, "Profile not found");
+
+    const existing = await prisma.packageProfile.findUnique({
+      where: { id: packageId },
+      select: { id: true, profileId: true },
+    });
+    if (!existing || String(existing.profileId) !== String(profileId)) {
+      return sendError(res, 404, "Package not found");
+    }
+
+    const allowed = {
+      name: parsed.data.name,
+      documentation: parsed.data.documentation,
+      documentationRu: parsed.data.documentationRu,
+      details: parsed.data.details,
+      type: parsed.data.type,
+      parentPackage: parsed.data.parentPackage,
+      parentId: parsed.data.parentId,
+      srcId: parsed.data.srcId,
+    };
+    const data = Object.fromEntries(
+      Object.entries(allowed).filter(([, v]) => v !== undefined)
+    );
+
+    await prisma.packageProfile.update({
+      where: { id: packageId },
+      data,
+    });
+
+    const project = await exportProject(profile.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Update a class inside a profile graph.
+// Returns full updated project (export payload).
+profilesRouter.put(
+  "/:profileId/classes/:classId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const classId = String(req.params.classId);
+    const parsed = updateClassSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid class update", parsed.error.flatten());
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { id: profileId },
+      select: { id: true, projectId: true },
+    });
+    if (!profile) return sendError(res, 404, "Profile not found");
+
+    const existing = await prisma.classProfile.findUnique({
+      where: { id: classId },
+      select: { id: true, profileId: true },
+    });
+    if (!existing || String(existing.profileId) !== String(profileId)) {
+      return sendError(res, 404, "Class not found");
+    }
+
+    const allowed = {
+      name: parsed.data.name,
+      stereotype: parsed.data.stereotype,
+      documentation: parsed.data.documentation,
+      documentationRu: parsed.data.documentationRu,
+      details: parsed.data.details,
+      isAbstract: parsed.data.isAbstract,
+      refModelId: parsed.data.refModelId,
+      refModelItemId: parsed.data.refModelItemId,
+      srcId: parsed.data.srcId,
+    };
+    const data = Object.fromEntries(
+      Object.entries(allowed).filter(([, v]) => v !== undefined)
+    );
+
+    await prisma.classProfile.update({
+      where: { id: classId },
+      data,
+    });
+
+    const project = await exportProject(profile.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
   })
 );
 

@@ -59,6 +59,15 @@ import {
 import { renderPackageDetails } from "../../ui/renderers/package-details-renderer.js";
 import { renderClassDetails } from "../../ui/renderers/class-details-renderer.js";
 import { initDiagramMode } from "./project-details/diagram-mode.js";
+import { showToast } from "../../ui/components/toast.js";
+import {
+  updateModelPackage as updateModelPackageInBackend,
+  updateProfilePackage as updateProfilePackageInBackend,
+} from "../../services/package-service.js";
+import {
+  updateModelClass as updateModelClassInBackend,
+  updateProfileClass as updateProfileClassInBackend,
+} from "../../services/class-service.js";
 
 // ============================================================
 // STATE
@@ -925,11 +934,17 @@ async function handleSelectPackage(packageId, modelId = "", profileId = "") {
     return;
   }
 
-  originalItemData = JSON.parse(JSON.stringify(pkg));
+  const pkgView = {
+    ...pkg,
+    modelId: modelId || "",
+    profileId: profileId || "",
+  };
+
+  originalItemData = JSON.parse(JSON.stringify(pkgView));
 
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderPackageDetails(pkg, {
+    itemDetailsContent.innerHTML = renderPackageDetails(pkgView, {
       viewMode: getItemDetailsViewMode(),
     });
   }
@@ -1607,29 +1622,111 @@ function findClassParentChain(project, classId, modelId, profileId, context) {
 // ============================================================
 // FORM SUBMIT HANDLER
 // ============================================================
-function handleItemDetailsSubmit(e) {
+async function handleItemDetailsSubmit(e) {
   e.preventDefault();
   const form = e.target;
 
-  if (form.id === "package-form") handleSavePackage(form);
-  else if (form.id === "class-form") handleSaveClass(form);
+  if (form.id === "package-form") await handleSavePackage(form);
+  else if (form.id === "class-form") await handleSaveClass(form);
 }
 
 // ============================================================
 // PACKAGE HANDLERS
 // ============================================================
-function handleSavePackage(form) {
+async function handleSavePackage(form) {
   const packageId = form.getAttribute("data-package-id");
+  const modelId = form.getAttribute("data-model-id") || originalItemData?.modelId || "";
+  const profileId = form.getAttribute("data-profile-id") || originalItemData?.profileId || "";
+
+  const context = modelId && modelId !== "" ? "model" : profileId && profileId !== "" ? "profile" : null;
+  if (!context) {
+    showToast("Не удалось определить контекст пакета (model/profile)", { type: "error" });
+    return;
+  }
+
   const updatedData = {
-    name: document.getElementById("pkg-name").value.trim(),
-    documentation: document.getElementById("pkg-documentation").value.trim(),
-    documentationRu: document
-      .getElementById("pkg-documentationRu")
-      .value.trim(),
-    details: document.getElementById("pkg-details").value.trim(),
+    id: packageId,
+    modelId: modelId || undefined,
+    profileId: profileId || undefined,
+
+    name: document.getElementById("pkg-name")?.value?.trim() ?? "",
+    documentation: document.getElementById("pkg-documentation")?.value?.trim() ?? "",
+    documentationRu: document.getElementById("pkg-documentationRu")?.value?.trim() ?? "",
+    details: document.getElementById("pkg-details")?.value?.trim() ?? "",
   };
 
-  alert("Функция сохранения пакета в разработке");
+  const saveBtn = document.getElementById("pkg-save-btn");
+  if (saveBtn) saveBtn.disabled = true;
+
+  try {
+    const updatedProject =
+      context === "model"
+        ? await updateModelPackageInBackend(currentProjectId, modelId, packageId, updatedData)
+        : await updateProfilePackageInBackend(currentProjectId, profileId, packageId, updatedData);
+
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    selectedTreeSnapshot = {
+      type: "package",
+      packageId,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
+      classId: null,
+    };
+
+    await renderProjectTreeSidebar(updatedProject);
+
+    const chain = findPackageParentChain(
+      updatedProject,
+      packageId,
+      modelId,
+      profileId,
+      context
+    );
+    expandTreePath(chain);
+    restoreSelectedTreeItemInTree();
+
+    const updatedPkg = findPackageById(
+      updatedProject,
+      packageId,
+      modelId,
+      profileId,
+      context
+    );
+    if (updatedPkg) {
+      const pkgView = {
+        ...updatedPkg,
+        modelId: modelId || "",
+        profileId: profileId || "",
+      };
+
+      originalItemData = JSON.parse(JSON.stringify(pkgView));
+      const itemDetailsContent = document.getElementById("item-details-content");
+      if (itemDetailsContent) {
+        itemDetailsContent.innerHTML = renderPackageDetails(pkgView, {
+          viewMode: getItemDetailsViewMode(),
+        });
+      }
+    }
+
+    showToast("Пакет сохранён", { type: "success" });
+  } catch (error) {
+    console.error("[handleSavePackage] Save failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка сохранения";
+    showToast(`Ошибка сохранения пакета: ${msg}`, { type: "error" });
+
+    // Rollback UI to original state (discard edits).
+    const itemDetailsContent = document.getElementById("item-details-content");
+    if (itemDetailsContent && originalItemData) {
+      itemDetailsContent.innerHTML = renderPackageDetails(originalItemData, {
+        viewMode: getItemDetailsViewMode(),
+      });
+    }
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
 }
 
 function handleCancelPackageEdit() {
@@ -1647,20 +1744,114 @@ function handleCancelPackageEdit() {
 // ============================================================
 // CLASS HANDLERS
 // ============================================================
-function handleSaveClass(form) {
+async function handleSaveClass(form) {
   const classId = form.getAttribute("data-class-id");
+
+  const modelId = form.getAttribute("data-model-id") || originalItemData?.modelId || "";
+  const profileId = form.getAttribute("data-profile-id") || originalItemData?.profileId || "";
+
+  const context = modelId && modelId !== "" ? "model" : profileId && profileId !== "" ? "profile" : null;
+  if (!context) {
+    showToast("Не удалось определить контекст класса (model/profile)", { type: "error" });
+    return;
+  }
+
+  const activeTab =
+    getActiveClassTabName() ||
+    lastClassTabName ||
+    (diagramMode?.isEnabled() ? "item-general" : "item-attributes");
+
   const updatedData = {
-    name: document.getElementById("cls-name").value.trim(),
-    stereotype: document.getElementById("cls-stereotype").value.trim(),
-    isAbstract: document.getElementById("cls-isAbstract").checked,
-    documentation: document.getElementById("cls-documentation").value.trim(),
-    documentationRu: document
-      .getElementById("cls-documentationRu")
-      .value.trim(),
-    details: document.getElementById("cls-details").value.trim(),
+    id: classId,
+    modelId: modelId || undefined,
+    profileId: profileId || undefined,
+
+    name: document.getElementById("cls-name")?.value?.trim() ?? "",
+    stereotype: document.getElementById("cls-stereotype")?.value?.trim() ?? "",
+    isAbstract: Boolean(document.getElementById("cls-isAbstract")?.checked),
+    documentation: document.getElementById("cls-documentation")?.value?.trim() ?? "",
+    documentationRu: document.getElementById("cls-documentationRu")?.value?.trim() ?? "",
+    details: document.getElementById("cls-details")?.value?.trim() ?? "",
+
+    // Other identifiers (pass through if present on the object)
+    refModelId: originalItemData?.refModelId ?? null,
+    refModelItemId: originalItemData?.refModelItemId ?? null,
   };
 
-  alert("Функция сохранения класса в разработке");
+  const saveBtn = document.getElementById("cls-save-btn");
+  if (saveBtn) saveBtn.disabled = true;
+
+  try {
+    const updatedProject =
+      context === "model"
+        ? await updateModelClassInBackend(currentProjectId, modelId, classId, updatedData)
+        : await updateProfileClassInBackend(currentProjectId, profileId, classId, updatedData);
+
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    selectedTreeSnapshot = {
+      type: "class",
+      classId,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
+      packageId: null,
+    };
+
+    await renderProjectTreeSidebar(updatedProject);
+
+    const chain = findClassParentChain(
+      updatedProject,
+      classId,
+      modelId,
+      profileId,
+      context
+    );
+    expandTreePath(chain);
+    restoreSelectedTreeItemInTree();
+
+    const updatedCls = findClassById(
+      updatedProject,
+      classId,
+      modelId,
+      profileId,
+      context
+    );
+    if (updatedCls) {
+      const clsView = {
+        ...updatedCls,
+        modelId: modelId || "",
+        profileId: profileId || "",
+      };
+
+      originalItemData = JSON.parse(JSON.stringify(clsView));
+      const itemDetailsContent = document.getElementById("item-details-content");
+      if (itemDetailsContent) {
+        itemDetailsContent.innerHTML = renderClassDetails(clsView, {
+          viewMode: getItemDetailsViewMode(),
+        });
+        if (activeTab) activateTab(activeTab);
+      }
+    }
+
+    showToast("Класс сохранён", { type: "success" });
+  } catch (error) {
+    console.error("[handleSaveClass] Save failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка сохранения";
+    showToast(`Ошибка сохранения класса: ${msg}`, { type: "error" });
+
+    // Rollback UI to original state (discard edits).
+    const itemDetailsContent = document.getElementById("item-details-content");
+    if (itemDetailsContent && originalItemData) {
+      itemDetailsContent.innerHTML = renderClassDetails(originalItemData, {
+        viewMode: getItemDetailsViewMode(),
+      });
+      if (activeTab) activateTab(activeTab);
+    }
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
 }
 
 function handleCancelClassEdit() {
