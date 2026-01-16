@@ -405,7 +405,7 @@ interface Attribute {
 > - `AssociationLink` + `AssociationLinkEnd[]` (ассоциации)
 >
 > `ClassLink` может быть дополнительно обогащён бизнес-логикой (роль, имена ролей, описания концов и т.п.).
-> В дальнейшем планируется отказаться от `ClassLink` как части канонического контракта.
+> 
 
 Связи класса. справочная информация.
 
@@ -414,6 +414,9 @@ interface ClassLink {
   linkId: string; // Уникальный идентификатор
   relationKind: string; // тип связи Generalization, Association
   role: string; // роль, которую выполняет класс, по отношению к target-class:  child - класс является потомком от target-class, parent - класс является родителем для target-class (для типа Generalization); unspecified - для типа Association
+  documentation: string; // Описание связи в целом
+  documentationRu: string; // Дополнительная информация по связи в целом
+  details: string
   targetClassId: string; // идентификатор целевого класса
   targetClassName: string; // имя целевого класса
   targetClassRoleName?: string; // имя роли для конца ассоциации для целевого класса (заполняется для Association)
