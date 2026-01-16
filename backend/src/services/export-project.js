@@ -163,7 +163,7 @@ function sortClassLinks(list) {
 }
 
 async function exportPackagesTreeModel(modelId) {
-  const [packages, classes, attributes, literals, generalizationLinks] = await Promise.all([
+  const [packages, classes, attributes, literals, generalizationLinks, associationLinks] = await Promise.all([
     prisma.packageModel.findMany({
       where: { modelId },
       select: {
@@ -224,10 +224,30 @@ async function exportPackagesTreeModel(modelId) {
       select: {
         id: true,
         linkType: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
         ends: {
           select: {
             role: true,
             classId: true,
+          },
+        },
+      },
+    }),
+    prisma.associationLinkModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        linkType: true,
+        linkEnd: {
+          select: {
+            linkEndName: true,
+            linkEndClassId: true,
+            multiplicity: true,
+            documentation: true,
+            documentationRu: true,
+            details: true,
           },
         },
       },
@@ -259,18 +279,44 @@ async function exportPackagesTreeModel(modelId) {
         linkId: g.id,
         relationKind: g.linkType,
         role: e.role,
-        documentation: g.documentation ?? null,
-        documentationRu: g.documentationRu ?? null,
-        details: g.details ?? null,
-        stereotype: g.stereotype ?? "",
         targetClassId: other.classId,
         targetClassName: classNameById.get(other.classId) ?? "",
         targetClassRoleName: null,
         srcClassRoleName: null,
-        targetDescription: null,
+        targetDescription: g.documentation ?? null,
+        targetDocumentationRu: g.documentationRu ?? null,
+        targetDetails: g.details ?? null,
         multiplicity: "1",
       });
       generalizationLinksByClassId.set(e.classId, list);
+    }
+  }
+
+  const associationLinksByClassId = new Map();
+  for (const a of associationLinks) {
+    const ends = Array.isArray(a?.linkEnd) ? a.linkEnd : [];
+    for (const e of ends) {
+      const srcClassId = e?.linkEndClassId;
+      if (!srcClassId) continue;
+
+      const other = ends.find((x) => x?.linkEndClassId && x.linkEndClassId !== srcClassId) || null;
+      if (!other?.linkEndClassId) continue;
+
+      const list = associationLinksByClassId.get(srcClassId) || [];
+      list.push({
+        linkId: a.id,
+        relationKind: a.linkType,
+        role: "unspecified",
+        targetClassId: other.linkEndClassId,
+        targetClassName: classNameById.get(other.linkEndClassId) ?? "",
+        targetClassRoleName: other.linkEndName ?? null,
+        srcClassRoleName: e.linkEndName ?? null,
+        targetDescription: other.documentation ?? null,
+        targetDocumentationRu: other.documentationRu ?? null,
+        targetDetails: other.details ?? null,
+        multiplicity: other.multiplicity ?? null,
+      });
+      associationLinksByClassId.set(srcClassId, list);
     }
   }
 
@@ -312,7 +358,10 @@ async function exportPackagesTreeModel(modelId) {
         modelId,
         profileId: null,
       })),
-      links: sortClassLinks(generalizationLinksByClassId.get(c.id) || []),
+      links: sortClassLinks([
+        ...(generalizationLinksByClassId.get(c.id) || []),
+        ...(associationLinksByClassId.get(c.id) || []),
+      ]),
       literals: (litsByClass.get(c.id) || []).map(mapLiteral),
       profileRelations: [],
       modelId,
@@ -341,7 +390,7 @@ async function exportPackagesTreeModel(modelId) {
 }
 
 async function exportPackagesTreeProfile(profileId) {
-  const [packages, classes, attributes, literals, generalizationLinks] = await Promise.all([
+  const [packages, classes, attributes, literals, generalizationLinks, associationLinks] = await Promise.all([
     prisma.packageProfile.findMany({
       where: { profileId },
       select: {
@@ -402,10 +451,30 @@ async function exportPackagesTreeProfile(profileId) {
       select: {
         id: true,
         linkType: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
         ends: {
           select: {
             role: true,
             classId: true,
+          },
+        },
+      },
+    }),
+    prisma.associationLinkProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        linkType: true,
+        linkEnd: {
+          select: {
+            linkEndName: true,
+            linkEndClassId: true,
+            multiplicity: true,
+            documentation: true,
+            documentationRu: true,
+            details: true,
           },
         },
       },
@@ -441,10 +510,40 @@ async function exportPackagesTreeProfile(profileId) {
         targetClassName: classNameById.get(other.classId) ?? "",
         targetClassRoleName: null,
         srcClassRoleName: null,
-        targetDescription: null,
+        targetDescription: g.documentation ?? null,
+        targetDocumentationRu: g.documentationRu ?? null,
+        targetDetails: g.details ?? null,
         multiplicity: "1",
       });
       generalizationLinksByClassId.set(e.classId, list);
+    }
+  }
+
+  const associationLinksByClassId = new Map();
+  for (const a of associationLinks) {
+    const ends = Array.isArray(a?.linkEnd) ? a.linkEnd : [];
+    for (const e of ends) {
+      const srcClassId = e?.linkEndClassId;
+      if (!srcClassId) continue;
+
+      const other = ends.find((x) => x?.linkEndClassId && x.linkEndClassId !== srcClassId) || null;
+      if (!other?.linkEndClassId) continue;
+
+      const list = associationLinksByClassId.get(srcClassId) || [];
+      list.push({
+        linkId: a.id,
+        relationKind: a.linkType,
+        role: "unspecified",
+        targetClassId: other.linkEndClassId,
+        targetClassName: classNameById.get(other.linkEndClassId) ?? "",
+        targetClassRoleName: other.linkEndName ?? null,
+        srcClassRoleName: e.linkEndName ?? null,
+        targetDescription: other.documentation ?? null,
+        targetDocumentationRu: other.documentationRu ?? null,
+        targetDetails: other.details ?? null,
+        multiplicity: other.multiplicity ?? null,
+      });
+      associationLinksByClassId.set(srcClassId, list);
     }
   }
 
@@ -486,7 +585,10 @@ async function exportPackagesTreeProfile(profileId) {
         modelId: null,
         profileId,
       })),
-      links: sortClassLinks(generalizationLinksByClassId.get(c.id) || []),
+      links: sortClassLinks([
+        ...(generalizationLinksByClassId.get(c.id) || []),
+        ...(associationLinksByClassId.get(c.id) || []),
+      ]),
       literals: (litsByClass.get(c.id) || []).map(mapLiteral),
       profileRelations: [],
       modelId: null,

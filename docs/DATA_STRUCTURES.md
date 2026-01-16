@@ -414,14 +414,13 @@ interface ClassLink {
   linkId: string; // Уникальный идентификатор
   relationKind: string; // тип связи Generalization, Association
   role: string; // роль, которую выполняет класс, по отношению к target-class:  child - класс является потомком от target-class, parent - класс является родителем для target-class (для типа Generalization); unspecified - для типа Association
-  documentation: string; // Описание связи в целом
-  documentationRu: string; // Дополнительная информация по связи в целом
-  details: string
   targetClassId: string; // идентификатор целевого класса
   targetClassName: string; // имя целевого класса
   targetClassRoleName?: string; // имя роли для конца ассоциации для целевого класса (заполняется для Association)
   srcClassRoleName?: string; // имя роли для конца ассоциации для класса-источника (заполняется для Association)
   targetDescription?: string; // описание роли для конца ассоциации для целевого класса (заполняется для Association)
+  targetDocumentationRu: string; // Дополнительная информация для целевого класса (заполняется для Association)
+  targetDetails: string;
   multiplicity: string; // Кардинальность (например, "1", "0..1", "0..*")
 }
 ```
