@@ -199,7 +199,7 @@ async function exportPackagesTreeModel(modelId) {
         id: true,
         classId: true,
         name: true,
-        type: true,
+        dataTypeId: true,
         multiplicity: true,
         documentation: true,
         documentationRu: true,
@@ -354,7 +354,7 @@ async function exportPackagesTreeModel(modelId) {
       details: c.details ?? null,
       isAbstract: c.isAbstract ?? null,
       attributes: (attrsByClass.get(c.id) || []).map((a) => ({
-        ...mapAttr(a),
+        ...mapAttr(a, { classNameById }),
         modelId,
         profileId: null,
       })),
@@ -426,7 +426,7 @@ async function exportPackagesTreeProfile(profileId) {
         id: true,
         classId: true,
         name: true,
-        type: true,
+        dataTypeId: true,
         multiplicity: true,
         documentation: true,
         documentationRu: true,
@@ -581,7 +581,7 @@ async function exportPackagesTreeProfile(profileId) {
       details: c.details ?? null,
       isAbstract: c.isAbstract ?? null,
       attributes: (attrsByClass.get(c.id) || []).map((a) => ({
-        ...mapAttr(a),
+        ...mapAttr(a, { classNameById }),
         modelId: null,
         profileId,
       })),
@@ -627,11 +627,15 @@ function groupBy(items, keyFn) {
   return m;
 }
 
-function mapAttr(a) {
+function mapAttr(a, { classNameById = null } = {}) {
+  const dataTypeId = a?.dataTypeId ?? null;
+  const dataType = dataTypeId && classNameById ? classNameById.get(dataTypeId) || "" : "";
+
   return {
     id: a.id,
     name: a.name,
-    type: a.type ?? null,
+    dataType,
+    dataTypeId,
     multiplicity: a.multiplicity ?? null,
     documentation: a.documentation ?? null,
     documentationRu: a.documentationRu ?? null,

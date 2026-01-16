@@ -108,6 +108,7 @@ function remapRootPackageGraph(rp, { targetModelId = null, targetProfileId = nul
         ...a,
         id: newId("attr"),
         srcId: toOptionalString(a?.srcId) || toOptionalString(a?.id),
+        dataTypeId: a?.dataTypeId ? remapClassId(a.dataTypeId) : a?.dataTypeId ?? null,
         modelId: targetModelId ?? null,
         profileId: targetProfileId ?? null,
       }));

@@ -152,9 +152,10 @@ model ClassModel {
   model Model        @relation(fields: [modelId], references: [id], onDelete: Cascade)
   pkg   PackageModel @relation(fields: [packageId, modelId], references: [id, modelId], onDelete: Cascade)
 
-  attributes AttributeModel[]
-  links      LinkModel[]
-  literals   LiteralModel[]
+  attributes            AttributeModel[] @relation("AttributeModelOwner")
+  dataTypeForAttributes AttributeModel[] @relation("AttributeModelDataType")
+  links                 LinkModel[]
+  literals              LiteralModel[]
 
   @@unique([id, modelId])
   @@index([modelId])
@@ -182,9 +183,10 @@ model ClassProfile {
   profile Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
   pkg     PackageProfile @relation(fields: [packageId, profileId], references: [id, profileId], onDelete: Cascade)
 
-  attributes AttributeProfile[]
-  links      LinkProfile[]
-  literals   LiteralProfile[]
+  attributes            AttributeProfile[] @relation("AttributeProfileOwner")
+  dataTypeForAttributes AttributeProfile[] @relation("AttributeProfileDataType")
+  links                 LinkProfile[]
+  literals              LiteralProfile[]
 
   @@unique([id, profileId])
   @@index([profileId])
@@ -201,7 +203,7 @@ model AttributeModel {
   classId String
 
   name            String
-  type            String?
+  dataTypeId      String?
   multiplicity    String?
   documentation   String?
   documentationRu String?
@@ -210,11 +212,13 @@ model AttributeModel {
   refModelId     String?
   refModelItemId String?
 
-  model Model      @relation(fields: [modelId], references: [id], onDelete: Cascade)
-  cls   ClassModel @relation(fields: [classId, modelId], references: [id, modelId], onDelete: Cascade)
+  model    Model       @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  cls      ClassModel  @relation("AttributeModelOwner", fields: [classId, modelId], references: [id, modelId], onDelete: Cascade)
+  dataType ClassModel? @relation("AttributeModelDataType", fields: [dataTypeId, modelId], references: [id, modelId])
 
   @@index([modelId])
   @@index([classId, modelId])
+  @@index([dataTypeId, modelId])
   @@index([name])
 }
 
@@ -225,7 +229,7 @@ model AttributeProfile {
   classId   String
 
   name            String
-  type            String?
+  dataTypeId      String?
   multiplicity    String?
   documentation   String?
   documentationRu String?
@@ -234,11 +238,13 @@ model AttributeProfile {
   refModelId     String?
   refModelItemId String?
 
-  profile Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  cls     ClassProfile @relation(fields: [classId, profileId], references: [id, profileId], onDelete: Cascade)
+  profile  Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  cls      ClassProfile  @relation("AttributeProfileOwner", fields: [classId, profileId], references: [id, profileId], onDelete: Cascade)
+  dataType ClassProfile? @relation("AttributeProfileDataType", fields: [dataTypeId, profileId], references: [id, profileId])
 
   @@index([profileId])
   @@index([classId, profileId])
+  @@index([dataTypeId, profileId])
   @@index([name])
 }
 
