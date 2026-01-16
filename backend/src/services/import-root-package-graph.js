@@ -22,7 +22,6 @@ export async function clearModelGraph(tx, modelId) {
   await tx.generalizationClassRefModel.deleteMany({ where: { modelId: id } });
   await tx.generalizationLinkModel.deleteMany({ where: { modelId: id } });
   await tx.literalModel.deleteMany({ where: { modelId: id } });
-  await tx.linkModel.deleteMany({ where: { modelId: id } });
   await tx.attributeModel.deleteMany({ where: { modelId: id } });
   await tx.classModel.deleteMany({ where: { modelId: id } });
   await tx.packageModel.deleteMany({ where: { modelId: id } });
@@ -35,7 +34,6 @@ export async function clearProfileGraph(tx, profileId) {
   await tx.generalizationClassRefProfile.deleteMany({ where: { profileId: id } });
   await tx.generalizationLinkProfile.deleteMany({ where: { profileId: id } });
   await tx.literalProfile.deleteMany({ where: { profileId: id } });
-  await tx.linkProfile.deleteMany({ where: { profileId: id } });
   await tx.attributeProfile.deleteMany({ where: { profileId: id } });
   await tx.classProfile.deleteMany({ where: { profileId: id } });
   await tx.packageProfile.deleteMany({ where: { profileId: id } });
@@ -311,27 +309,6 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
       });
     }
 
-    const links = Array.isArray(cls.links) ? cls.links : [];
-    for (const link of links) {
-      const srcId = toNonEmptyStr(link?.srcId) || toNonEmptyStr(link?.id) || toNonEmptyStr(link?.linkId);
-      const linkRowId = toNonEmptyStr(link?.id) || toNonEmptyStr(link?.linkId) || `link_${randomUUID()}`;
-      await tx.linkModel.create({
-        data: {
-          id: linkRowId,
-          srcId,
-          modelId,
-          classId,
-          name: link?.name === undefined ? null : toStr(link?.name),
-          type: link.type ?? null,
-          multiplicity: link.multiplicity ?? null,
-          documentation: link.documentation ?? null,
-          documentationRu: link.documentationRu ?? null,
-          details: link.details ?? null,
-          refModelId: link.refModelId ?? null,
-          refModelItemId: link.refModelItemId ?? null,
-        },
-      });
-    }
 
     const literals = Array.isArray(cls.literals) ? cls.literals : [];
     for (const literal of literals) {
@@ -419,27 +396,6 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
       });
     }
 
-    const links = Array.isArray(cls.links) ? cls.links : [];
-    for (const link of links) {
-      const srcId = toNonEmptyStr(link?.srcId) || toNonEmptyStr(link?.id) || toNonEmptyStr(link?.linkId);
-      const linkRowId = toNonEmptyStr(link?.id) || toNonEmptyStr(link?.linkId) || `link_${randomUUID()}`;
-      await tx.linkProfile.create({
-        data: {
-          id: linkRowId,
-          srcId,
-          profileId,
-          classId,
-          name: link?.name === undefined ? null : toStr(link?.name),
-          type: link.type ?? null,
-          multiplicity: link.multiplicity ?? null,
-          documentation: link.documentation ?? null,
-          documentationRu: link.documentationRu ?? null,
-          details: link.details ?? null,
-          refModelId: link.refModelId ?? null,
-          refModelItemId: link.refModelItemId ?? null,
-        },
-      });
-    }
 
     const literals = Array.isArray(cls.literals) ? cls.literals : [];
     for (const literal of literals) {

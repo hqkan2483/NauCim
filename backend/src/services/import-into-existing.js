@@ -113,16 +113,6 @@ function remapRootPackageGraph(rp, { targetModelId = null, targetProfileId = nul
         profileId: targetProfileId ?? null,
       }));
 
-      const remappedLinks = (Array.isArray(cls.links) ? cls.links : []).map((l) => ({
-        ...l,
-        id: newId("link"),
-        srcId: toOptionalString(l?.srcId) || toOptionalString(l?.id) || toOptionalString(l?.linkId),
-        sourceClassId: l?.sourceClassId ? remapClassId(l.sourceClassId) : l?.sourceClassId ?? null,
-        targetClassId: l?.targetClassId ? remapClassId(l.targetClassId) : l?.targetClassId ?? null,
-        modelId: targetModelId ?? null,
-        profileId: targetProfileId ?? null,
-      }));
-
       const remappedLiterals = (Array.isArray(cls.literals) ? cls.literals : []).map((lit) => ({
         ...lit,
         id: newId("lit"),
@@ -138,7 +128,8 @@ function remapRootPackageGraph(rp, { targetModelId = null, targetProfileId = nul
         modelId: targetModelId ?? null,
         profileId: targetProfileId ?? null,
         attributes: remappedAttributes,
-        links: remappedLinks,
+        // Ignore incoming cls.links (derived/legacy payload field)
+        links: [],
         literals: remappedLiterals,
       };
     });

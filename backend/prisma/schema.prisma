@@ -39,7 +39,6 @@ model Model {
   packages            PackageModel[]
   classes             ClassModel[]
   attributes          AttributeModel[]
-  links               LinkModel[]
   literals            LiteralModel[]
   generalizationLinks GeneralizationLinkModel[]
   associationLinks    AssociationLinkModel[]
@@ -67,7 +66,6 @@ model Profile {
   packages            PackageProfile[]
   classes             ClassProfile[]
   attributes          AttributeProfile[]
-  links               LinkProfile[]
   literals            LiteralProfile[]
   generalizationLinks GeneralizationLinkProfile[]
   associationLinks    AssociationLinkProfile[]
@@ -154,7 +152,6 @@ model ClassModel {
 
   attributes            AttributeModel[] @relation("AttributeModelOwner")
   dataTypeForAttributes AttributeModel[] @relation("AttributeModelDataType")
-  links                 LinkModel[]
   literals              LiteralModel[]
 
   @@unique([id, modelId])
@@ -185,7 +182,6 @@ model ClassProfile {
 
   attributes            AttributeProfile[] @relation("AttributeProfileOwner")
   dataTypeForAttributes AttributeProfile[] @relation("AttributeProfileDataType")
-  links                 LinkProfile[]
   literals              LiteralProfile[]
 
   @@unique([id, profileId])
@@ -246,54 +242,6 @@ model AttributeProfile {
   @@index([classId, profileId])
   @@index([dataTypeId, profileId])
   @@index([name])
-}
-
-// ===== LINK =====
-
-model LinkModel {
-  id      String  @id
-  srcId   String?
-  modelId String
-  classId String
-
-  name            String?
-  type            String?
-  multiplicity    String?
-  documentation   String?
-  documentationRu String?
-  details         String?
-
-  refModelId     String?
-  refModelItemId String?
-
-  model Model      @relation(fields: [modelId], references: [id], onDelete: Cascade)
-  cls   ClassModel @relation(fields: [classId, modelId], references: [id, modelId], onDelete: Cascade)
-
-  @@index([modelId])
-  @@index([classId, modelId])
-}
-
-model LinkProfile {
-  id        String  @id
-  srcId     String?
-  profileId String
-  classId   String
-
-  name            String?
-  type            String?
-  multiplicity    String?
-  documentation   String?
-  documentationRu String?
-  details         String?
-
-  refModelId     String?
-  refModelItemId String?
-
-  profile Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  cls     ClassProfile @relation(fields: [classId, profileId], references: [id, profileId], onDelete: Cascade)
-
-  @@index([profileId])
-  @@index([classId, profileId])
 }
 
 // ===== LITERAL =====
