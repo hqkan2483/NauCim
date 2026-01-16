@@ -1,39 +1,31 @@
 <div id="edit-attribute-modal" class="modal">
-  <div class="modal-content">
-    <button
-      class="modal-close"
-      data-modal-close
-      aria-label="Закрыть"
-    >
-      ×
-    </button>
+  <div class="modal-content modal-content--resizable modal-content--edit-attribute">
+    <button class="modal-close" data-modal-close aria-label="Закрыть">×</button>
 
     <div class="modal-title">Редактирование атрибута</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="edit-attr-name"
+          >Название атрибута*</label
+        >
+        <input type="text" id="edit-attr-name" class="form-input" required />
+      </div>
 
-    <div class="form-group">
-      <label class="form-label" for="edit-attr-name">Название атрибута *</label>
-      <input
-        type="text"
-        id="edit-attr-name"
-        class="form-input"
-        required
-      />
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="edit-attr-dataType">Тип данных *</label>
-      <input
-        type="text"
-        id="edit-attr-dataType"
-        class="form-input"
-        required
-        placeholder="Например: String, Float, Integer"
-      />
+      <div class="form-group">
+        <label class="form-label" for="edit-attr-dataType">Тип данных*</label>
+        <input
+          type="text"
+          id="edit-attr-dataType"
+          class="form-input"
+          required
+          placeholder="Например: String, Float, Integer"
+        />
+      </div>
     </div>
 
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label" for="edit-attr-multiplicity">Multiplicity</label>
+        <label class="form-label" for="edit-attr-multiplicity">Мн.*</label>
         <input
           type="text"
           id="edit-attr-multiplicity"
@@ -44,61 +36,37 @@
 
       <div class="form-group">
         <label class="form-label" for="edit-attr-stereotype">Стереотип</label>
-        <input
-          type="text"
-          id="edit-attr-stereotype"
-          class="form-input"
-        />
+        <input type="text" id="edit-attr-stereotype" class="form-input" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="edit-attr-initialValue"
+          >Начальное значение</label
+        >
+        <input type="text" id="edit-attr-initialValue" class="form-input" />
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label" for="edit-attr-visibility">Видимость</label>
-        <select id="edit-attr-visibility" class="form-select">
-          <option value="public">public</option>
-          <option value="private">private</option>
-          <option value="protected">protected</option>
-          <option value="package">package</option>
-        </select>
+        <label class="form-label" for="edit-attr-documentation">Описание</label>
+        <textarea
+          id="edit-attr-documentation"
+          class="form-textarea"
+          rows="3"
+        ></textarea>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="edit-attr-initialValue">Начальное значение</label>
-        <input
-          type="text"
-          id="edit-attr-initialValue"
-          class="form-input"
-        />
+        <label class="form-label" for="edit-attr-documentationRu"
+          >Описание (RU)</label
+        >
+        <textarea
+          id="edit-attr-documentationRu"
+          class="form-textarea"
+          rows="3"
+        ></textarea>
       </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="edit-attr-dataTypeId">ID типа данных</label>
-      <input
-        type="text"
-        id="edit-attr-dataTypeId"
-        class="form-input"
-        placeholder="Идентификатор пользовательского типа"
-      />
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="edit-attr-documentation">Описание</label>
-      <textarea
-        id="edit-attr-documentation"
-        class="form-textarea"
-        rows="3"
-      ></textarea>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="edit-attr-documentationRu">Описание (RU)</label>
-      <textarea
-        id="edit-attr-documentationRu"
-        class="form-textarea"
-        rows="3"
-      ></textarea>
     </div>
 
     <div class="form-group">
@@ -112,7 +80,9 @@
 
     <div class="modal-buttons">
       <button class="btn btn-secondary" data-modal-close>Отмена</button>
-      <button class="btn btn-primary" id="save-attribute-edit-btn">Сохранить</button>
+      <button class="btn btn-primary" id="save-attribute-edit-btn">
+        Сохранить
+      </button>
     </div>
   </div>
 </div>

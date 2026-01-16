@@ -37,6 +37,21 @@
   overflow-y: auto;
 }
 
+/* Opt-in: resizable modal window (native browser resize handle) */
+.modal-content--resizable {
+  resize: both;
+  overflow: auto;
+
+  /* Let user grow it within viewport */
+  max-width: 90vw;
+  max-height: 90vh;
+
+  /* Sensible defaults and limits */
+  min-width: 360px;
+  min-height: 240px;
+  width: min(720px, 90vw);
+}
+
 .modal-title {
   font-size: 20px;
   font-weight: 600;
