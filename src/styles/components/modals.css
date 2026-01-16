@@ -70,3 +70,25 @@
   color: var(--secondary-text);
   margin-bottom: 15px;
 }
+
+.modal-content--data-type-picker {
+  width: min(1000px, 90vw);
+}
+
+.modal-content--data-type-picker .data-type-picker__table {
+  table-layout: fixed;
+}
+
+.modal-content--data-type-picker .data-type-picker__desc {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.modal-content--data-type-picker .data-type-picker__row {
+  cursor: pointer;
+  user-select: none;
+}
+
+.modal-content--data-type-picker .data-type-picker__row.is-selected {
+  background: var(--main-color-01);
+}

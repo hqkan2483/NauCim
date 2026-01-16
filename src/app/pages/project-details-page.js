@@ -67,7 +67,13 @@ import {
 import {
   updateModelClass as updateModelClassInBackend,
   updateProfileClass as updateProfileClassInBackend,
+  invalidateModelClassesSummary,
+  invalidateProfileClassesSummary,
 } from "../../services/class-service.js";
+import {
+  updateModelAttribute as updateModelAttributeInBackend,
+  updateProfileAttribute as updateProfileAttributeInBackend,
+} from "../../services/attribute-service.js";
 
 // ============================================================
 // STATE
@@ -98,6 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "import-model-modal",
     "import-profile-modal",
     "edit-attribute-modal",
+    "data-type-picker-modal",
     "edit-link-modal",
   ]);
 
@@ -193,16 +200,122 @@ document.addEventListener("DOMContentLoaded", async () => {
         const tabToRestore = getActiveClassTabName() || lastClassTabName;
 
         const found = findAttributeWithParent(project, attrId);
-        if (! found) return;
+        if (!found) return;
 
-        Object.assign(found.attr, updates);
+        const context = found.context;
+        const modelId = found.modelId || "";
+        const profileId = found.profileId || "";
+        const classId = found.cls?.id;
+        if (!classId) return;
 
-        const itemDetailsContent = document.getElementById("item-details-content");
-        if (itemDetailsContent) {
-          itemDetailsContent.innerHTML = renderClassDetails(found.cls, {
-            viewMode: getItemDetailsViewMode(),
+        const originalAttrSnapshot = JSON.parse(JSON.stringify(found.attr));
+        const originalClsSnapshot = JSON.parse(JSON.stringify(found.cls));
+
+        try {
+          const payload = {
+            id: attrId,
+            name: updates.name,
+            dataTypeId: updates.dataTypeId,
+            stereotype: updates.stereotype,
+            multiplicity: updates.multiplicity,
+            documentation: updates.documentation,
+            documentationRu: updates.documentationRu,
+            details: updates.details,
+            initialValue: updates.initialValue,
+
+            // Preserve external refs if present
+            refModelId: found.attr?.refModelId ?? null,
+            refModelItemId: found.attr?.refModelItemId ?? null,
+          };
+
+          const updatedProject =
+            context === "model"
+              ? await updateModelAttributeInBackend(
+                  currentProjectId,
+                  modelId,
+                  attrId,
+                  payload
+                )
+              : await updateProfileAttributeInBackend(
+                  currentProjectId,
+                  profileId,
+                  attrId,
+                  payload
+                );
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: context === "model" ? modelId : null,
+            profileId: context === "profile" ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          const chain = findClassParentChain(
+            updatedProject,
+            classId,
+            modelId,
+            profileId,
+            context
+          );
+          expandTreePath(chain);
+          restoreSelectedTreeItemInTree();
+
+          const updatedCls = findClassById(
+            updatedProject,
+            classId,
+            modelId,
+            profileId,
+            context
+          );
+
+          const itemDetailsContent = document.getElementById("item-details-content");
+          if (itemDetailsContent && updatedCls) {
+            const clsView = {
+              ...updatedCls,
+              modelId: modelId || "",
+              profileId: profileId || "",
+            };
+            originalItemData = JSON.parse(JSON.stringify(clsView));
+
+            itemDetailsContent.innerHTML = renderClassDetails(clsView, {
+              viewMode: getItemDetailsViewMode(),
+            });
+            restoreClassTab(tabToRestore);
+          }
+
+          showToast("Атрибут сохранён", { type: "success" });
+        } catch (error) {
+          console.error("[attributeModal.onUpdate] Save failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка сохранения";
+          showToast(`Ошибка сохранения атрибута: ${msg}`, { type: "error" });
+
+          // Restore class UI to original (no local mutation should have happened).
+          const itemDetailsContent = document.getElementById("item-details-content");
+          if (itemDetailsContent) {
+            const clsView = {
+              ...originalClsSnapshot,
+              modelId: modelId || "",
+              profileId: profileId || "",
+            };
+            itemDetailsContent.innerHTML = renderClassDetails(clsView, {
+              viewMode: getItemDetailsViewMode(),
+            });
+            restoreClassTab(tabToRestore);
+          }
+
+          // Re-open modal so user does not lose edits context.
+          openEditAttributeModal({
+            ...originalAttrSnapshot,
+            ...updates,
+            modelId: modelId || null,
+            profileId: profileId || null,
           });
-          restoreClassTab(tabToRestore);
         }
       },
     });
@@ -1836,6 +1949,10 @@ async function handleSaveClass(form) {
     }
 
     showToast("Класс сохранён", { type: "success" });
+
+    // Keep data type picker lists fresh after class rename/update
+    if (context === "model") invalidateModelClassesSummary(modelId);
+    if (context === "profile") invalidateProfileClassesSummary(profileId);
   } catch (error) {
     console.error("[handleSaveClass] Save failed:", error);
     const msg = error?.message ? String(error.message) : "Ошибка сохранения";
@@ -2046,7 +2163,14 @@ function findAttributeWithParent(project, attrId) {
     for (const model of project.models) {
       if (model.rootPackages?.[0]?.packages) {
         const found = searchInPackages(model.rootPackages[0].packages);
-        if (found) return found;
+        if (found) {
+          return {
+            ...found,
+            context: "model",
+            modelId: model.id,
+            profileId: null,
+          };
+        }
       }
     }
   }
@@ -2055,7 +2179,14 @@ function findAttributeWithParent(project, attrId) {
     for (const profile of project.profiles) {
       if (profile.rootPackages?.[0]?.packages) {
         const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found) return found;
+        if (found) {
+          return {
+            ...found,
+            context: "profile",
+            modelId: null,
+            profileId: profile.id,
+          };
+        }
       }
     }
   }

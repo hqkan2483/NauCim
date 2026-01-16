@@ -70,6 +70,27 @@ const updateClassSchema = z
   })
   .passthrough();
 
+const updateAttributeSchema = z
+  .object({
+    id: z.string().min(1).optional(),
+    modelId: z.string().min(1).optional(),
+    classId: z.string().min(1).optional(),
+    srcId: z.string().nullable().optional(),
+
+    name: z.string().optional(),
+    dataTypeId: z.string().nullable().optional(),
+    stereotype: z.string().nullable().optional(),
+    multiplicity: z.string().nullable().optional(),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+    initialValue: z.string().nullable().optional(),
+
+    refModelId: z.string().nullable().optional(),
+    refModelItemId: z.string().nullable().optional(),
+  })
+  .passthrough();
+
 // Get all models for a project
 modelsRouter.get(
   "/project/:projectId",
@@ -297,6 +318,114 @@ modelsRouter.put(
     const project = await exportProject(model.projectId);
     if (!project) return sendError(res, 404, "Project not found");
     res.json(project);
+  })
+);
+
+// Update an attribute inside a model graph.
+// Returns full updated project (export payload).
+modelsRouter.put(
+  "/:modelId/attributes/:attributeId",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const attributeId = String(req.params.attributeId);
+    const parsed = updateAttributeSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid attribute update", parsed.error.flatten());
+    }
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const existing = await prisma.attributeModel.findFirst({
+      where: { id: attributeId, modelId },
+      select: { id: true, modelId: true },
+    });
+    if (!existing) return sendError(res, 404, "Attribute not found");
+
+    // Normalize dataTypeId (treat empty string as null)
+    const rawDataTypeId = parsed.data.dataTypeId;
+    const normalizedDataTypeId =
+      rawDataTypeId === undefined || rawDataTypeId === null
+        ? rawDataTypeId
+        : String(rawDataTypeId).trim() || null;
+
+    // Validate dataTypeId if provided (must exist in same model)
+    if (normalizedDataTypeId) {
+      const existsType = await prisma.classModel.findFirst({
+        where: { id: String(normalizedDataTypeId), modelId },
+        select: { id: true },
+      });
+      if (!existsType) return sendError(res, 400, "Invalid dataTypeId (class not found in model)");
+    }
+
+    const allowed = {
+      name: parsed.data.name,
+      dataTypeId: normalizedDataTypeId,
+      stereotype: parsed.data.stereotype,
+      multiplicity: parsed.data.multiplicity,
+      documentation: parsed.data.documentation,
+      documentationRu: parsed.data.documentationRu,
+      details: parsed.data.details,
+      initialValue: parsed.data.initialValue,
+      refModelId: parsed.data.refModelId,
+      refModelItemId: parsed.data.refModelItemId,
+      srcId: parsed.data.srcId,
+    };
+    const data = Object.fromEntries(Object.entries(allowed).filter(([, v]) => v !== undefined));
+
+    await prisma.attributeModel.update({
+      where: { id: attributeId },
+      data,
+    });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Lookup classes/enumerations for data type selection (lightweight list).
+// Returns only fields needed by UI picker.
+modelsRouter.get(
+  "/:modelId/classes/summary",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const items = await prisma.classModel.findMany({
+      where: {
+        modelId,
+        OR: [{ type: null }, { type: { in: ["Class", "Enumeration"] } }],
+      },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        stereotype: true,
+        documentation: true,
+        documentationRu: true,
+      },
+      orderBy: { name: "asc" },
+    });
+
+    res.json(
+      items.map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type ?? "Class",
+        stereotype: c.stereotype ?? "",
+        documentation: c.documentation ?? null,
+        documentationRu: c.documentationRu ?? null,
+      }))
+    );
   })
 );
 

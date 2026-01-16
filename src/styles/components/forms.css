@@ -41,6 +41,14 @@
   margin-bottom: 15px;
 }
 
+.modal-open .modal-content .form-row {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  row-gap: 10px;
+  column-gap: 20px;
+  margin-bottom: 8px;
+
+}
+
 .page-project-details.diagram-mode .form-row {
   row-gap: 10px;
   margin-bottom: 10px;
@@ -218,6 +226,29 @@
   width: 18px;
   height: 18px;
   cursor: pointer;
+}
+
+/* Input with action button (e.g., data type picker) */
+.input-with-button {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.input-with-button .form-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.btn-icon.btn-icon--input {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 4px 10px;
+  height: auto;
+  background: var(--bg-primary);
 }
 
 

@@ -200,10 +200,13 @@ model AttributeModel {
 
   name            String
   dataTypeId      String?
+  stereotype      String?
   multiplicity    String?
   documentation   String?
   documentationRu String?
   details         String?
+
+  initialValue String?
 
   refModelId     String?
   refModelItemId String?
@@ -226,10 +229,13 @@ model AttributeProfile {
 
   name            String
   dataTypeId      String?
+  stereotype      String?
   multiplicity    String?
   documentation   String?
   documentationRu String?
   details         String?
+
+  initialValue String?
 
   refModelId     String?
   refModelItemId String?

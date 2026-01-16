@@ -22,3 +22,16 @@ export async function updateProfileClass(profileId, classId, payload) {
     payload
   );
 }
+
+// Lightweight lookup lists for data type picker
+export async function listModelClassesSummary(modelId) {
+  return apiClient.get(
+    `/api/models/${encodeURIComponent(String(modelId))}/classes/summary`
+  );
+}
+
+export async function listProfileClassesSummary(profileId) {
+  return apiClient.get(
+    `/api/profiles/${encodeURIComponent(String(profileId))}/classes/summary`
+  );
+}

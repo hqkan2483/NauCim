@@ -6,6 +6,8 @@
 import {
   updateModelClass as backendUpdateModelClass,
   updateProfileClass as backendUpdateProfileClass,
+  listModelClassesSummary as backendListModelClassesSummary,
+  listProfileClassesSummary as backendListProfileClassesSummary,
 } from "../backend/class-backend-service.js";
 
 export async function updateModelClass(modelId, classId, updates) {
@@ -18,4 +20,14 @@ export async function updateProfileClass(profileId, classId, updates) {
   if (!profileId) throw new Error("Profile ID is required");
   if (!classId) throw new Error("Class ID is required");
   return backendUpdateProfileClass(String(profileId), String(classId), updates);
+}
+
+export async function listModelClassesSummary(modelId) {
+  if (!modelId) throw new Error("Model ID is required");
+  return backendListModelClassesSummary(String(modelId));
+}
+
+export async function listProfileClassesSummary(profileId) {
+  if (!profileId) throw new Error("Profile ID is required");
+  return backendListProfileClassesSummary(String(profileId));
 }

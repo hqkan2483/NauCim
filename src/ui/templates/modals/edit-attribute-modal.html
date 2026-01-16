@@ -13,13 +13,26 @@
 
       <div class="form-group">
         <label class="form-label" for="edit-attr-dataType">Тип данных*</label>
-        <input
-          type="text"
-          id="edit-attr-dataType"
-          class="form-input"
-          required
-          placeholder="Например: String, Float, Integer"
-        />
+        <div class="input-with-button">
+          <input
+            type="text"
+            id="edit-attr-dataType"
+            class="form-input"
+            required
+            placeholder="Например: String, Float, Integer"
+          />
+          <button
+            type="button"
+            class="btn-icon btn-icon--input"
+            id="edit-attr-dataType-picker-btn"
+            title="Выбрать тип данных"
+            aria-label="Выбрать тип данных"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
 
