@@ -4,18 +4,23 @@
 
     <div class="modal-title">Выбор типа данных</div>
 
-    <div class="form-group">
-      <label class="form-label" for="data-type-picker-search">Поиск</label>
-      <input
-        type="text"
-        id="data-type-picker-search"
-        class="form-input"
-        placeholder="Введите имя класса..."
-        autocomplete="off"
-      />
-    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" for="data-type-picker-search">
+        <input
+          type="text"
+          id="data-type-picker-search"
+          class="form-input"
+          placeholder="Введите имя класса..."
+          autocomplete="off"
+        />
+        </label>
+      </div>
 
-    <div id="data-type-picker-table"></div>
+      <div class="data-type-picker-table-wrapper">
+        <div id="data-type-picker-table"></div>
+      </div>
+    </div>
 
     <div class="modal-buttons">
       <button class="btn btn-secondary" data-modal-close>Отмена</button>

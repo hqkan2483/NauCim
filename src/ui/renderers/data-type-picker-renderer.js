@@ -1,3 +1,5 @@
+import { escapeHtml } from "../../utils/text-utils.js";
+
 /**
  * Data Type Picker Renderer
  * Renders a selectable table of Class/Enumeration items.
@@ -14,9 +16,14 @@ function joinDescription(documentation, documentationRu) {
   return a || b || "";
 }
 
-export function renderDataTypePickerTable(items, { filter = "", selectedId = null } = {}) {
+export function renderDataTypePickerTable(
+  items,
+  { filter = "", selectedId = null } = {},
+) {
   const f = normalizeText(filter);
-  const filtered = (items || []).filter((it) => normalizeText(it.name).includes(f));
+  const filtered = (items || []).filter((it) =>
+    normalizeText(it.name).includes(f),
+  );
 
   if (!filtered.length) {
     return `
@@ -43,6 +50,12 @@ export function renderDataTypePickerTable(items, { filter = "", selectedId = nul
 
   return `
     <table class="table data-type-picker__table">
+      <colgroup>
+        <col style="width: 25%;"/>
+        <col style="width:  15%;"/>
+        <col style="width: 15%;"/>
+        <col style="width: 45%;"/>
+      </colgroup>
       <thead>
         <tr>
           <th>Имя</th>
@@ -56,13 +69,4 @@ export function renderDataTypePickerTable(items, { filter = "", selectedId = nul
       </tbody>
     </table>
   `;
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }
