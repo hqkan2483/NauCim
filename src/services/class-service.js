@@ -1,6 +1,8 @@
 import {
   updateModelClass as repoUpdateModelClass,
   updateProfileClass as repoUpdateProfileClass,
+  createModelClass as repoCreateModelClass,
+  createProfileClass as repoCreateProfileClass,
   listModelClassesSummary as repoListModelClassesSummary,
   listProfileClassesSummary as repoListProfileClassesSummary,
 } from "./repositories/class-repository.js";
@@ -81,7 +83,33 @@ async function updateProfileClass(projectId, profileId, classId, updates) {
   }
 }
 
-export { updateModelClass, updateProfileClass };
+async function createModelClass(projectId, modelId, packageId, payload) {
+  if (!projectId || !modelId || !packageId) return null;
+  try {
+    return await repoCreateModelClass(String(modelId), String(packageId), payload);
+  } catch (error) {
+    console.error(
+      `[createModelClass] Failed for model ${modelId}, package ${packageId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+async function createProfileClass(projectId, profileId, packageId, payload) {
+  if (!projectId || !profileId || !packageId) return null;
+  try {
+    return await repoCreateProfileClass(String(profileId), String(packageId), payload);
+  } catch (error) {
+    console.error(
+      `[createProfileClass] Failed for profile ${profileId}, package ${packageId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+export { updateModelClass, updateProfileClass, createModelClass, createProfileClass };
 
 export {
   listModelClassesSummary,

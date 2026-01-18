@@ -204,7 +204,8 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
   const isExpanded = expandedItems[itemId];
   const hasChildren =
     (pkg.subPackages && pkg.subPackages.length > 0) ||
-    (pkg.classes && pkg.classes.length > 0);
+    (pkg.classes && pkg.classes.length > 0) ||
+    (pkg.diagrams && pkg.diagrams.length > 0);
 
   let html = `
     <div class="tree-structure-item">
@@ -256,11 +257,45 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
       });
     }
 
+    // Then render diagrams
+    if (pkg.diagrams && pkg.diagrams.length > 0) {
+      pkg.diagrams.forEach((d, idx) => {
+        html += renderDiagramTree(d, `${itemId}-dia-${idx}`, modelId, profileId);
+      });
+    }
+
     html += `</div>`;
   }
 
   html += `</div>`;
   return html;
+}
+
+/**
+ * Render diagram tree (leaf node)
+ */
+function renderDiagramTree(diagram, itemId, modelId = null, profileId = null) {
+  const name = diagram?.diagramName || "Диаграмма";
+  const type = diagram?.diagramType || "";
+
+  const label = type ? `📐 ${name} (${type})` : `📐 ${name}`;
+
+  return `
+    <div class="tree-structure-item">
+      <div class="tree-structure-header">
+        <span class="tree-expand-spacer"></span>
+        <span class="tree-structure-name"
+              data-type="diagram"
+              data-diagram-id="${diagram?.id || ""}"
+              data-model-id="${modelId || ""}"
+              data-profile-id="${profileId || ""}"
+              data-action="select-diagram"
+              title="${buildTitleAttribute(diagram?.documentation, null, name)}">
+          ${label}
+        </span>
+      </div>
+    </div>
+  `;
 }
 
 /**

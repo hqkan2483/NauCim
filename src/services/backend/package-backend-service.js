@@ -22,3 +22,21 @@ export async function updateProfilePackage(profileId, packageId, payload) {
     payload
   );
 }
+
+export async function createModelSubpackage(modelId, parentPackageId, payload) {
+  return apiClient.post(
+    `/api/models/${encodeURIComponent(String(modelId))}/packages/${encodeURIComponent(
+      String(parentPackageId)
+    )}/subpackages`,
+    payload
+  );
+}
+
+export async function createProfileSubpackage(profileId, parentPackageId, payload) {
+  return apiClient.post(
+    `/api/profiles/${encodeURIComponent(String(profileId))}/packages/${encodeURIComponent(
+      String(parentPackageId)
+    )}/subpackages`,
+    payload
+  );
+}

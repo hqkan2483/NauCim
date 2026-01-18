@@ -64,13 +64,42 @@ import { showToast } from "../../ui/components/toast.js";
 import {
   updateModelPackage as updateModelPackageInBackend,
   updateProfilePackage as updateProfilePackageInBackend,
+  createModelSubpackage as createModelSubpackageInBackend,
+  createProfileSubpackage as createProfileSubpackageInBackend,
 } from "../../services/package-service.js";
 import {
   updateModelClass as updateModelClassInBackend,
   updateProfileClass as updateProfileClassInBackend,
+  createModelClass as createModelClassInBackend,
+  createProfileClass as createProfileClassInBackend,
   invalidateModelClassesSummary,
   invalidateProfileClassesSummary,
 } from "../../services/class-service.js";
+import {
+  createModelDiagram as createModelDiagramInBackend,
+  createProfileDiagram as createProfileDiagramInBackend,
+} from "../../services/diagram-service.js";
+import { initPackageTreeContextMenu } from "../../ui/components/package-context-menu.js";
+import {
+  initCreatePackageModal,
+  openCreatePackageModal,
+} from "../../ui/components/create-package-modal.js";
+import {
+  initCreateClassModal,
+  openCreateClassModal,
+} from "../../ui/components/create-class-modal.js";
+import {
+  initCreateDiagramModal,
+  openCreateDiagramModal,
+} from "../../ui/components/create-diagram-modal.js";
+import {
+  getSubpackageNameSet,
+  getClassNameSet,
+  getDiagramNameSet,
+  findSubpackageIdByName,
+  findClassIdByName,
+  findDiagramIdByName,
+} from "../../utils/project-traversal.js";
 import {
   updateModelAttribute as updateModelAttributeInBackend,
   updateProfileAttribute as updateProfileAttributeInBackend,
@@ -109,6 +138,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     "edit-attribute-modal",
     "data-type-picker-modal",
     "edit-link-modal",
+    "create-package-modal",
+    "create-class-modal",
+    "create-diagram-modal",
   ]);
 
   initModalSystem();
@@ -440,6 +472,193 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       },
     });
+
+    /**
+     * Modal: create nested package (subpackage).
+     * Persists through service layer; backend returns full updated project.
+     */
+    initCreatePackageModal(currentProjectId, {
+      onCreate: async ({ parentPackageId, modelId = "", profileId = "", payload }) => {
+        const context = modelId && modelId !== "" ? "model" : "profile";
+
+        const updatedProject =
+          context === "model"
+            ? await createModelSubpackageInBackend(
+                currentProjectId,
+                modelId,
+                parentPackageId,
+                payload
+              )
+            : await createProfileSubpackageInBackend(
+                currentProjectId,
+                profileId,
+                parentPackageId,
+                payload
+              );
+
+        if (!updatedProject) {
+          throw new Error("Backend did not return updated project");
+        }
+
+        const newPackageId = findSubpackageIdByName(updatedProject, {
+          context,
+          modelId,
+          profileId,
+          parentPackageId,
+          name: payload?.name,
+        });
+
+        if (!newPackageId) {
+          throw new Error("Не удалось найти созданный пакет в ответе сервера");
+        }
+
+        selectedTreeSnapshot = {
+          type: "package",
+          packageId: newPackageId,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
+          classId: null,
+          diagramId: null,
+        };
+
+        await renderProjectTreeSidebar(updatedProject);
+        const chain = findPackageParentChain(
+          updatedProject,
+          newPackageId,
+          modelId,
+          profileId,
+          context
+        );
+        expandTreePath(chain);
+        restoreSelectedTreeItemInTree();
+
+        await handleSelectPackage(newPackageId, modelId, profileId);
+      },
+    });
+
+    /**
+     * Modal: create class inside a package.
+     * Persists through service layer; backend returns full updated project.
+     */
+    initCreateClassModal(currentProjectId, {
+      onCreate: async ({ packageId, modelId = "", profileId = "", payload }) => {
+        const context = modelId && modelId !== "" ? "model" : "profile";
+
+        const updatedProject =
+          context === "model"
+            ? await createModelClassInBackend(
+                currentProjectId,
+                modelId,
+                packageId,
+                payload
+              )
+            : await createProfileClassInBackend(
+                currentProjectId,
+                profileId,
+                packageId,
+                payload
+              );
+
+        if (!updatedProject) {
+          throw new Error("Backend did not return updated project");
+        }
+
+        const newClassId = findClassIdByName(updatedProject, {
+          context,
+          modelId,
+          profileId,
+          name: payload?.name,
+        });
+
+        if (!newClassId) {
+          throw new Error("Не удалось найти созданный класс в ответе сервера");
+        }
+
+        selectedTreeSnapshot = {
+          type: "class",
+          classId: newClassId,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
+          packageId: null,
+          diagramId: null,
+        };
+
+        await renderProjectTreeSidebar(updatedProject);
+        const chain = findClassParentChain(
+          updatedProject,
+          newClassId,
+          modelId,
+          profileId,
+          context
+        );
+        expandTreePath(chain);
+        restoreSelectedTreeItemInTree();
+
+        await handleSelectClass(newClassId, modelId, profileId);
+      },
+    });
+
+    /**
+     * Modal: create diagram inside a package.
+     * Persists through service layer; backend returns full updated project.
+     */
+    initCreateDiagramModal(currentProjectId, {
+      onCreate: async ({ packageId, modelId = "", profileId = "", payload }) => {
+        const context = modelId && modelId !== "" ? "model" : "profile";
+
+        const updatedProject =
+          context === "model"
+            ? await createModelDiagramInBackend(
+                currentProjectId,
+                modelId,
+                packageId,
+                payload
+              )
+            : await createProfileDiagramInBackend(
+                currentProjectId,
+                profileId,
+                packageId,
+                payload
+              );
+
+        if (!updatedProject) {
+          throw new Error("Backend did not return updated project");
+        }
+
+        const newDiagramId = findDiagramIdByName(updatedProject, {
+          context,
+          modelId,
+          profileId,
+          name: payload?.diagramName,
+        });
+
+        if (!newDiagramId) {
+          throw new Error("Не удалось найти созданную диаграмму в ответе сервера");
+        }
+
+        selectedTreeSnapshot = {
+          type: "diagram",
+          diagramId: newDiagramId,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
+          packageId: null,
+          classId: null,
+        };
+
+        await renderProjectTreeSidebar(updatedProject);
+        const chain = findDiagramParentChain(
+          updatedProject,
+          newDiagramId,
+          modelId,
+          profileId,
+          context
+        );
+        expandTreePath(chain);
+        restoreSelectedTreeItemInTree();
+
+        await handleSelectDiagram(newDiagramId, modelId, profileId);
+      },
+    });
   }
 
   bindEvents();
@@ -481,6 +700,68 @@ function bindEvents() {
     "current-project-structure"
   );
   if (projectStructureEl) {
+    // Right-click context menu on package nodes.
+    initPackageTreeContextMenu(projectStructureEl, {
+      onCreatePackage: async ({ packageId, modelId = "", profileId = "" }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const context = modelId && modelId !== "" ? "model" : "profile";
+        const existingSiblingNamesNormalized = getSubpackageNameSet(project, {
+          context,
+          modelId,
+          profileId,
+          parentPackageId: packageId,
+        });
+
+        openCreatePackageModal({
+          parentPackageId: packageId,
+          modelId,
+          profileId,
+          existingSiblingNamesNormalized,
+        });
+      },
+      onCreateClass: async ({ packageId, modelId = "", profileId = "" }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const context = modelId && modelId !== "" ? "model" : "profile";
+        const existingClassNamesNormalized = getClassNameSet(project, {
+          context,
+          modelId,
+          profileId,
+        });
+
+        openCreateClassModal({
+          packageId,
+          modelId,
+          profileId,
+          existingClassNamesNormalized,
+        });
+      },
+      onCreateDiagram: async ({ packageId, modelId = "", profileId = "" }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const context = modelId && modelId !== "" ? "model" : "profile";
+        const existingDiagramNamesNormalized = getDiagramNameSet(project, {
+          context,
+          modelId,
+          profileId,
+        });
+
+        openCreateDiagramModal({
+          packageId,
+          modelId,
+          profileId,
+          existingDiagramNamesNormalized,
+        });
+      },
+      onDeletePackage: async () => {
+        showToast("Удаление пакетов будет реализовано позже.", { type: "info" });
+      },
+    });
+
     projectStructureEl.addEventListener("click", (e) => {
       const target = e.target instanceof HTMLElement ? e.target : null;
       if (!target) return;
@@ -533,6 +814,17 @@ function bindEvents() {
         const modelId = selectPackageEl.getAttribute("data-model-id");
         const profileId = selectPackageEl.getAttribute("data-profile-id");
         if (packageId) handleSelectPackage(packageId, modelId, profileId);
+        return;
+      }
+
+      // Select diagram
+      const selectDiagramEl = target.closest("[data-action='select-diagram']");
+      if (selectDiagramEl) {
+        setSelectedTreeItem(selectDiagramEl);
+        const diagramId = selectDiagramEl.getAttribute("data-diagram-id");
+        const modelId = selectDiagramEl.getAttribute("data-model-id");
+        const profileId = selectDiagramEl.getAttribute("data-profile-id");
+        if (diagramId) void handleSelectDiagram(diagramId, modelId, profileId);
         return;
       }
 
@@ -806,6 +1098,7 @@ function snapshotTreeEl(el) {
     profileId: el.getAttribute("data-profile-id") || null,
     packageId: el.getAttribute("data-package-id") || null,
     classId: el.getAttribute("data-class-id") || null,
+    diagramId: el.getAttribute("data-diagram-id") || null,
   };
 }
 
@@ -846,6 +1139,14 @@ function restoreSelectedTreeItemInTree() {
     if (ctxVal) {
       selector = `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(
         snapshot.classId
+      )}"][${ctxAttr}="${cssEscape(ctxVal)}"]`;
+    }
+  } else if (snapshot.type === "diagram" && snapshot.diagramId) {
+    const ctxAttr = snapshot.modelId ? "data-model-id" : "data-profile-id";
+    const ctxVal = snapshot.modelId || snapshot.profileId;
+    if (ctxVal) {
+      selector = `.tree-structure-name[data-type="diagram"][data-diagram-id="${cssEscape(
+        snapshot.diagramId
       )}"][${ctxAttr}="${cssEscape(ctxVal)}"]`;
     }
   }
@@ -1831,6 +2132,78 @@ function findClassParentChain(project, classId, modelId, profileId, context) {
   return [];
 }
 
+/**
+ * Find the parent chain (tree itemIds) that contains a diagram.
+ *
+ * Used after creating/selecting a diagram to ensure all ancestor nodes are expanded
+ * in the sidebar tree.
+ *
+ * @param {object} project Exported project payload
+ * @param {string} diagramId Diagram id
+ * @param {string} modelId Model id (if context is model)
+ * @param {string} profileId Profile id (if context is profile)
+ * @param {'model'|'profile'} context
+ * @returns {string[]} Array of tree itemIds to expand (from model/profile root to package)
+ */
+function findDiagramParentChain(project, diagramId, modelId, profileId, context) {
+  const searchInPackages = (packages, currentPath, isSubPackage = false) => {
+    for (let idx = 0; idx < packages.length; idx++) {
+      const pkg = packages[idx];
+      const prefix = isSubPackage ? "sub" : "pkg";
+      const pkgPath = [...currentPath, `${prefix}-${idx}`];
+
+      if (pkg.diagrams) {
+        const diagramIdx = pkg.diagrams.findIndex((d) => d.id === diagramId);
+        if (diagramIdx !== -1) return pkgPath;
+      }
+
+      if (pkg.subPackages && pkg.subPackages.length > 0) {
+        const found = searchInPackages(pkg.subPackages, [...pkgPath], true);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  if (context === "model" && modelId && modelId !== "") {
+    const model = project.models?.find((m) => m.id === modelId);
+    if (!model) return [];
+
+    const modelItemId = `model-${currentProjectId}-${modelId}`;
+    if (model.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(model.rootPackages[0].packages, [modelItemId], false);
+      if (found) {
+        return found.reduce((acc, part, i) => {
+          if (i === 0) return [part];
+          return [...acc, acc[acc.length - 1] + "-" + part];
+        }, []);
+      }
+    }
+  }
+
+  if (context === "profile" && profileId && profileId !== "") {
+    const profile = project.profiles?.find((p) => p.id === profileId);
+    if (!profile) return [];
+
+    const profileItemId = `profile-${currentProjectId}-${profileId}`;
+    if (profile.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(
+        profile.rootPackages[0].packages,
+        [profileItemId],
+        false
+      );
+      if (found) {
+        return found.reduce((acc, part, i) => {
+          if (i === 0) return [part];
+          return [...acc, acc[acc.length - 1] + "-" + part];
+        }, []);
+      }
+    }
+  }
+
+  return [];
+}
+
 // ============================================================
 // FORM SUBMIT HANDLER
 // ============================================================
@@ -2262,6 +2635,53 @@ function findClassById(
   return null;
 }
 
+/**
+ * Find a diagram by id in a specific context (model/profile).
+ *
+ * @param {object} project Exported project payload
+ * @param {string} diagramId Diagram id
+ * @param {string} [modelId]
+ * @param {string} [profileId]
+ * @param {'model'|'profile'|null} [context]
+ * @returns {object|null}
+ */
+function findDiagramById(
+  project,
+  diagramId,
+  modelId = "",
+  profileId = "",
+  context = null
+) {
+  const searchInPackages = (packages) => {
+    for (const pkg of packages) {
+      const d = pkg.diagrams?.find((x) => x.id === diagramId);
+      if (d) return d;
+
+      if (pkg.subPackages) {
+        const found = searchInPackages(pkg.subPackages);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  if (context === "model" && modelId && modelId !== "") {
+    const model = project.models?.find((m) => m.id === modelId);
+    if (model?.rootPackages?.[0]?.packages) {
+      return searchInPackages(model.rootPackages[0].packages);
+    }
+  }
+
+  if (context === "profile" && profileId && profileId !== "") {
+    const profile = project.profiles?.find((p) => p.id === profileId);
+    if (profile?.rootPackages?.[0]?.packages) {
+      return searchInPackages(profile.rootPackages[0].packages);
+    }
+  }
+
+  return null;
+}
+
 function findClassWithContext(project, classId) {
   const searchInPackages = (packages) => {
     for (const pkg of packages) {
@@ -2416,6 +2836,104 @@ function getItemDetailsViewMode() {
   return diagramMode?.isEnabled() ? "diagram" : "standard";
 }
 
+/**
+ * Render a simple read-only diagram info panel.
+ *
+ * Note: this is intentionally lightweight (no drawing libraries yet) and is used
+ * in diagram mode to show the currently selected diagram metadata.
+ *
+ * @param {object|null} diagram Diagram export object
+ * @returns {string} HTML string
+ */
+function renderDiagramPanel(diagram) {
+  if (!diagram) {
+    return `<div class="diagram-mode-placeholder">Диаграмма не найдена.</div>`;
+  }
+
+  const name = diagram.diagramName || "Диаграмма";
+  const type = diagram.diagramType || "";
+  const doc = diagram.documentation || "";
+  const details = diagram.details || "";
+
+  return `
+    <div class="item-section">
+      <div class="section-header">
+        <div class="section-title">📐 ${name}${type ? ` (${type})` : ""}</div>
+      </div>
+      <div class="form-section">
+        <div class="form-row">
+          <div class="form-cell">
+            <div class="form-group">
+              <label class="form-label">Описание</label>
+              <div class="text-muted">${doc ? doc : "—"}</div>
+            </div>
+          </div>
+          <div class="form-cell">
+            <div class="form-group">
+              <label class="form-label">Дополнительная информация</label>
+              <div class="text-muted">${details ? details : "—"}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Handle selecting a diagram node in the project tree.
+ *
+ * Responsibilities:
+ * - Resolve diagram by id in the current project export
+ * - Switch the page to diagram mode
+ * - Render diagram info into `#diagrams-container`
+ *
+ * @param {string} diagramId
+ * @param {string} [modelId]
+ * @param {string} [profileId]
+ */
+async function handleSelectDiagram(diagramId, modelId = "", profileId = "") {
+  const project = await getProjectById(currentProjectId);
+  if (!project) return;
+
+  const context =
+    modelId && modelId !== ""
+      ? "model"
+      : profileId && profileId !== ""
+      ? "profile"
+      : null;
+
+  if (!context) {
+    console.error("Diagram must belong to either a model or profile");
+    return;
+  }
+
+  const diagram = findDiagramById(
+    project,
+    diagramId,
+    modelId,
+    profileId,
+    context
+  );
+
+  // Selecting a diagram always switches to diagram mode
+  if (!diagramMode?.isEnabled()) {
+    diagramMode?.enter();
+  } else {
+    // Ensure layout is visible and item panel is cleared
+    diagramMode?.sync({ clearItem: true });
+  }
+
+  const diagramsContainer = document.getElementById("diagrams-container");
+  if (!diagramsContainer) {
+    showToast("Не найден контейнер диаграмм", { type: "error" });
+    return;
+  }
+
+  diagramsContainer.dataset.initialized = "1";
+  diagramsContainer.innerHTML = renderDiagramPanel(diagram);
+}
+
 async function rerenderSelectedItemDetailsForCurrentMode() {
   const selected = document.querySelector(
     ".project-tree-item .tree-structure-name.selected"
@@ -2423,6 +2941,14 @@ async function rerenderSelectedItemDetailsForCurrentMode() {
   if (!selected) return;
 
   const type = selected.getAttribute("data-type");
+  if (type === "diagram") {
+    const diagramId = selected.getAttribute("data-diagram-id");
+    const modelId = selected.getAttribute("data-model-id") || "";
+    const profileId = selected.getAttribute("data-profile-id") || "";
+    if (diagramId) await handleSelectDiagram(diagramId, modelId, profileId);
+    return;
+  }
+
   if (type === "package") {
     const packageId = selected.getAttribute("data-package-id");
     const modelId = selected.getAttribute("data-model-id") || "";

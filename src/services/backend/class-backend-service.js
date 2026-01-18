@@ -23,6 +23,24 @@ export async function updateProfileClass(profileId, classId, payload) {
   );
 }
 
+export async function createModelClass(modelId, packageId, payload) {
+  return apiClient.post(
+    `/api/models/${encodeURIComponent(String(modelId))}/packages/${encodeURIComponent(
+      String(packageId)
+    )}/classes`,
+    payload
+  );
+}
+
+export async function createProfileClass(profileId, packageId, payload) {
+  return apiClient.post(
+    `/api/profiles/${encodeURIComponent(String(profileId))}/packages/${encodeURIComponent(
+      String(packageId)
+    )}/classes`,
+    payload
+  );
+}
+
 // Lightweight lookup lists for data type picker
 export async function listModelClassesSummary(modelId) {
   return apiClient.get(

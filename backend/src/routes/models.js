@@ -8,8 +8,75 @@ import { newId } from "../utils/id-generation.js";
 
 export const modelsRouter = Router();
 
+function normalizeName(name) {
+  return String(name ?? "").trim().toLocaleLowerCase();
+}
+
 function normalizeAttrName(name) {
   return String(name ?? "").trim().toLocaleLowerCase();
+}
+
+async function assertUniqueSubpackageNameInModel({ modelId, parentId, name, excludePackageId = null }) {
+  const normalized = normalizeName(name);
+  if (!normalized) return;
+
+  const siblings = await prisma.packageModel.findMany({
+    where: { modelId: String(modelId), parentId: String(parentId) },
+    select: { id: true, name: true },
+  });
+
+  const conflict = siblings.find((p) => {
+    if (excludePackageId && String(p.id) === String(excludePackageId)) return false;
+    return normalizeName(p.name) === normalized;
+  });
+
+  if (conflict) {
+    const err = new Error("Package name already exists under this parent");
+    err.status = 409;
+    throw err;
+  }
+}
+
+async function assertUniqueClassNameInModel({ modelId, name, excludeClassId = null }) {
+  const normalized = normalizeName(name);
+  if (!normalized) return;
+
+  const classes = await prisma.classModel.findMany({
+    where: { modelId: String(modelId) },
+    select: { id: true, name: true },
+  });
+
+  const conflict = classes.find((c) => {
+    if (excludeClassId && String(c.id) === String(excludeClassId)) return false;
+    return normalizeName(c.name) === normalized;
+  });
+
+  if (conflict) {
+    const err = new Error("Class name already exists in this model");
+    err.status = 409;
+    throw err;
+  }
+}
+
+async function assertUniqueDiagramNameInModel({ modelId, name, excludeDiagramId = null }) {
+  const normalized = normalizeName(name);
+  if (!normalized) return;
+
+  const diagrams = await prisma.diagramModel.findMany({
+    where: { modelId: String(modelId) },
+    select: { id: true, diagramName: true },
+  });
+
+  const conflict = diagrams.find((d) => {
+    if (excludeDiagramId && String(d.id) === String(excludeDiagramId)) return false;
+    return normalizeName(d.diagramName) === normalized;
+  });
+
+  if (conflict) {
+    const err = new Error("Diagram name already exists in this model");
+    err.status = 409;
+    throw err;
+  }
 }
 
 async function assertUniqueAttributeNameInModelClass({ modelId, classId, name, excludeAttributeId = null }) {
@@ -76,6 +143,15 @@ const updatePackageSchema = z
   })
   .passthrough();
 
+const createPackageSchema = z
+  .object({
+    name: z.string().min(1),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+  })
+  .passthrough();
+
 const updateClassSchema = z
   .object({
     id: z.string().min(1).optional(),
@@ -93,6 +169,17 @@ const updateClassSchema = z
 
     refModelId: z.string().nullable().optional(),
     refModelItemId: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+const createClassSchema = z
+  .object({
+    name: z.string().min(1),
+    stereotype: z.string().nullable().optional(),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+    isAbstract: z.boolean().nullable().optional(),
   })
   .passthrough();
 
@@ -309,9 +396,95 @@ modelsRouter.put(
       Object.entries(allowed).filter(([, v]) => v !== undefined)
     );
 
+    // Validate unique subpackage name under same parent (if name is being changed)
+    if (data.name !== undefined) {
+      const trimmed = String(data.name ?? "").trim();
+      if (!trimmed) return sendError(res, 400, "Package name is required");
+
+      const existingPkg = await prisma.packageModel.findUnique({
+        where: { id: packageId },
+        select: { id: true, parentId: true },
+      });
+
+      // Only enforce when this is not a root package (root create is handled elsewhere)
+      if (existingPkg?.parentId) {
+        try {
+          await assertUniqueSubpackageNameInModel({
+            modelId,
+            parentId: existingPkg.parentId,
+            name: trimmed,
+            excludePackageId: packageId,
+          });
+        } catch (e) {
+          if (e?.status === 409) return sendError(res, 409, e.message);
+          throw e;
+        }
+      }
+    }
+
     await prisma.packageModel.update({
       where: { id: packageId },
       data,
+    });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Create a nested package inside a model package.
+// Returns full updated project (export payload).
+modelsRouter.post(
+  "/:modelId/packages/:parentPackageId/subpackages",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const parentPackageId = String(req.params.parentPackageId);
+
+    const parsed = createPackageSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid package create", parsed.error.flatten());
+    }
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const parent = await prisma.packageModel.findFirst({
+      where: { id: parentPackageId, modelId },
+      select: { id: true },
+    });
+    if (!parent) return sendError(res, 404, "Package not found");
+
+    const name = String(parsed.data.name ?? "").trim();
+    if (!name) return sendError(res, 400, "Package name is required");
+
+    try {
+      await assertUniqueSubpackageNameInModel({
+        modelId,
+        parentId: parentPackageId,
+        name,
+      });
+    } catch (e) {
+      if (e?.status === 409) return sendError(res, 409, e.message);
+      throw e;
+    }
+
+    await prisma.packageModel.create({
+      data: {
+        id: newId("pkg"),
+        srcId: null,
+        modelId,
+        parentId: parentPackageId,
+        name,
+        type: null,
+        parentPackage: null,
+        documentation: parsed.data.documentation ?? null,
+        documentationRu: parsed.data.documentationRu ?? null,
+        details: parsed.data.details ?? null,
+      },
     });
 
     const project = await exportProject(model.projectId);
@@ -346,6 +519,22 @@ modelsRouter.put(
       return sendError(res, 404, "Class not found");
     }
 
+    // Validate model-wide unique class name (if name is being changed)
+    if (parsed.data.name !== undefined) {
+      const trimmed = String(parsed.data.name ?? "").trim();
+      if (!trimmed) return sendError(res, 400, "Class name is required");
+      try {
+        await assertUniqueClassNameInModel({
+          modelId,
+          name: trimmed,
+          excludeClassId: classId,
+        });
+      } catch (e) {
+        if (e?.status === 409) return sendError(res, 409, e.message);
+        throw e;
+      }
+    }
+
     const allowed = {
       name: parsed.data.name,
       stereotype: parsed.data.stereotype,
@@ -364,6 +553,65 @@ modelsRouter.put(
     await prisma.classModel.update({
       where: { id: classId },
       data,
+    });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Create a class inside a model package.
+// Returns full updated project (export payload).
+modelsRouter.post(
+  "/:modelId/packages/:packageId/classes",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const packageId = String(req.params.packageId);
+
+    const parsed = createClassSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid class create", parsed.error.flatten());
+    }
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const pkg = await prisma.packageModel.findFirst({
+      where: { id: packageId, modelId },
+      select: { id: true },
+    });
+    if (!pkg) return sendError(res, 404, "Package not found");
+
+    const name = String(parsed.data.name ?? "").trim();
+    if (!name) return sendError(res, 400, "Class name is required");
+
+    try {
+      await assertUniqueClassNameInModel({ modelId, name });
+    } catch (e) {
+      if (e?.status === 409) return sendError(res, 409, e.message);
+      throw e;
+    }
+
+    await prisma.classModel.create({
+      data: {
+        id: newId("cls"),
+        srcId: null,
+        modelId,
+        packageId,
+        name,
+        type: null,
+        stereotype: parsed.data.stereotype ?? null,
+        documentation: parsed.data.documentation ?? null,
+        documentationRu: parsed.data.documentationRu ?? null,
+        details: parsed.data.details ?? null,
+        isAbstract: parsed.data.isAbstract ?? null,
+        refModelId: null,
+        refModelItemId: null,
+      },
     });
 
     const project = await exportProject(model.projectId);
@@ -484,6 +732,13 @@ modelsRouter.post(
     const diagramName = String(parsed.data.diagramName ?? "").trim();
     if (!diagramName) return sendError(res, 400, "diagramName is required");
 
+    try {
+      await assertUniqueDiagramNameInModel({ modelId, name: diagramName });
+    } catch (e) {
+      if (e?.status === 409) return sendError(res, 409, e.message);
+      throw e;
+    }
+
     await prisma.diagramModel.create({
       data: {
         id: newId("dia"),
@@ -542,6 +797,19 @@ modelsRouter.put(
 
     if (allowed.diagramName !== undefined && !allowed.diagramName) {
       return sendError(res, 400, "diagramName is required");
+    }
+
+    if (allowed.diagramName !== undefined) {
+      try {
+        await assertUniqueDiagramNameInModel({
+          modelId,
+          name: allowed.diagramName,
+          excludeDiagramId: diagramId,
+        });
+      } catch (e) {
+        if (e?.status === 409) return sendError(res, 409, e.message);
+        throw e;
+      }
     }
 
     const data = Object.fromEntries(Object.entries(allowed).filter(([, v]) => v !== undefined));
