@@ -163,7 +163,7 @@ function sortClassLinks(list) {
 }
 
 async function exportPackagesTreeModel(modelId) {
-  const [packages, classes, attributes, literals, generalizationLinks, associationLinks] = await Promise.all([
+  const [packages, classes, attributes, literals, diagrams, generalizationLinks, associationLinks] = await Promise.all([
     prisma.packageModel.findMany({
       where: { modelId },
       select: {
@@ -219,6 +219,18 @@ async function exportPackagesTreeModel(modelId) {
         value: true,
         documentation: true,
         documentationRu: true,
+      },
+    }),
+    prisma.diagramModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        packageId: true,
+        diagramType: true,
+        diagramName: true,
+        documentation: true,
+        details: true,
+        diagramBody: true,
       },
     }),
     prisma.generalizationLinkModel.findMany({
@@ -324,6 +336,7 @@ async function exportPackagesTreeModel(modelId) {
 
   const attrsByClass = groupBy(attributes, (a) => a.classId);
   const litsByClass = groupBy(literals, (l) => l.classId);
+  const diagramsByPackage = groupBy(diagrams, (d) => d.packageId);
 
   const nodesById = new Map();
   for (const p of packages) {
@@ -337,9 +350,16 @@ async function exportPackagesTreeModel(modelId) {
       details: p.details ?? null,
       modelId,
       profileId: null,
+      diagrams: [],
       classes: [],
       subPackages: [],
     });
+  }
+
+  for (const [packageId, list] of diagramsByPackage.entries()) {
+    const pkgNode = nodesById.get(packageId);
+    if (!pkgNode) continue;
+    pkgNode.diagrams = list.map(mapDiagram);
   }
 
   for (const [packageId, clsList] of classesByPackage.entries()) {
@@ -392,7 +412,7 @@ async function exportPackagesTreeModel(modelId) {
 }
 
 async function exportPackagesTreeProfile(profileId) {
-  const [packages, classes, attributes, literals, generalizationLinks, associationLinks] = await Promise.all([
+  const [packages, classes, attributes, literals, diagrams, generalizationLinks, associationLinks] = await Promise.all([
     prisma.packageProfile.findMany({
       where: { profileId },
       select: {
@@ -448,6 +468,18 @@ async function exportPackagesTreeProfile(profileId) {
         value: true,
         documentation: true,
         documentationRu: true,
+      },
+    }),
+    prisma.diagramProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        packageId: true,
+        diagramType: true,
+        diagramName: true,
+        documentation: true,
+        details: true,
+        diagramBody: true,
       },
     }),
     prisma.generalizationLinkProfile.findMany({
@@ -553,6 +585,7 @@ async function exportPackagesTreeProfile(profileId) {
 
   const attrsByClass = groupBy(attributes, (a) => a.classId);
   const litsByClass = groupBy(literals, (l) => l.classId);
+  const diagramsByPackage = groupBy(diagrams, (d) => d.packageId);
 
   const nodesById = new Map();
   for (const p of packages) {
@@ -566,9 +599,16 @@ async function exportPackagesTreeProfile(profileId) {
       details: p.details ?? null,
       modelId: null,
       profileId,
+      diagrams: [],
       classes: [],
       subPackages: [],
     });
+  }
+
+  for (const [packageId, list] of diagramsByPackage.entries()) {
+    const pkgNode = nodesById.get(packageId);
+    if (!pkgNode) continue;
+    pkgNode.diagrams = list.map(mapDiagram);
   }
 
   for (const [packageId, clsList] of classesByPackage.entries()) {
@@ -660,5 +700,16 @@ function mapLiteral(lit) {
     value: lit.value ?? null,
     documentation: lit.documentation ?? null,
     documentationRu: lit.documentationRu ?? null,
+  };
+}
+
+function mapDiagram(d) {
+  return {
+    id: d.id,
+    diagramType: d.diagramType ?? "",
+    diagramName: d.diagramName ?? "",
+    documentation: d.documentation ?? null,
+    details: d.details ?? null,
+    diagramBody: d.diagramBody ?? null,
   };
 }

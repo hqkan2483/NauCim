@@ -130,6 +130,18 @@ const createAttributeSchema = z
   })
   .passthrough();
 
+const createDiagramSchema = z
+  .object({
+    diagramType: z.string().nullable().optional(),
+    diagramName: z.string().min(1),
+    documentation: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+    diagramBody: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+const updateDiagramSchema = createDiagramSchema.partial();
+
 // Get all models for a project
 modelsRouter.get(
   "/project/:projectId",
@@ -437,6 +449,135 @@ modelsRouter.put(
       where: { id: attributeId },
       data,
     });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Create a diagram inside a model package.
+// Returns full updated project (export payload).
+modelsRouter.post(
+  "/:modelId/packages/:packageId/diagrams",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const packageId = String(req.params.packageId);
+
+    const parsed = createDiagramSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid diagram create", parsed.error.flatten());
+    }
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const pkg = await prisma.packageModel.findFirst({
+      where: { id: packageId, modelId },
+      select: { id: true },
+    });
+    if (!pkg) return sendError(res, 404, "Package not found");
+
+    const diagramName = String(parsed.data.diagramName ?? "").trim();
+    if (!diagramName) return sendError(res, 400, "diagramName is required");
+
+    await prisma.diagramModel.create({
+      data: {
+        id: newId("dia"),
+        srcId: null,
+        modelId,
+        packageId,
+        diagramType: parsed.data.diagramType ?? null,
+        diagramName,
+        documentation: parsed.data.documentation ?? null,
+        details: parsed.data.details ?? null,
+        diagramBody: parsed.data.diagramBody ?? null,
+      },
+    });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Update a diagram inside a model graph.
+// Returns full updated project (export payload).
+modelsRouter.put(
+  "/:modelId/diagrams/:diagramId",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const diagramId = String(req.params.diagramId);
+
+    const parsed = updateDiagramSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid diagram update", parsed.error.flatten());
+    }
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const existing = await prisma.diagramModel.findFirst({
+      where: { id: diagramId, modelId },
+      select: { id: true },
+    });
+    if (!existing) return sendError(res, 404, "Diagram not found");
+
+    const allowed = {
+      diagramType: parsed.data.diagramType,
+      diagramName:
+        parsed.data.diagramName === undefined
+          ? undefined
+          : String(parsed.data.diagramName ?? "").trim(),
+      documentation: parsed.data.documentation,
+      details: parsed.data.details,
+      diagramBody: parsed.data.diagramBody,
+    };
+
+    if (allowed.diagramName !== undefined && !allowed.diagramName) {
+      return sendError(res, 400, "diagramName is required");
+    }
+
+    const data = Object.fromEntries(Object.entries(allowed).filter(([, v]) => v !== undefined));
+
+    await prisma.diagramModel.update({
+      where: { id: diagramId },
+      data,
+    });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Delete a diagram inside a model graph.
+// Returns full updated project (export payload).
+modelsRouter.delete(
+  "/:modelId/diagrams/:diagramId",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const diagramId = String(req.params.diagramId);
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const existing = await prisma.diagramModel.findFirst({
+      where: { id: diagramId, modelId },
+      select: { id: true },
+    });
+    if (!existing) return sendError(res, 404, "Diagram not found");
+
+    await prisma.diagramModel.delete({ where: { id: diagramId } });
 
     const project = await exportProject(model.projectId);
     if (!project) return sendError(res, 404, "Project not found");

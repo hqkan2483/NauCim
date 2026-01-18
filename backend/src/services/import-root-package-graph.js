@@ -24,6 +24,7 @@ export async function clearModelGraph(tx, modelId) {
   await tx.literalModel.deleteMany({ where: { modelId: id } });
   await tx.attributeModel.deleteMany({ where: { modelId: id } });
   await tx.classModel.deleteMany({ where: { modelId: id } });
+  await tx.diagramModel.deleteMany({ where: { modelId: id } });
   await tx.packageModel.deleteMany({ where: { modelId: id } });
 }
 
@@ -36,6 +37,7 @@ export async function clearProfileGraph(tx, profileId) {
   await tx.literalProfile.deleteMany({ where: { profileId: id } });
   await tx.attributeProfile.deleteMany({ where: { profileId: id } });
   await tx.classProfile.deleteMany({ where: { profileId: id } });
+  await tx.diagramProfile.deleteMany({ where: { profileId: id } });
   await tx.packageProfile.deleteMany({ where: { profileId: id } });
 }
 
@@ -266,6 +268,24 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
     },
   });
 
+  const diagrams = Array.isArray(pkg.diagrams) ? pkg.diagrams : [];
+  for (const d of diagrams) {
+    const srcId = toNonEmptyStr(d?.srcId) || toNonEmptyStr(d?.id);
+    await tx.diagramModel.create({
+      data: {
+        id: toNonEmptyStr(d?.id) || newId("dia"),
+        srcId,
+        modelId,
+        packageId: pkgId,
+        diagramType: toNonEmptyStr(d?.diagramType) ?? null,
+        diagramName: String(d?.diagramName || ""),
+        documentation: toStr(d?.documentation),
+        details: toStr(d?.details),
+        diagramBody: toStr(d?.diagramBody),
+      },
+    });
+  }
+
   const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
   for (const cls of classes) {
     const srcId = toNonEmptyStr(cls?.srcId) || toNonEmptyStr(cls?.id);
@@ -354,6 +374,24 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
       details: pkg.details ?? null,
     },
   });
+
+  const diagrams = Array.isArray(pkg.diagrams) ? pkg.diagrams : [];
+  for (const d of diagrams) {
+    const srcId = toNonEmptyStr(d?.srcId) || toNonEmptyStr(d?.id);
+    await tx.diagramProfile.create({
+      data: {
+        id: toNonEmptyStr(d?.id) || newId("dia"),
+        srcId,
+        profileId,
+        packageId: pkgId,
+        diagramType: toNonEmptyStr(d?.diagramType) ?? null,
+        diagramName: String(d?.diagramName || ""),
+        documentation: toStr(d?.documentation),
+        details: toStr(d?.details),
+        diagramBody: toStr(d?.diagramBody),
+      },
+    });
+  }
 
   const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
   for (const cls of classes) {

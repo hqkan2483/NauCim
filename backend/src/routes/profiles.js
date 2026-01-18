@@ -134,6 +134,18 @@ const createAttributeSchema = z
   })
   .passthrough();
 
+const createDiagramSchema = z
+  .object({
+    diagramType: z.string().nullable().optional(),
+    diagramName: z.string().min(1),
+    documentation: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+    diagramBody: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+const updateDiagramSchema = createDiagramSchema.partial();
+
 // Get all profiles for a project
 profilesRouter.get(
   "/project/:projectId",
@@ -515,6 +527,135 @@ profilesRouter.post(
         refModelItemId: null,
       },
     });
+
+    const project = await exportProject(profile.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Create a diagram inside a profile package.
+// Returns full updated project (export payload).
+profilesRouter.post(
+  "/:profileId/packages/:packageId/diagrams",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const packageId = String(req.params.packageId);
+
+    const parsed = createDiagramSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid diagram create", parsed.error.flatten());
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { id: profileId },
+      select: { id: true, projectId: true },
+    });
+    if (!profile) return sendError(res, 404, "Profile not found");
+
+    const pkg = await prisma.packageProfile.findFirst({
+      where: { id: packageId, profileId },
+      select: { id: true },
+    });
+    if (!pkg) return sendError(res, 404, "Package not found");
+
+    const diagramName = String(parsed.data.diagramName ?? "").trim();
+    if (!diagramName) return sendError(res, 400, "diagramName is required");
+
+    await prisma.diagramProfile.create({
+      data: {
+        id: newId("dia"),
+        srcId: null,
+        profileId,
+        packageId,
+        diagramType: parsed.data.diagramType ?? null,
+        diagramName,
+        documentation: parsed.data.documentation ?? null,
+        details: parsed.data.details ?? null,
+        diagramBody: parsed.data.diagramBody ?? null,
+      },
+    });
+
+    const project = await exportProject(profile.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Update a diagram inside a profile graph.
+// Returns full updated project (export payload).
+profilesRouter.put(
+  "/:profileId/diagrams/:diagramId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const diagramId = String(req.params.diagramId);
+
+    const parsed = updateDiagramSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid diagram update", parsed.error.flatten());
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { id: profileId },
+      select: { id: true, projectId: true },
+    });
+    if (!profile) return sendError(res, 404, "Profile not found");
+
+    const existing = await prisma.diagramProfile.findFirst({
+      where: { id: diagramId, profileId },
+      select: { id: true },
+    });
+    if (!existing) return sendError(res, 404, "Diagram not found");
+
+    const allowed = {
+      diagramType: parsed.data.diagramType,
+      diagramName:
+        parsed.data.diagramName === undefined
+          ? undefined
+          : String(parsed.data.diagramName ?? "").trim(),
+      documentation: parsed.data.documentation,
+      details: parsed.data.details,
+      diagramBody: parsed.data.diagramBody,
+    };
+
+    if (allowed.diagramName !== undefined && !allowed.diagramName) {
+      return sendError(res, 400, "diagramName is required");
+    }
+
+    const data = Object.fromEntries(Object.entries(allowed).filter(([, v]) => v !== undefined));
+
+    await prisma.diagramProfile.update({
+      where: { id: diagramId },
+      data,
+    });
+
+    const project = await exportProject(profile.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Delete a diagram inside a profile graph.
+// Returns full updated project (export payload).
+profilesRouter.delete(
+  "/:profileId/diagrams/:diagramId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const diagramId = String(req.params.diagramId);
+
+    const profile = await prisma.profile.findUnique({
+      where: { id: profileId },
+      select: { id: true, projectId: true },
+    });
+    if (!profile) return sendError(res, 404, "Profile not found");
+
+    const existing = await prisma.diagramProfile.findFirst({
+      where: { id: diagramId, profileId },
+      select: { id: true },
+    });
+    if (!existing) return sendError(res, 404, "Diagram not found");
+
+    await prisma.diagramProfile.delete({ where: { id: diagramId } });
 
     const project = await exportProject(profile.projectId);
     if (!project) return sendError(res, 404, "Project not found");

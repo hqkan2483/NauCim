@@ -207,6 +207,7 @@ interface Package {
   details?: string; // Справочная и поясняющая информация
   modelId?: string; //идентификатор модели, которой принадлежит пакет (заполняется, если пакет принадлежит модели)
   profileId?: string; // идентификатор профиля, которому принадлежит пакет (заполняется, если пакет принадлежит профилю)
+  diagrams: Diagram[]; // Массив диаграмм, входящих в пакет
   classes: Class[]; // Массив классов, входящих в пакет
   subPackages: Package[]; // Вложенные пакеты
 }
@@ -438,6 +439,44 @@ interface ClassLink {
   "srcClassRoleName": "PerLengthImpedance",
   "targetDescription": "Участки линии переменного тока, имеющие указанные удельные параметры.",
   "multiplicity": "0..*"
+}
+```
+
+---
+
+## Diagram
+
+Диаграмма классов
+
+```typescript
+interface Diagram {
+  id: string; // Уникальный идентификатор
+  diagramType: string; // тип диаграммы - ClassDiagram,
+  diagramName: string; // название диаграммы
+  documentation?: string; // Описание диаграммы
+  details?: string; // Справочная и поясняющая информация
+  diagramBody?: string; // тело диаграммы в текстовом виде или преобразованное в base64
+}
+```
+
+### Пример:
+
+```json
+{
+  "linkId": "EAID_E9FB4B7B_727E_4456_9697_0181F1285F2E",
+  "linkType": "Generalization",
+  "documentation": null,
+  "documentationRu": null,
+  "details": null,
+  "stereotype": "",
+  "parent": {
+    "classId": "EAID_64D19B75_EB20_49ee_80E2_53F98D5A15B6",
+    "className": "AssetPersonRole"
+  },
+  "child": {
+    "classId": "EAID_F7EEC20F_E02C_4809_A74A_69B7C1781737",
+    "className": "AssetPersonOwner"
+  }
 }
 ```
 

@@ -40,6 +40,7 @@ model Model {
   classes             ClassModel[]
   attributes          AttributeModel[]
   literals            LiteralModel[]
+  diagrams            DiagramModel[]
   generalizationLinks GeneralizationLinkModel[]
   associationLinks    AssociationLinkModel[]
 
@@ -67,6 +68,7 @@ model Profile {
   classes             ClassProfile[]
   attributes          AttributeProfile[]
   literals            LiteralProfile[]
+  diagrams            DiagramProfile[]
   generalizationLinks GeneralizationLinkProfile[]
   associationLinks    AssociationLinkProfile[]
 
@@ -96,6 +98,7 @@ model PackageModel {
 
   subPackages PackageModel[] @relation("PackageModelTree")
   classes     ClassModel[]
+  diagrams    DiagramModel[]
 
   @@unique([id, modelId])
   @@index([modelId])
@@ -121,11 +124,54 @@ model PackageProfile {
 
   subPackages PackageProfile[] @relation("PackageProfileTree")
   classes     ClassProfile[]
+  diagrams    DiagramProfile[]
 
   @@unique([id, profileId])
   @@index([profileId])
   @@index([parentId, profileId])
   @@index([name])
+}
+
+// ===== DIAGRAM =====
+
+model DiagramModel {
+  id        String  @id
+  srcId     String?
+  modelId   String
+  packageId String
+
+  diagramType   String?
+  diagramName   String
+  documentation String?
+  details       String?
+  diagramBody   String?
+
+  model Model        @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  pkg   PackageModel @relation(fields: [packageId, modelId], references: [id, modelId], onDelete: Cascade)
+
+  @@index([modelId])
+  @@index([packageId, modelId])
+  @@index([diagramName])
+}
+
+model DiagramProfile {
+  id        String  @id
+  srcId     String?
+  profileId String
+  packageId String
+
+  diagramType   String?
+  diagramName   String
+  documentation String?
+  details       String?
+  diagramBody   String?
+
+  profile Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  pkg     PackageProfile @relation(fields: [packageId, profileId], references: [id, profileId], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([packageId, profileId])
+  @@index([diagramName])
 }
 
 // ===== CLASS =====
