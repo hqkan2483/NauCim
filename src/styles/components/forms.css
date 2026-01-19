@@ -86,7 +86,7 @@
   margin-bottom: 10px;
 }
 
-.form-group__line {
+.form-group.form-group__line {
   flex-direction: row;
   gap: 20px;
 }

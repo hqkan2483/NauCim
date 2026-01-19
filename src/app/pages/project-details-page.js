@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "import-profile-modal",
     "edit-attribute-modal",
     "data-type-picker-modal",
-    "edit-link-modal",
+    "generalization-link-modal",
     "create-package-modal",
     "create-class-modal",
     "create-diagram-modal",
