@@ -66,6 +66,14 @@
   color: var(--primary-text);
 }
 
+/* Draggable modals: drag by title/header */
+.modal--draggable .modal-title {
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
 .modal-content--data-type-picker .modal-title {
   font-size: 16px;
   margin-bottom: 10px;
