@@ -79,6 +79,7 @@ import {
   createModelDiagram as createModelDiagramInBackend,
   createProfileDiagram as createProfileDiagramInBackend,
 } from "../../services/diagram-service.js";
+import { updateGeneralizationLink as updateGeneralizationLinkInBackend } from "../../services/link-service.js";
 import { initPackageTreeContextMenu } from "../../ui/components/package-context-menu.js";
 import {
   initCreatePackageModal,
@@ -456,19 +457,69 @@ document.addEventListener("DOMContentLoaded", async () => {
         const project = await getProjectById(currentProjectId);
         if (!project) return;
 
-        const tabToRestore = getActiveClassTabName() || lastClassTabName;
-
         const found = findLinkWithParent(project, classId, linkId);
         if (!found) return;
 
-        Object.assign(found.link, updates);
+        // Currently only Generalization save is implemented.
+        if (String(found?.link?.relationKind || "") !== "Generalization") {
+          showToast("Сохранение поддерживается только для Generalization", { type: "error" });
+          return;
+        }
 
-        const itemDetailsContent = document.getElementById("item-details-content");
-        if (itemDetailsContent) {
-          itemDetailsContent.innerHTML = renderClassDetails(found.cls, {
-            viewMode: getItemDetailsViewMode(),
+        const payload = updates?.generalizationLink;
+        if (!payload) return;
+
+        const context = found.context;
+        const modelId = found.modelId || "";
+        const profileId = found.profileId || "";
+
+        try {
+          const updatedProject = await updateGeneralizationLinkInBackend({
+            linkId: String(linkId),
+            modelId: context === "model" ? String(modelId) : "",
+            profileId: context === "profile" ? String(profileId) : "",
+            editingClassId: String(classId),
+            payload,
           });
-          restoreClassTab(tabToRestore);
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: context === "model" ? modelId : null,
+            profileId: context === "profile" ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          const chain = findClassParentChain(updatedProject, classId, modelId, profileId, context);
+          expandTreePath(chain);
+          restoreSelectedTreeItemInTree();
+
+          const updatedCls = findClassById(updatedProject, classId, modelId, profileId, context);
+          const itemDetailsContent = document.getElementById("item-details-content");
+          if (itemDetailsContent && updatedCls) {
+            const clsView = {
+              ...updatedCls,
+              modelId: modelId || "",
+              profileId: profileId || "",
+            };
+            originalItemData = JSON.parse(JSON.stringify(clsView));
+
+            itemDetailsContent.innerHTML = renderClassDetails(clsView, {
+              viewMode: getItemDetailsViewMode(),
+            });
+            restoreClassTab("item-links");
+          }
+
+          showToast("Связь сохранена", { type: "success" });
+        } catch (error) {
+          console.error("[linkModal.onUpdate] Save failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка сохранения";
+          showToast(`Ошибка сохранения связи: ${msg}`, { type: "error" });
         }
       },
     });
@@ -2514,9 +2565,26 @@ async function handleEditLink(linkId, classId) {
   const found = findLinkWithParent(project, classId, linkId);
   if (!found) return;
 
-  openEditLinkModal(found.link, found.cls.id, {
-    modelId: found.cls?.modelId || "",
-    profileId: found.cls?.profileId || "",
+  if (String(found?.link?.relationKind || "") !== "Generalization") {
+    showToast("Редактирование поддерживается только для Generalization", { type: "error" });
+    return;
+  }
+
+  const generalizationLink = findGeneralizationLinkInProject(project, {
+    context: found.context,
+    modelId: found.modelId,
+    profileId: found.profileId,
+    linkId,
+  });
+
+  if (!generalizationLink) {
+    showToast("Не удалось найти данные связи Generalization", { type: "error" });
+    return;
+  }
+
+  openEditLinkModal(generalizationLink, found.cls.id, {
+    modelId: found.modelId || "",
+    profileId: found.profileId || "",
   });
 }
 
@@ -2813,7 +2881,14 @@ function findLinkWithParent(project, classId, linkId) {
     for (const model of project.models) {
       if (model.rootPackages?.[0]?.packages) {
         const found = searchInPackages(model.rootPackages[0].packages);
-        if (found) return found;
+        if (found) {
+          return {
+            ...found,
+            context: "model",
+            modelId: model.id,
+            profileId: null,
+          };
+        }
       }
     }
   }
@@ -2822,9 +2897,48 @@ function findLinkWithParent(project, classId, linkId) {
     for (const profile of project.profiles) {
       if (profile.rootPackages?.[0]?.packages) {
         const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found) return found;
+        if (found) {
+          return {
+            ...found,
+            context: "profile",
+            modelId: null,
+            profileId: profile.id,
+          };
+        }
       }
     }
+  }
+
+  return null;
+}
+
+/**
+ * Find a GeneralizationLink object in exported Project data.
+ *
+ * @param {object} project Exported project
+ * @param {object} args
+ * @param {"model"|"profile"} args.context
+ * @param {string|null} args.modelId
+ * @param {string|null} args.profileId
+ * @param {string} args.linkId
+ * @returns {object|null} GeneralizationLink
+ */
+function findGeneralizationLinkInProject(project, { context, modelId, profileId, linkId }) {
+  const id = String(linkId || "");
+  if (!id) return null;
+
+  if (context === "model") {
+    const mId = String(modelId || "");
+    const m = (project?.models || []).find((x) => String(x?.id || "") === mId);
+    const list = m?.rootPackages?.[0]?.generalizationsList || [];
+    return (list || []).find((g) => String(g?.linkId || "") === id) || null;
+  }
+
+  if (context === "profile") {
+    const pId = String(profileId || "");
+    const p = (project?.profiles || []).find((x) => String(x?.id || "") === pId);
+    const list = p?.rootPackages?.[0]?.generalizationsList || [];
+    return (list || []).find((g) => String(g?.linkId || "") === id) || null;
   }
 
   return null;

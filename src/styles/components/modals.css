@@ -11,6 +11,10 @@
   z-index: 1000;
 }
 
+.modal.modal--data-type-picker {
+  z-index: 2000;
+}
+
 .modal.active {
   display: flex;
 }

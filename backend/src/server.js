@@ -7,6 +7,7 @@ import { projectsRouter } from "./routes/projects.js";
 import { modelsRouter } from "./routes/models.js";
 import { profilesRouter } from "./routes/profiles.js";
 import { importExportRouter } from "./routes/import-export.js";
+import { linksRouter } from "./routes/links.js";
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/projects", projectsRouter);
 app.use("/api/models", modelsRouter);
 app.use("/api/profiles", profilesRouter);
+app.use("/api/links", linksRouter);
 app.use("/api", importExportRouter);
 
 // Error handler
