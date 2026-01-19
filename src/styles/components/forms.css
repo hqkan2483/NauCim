@@ -41,7 +41,7 @@
 }
 
 .modal-open .modal-content .form-row {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   row-gap: 10px;
   column-gap: 20px;
   margin-bottom: 8px;
@@ -78,7 +78,8 @@
 }
 
 .modal-content .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  gap: 0;
 }
 
 .modal-content--data-type-picker .form-group {
@@ -95,6 +96,10 @@
   flex-shrink: 0;
   font-weight: 500;
   font-size: 14px;
+}
+
+.form-cell__line .form-label {
+  align-self: center;
 }
 
 .page-project-details.diagram-mode .form-label {
@@ -182,19 +187,16 @@
   resize: vertical;
 }
 
+.modal-content .form-textarea {
+  min-height: 60px;
+}
+
 .form-input:focus,
 .form-textarea:focus,
 .form-select:focus {
   outline: none;
   border-color: var(--main-color);
   box-shadow: 0 0 0 3px var(--main-color-01);
-}
-
-.form-input[readonly],
-.form-textarea[readonly],
-.form-select[readonly] {
-  background: var(--black-01);
-  cursor: not-allowed;
 }
 
 .form-input[disabled],

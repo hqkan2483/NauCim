@@ -37,6 +37,11 @@
   overflow-y: auto;
 }
 
+.modal-content--edit-link.modal-content {
+ padding: 25px 40px;
+}
+
+
 /* Opt-in: resizable modal window (native browser resize handle) */
 .modal-content--resizable {
   resize: both;
@@ -58,12 +63,24 @@
   flex-direction: column;
   overflow: hidden;
 }
+.modal-header {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+
+}
 
 .modal-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   margin-bottom: 20px;
   color: var(--primary-text);
+}
+
+.modal-content--edit-link .modal-title {
+  margin-bottom: 0;
 }
 
 /* Draggable modals: drag by title/header */

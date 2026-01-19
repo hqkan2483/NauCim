@@ -17,42 +17,71 @@ import {
 const _classSummaryCache = new Map();
 const _CLASS_SUMMARY_TTL_MS = 30_000;
 
-function _cacheKey(context, id) {
-  return `${context}:${String(id)}`;
+function _stableFiltersKey(filters) {
+  if (!filters || typeof filters !== "object") return "";
+  const exclude = Array.isArray(filters.excludeStereotypes) ? filters.excludeStereotypes : [];
+  const includeTypes = Array.isArray(filters.includeTypes) ? filters.includeTypes : [];
+  const excludeTypes = Array.isArray(filters.excludeTypes) ? filters.excludeTypes : [];
+
+  const cleanedExclude = exclude.map((x) => String(x)).filter(Boolean).sort();
+  const cleanedIncludeTypes = includeTypes.map((x) => String(x)).filter(Boolean).sort();
+  const cleanedExcludeTypes = excludeTypes.map((x) => String(x)).filter(Boolean).sort();
+
+  const parts = [];
+  if (cleanedExclude.length) parts.push(`excludeStereotypes=${cleanedExclude.join(",")}`);
+  if (cleanedIncludeTypes.length) parts.push(`includeTypes=${cleanedIncludeTypes.join(",")}`);
+  if (cleanedExcludeTypes.length) parts.push(`excludeTypes=${cleanedExcludeTypes.join(",")}`);
+
+  return parts.join("&");
+}
+
+function _cacheKey(context, id, filters) {
+  const suffix = _stableFiltersKey(filters);
+  return suffix ? `${context}:${String(id)}:${suffix}` : `${context}:${String(id)}`;
 }
 
 function invalidateModelClassesSummary(modelId) {
-  _classSummaryCache.delete(_cacheKey("model", modelId));
+  // Clear all cached variants for this model
+  for (const k of _classSummaryCache.keys()) {
+    if (String(k).startsWith(`model:${String(modelId)}:`) || String(k) === `model:${String(modelId)}`) {
+      _classSummaryCache.delete(k);
+    }
+  }
 }
 
 function invalidateProfileClassesSummary(profileId) {
-  _classSummaryCache.delete(_cacheKey("profile", profileId));
+  // Clear all cached variants for this profile
+  for (const k of _classSummaryCache.keys()) {
+    if (String(k).startsWith(`profile:${String(profileId)}:`) || String(k) === `profile:${String(profileId)}`) {
+      _classSummaryCache.delete(k);
+    }
+  }
 }
 
-async function listModelClassesSummary(projectId, modelId, { force = false } = {}) {
+async function listModelClassesSummary(projectId, modelId, { force = false, filters = {} } = {}) {
   if (!projectId || !modelId) return [];
-  const key = _cacheKey("model", modelId);
+  const key = _cacheKey("model", modelId, filters);
 
   const cached = _classSummaryCache.get(key);
   if (!force && cached && Date.now() - cached.ts < _CLASS_SUMMARY_TTL_MS) {
     return cached.items;
   }
 
-  const items = await repoListModelClassesSummary(String(modelId));
+  const items = await repoListModelClassesSummary(String(modelId), { filters });
   _classSummaryCache.set(key, { ts: Date.now(), items });
   return items;
 }
 
-async function listProfileClassesSummary(projectId, profileId, { force = false } = {}) {
+async function listProfileClassesSummary(projectId, profileId, { force = false, filters = {} } = {}) {
   if (!projectId || !profileId) return [];
-  const key = _cacheKey("profile", profileId);
+  const key = _cacheKey("profile", profileId, filters);
 
   const cached = _classSummaryCache.get(key);
   if (!force && cached && Date.now() - cached.ts < _CLASS_SUMMARY_TTL_MS) {
     return cached.items;
   }
 
-  const items = await repoListProfileClassesSummary(String(profileId));
+  const items = await repoListProfileClassesSummary(String(profileId), { filters });
   _classSummaryCache.set(key, { ts: Date.now(), items });
   return items;
 }

@@ -42,14 +42,30 @@ export async function createProfileClass(profileId, packageId, payload) {
 }
 
 // Lightweight lookup lists for data type picker
-export async function listModelClassesSummary(modelId) {
-  return apiClient.get(
-    `/api/models/${encodeURIComponent(String(modelId))}/classes/summary`
-  );
+export async function listModelClassesSummary(modelId, { filters = {} } = {}) {
+  const exclude = Array.isArray(filters?.excludeStereotypes) ? filters.excludeStereotypes : [];
+  const includeTypes = Array.isArray(filters?.includeTypes) ? filters.includeTypes : [];
+  const excludeTypes = Array.isArray(filters?.excludeTypes) ? filters.excludeTypes : [];
+  const params = new URLSearchParams();
+  if (exclude.length) params.set("excludeStereotypes", exclude.map((x) => String(x)).filter(Boolean).join(","));
+  if (includeTypes.length) params.set("includeTypes", includeTypes.map((x) => String(x)).filter(Boolean).join(","));
+  if (excludeTypes.length) params.set("excludeTypes", excludeTypes.map((x) => String(x)).filter(Boolean).join(","));
+
+  const qs = params.toString();
+  const url = `/api/models/${encodeURIComponent(String(modelId))}/classes/summary${qs ? `?${qs}` : ""}`;
+  return apiClient.get(url);
 }
 
-export async function listProfileClassesSummary(profileId) {
-  return apiClient.get(
-    `/api/profiles/${encodeURIComponent(String(profileId))}/classes/summary`
-  );
+export async function listProfileClassesSummary(profileId, { filters = {} } = {}) {
+  const exclude = Array.isArray(filters?.excludeStereotypes) ? filters.excludeStereotypes : [];
+  const includeTypes = Array.isArray(filters?.includeTypes) ? filters.includeTypes : [];
+  const excludeTypes = Array.isArray(filters?.excludeTypes) ? filters.excludeTypes : [];
+  const params = new URLSearchParams();
+  if (exclude.length) params.set("excludeStereotypes", exclude.map((x) => String(x)).filter(Boolean).join(","));
+  if (includeTypes.length) params.set("includeTypes", includeTypes.map((x) => String(x)).filter(Boolean).join(","));
+  if (excludeTypes.length) params.set("excludeTypes", excludeTypes.map((x) => String(x)).filter(Boolean).join(","));
+
+  const qs = params.toString();
+  const url = `/api/profiles/${encodeURIComponent(String(profileId))}/classes/summary${qs ? `?${qs}` : ""}`;
+  return apiClient.get(url);
 }

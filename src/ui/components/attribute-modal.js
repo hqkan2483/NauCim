@@ -1,8 +1,8 @@
 import { closeModal, openModal } from "../modal.js";
 import {
   initDataTypePickerModal,
-  openDataTypePickerModal,
 } from "./data-type-picker-modal.js";
+import { bindClassPickerInput } from "./class-picker-input.js";
 
 /**
  * Attribute Modal Component
@@ -145,10 +145,23 @@ function initAttributeModal(projectId, callbacks = {}) {
     saveBtn.addEventListener("click", handleSaveAttributeEdit);
   }
 
-  const pickBtn = document.getElementById("edit-attr-dataType-picker-btn");
-  if (pickBtn) {
-    pickBtn.addEventListener("click", handleOpenDataTypePicker);
-  }
+  bindClassPickerInput(projectId, {
+    buttonId: "edit-attr-dataType-picker-btn",
+    nameInputId: "edit-attr-dataType",
+    idInputId: "", // keep id in JS state
+    getContext: () => editingContext,
+    getSelectedId: () => (editingDataTypeId ? String(editingDataTypeId) : null),
+    setSelectedId: (id) => {
+      editingDataTypeId = id ? String(id) : null;
+    },
+    // For attributes: allow Class + Enumeration, any stereotype.
+    filters: {
+      includeTypes: ["Class", "Enumeration"],
+    },
+    onSelect: () => {
+      setDataTypeFieldError("");
+    },
+  });
 
   const nameInput = document.getElementById("edit-attr-name");
   if (nameInput) {
@@ -285,29 +298,7 @@ function openEditAttributeModal(attr, { existingNames = [] } = {}) {
   if (modal) openModal(modal);
 }
 
-async function handleOpenDataTypePicker() {
-  if (!currentProjectId) return;
-  if (!editingAttrId && !isCreateMode) return;
-
-  const dataTypeInput = document.getElementById("edit-attr-dataType");
-  if (!dataTypeInput) return;
-
-  const modelId = editingContext?.modelId || "";
-  const profileId = editingContext?.profileId || "";
-
-  await openDataTypePickerModal({
-    modelId,
-    profileId,
-    selectedId: editingDataTypeId || null,
-    onSelect: (item) => {
-      // Fill both: name + id
-      dataTypeInput.value = item?.name ? String(item.name) : "";
-      editingDataTypeId = item?.id ? String(item.id) : null;
-
-      setDataTypeFieldError("");
-    },
-  });
-}
+// NOTE: picker logic is handled by bindClassPickerInput (shared component).
 
 function handleSaveAttributeEdit() {
   if (!currentProjectId) return;

@@ -81,10 +81,10 @@ function bindOnce() {
 async function loadItemsForContext(projectId, context) {
   if (!context) return [];
   if (context.kind === "model") {
-    return await listModelClassesSummary(projectId, context.id);
+    return await listModelClassesSummary(projectId, context.id, { filters: context.filters || {} });
   }
   if (context.kind === "profile") {
-    return await listProfileClassesSummary(projectId, context.id);
+    return await listProfileClassesSummary(projectId, context.id, { filters: context.filters || {} });
   }
   return [];
 }
@@ -99,7 +99,7 @@ export function initDataTypePickerModal(projectId) {
 
 /**
  * Open picker for a specific model/profile.
- * @param {{modelId?: string, profileId?: string, selectedId?: string, onSelect: (item)=>void}} opts
+ * @param {{modelId?: string, profileId?: string, selectedId?: string, filters?: { excludeStereotypes?: string[], includeTypes?: string[], excludeTypes?: string[] }, onSelect: (item)=>void}} opts
  */
 export async function openDataTypePickerModal(opts) {
   if (!currentProjectId) return;
@@ -107,10 +107,12 @@ export async function openDataTypePickerModal(opts) {
   const modelId = opts?.modelId ? String(opts.modelId) : "";
   const profileId = opts?.profileId ? String(opts.profileId) : "";
 
+  const filters = opts?.filters && typeof opts.filters === "object" ? opts.filters : {};
+
   currentContext = modelId
-    ? { kind: "model", id: modelId }
+    ? { kind: "model", id: modelId, filters }
     : profileId
-    ? { kind: "profile", id: profileId }
+    ? { kind: "profile", id: profileId, filters }
     : null;
 
   if (!currentContext) return;

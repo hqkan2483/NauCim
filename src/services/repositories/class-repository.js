@@ -36,12 +36,12 @@ export async function createProfileClass(profileId, packageId, payload) {
   return backendCreateProfileClass(String(profileId), String(packageId), payload);
 }
 
-export async function listModelClassesSummary(modelId) {
+export async function listModelClassesSummary(modelId, { filters = {} } = {}) {
   if (!modelId) throw new Error("Model ID is required");
-  return backendListModelClassesSummary(String(modelId));
+  return backendListModelClassesSummary(String(modelId), { filters });
 }
 
-export async function listProfileClassesSummary(profileId) {
+export async function listProfileClassesSummary(profileId, { filters = {} } = {}) {
   if (!profileId) throw new Error("Profile ID is required");
-  return backendListProfileClassesSummary(String(profileId));
+  return backendListProfileClassesSummary(String(profileId), { filters });
 }

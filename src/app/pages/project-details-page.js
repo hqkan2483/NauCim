@@ -2514,7 +2514,10 @@ async function handleEditLink(linkId, classId) {
   const found = findLinkWithParent(project, classId, linkId);
   if (!found) return;
 
-  openEditLinkModal(found.link, found.cls.id);
+  openEditLinkModal(found.link, found.cls.id, {
+    modelId: found.cls?.modelId || "",
+    profileId: found.cls?.profileId || "",
+  });
 }
 
 async function handleDeleteLink(linkId, classId) {

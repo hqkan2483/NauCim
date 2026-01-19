@@ -932,6 +932,29 @@ modelsRouter.get(
   "/:modelId/classes/summary",
   asyncHandler(async (req, res) => {
     const modelId = String(req.params.modelId);
+    const excludeRaw = req.query.excludeStereotypes ? String(req.query.excludeStereotypes) : "";
+    const excludeStereotypes = excludeRaw
+      ? excludeRaw
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+    const includeTypesRaw = req.query.includeTypes ? String(req.query.includeTypes) : "";
+    const includeTypes = includeTypesRaw
+      ? includeTypesRaw
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+    const excludeTypesRaw = req.query.excludeTypes ? String(req.query.excludeTypes) : "";
+    const excludeTypes = excludeTypesRaw
+      ? excludeTypesRaw
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
 
     const model = await prisma.model.findUnique({
       where: { id: modelId },
@@ -939,11 +962,29 @@ modelsRouter.get(
     });
     if (!model) return sendError(res, 404, "Model not found");
 
+    const baseTypes = includeTypes.length ? includeTypes : ["Class", "Enumeration"];
+
+    const where = {
+      modelId,
+      OR: [{ type: null }, { type: { in: baseTypes } }],
+    };
+
+    if (excludeStereotypes.length) {
+      // Include rows with NULL stereotype, and exclude explicit values.
+      where.AND = [
+        {
+          OR: [{ stereotype: null }, { stereotype: { notIn: excludeStereotypes } }],
+        },
+      ];
+    }
+
+    if (excludeTypes.length) {
+      where.AND = Array.isArray(where.AND) ? where.AND : [];
+      where.AND.push({ OR: [{ type: null }, { type: { notIn: excludeTypes } }] });
+    }
+
     const items = await prisma.classModel.findMany({
-      where: {
-        modelId,
-        OR: [{ type: null }, { type: { in: ["Class", "Enumeration"] } }],
-      },
+      where,
       select: {
         id: true,
         name: true,
