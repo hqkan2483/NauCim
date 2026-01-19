@@ -381,8 +381,7 @@ model GeneralizationClassRefModel {
   modelId              String
   role                 String
 
-  classId   String
-  className String
+  classId String
 
   generalizationLink GeneralizationLinkModel @relation(fields: [generalizationLinkId, modelId], references: [id, modelId], onDelete: Cascade)
 
@@ -398,8 +397,7 @@ model GeneralizationClassRefProfile {
   profileId            String
   role                 String
 
-  classId   String
-  className String
+  classId String
 
   generalizationLink GeneralizationLinkProfile @relation(fields: [generalizationLinkId, profileId], references: [id, profileId], onDelete: Cascade)
 

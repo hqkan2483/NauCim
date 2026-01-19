@@ -463,20 +463,12 @@ interface Diagram {
 
 ```json
 {
-  "linkId": "EAID_E9FB4B7B_727E_4456_9697_0181F1285F2E",
-  "linkType": "Generalization",
-  "documentation": null,
-  "documentationRu": null,
+  "id": "DDID_E9FB4B7B_727E_4456_9697_0181F1285F2E",
+  "diagramType": "ClassDiagram",
+  "diagramName": "Диаграмма связей пакета Asset",
+  "documentation": "Описание назначения диаграммы",
   "details": null,
-  "stereotype": "",
-  "parent": {
-    "classId": "EAID_64D19B75_EB20_49ee_80E2_53F98D5A15B6",
-    "className": "AssetPersonRole"
-  },
-  "child": {
-    "classId": "EAID_F7EEC20F_E02C_4809_A74A_69B7C1781737",
-    "className": "AssetPersonOwner"
-  }
+  "diagramBody": null,  
 }
 ```
 

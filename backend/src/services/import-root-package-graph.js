@@ -72,9 +72,7 @@ async function importLinksModel(tx, modelId, rp) {
     const linkId = toNonEmptyStr(g?.linkId) || newId("gen");
 
     const parentClassId = toNonEmptyStr(g?.parent?.classId);
-    const parentClassName = toNonEmptyStr(g?.parent?.className) || "";
     const childClassId = toNonEmptyStr(g?.child?.classId);
-    const childClassName = toNonEmptyStr(g?.child?.className) || "";
 
     if (!parentClassId || !childClassId) continue;
 
@@ -98,14 +96,12 @@ async function importLinksModel(tx, modelId, rp) {
           modelId,
           role: "parent",
           classId: parentClassId,
-          className: parentClassName,
         },
         {
           generalizationLinkId: linkId,
           modelId,
           role: "child",
           classId: childClassId,
-          className: childClassName,
         },
       ],
     });
@@ -165,9 +161,7 @@ async function importLinksProfile(tx, profileId, rp) {
     const linkId = toNonEmptyStr(g?.linkId) || newId("gen");
 
     const parentClassId = toNonEmptyStr(g?.parent?.classId);
-    const parentClassName = toNonEmptyStr(g?.parent?.className) || "";
     const childClassId = toNonEmptyStr(g?.child?.classId);
-    const childClassName = toNonEmptyStr(g?.child?.className) || "";
 
     if (!parentClassId || !childClassId) continue;
 
@@ -191,14 +185,12 @@ async function importLinksProfile(tx, profileId, rp) {
           profileId,
           role: "parent",
           classId: parentClassId,
-          className: parentClassName,
         },
         {
           generalizationLinkId: linkId,
           profileId,
           role: "child",
           classId: childClassId,
-          className: childClassName,
         },
       ],
     });

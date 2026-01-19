@@ -81,8 +81,16 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
   const isModel = Boolean(modelId);
   const id = String(isModel ? modelId : profileId);
 
-  const [packages, generalizationsList, associationList] = await Promise.all([
+  const [packages, classNameById, generalizationsList, associationList] = await Promise.all([
     isModel ? exportPackagesTreeModel(id) : exportPackagesTreeProfile(id),
+    isModel
+      ? prisma.classModel
+          .findMany({ where: { modelId: id }, select: { id: true, name: true } })
+          .then((rows) => new Map((rows || []).map((c) => [String(c.id), String(c.name ?? "")])))
+      : prisma.classProfile
+          .findMany({ where: { profileId: id }, select: { id: true, name: true } })
+          .then((rows) => new Map((rows || []).map((c) => [String(c.id), String(c.name ?? "")])))
+          .catch(() => new Map()),
     isModel
       ? prisma.generalizationLinkModel.findMany({ where: { modelId: id }, include: { ends: true } })
       : prisma.generalizationLinkProfile.findMany({ where: { profileId: id }, include: { ends: true } }),
@@ -113,8 +121,8 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
         documentationRu: g.documentationRu ?? null,
         details: g.details ?? null,
         stereotype: g.stereotype ?? "",
-        parent: mapGeneralizationEnd(g.ends, "parent"),
-        child: mapGeneralizationEnd(g.ends, "child"),
+        parent: mapGeneralizationEnd(g.ends, "parent", classNameById),
+        child: mapGeneralizationEnd(g.ends, "child", classNameById),
       })),
       associationList: associationList.map((a) => ({
         linkId: a.id,
@@ -139,11 +147,14 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
   ];
 }
 
-function mapGeneralizationEnd(ends, role) {
+function mapGeneralizationEnd(ends, role, classNameById) {
   const e = Array.isArray(ends) ? ends.find((x) => x?.role === role) : null;
+  const classId = e?.classId ?? null;
+  const nameFromClass =
+    classId && classNameById && typeof classNameById.get === "function" ? classNameById.get(String(classId)) : null;
   return {
-    classId: e?.classId ?? null,
-    className: e?.className ?? "",
+    classId,
+    className: nameFromClass ?? "",
   };
 }
 
