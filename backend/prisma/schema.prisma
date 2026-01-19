@@ -451,14 +451,13 @@ model AssociationLinkEndModel {
   associationLinkId String
   modelId           String
 
-  linkEndName      String
-  linkEndClassId   String
-  linkEndClassName String
-  multiplicity     String  @default("")
-  documentation    String?
-  documentationRu  String?
-  details          String?
-  stereotype       String  @default("")
+  linkEndName     String
+  linkEndClassId  String
+  multiplicity    String  @default("")
+  documentation   String?
+  documentationRu String?
+  details         String?
+  stereotype      String  @default("")
 
   associationLink AssociationLinkModel @relation(fields: [associationLinkId, modelId], references: [id, modelId], onDelete: Cascade)
 
@@ -473,14 +472,13 @@ model AssociationLinkEndProfile {
   associationLinkId String
   profileId         String
 
-  linkEndName      String
-  linkEndClassId   String
-  linkEndClassName String
-  multiplicity     String  @default("")
-  documentation    String?
-  documentationRu  String?
-  details          String?
-  stereotype       String  @default("")
+  linkEndName     String
+  linkEndClassId  String
+  multiplicity    String  @default("")
+  documentation   String?
+  documentationRu String?
+  details         String?
+  stereotype      String  @default("")
 
   associationLink AssociationLinkProfile @relation(fields: [associationLinkId, profileId], references: [id, profileId], onDelete: Cascade)
 

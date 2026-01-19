@@ -129,7 +129,6 @@ async function importLinksModel(tx, modelId, rp) {
       const srcId = toNonEmptyStr(e?.srcId) || toNonEmptyStr(e?.linkEndId);
       const linkEndId = toNonEmptyStr(e?.linkEndId) || newId("end");
       const endClassId = toNonEmptyStr(e?.linkEndClassId);
-      const endClassName = toNonEmptyStr(e?.linkEndClassName) || "";
       if (!endClassId) continue;
 
       await tx.associationLinkEndModel.create({
@@ -140,7 +139,6 @@ async function importLinksModel(tx, modelId, rp) {
           modelId,
           linkEndName: String(e?.linkEndName || ""),
           linkEndClassId: endClassId,
-          linkEndClassName: endClassName,
           multiplicity: toNonEmptyStr(e?.multiplicity) || "",
           documentation: toStr(e?.documentation),
           documentationRu: toStr(e?.documentationRu),
@@ -218,7 +216,6 @@ async function importLinksProfile(tx, profileId, rp) {
       const srcId = toNonEmptyStr(e?.srcId) || toNonEmptyStr(e?.linkEndId);
       const linkEndId = toNonEmptyStr(e?.linkEndId) || newId("end");
       const endClassId = toNonEmptyStr(e?.linkEndClassId);
-      const endClassName = toNonEmptyStr(e?.linkEndClassName) || "";
       if (!endClassId) continue;
 
       await tx.associationLinkEndProfile.create({
@@ -229,7 +226,6 @@ async function importLinksProfile(tx, profileId, rp) {
           profileId,
           linkEndName: String(e?.linkEndName || ""),
           linkEndClassId: endClassId,
-          linkEndClassName: endClassName,
           multiplicity: toNonEmptyStr(e?.multiplicity) || "",
           documentation: toStr(e?.documentation),
           documentationRu: toStr(e?.documentationRu),

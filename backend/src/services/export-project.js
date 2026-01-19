@@ -135,7 +135,7 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
           linkEndId: e.linkEndId,
           linkEndName: e.linkEndName,
           linkEndClassId: e.linkEndClassId,
-          linkEndClassName: e.linkEndClassName,
+          linkEndClassName: classNameById.get(String(e.linkEndClassId)) ?? "",
           multiplicity: e.multiplicity ?? null,
           documentation: e.documentation ?? null,
           documentationRu: e.documentationRu ?? null,
