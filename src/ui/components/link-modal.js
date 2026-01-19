@@ -16,7 +16,7 @@ let editingInitialRole = null; // 'child' | 'parent' (role of editing class)
 // Callbacks from pages
 let onUpdateCallback = null;
 
-function initLinkModal(projectId, callbacks = {}) {
+function initGeneralizationLinkModal(projectId, callbacks = {}) {
   currentProjectId = projectId;
   onUpdateCallback = callbacks.onUpdate || null;
 
@@ -33,9 +33,9 @@ function initLinkModal(projectId, callbacks = {}) {
     },
   });
 
-  const saveBtn = document.getElementById("save-link-edit-btn");
+  const saveBtn = document.getElementById("save-generalization-btn");
   if (saveBtn) {
-    saveBtn.addEventListener("click", handleSaveLinkEdit);
+    saveBtn.addEventListener("click", handleSaveGeneralizationLinkSave);
   }
 }
 
@@ -49,7 +49,7 @@ function initLinkModal(projectId, callbacks = {}) {
  * @param {string} classId Edited class id (editingClassId)
  * @param {{modelId?: string, profileId?: string}} [ctx]
  */
-function openEditLinkModal(generalizationLink, classId, ctx = {}) {
+function openEditGeneralizationLinkModal(generalizationLink, classId, ctx = {}) {
   if (!currentProjectId) return;
   if (!generalizationLink) return;
 
@@ -104,7 +104,7 @@ function openEditLinkModal(generalizationLink, classId, ctx = {}) {
   if (modal) openModal(modal);
 }
 
-function handleSaveLinkEdit() {
+function handleSaveGeneralizationLinkSave() {
   if (!currentProjectId || !editingLinkId) return;
 
   const role = document.getElementById("generalization-link-role")?.value || "child";
@@ -162,4 +162,7 @@ function handleSaveLinkEdit() {
   }
 }
 
-export { initLinkModal, openEditLinkModal };
+export {
+  initGeneralizationLinkModal,
+  openEditGeneralizationLinkModal,
+};

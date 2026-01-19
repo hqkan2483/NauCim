@@ -359,6 +359,7 @@ function renderClassLinks(cls) {
     cls.links.forEach(link => {
       const linkIcon = link.relationKind === 'Generalization' ? '⬆️' : '↔️';
       const roleLabel = link.role === 'child' ? '(потомок от)' : (link.role === 'parent' ? '(родитель для)' : (link.role === 'unspecified' ? '' : link.role || ''));
+      const editAction = link.relationKind === 'Generalization' ? 'edit-generalization-link' : 'edit-association-link';
 
       html += `
         <tr data-link-id="${link.linkId}">
@@ -377,7 +378,7 @@ function renderClassLinks(cls) {
           <td>
             <div class="table-actions">
               <button class="btn-icon"
-                      data-action="edit-link"
+                      data-action="${editAction}"
                       data-class-id="${cls.id}"
                       data-link-id="${link.linkId}"
                       title="Редактировать">

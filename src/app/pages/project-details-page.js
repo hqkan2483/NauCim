@@ -49,8 +49,8 @@ import {
   openCreateAttributeModal,
 } from "../../ui/components/attribute-modal.js";
 import {
-  initLinkModal,
-  openEditLinkModal,
+  initGeneralizationLinkModal,
+  openEditGeneralizationLinkModal,
 } from "../../ui/components/link-modal.js";
 import {
   renderProjectTree,
@@ -452,7 +452,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
     });
 
-    initLinkModal(currentProjectId, {
+    initGeneralizationLinkModal(currentProjectId, {
       onUpdate: async (linkId, classId, updates) => {
         const project = await getProjectById(currentProjectId);
         if (!project) return;
@@ -461,10 +461,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!found) return;
 
         // Currently only Generalization save is implemented.
-        if (String(found?.link?.relationKind || "") !== "Generalization") {
-          showToast("Сохранение поддерживается только для Generalization", { type: "error" });
-          return;
-        }
+        // if (String(found?.link?.relationKind || "") !== "Generalization") {
+        //   showToast("Сохранение поддерживается только для Generalization", { type: "error" });
+        //   return;
+        // }
 
         const payload = updates?.generalizationLink;
         if (!payload) return;
@@ -1815,11 +1815,20 @@ function handleItemDetailsClick(e) {
     return;
   }
 
-  const editLinkBtn = target.closest("[data-action='edit-link']");
-  if (editLinkBtn) {
-    handleEditLink(
-      editLinkBtn.getAttribute("data-link-id"),
-      editLinkBtn.getAttribute("data-class-id")
+  const editGeneralizationLinkBtn = target.closest("[data-action='edit-generalization-link']");
+  if (editGeneralizationLinkBtn) {
+    handleEditGeneralizationLink(
+      editGeneralizationLinkBtn.getAttribute("data-link-id"),
+      editGeneralizationLinkBtn.getAttribute("data-class-id")
+    );
+    return;
+  }
+
+  const editAssociationLinkBtn = target.closest("[data-action='edit-association-link']");
+  if (editAssociationLinkBtn) {
+    handleEditAssociationLink(
+      editAssociationLinkBtn.getAttribute("data-link-id"),
+      editAssociationLinkBtn.getAttribute("data-class-id")
     );
     return;
   }
@@ -2558,7 +2567,7 @@ function handleAddLink(classId) {
   alert("Функция добавления связи в разработке");
 }
 
-async function handleEditLink(linkId, classId) {
+async function handleEditGeneralizationLink(linkId, classId) {
   const project = await getProjectById(currentProjectId);
   if (!project) return;
 
@@ -2582,10 +2591,14 @@ async function handleEditLink(linkId, classId) {
     return;
   }
 
-  openEditLinkModal(generalizationLink, found.cls.id, {
+  openEditGeneralizationLinkModal(generalizationLink, found.cls.id, {
     modelId: found.modelId || "",
     profileId: found.profileId || "",
   });
+}
+
+function handleEditAssociationLink(linkId, classId) {
+  showToast("Редактирование Association будет добавлено позже", { type: "info" });
 }
 
 async function handleDeleteLink(linkId, classId) {
