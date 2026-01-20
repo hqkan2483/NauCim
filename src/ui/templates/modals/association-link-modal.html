@@ -27,7 +27,7 @@
       </div>
 
       <div class="form-section--edit-link">
-        <div class="form-row">
+        <!-- <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="association-link-stereotype"
               >Стереотип</label
@@ -74,11 +74,13 @@
               rows="2"
             ></textarea>
           </div>
-        </div>
+        </div> -->
       </div>
+
       <div class="form-column-section">
         <div class="form-column-item" id="association-src-end">
           <div class="form-item__title">Исходный узел</div>
+
           <div class="form-group">
             <label class="form-label" for="association-sourceClassName"
               >Класс*</label
@@ -91,6 +93,7 @@
                 required
                 placeholder="Название класса"
               />
+
               <button
                 type="button"
                 class="btn-icon btn-icon--input"
@@ -98,20 +101,13 @@
                 title="Выбрать класс"
                 aria-label="Выбрать класс"
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"
-                  />
-                </svg>
+                <span class="css-icon-menu" aria-hidden="true"></span>
               </button>
             </div>
+
+            <input type="hidden" id="association-sourceClassId" />
           </div>
+
           <div class="form-group">
             <label class="form-label" for="association-src-role"
               >Имя узла</label
@@ -180,10 +176,12 @@
 
         <div class="form-column-item" id="association-target-end">
           <div class="form-item__title">Целевой узел</div>
+
           <div class="form-group">
             <label class="form-label" for="association-targetClassName"
               >Класс*</label
             >
+
             <div class="input-with-button">
               <input
                 type="text"
@@ -192,6 +190,7 @@
                 required
                 placeholder="Название класса"
               />
+
               <button
                 type="button"
                 class="btn-icon btn-icon--input"
@@ -199,24 +198,15 @@
                 title="Выбрать класс"
                 aria-label="Выбрать класс"
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"
-                  />
-                </svg>
+                <span class="css-icon-menu" aria-hidden="true"></span>
               </button>
             </div>
+
+            <input type="hidden" id="association-targetClassId" />
           </div>
+
           <div class="form-group">
-            <label class="form-label" for="association-target-role"
-              >Имя узла</label
-            >
+            <label class="form-label" for="association-target-role">Имя узла</label>
             <input
               type="text"
               id="association-target-role"
@@ -225,9 +215,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label" for="association-target-stereotype"
-              >Стереотип</label
-            >
+            <label class="form-label" for="association-target-stereotype">Стереотип</label>
             <input
               type="text"
               id="association-target-stereotype"
@@ -236,9 +224,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label" for="association-target-multiplicity"
-              >Мн.</label
-            >
+            <label class="form-label" for="association-target-multiplicity">Мн.</label>
             <input
               type="text"
               id="association-target-multiplicity"
@@ -248,9 +234,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label" for="association-target-documentation"
-              >Описание</label
-            >
+            <label class="form-label" for="association-target-documentation">Описание</label>
             <textarea
               id="association-target-documentation"
               class="form-textarea"
@@ -258,9 +242,7 @@
             ></textarea>
           </div>
           <div class="form-group">
-            <label class="form-label" for="association-target-documentationRu"
-              >Описание (RU)</label
-            >
+            <label class="form-label" for="association-target-documentationRu">Описание (RU)</label>
             <textarea
               id="association-target-documentationRu"
               class="form-textarea"
@@ -268,9 +250,7 @@
             ></textarea>
           </div>
           <div class="form-group">
-            <label class="form-label" for="association-target-details"
-              >Детали</label
-            >
+            <label class="form-label" for="association-target-details">Детали</label>
             <textarea
               id="association-target-details"
               class="form-textarea"
@@ -281,8 +261,8 @@
       </div>
 
       <div class="modal-buttons">
-        <button class="btn btn-secondary" data-modal-close>Отмена</button>
-        <button class="btn btn-primary" id="save-association-btn">
+        <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+        <button type="button" class="btn btn-primary" id="save-association-btn">
           Сохранить
         </button>
       </div>

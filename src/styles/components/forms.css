@@ -32,6 +32,26 @@
   padding-bottom: 10px;
 }
 
+.modal-form .form-section--edit-link {
+
+  padding: 10px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.modal-form .form-column-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  gap: 20px;
+
+  margin-top: 10px;
+  padding: 15px;
+
+    border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -247,6 +267,36 @@
   padding: 4px 10px;
   height: auto;
   background: var(--bg-primary);
+}
+
+/* Pure CSS icon (3 horizontal lines). Use inside buttons to avoid inline SVG. */
+.css-icon-menu {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  position: relative;
+  pointer-events: none;
+}
+
+.css-icon-menu::before,
+.css-icon-menu::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+.css-icon-menu::before {
+  top: -5px;
+}
+
+.css-icon-menu::after {
+  top: 5px;
 }
 
 /* Form validation */

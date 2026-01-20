@@ -11,33 +11,71 @@ const MODAL_TEMPLATES_PATH = "./src/ui/templates/modals/";
  */
 export async function loadModal(modalName) {
   try {
-    const response = await fetch(`${MODAL_TEMPLATES_PATH}${modalName}.html`);
+    // NOTE: Some dev servers (notably VS Code Live Server) inject live-reload snippets into HTML.
+    // When they cache the transformed response, they can sometimes serve a stale/incomplete version
+    // even after the underlying file changes. A cache-busting query keeps template loading reliable.
+    const templateUrl = new URL(`${MODAL_TEMPLATES_PATH}${modalName}.html`, window.location.href);
+    templateUrl.searchParams.set("_", Date.now().toString(36));
+
+    const response = await fetch(templateUrl, {
+      cache: "no-store",
+    });
 
     if (!response.ok) {
       console.error(`❌ Failed to load modal:  ${modalName} (${response.status})`);
       return false;
     }
 
-    const html = await response.text();
+    let html = await response.text();
 
-    // Insert modal HTML into body
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = html.trim();
+    // VS Code Live Server injects a live-reload <script> into served HTML.
+    // When modal templates contain SVG (or other sensitive fragments), that injection can corrupt
+    // the markup and even truncate the response. Strip the injected block defensively.
+    html = String(html || "").replace(
+      /<!--\s*Code injected by live-server\s*-->[\s\S]*?<\/script>\s*/gi,
+      ""
+    );
 
-    const modalElement = tempDiv.firstElementChild;
-    if (modalElement) {
-      // Check if modal already exists
-      const existingModal = document.getElementById(modalElement.id);
-      if (existingModal) {
-        return true;
-      }
+    // Parse modal HTML template
+    const tpl = document.createElement("template");
+    tpl.innerHTML = String(html || "").trim();
 
-      document.body.appendChild(modalElement);
-      return true;
-    } else {
+    // Prefer the element whose id matches modalName (our convention)
+    const modalElementById = tpl.content.querySelector(`#${CSS.escape(modalName)}`);
+    const modalElement = modalElementById || tpl.content.firstElementChild;
+    if (!modalElement) {
       console.error(`❌ Invalid modal HTML: ${modalName}`);
       return false;
     }
+
+    // If parsing produced multiple top-level nodes, don't silently drop them.
+    // This can happen when the template markup is malformed; we try to keep everything inside the modal.
+    const topLevelEls = Array.from(tpl.content.children);
+    // Only attempt to merge when we *didn't* find a modal element by id.
+    // Full-document templates (<html><head><body>...) can yield multiple roots in fragment parsing;
+    // merging those would incorrectly append <head>/<body> into the modal DOM.
+    if (!modalElementById && topLevelEls.length > 1) {
+      console.warn(
+        `⚠️ Modal template ${modalName} produced ${topLevelEls.length} root elements. ` +
+          `This usually indicates malformed HTML; attempting to merge extra nodes into the modal.`
+      );
+
+      const contentHost = modalElement.querySelector(".modal-content") || modalElement;
+      for (const el of topLevelEls) {
+        if (el === modalElement) continue;
+        contentHost.appendChild(el);
+      }
+    }
+
+    // Check if modal already exists
+    const existingModal = document.getElementById(modalElement.id);
+    if (existingModal) {
+      existingModal.replaceWith(modalElement);
+      return true;
+    }
+
+    document.body.appendChild(modalElement);
+    return true;
   } catch (error) {
     console.error(`❌ Error loading modal ${modalName}:`, error);
     return false;

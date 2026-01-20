@@ -53,6 +53,10 @@ import {
   openEditGeneralizationLinkModal,
 } from "../../ui/components/link-modal.js";
 import {
+  initAssociationLinkModal,
+  openEditAssociationLinkModal,
+} from "../../ui/components/association-link-modal.js";
+import {
   renderProjectTree,
   toggleTreeItem,
   toggleProject,
@@ -139,6 +143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "edit-attribute-modal",
     "data-type-picker-modal",
     "generalization-link-modal",
+    "association-link-modal",
     "create-package-modal",
     "create-class-modal",
     "create-diagram-modal",
@@ -523,6 +528,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       },
     });
+
+    initAssociationLinkModal(currentProjectId);
 
     /**
      * Modal: create nested package (subpackage).
@@ -2597,8 +2604,34 @@ async function handleEditGeneralizationLink(linkId, classId) {
   });
 }
 
-function handleEditAssociationLink(linkId, classId) {
-  showToast("Редактирование Association будет добавлено позже", { type: "info" });
+async function handleEditAssociationLink(linkId, classId) {
+  const project = await getProjectById(currentProjectId);
+  if (!project) return;
+
+  const found = findLinkWithParent(project, classId, linkId);
+  if (!found) return;
+
+  if (String(found?.link?.relationKind || "") !== "Association") {
+    showToast("Это не Association-связь", { type: "error" });
+    return;
+  }
+
+  const associationLink = findAssociationLinkInProject(project, {
+    context: found.context,
+    modelId: found.modelId,
+    profileId: found.profileId,
+    linkId,
+  });
+
+  if (!associationLink) {
+    showToast("Не удалось найти данные связи Association", { type: "error" });
+    return;
+  }
+
+  await openEditAssociationLinkModal(associationLink, found.cls.id, {
+    modelId: found.modelId || "",
+    profileId: found.profileId || "",
+  });
 }
 
 async function handleDeleteLink(linkId, classId) {
@@ -2952,6 +2985,26 @@ function findGeneralizationLinkInProject(project, { context, modelId, profileId,
     const p = (project?.profiles || []).find((x) => String(x?.id || "") === pId);
     const list = p?.rootPackages?.[0]?.generalizationsList || [];
     return (list || []).find((g) => String(g?.linkId || "") === id) || null;
+  }
+
+  return null;
+}
+
+function findAssociationLinkInProject(project, { context, modelId, profileId, linkId }) {
+  const linkIdStr = String(linkId);
+
+  if (context === "model") {
+    const model = (project?.models || []).find((m) => String(m?.id) === String(modelId));
+    const rp = Array.isArray(model?.rootPackages) ? model.rootPackages[0] : null;
+    const list = Array.isArray(rp?.associationList) ? rp.associationList : [];
+    return list.find((a) => String(a?.linkId) === linkIdStr) || null;
+  }
+
+  if (context === "profile") {
+    const profile = (project?.profiles || []).find((p) => String(p?.id) === String(profileId));
+    const rp = Array.isArray(profile?.rootPackages) ? profile.rootPackages[0] : null;
+    const list = Array.isArray(rp?.associationList) ? rp.associationList : [];
+    return list.find((a) => String(a?.linkId) === linkIdStr) || null;
   }
 
   return null;
