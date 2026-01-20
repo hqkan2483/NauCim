@@ -1,5 +1,9 @@
 let modalSystemInitialized = false;
 
+const DRAG_STATE = {
+  initialized: new WeakSet(),
+};
+
 const DEFAULTS = {
   activeClass: "active",
   closeOnEsc: true,
@@ -26,9 +30,105 @@ function syncBodyScrollLock(cfg) {
   document.body.classList.toggle(cfg.bodyOpenClass, hasOpen);
 }
 
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(n, max));
+}
+
+function resetModalContentPosition(modalEl) {
+  const content = modalEl.querySelector(".modal-content");
+  if (!content) return;
+
+  content.style.position = "";
+  content.style.left = "";
+  content.style.top = "";
+  content.style.margin = "";
+  content.style.transform = "";
+}
+
+function ensureDraggableModal(modalEl) {
+  if (!(modalEl instanceof HTMLElement)) return;
+  if (DRAG_STATE.initialized.has(modalEl)) return;
+
+  DRAG_STATE.initialized.add(modalEl);
+
+  modalEl.classList.add("modal--draggable");
+
+  modalEl.addEventListener("pointerdown", (e) => {
+    if (!(e.target instanceof HTMLElement)) return;
+
+    // Only left button drag (mouse). For touch, button is typically -1.
+    if (typeof e.button === "number" && e.button !== 0 && e.pointerType === "mouse") return;
+
+    const handle = e.target.closest("[data-modal-drag-handle], .modal-title");
+    if (!handle) return;
+
+    // Don't start drag from inside inputs/buttons etc.
+    if (e.target.closest("input, textarea, select, button, a")) return;
+
+    const content = modalEl.querySelector(".modal-content");
+    if (!content) return;
+    if (!modalEl.classList.contains(DEFAULTS.activeClass)) return;
+
+    const rect = content.getBoundingClientRect();
+
+    // Switch to fixed positioning so we can move it.
+    content.style.position = "fixed";
+    content.style.left = `${rect.left}px`;
+    content.style.top = `${rect.top}px`;
+    content.style.margin = "0";
+
+    // Prevent selecting title text while dragging.
+    e.preventDefault();
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startLeft = rect.left;
+    const startTop = rect.top;
+    const padding = 8;
+
+    const onMove = (ev) => {
+      if (ev.pointerId !== e.pointerId) return;
+
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      const maxLeft = Math.max(padding, vw - rect.width - padding);
+      const maxTop = Math.max(padding, vh - rect.height - padding);
+
+      const nextLeft = clamp(startLeft + dx, padding, maxLeft);
+      const nextTop = clamp(startTop + dy, padding, maxTop);
+
+      content.style.left = `${nextLeft}px`;
+      content.style.top = `${nextTop}px`;
+    };
+
+    const stop = (ev) => {
+      if (ev.pointerId !== e.pointerId) return;
+      window.removeEventListener("pointermove", onMove, true);
+      window.removeEventListener("pointerup", stop, true);
+      window.removeEventListener("pointercancel", stop, true);
+    };
+
+    window.addEventListener("pointermove", onMove, true);
+    window.addEventListener("pointerup", stop, true);
+    window.addEventListener("pointercancel", stop, true);
+  });
+
+  // Cleanup/reset on close so next open starts centered.
+  modalEl.addEventListener("modal:afterclose", () => {
+    resetModalContentPosition(modalEl);
+  });
+}
+
 function openModal(modalEl, options = {}) {
   const cfg = { ...DEFAULTS, ...options };
   const modal = assertModalEl(modalEl);
+
+  ensureDraggableModal(modal);
+  resetModalContentPosition(modal);
 
   // Dispatch event before opening
   const event = new CustomEvent("modal:beforeopen", {

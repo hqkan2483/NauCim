@@ -46,10 +46,11 @@ import {
 import {
   initAttributeModal,
   openEditAttributeModal,
+  openCreateAttributeModal,
 } from "../../ui/components/attribute-modal.js";
 import {
-  initLinkModal,
-  openEditLinkModal,
+  initGeneralizationLinkModal,
+  openEditGeneralizationLinkModal,
 } from "../../ui/components/link-modal.js";
 import {
   renderProjectTree,
@@ -59,6 +60,53 @@ import {
 import { renderPackageDetails } from "../../ui/renderers/package-details-renderer.js";
 import { renderClassDetails } from "../../ui/renderers/class-details-renderer.js";
 import { initDiagramMode } from "./project-details/diagram-mode.js";
+import { showToast } from "../../ui/components/toast.js";
+import {
+  updateModelPackage as updateModelPackageInBackend,
+  updateProfilePackage as updateProfilePackageInBackend,
+  createModelSubpackage as createModelSubpackageInBackend,
+  createProfileSubpackage as createProfileSubpackageInBackend,
+} from "../../services/package-service.js";
+import {
+  updateModelClass as updateModelClassInBackend,
+  updateProfileClass as updateProfileClassInBackend,
+  createModelClass as createModelClassInBackend,
+  createProfileClass as createProfileClassInBackend,
+  invalidateModelClassesSummary,
+  invalidateProfileClassesSummary,
+} from "../../services/class-service.js";
+import {
+  createModelDiagram as createModelDiagramInBackend,
+  createProfileDiagram as createProfileDiagramInBackend,
+} from "../../services/diagram-service.js";
+import { updateGeneralizationLink as updateGeneralizationLinkInBackend } from "../../services/link-service.js";
+import { initPackageTreeContextMenu } from "../../ui/components/package-context-menu.js";
+import {
+  initCreatePackageModal,
+  openCreatePackageModal,
+} from "../../ui/components/create-package-modal.js";
+import {
+  initCreateClassModal,
+  openCreateClassModal,
+} from "../../ui/components/create-class-modal.js";
+import {
+  initCreateDiagramModal,
+  openCreateDiagramModal,
+} from "../../ui/components/create-diagram-modal.js";
+import {
+  getSubpackageNameSet,
+  getClassNameSet,
+  getDiagramNameSet,
+  findSubpackageIdByName,
+  findClassIdByName,
+  findDiagramIdByName,
+} from "../../utils/project-traversal.js";
+import {
+  updateModelAttribute as updateModelAttributeInBackend,
+  updateProfileAttribute as updateProfileAttributeInBackend,
+  createModelAttribute as createModelAttributeInBackend,
+  createProfileAttribute as createProfileAttributeInBackend,
+} from "../../services/attribute-service.js";
 
 // ============================================================
 // STATE
@@ -89,7 +137,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     "import-model-modal",
     "import-profile-modal",
     "edit-attribute-modal",
-    "edit-link-modal",
+    "data-type-picker-modal",
+    "generalization-link-modal",
+    "create-package-modal",
+    "create-class-modal",
+    "create-diagram-modal",
   ]);
 
   initModalSystem();
@@ -184,39 +236,478 @@ document.addEventListener("DOMContentLoaded", async () => {
         const tabToRestore = getActiveClassTabName() || lastClassTabName;
 
         const found = findAttributeWithParent(project, attrId);
-        if (! found) return;
+        if (!found) return;
 
-        Object.assign(found.attr, updates);
+        const context = found.context;
+        const modelId = found.modelId || "";
+        const profileId = found.profileId || "";
+        const classId = found.cls?.id;
+        if (!classId) return;
 
-        const itemDetailsContent = document.getElementById("item-details-content");
-        if (itemDetailsContent) {
-          itemDetailsContent.innerHTML = renderClassDetails(found.cls, {
-            viewMode: getItemDetailsViewMode(),
-          });
-          restoreClassTab(tabToRestore);
+        const originalAttrSnapshot = JSON.parse(JSON.stringify(found.attr));
+        const originalClsSnapshot = JSON.parse(JSON.stringify(found.cls));
+
+        try {
+          const payload = {
+            id: attrId,
+            name: updates.name,
+            dataTypeId: updates.dataTypeId,
+            stereotype: updates.stereotype,
+            multiplicity: updates.multiplicity,
+            documentation: updates.documentation,
+            documentationRu: updates.documentationRu,
+            details: updates.details,
+            initialValue: updates.initialValue,
+
+            // Preserve external refs if present
+            refModelId: found.attr?.refModelId ?? null,
+            refModelItemId: found.attr?.refModelItemId ?? null,
+          };
+
+          const updatedProject =
+            context === "model"
+              ? await updateModelAttributeInBackend(
+                  currentProjectId,
+                  modelId,
+                  attrId,
+                  payload
+                )
+              : await updateProfileAttributeInBackend(
+                  currentProjectId,
+                  profileId,
+                  attrId,
+                  payload
+                );
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: context === "model" ? modelId : null,
+            profileId: context === "profile" ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          const chain = findClassParentChain(
+            updatedProject,
+            classId,
+            modelId,
+            profileId,
+            context
+          );
+          expandTreePath(chain);
+          restoreSelectedTreeItemInTree();
+
+          const updatedCls = findClassById(
+            updatedProject,
+            classId,
+            modelId,
+            profileId,
+            context
+          );
+
+          const itemDetailsContent = document.getElementById("item-details-content");
+          if (itemDetailsContent && updatedCls) {
+            const clsView = {
+              ...updatedCls,
+              modelId: modelId || "",
+              profileId: profileId || "",
+            };
+            originalItemData = JSON.parse(JSON.stringify(clsView));
+
+            itemDetailsContent.innerHTML = renderClassDetails(clsView, {
+              viewMode: getItemDetailsViewMode(),
+            });
+            restoreClassTab(tabToRestore);
+          }
+
+          showToast("Атрибут сохранён", { type: "success" });
+        } catch (error) {
+          console.error("[attributeModal.onUpdate] Save failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка сохранения";
+          showToast(`Ошибка сохранения атрибута: ${msg}`, { type: "error" });
+
+          // Restore class UI to original (no local mutation should have happened).
+          const itemDetailsContent = document.getElementById("item-details-content");
+          if (itemDetailsContent) {
+            const clsView = {
+              ...originalClsSnapshot,
+              modelId: modelId || "",
+              profileId: profileId || "",
+            };
+            itemDetailsContent.innerHTML = renderClassDetails(clsView, {
+              viewMode: getItemDetailsViewMode(),
+            });
+            restoreClassTab(tabToRestore);
+          }
+
+          // Re-open modal so user does not lose edits context.
+          const existingNames = (originalClsSnapshot?.attributes || [])
+            .filter((a) => String(a?.id) !== String(attrId))
+            .map((a) => a?.name)
+            .filter(Boolean);
+
+          openEditAttributeModal({
+            ...originalAttrSnapshot,
+            ...updates,
+            modelId: modelId || null,
+            profileId: profileId || null,
+          }, { existingNames });
+        }
+      },
+
+      onCreate: async ({ classId, context, updates }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const tabToRestore = "item-attributes";
+
+        const foundClass = findClassWithContext(project, classId);
+        if (!foundClass) return;
+
+        const modelId = foundClass.modelId || context?.modelId || "";
+        const profileId = foundClass.profileId || context?.profileId || "";
+
+        try {
+          const payload = {
+            name: updates.name,
+            dataTypeId: updates.dataTypeId,
+            stereotype: updates.stereotype,
+            multiplicity: updates.multiplicity,
+            documentation: updates.documentation,
+            documentationRu: updates.documentationRu,
+            details: updates.details,
+            initialValue: updates.initialValue,
+          };
+
+          const updatedProject = modelId
+            ? await createModelAttributeInBackend(
+                currentProjectId,
+                modelId,
+                classId,
+                payload
+              )
+            : await createProfileAttributeInBackend(
+                currentProjectId,
+                profileId,
+                classId,
+                payload
+              );
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: modelId || null,
+            profileId: profileId || null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          const chain = findClassParentChain(
+            updatedProject,
+            classId,
+            modelId,
+            profileId,
+            modelId ? "model" : "profile"
+          );
+          expandTreePath(chain);
+          restoreSelectedTreeItemInTree();
+
+          const updatedCls = findClassById(
+            updatedProject,
+            classId,
+            modelId,
+            profileId,
+            modelId ? "model" : "profile"
+          );
+
+          const itemDetailsContent = document.getElementById("item-details-content");
+          if (itemDetailsContent && updatedCls) {
+            const clsView = {
+              ...updatedCls,
+              modelId: modelId || "",
+              profileId: profileId || "",
+            };
+            originalItemData = JSON.parse(JSON.stringify(clsView));
+            itemDetailsContent.innerHTML = renderClassDetails(clsView, {
+              viewMode: getItemDetailsViewMode(),
+            });
+            restoreClassTab(tabToRestore);
+          }
+
+          showToast("Атрибут добавлен", { type: "success" });
+        } catch (error) {
+          console.error("[attributeModal.onCreate] Create failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка добавления";
+          showToast(`Ошибка добавления атрибута: ${msg}`, { type: "error" });
         }
       },
     });
 
-    initLinkModal(currentProjectId, {
+    initGeneralizationLinkModal(currentProjectId, {
       onUpdate: async (linkId, classId, updates) => {
         const project = await getProjectById(currentProjectId);
         if (!project) return;
 
-        const tabToRestore = getActiveClassTabName() || lastClassTabName;
-
         const found = findLinkWithParent(project, classId, linkId);
         if (!found) return;
 
-        Object.assign(found.link, updates);
+        // Currently only Generalization save is implemented.
+        // if (String(found?.link?.relationKind || "") !== "Generalization") {
+        //   showToast("Сохранение поддерживается только для Generalization", { type: "error" });
+        //   return;
+        // }
 
-        const itemDetailsContent = document.getElementById("item-details-content");
-        if (itemDetailsContent) {
-          itemDetailsContent.innerHTML = renderClassDetails(found.cls, {
-            viewMode: getItemDetailsViewMode(),
+        const payload = updates?.generalizationLink;
+        if (!payload) return;
+
+        const context = found.context;
+        const modelId = found.modelId || "";
+        const profileId = found.profileId || "";
+
+        try {
+          const updatedProject = await updateGeneralizationLinkInBackend({
+            linkId: String(linkId),
+            modelId: context === "model" ? String(modelId) : "",
+            profileId: context === "profile" ? String(profileId) : "",
+            editingClassId: String(classId),
+            payload,
           });
-          restoreClassTab(tabToRestore);
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: context === "model" ? modelId : null,
+            profileId: context === "profile" ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          const chain = findClassParentChain(updatedProject, classId, modelId, profileId, context);
+          expandTreePath(chain);
+          restoreSelectedTreeItemInTree();
+
+          const updatedCls = findClassById(updatedProject, classId, modelId, profileId, context);
+          const itemDetailsContent = document.getElementById("item-details-content");
+          if (itemDetailsContent && updatedCls) {
+            const clsView = {
+              ...updatedCls,
+              modelId: modelId || "",
+              profileId: profileId || "",
+            };
+            originalItemData = JSON.parse(JSON.stringify(clsView));
+
+            itemDetailsContent.innerHTML = renderClassDetails(clsView, {
+              viewMode: getItemDetailsViewMode(),
+            });
+            restoreClassTab("item-links");
+          }
+
+          showToast("Связь сохранена", { type: "success" });
+        } catch (error) {
+          console.error("[linkModal.onUpdate] Save failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка сохранения";
+          showToast(`Ошибка сохранения связи: ${msg}`, { type: "error" });
         }
+      },
+    });
+
+    /**
+     * Modal: create nested package (subpackage).
+     * Persists through service layer; backend returns full updated project.
+     */
+    initCreatePackageModal(currentProjectId, {
+      onCreate: async ({ parentPackageId, modelId = "", profileId = "", payload }) => {
+        const context = modelId && modelId !== "" ? "model" : "profile";
+
+        const updatedProject =
+          context === "model"
+            ? await createModelSubpackageInBackend(
+                currentProjectId,
+                modelId,
+                parentPackageId,
+                payload
+              )
+            : await createProfileSubpackageInBackend(
+                currentProjectId,
+                profileId,
+                parentPackageId,
+                payload
+              );
+
+        if (!updatedProject) {
+          throw new Error("Backend did not return updated project");
+        }
+
+        const newPackageId = findSubpackageIdByName(updatedProject, {
+          context,
+          modelId,
+          profileId,
+          parentPackageId,
+          name: payload?.name,
+        });
+
+        if (!newPackageId) {
+          throw new Error("Не удалось найти созданный пакет в ответе сервера");
+        }
+
+        selectedTreeSnapshot = {
+          type: "package",
+          packageId: newPackageId,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
+          classId: null,
+          diagramId: null,
+        };
+
+        await renderProjectTreeSidebar(updatedProject);
+        const chain = findPackageParentChain(
+          updatedProject,
+          newPackageId,
+          modelId,
+          profileId,
+          context
+        );
+        expandTreePath(chain);
+        restoreSelectedTreeItemInTree();
+
+        await handleSelectPackage(newPackageId, modelId, profileId);
+      },
+    });
+
+    /**
+     * Modal: create class inside a package.
+     * Persists through service layer; backend returns full updated project.
+     */
+    initCreateClassModal(currentProjectId, {
+      onCreate: async ({ packageId, modelId = "", profileId = "", payload }) => {
+        const context = modelId && modelId !== "" ? "model" : "profile";
+
+        const updatedProject =
+          context === "model"
+            ? await createModelClassInBackend(
+                currentProjectId,
+                modelId,
+                packageId,
+                payload
+              )
+            : await createProfileClassInBackend(
+                currentProjectId,
+                profileId,
+                packageId,
+                payload
+              );
+
+        if (!updatedProject) {
+          throw new Error("Backend did not return updated project");
+        }
+
+        const newClassId = findClassIdByName(updatedProject, {
+          context,
+          modelId,
+          profileId,
+          name: payload?.name,
+        });
+
+        if (!newClassId) {
+          throw new Error("Не удалось найти созданный класс в ответе сервера");
+        }
+
+        selectedTreeSnapshot = {
+          type: "class",
+          classId: newClassId,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
+          packageId: null,
+          diagramId: null,
+        };
+
+        await renderProjectTreeSidebar(updatedProject);
+        const chain = findClassParentChain(
+          updatedProject,
+          newClassId,
+          modelId,
+          profileId,
+          context
+        );
+        expandTreePath(chain);
+        restoreSelectedTreeItemInTree();
+
+        await handleSelectClass(newClassId, modelId, profileId);
+      },
+    });
+
+    /**
+     * Modal: create diagram inside a package.
+     * Persists through service layer; backend returns full updated project.
+     */
+    initCreateDiagramModal(currentProjectId, {
+      onCreate: async ({ packageId, modelId = "", profileId = "", payload }) => {
+        const context = modelId && modelId !== "" ? "model" : "profile";
+
+        const updatedProject =
+          context === "model"
+            ? await createModelDiagramInBackend(
+                currentProjectId,
+                modelId,
+                packageId,
+                payload
+              )
+            : await createProfileDiagramInBackend(
+                currentProjectId,
+                profileId,
+                packageId,
+                payload
+              );
+
+        if (!updatedProject) {
+          throw new Error("Backend did not return updated project");
+        }
+
+        const newDiagramId = findDiagramIdByName(updatedProject, {
+          context,
+          modelId,
+          profileId,
+          name: payload?.diagramName,
+        });
+
+        if (!newDiagramId) {
+          throw new Error("Не удалось найти созданную диаграмму в ответе сервера");
+        }
+
+        selectedTreeSnapshot = {
+          type: "diagram",
+          diagramId: newDiagramId,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
+          packageId: null,
+          classId: null,
+        };
+
+        await renderProjectTreeSidebar(updatedProject);
+        const chain = findDiagramParentChain(
+          updatedProject,
+          newDiagramId,
+          modelId,
+          profileId,
+          context
+        );
+        expandTreePath(chain);
+        restoreSelectedTreeItemInTree();
+
+        await handleSelectDiagram(newDiagramId, modelId, profileId);
       },
     });
   }
@@ -260,6 +751,68 @@ function bindEvents() {
     "current-project-structure"
   );
   if (projectStructureEl) {
+    // Right-click context menu on package nodes.
+    initPackageTreeContextMenu(projectStructureEl, {
+      onCreatePackage: async ({ packageId, modelId = "", profileId = "" }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const context = modelId && modelId !== "" ? "model" : "profile";
+        const existingSiblingNamesNormalized = getSubpackageNameSet(project, {
+          context,
+          modelId,
+          profileId,
+          parentPackageId: packageId,
+        });
+
+        openCreatePackageModal({
+          parentPackageId: packageId,
+          modelId,
+          profileId,
+          existingSiblingNamesNormalized,
+        });
+      },
+      onCreateClass: async ({ packageId, modelId = "", profileId = "" }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const context = modelId && modelId !== "" ? "model" : "profile";
+        const existingClassNamesNormalized = getClassNameSet(project, {
+          context,
+          modelId,
+          profileId,
+        });
+
+        openCreateClassModal({
+          packageId,
+          modelId,
+          profileId,
+          existingClassNamesNormalized,
+        });
+      },
+      onCreateDiagram: async ({ packageId, modelId = "", profileId = "" }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const context = modelId && modelId !== "" ? "model" : "profile";
+        const existingDiagramNamesNormalized = getDiagramNameSet(project, {
+          context,
+          modelId,
+          profileId,
+        });
+
+        openCreateDiagramModal({
+          packageId,
+          modelId,
+          profileId,
+          existingDiagramNamesNormalized,
+        });
+      },
+      onDeletePackage: async () => {
+        showToast("Удаление пакетов будет реализовано позже.", { type: "info" });
+      },
+    });
+
     projectStructureEl.addEventListener("click", (e) => {
       const target = e.target instanceof HTMLElement ? e.target : null;
       if (!target) return;
@@ -312,6 +865,17 @@ function bindEvents() {
         const modelId = selectPackageEl.getAttribute("data-model-id");
         const profileId = selectPackageEl.getAttribute("data-profile-id");
         if (packageId) handleSelectPackage(packageId, modelId, profileId);
+        return;
+      }
+
+      // Select diagram
+      const selectDiagramEl = target.closest("[data-action='select-diagram']");
+      if (selectDiagramEl) {
+        setSelectedTreeItem(selectDiagramEl);
+        const diagramId = selectDiagramEl.getAttribute("data-diagram-id");
+        const modelId = selectDiagramEl.getAttribute("data-model-id");
+        const profileId = selectDiagramEl.getAttribute("data-profile-id");
+        if (diagramId) void handleSelectDiagram(diagramId, modelId, profileId);
         return;
       }
 
@@ -585,6 +1149,7 @@ function snapshotTreeEl(el) {
     profileId: el.getAttribute("data-profile-id") || null,
     packageId: el.getAttribute("data-package-id") || null,
     classId: el.getAttribute("data-class-id") || null,
+    diagramId: el.getAttribute("data-diagram-id") || null,
   };
 }
 
@@ -625,6 +1190,14 @@ function restoreSelectedTreeItemInTree() {
     if (ctxVal) {
       selector = `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(
         snapshot.classId
+      )}"][${ctxAttr}="${cssEscape(ctxVal)}"]`;
+    }
+  } else if (snapshot.type === "diagram" && snapshot.diagramId) {
+    const ctxAttr = snapshot.modelId ? "data-model-id" : "data-profile-id";
+    const ctxVal = snapshot.modelId || snapshot.profileId;
+    if (ctxVal) {
+      selector = `.tree-structure-name[data-type="diagram"][data-diagram-id="${cssEscape(
+        snapshot.diagramId
       )}"][${ctxAttr}="${cssEscape(ctxVal)}"]`;
     }
   }
@@ -925,11 +1498,17 @@ async function handleSelectPackage(packageId, modelId = "", profileId = "") {
     return;
   }
 
-  originalItemData = JSON.parse(JSON.stringify(pkg));
+  const pkgView = {
+    ...pkg,
+    modelId: modelId || "",
+    profileId: profileId || "",
+  };
+
+  originalItemData = JSON.parse(JSON.stringify(pkgView));
 
   const itemDetailsContent = document.getElementById("item-details-content");
   if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderPackageDetails(pkg, {
+    itemDetailsContent.innerHTML = renderPackageDetails(pkgView, {
       viewMode: getItemDetailsViewMode(),
     });
   }
@@ -1236,11 +1815,20 @@ function handleItemDetailsClick(e) {
     return;
   }
 
-  const editLinkBtn = target.closest("[data-action='edit-link']");
-  if (editLinkBtn) {
-    handleEditLink(
-      editLinkBtn.getAttribute("data-link-id"),
-      editLinkBtn.getAttribute("data-class-id")
+  const editGeneralizationLinkBtn = target.closest("[data-action='edit-generalization-link']");
+  if (editGeneralizationLinkBtn) {
+    handleEditGeneralizationLink(
+      editGeneralizationLinkBtn.getAttribute("data-link-id"),
+      editGeneralizationLinkBtn.getAttribute("data-class-id")
+    );
+    return;
+  }
+
+  const editAssociationLinkBtn = target.closest("[data-action='edit-association-link']");
+  if (editAssociationLinkBtn) {
+    handleEditAssociationLink(
+      editAssociationLinkBtn.getAttribute("data-link-id"),
+      editAssociationLinkBtn.getAttribute("data-class-id")
     );
     return;
   }
@@ -1604,32 +2192,186 @@ function findClassParentChain(project, classId, modelId, profileId, context) {
   return [];
 }
 
+/**
+ * Find the parent chain (tree itemIds) that contains a diagram.
+ *
+ * Used after creating/selecting a diagram to ensure all ancestor nodes are expanded
+ * in the sidebar tree.
+ *
+ * @param {object} project Exported project payload
+ * @param {string} diagramId Diagram id
+ * @param {string} modelId Model id (if context is model)
+ * @param {string} profileId Profile id (if context is profile)
+ * @param {'model'|'profile'} context
+ * @returns {string[]} Array of tree itemIds to expand (from model/profile root to package)
+ */
+function findDiagramParentChain(project, diagramId, modelId, profileId, context) {
+  const searchInPackages = (packages, currentPath, isSubPackage = false) => {
+    for (let idx = 0; idx < packages.length; idx++) {
+      const pkg = packages[idx];
+      const prefix = isSubPackage ? "sub" : "pkg";
+      const pkgPath = [...currentPath, `${prefix}-${idx}`];
+
+      if (pkg.diagrams) {
+        const diagramIdx = pkg.diagrams.findIndex((d) => d.id === diagramId);
+        if (diagramIdx !== -1) return pkgPath;
+      }
+
+      if (pkg.subPackages && pkg.subPackages.length > 0) {
+        const found = searchInPackages(pkg.subPackages, [...pkgPath], true);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  if (context === "model" && modelId && modelId !== "") {
+    const model = project.models?.find((m) => m.id === modelId);
+    if (!model) return [];
+
+    const modelItemId = `model-${currentProjectId}-${modelId}`;
+    if (model.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(model.rootPackages[0].packages, [modelItemId], false);
+      if (found) {
+        return found.reduce((acc, part, i) => {
+          if (i === 0) return [part];
+          return [...acc, acc[acc.length - 1] + "-" + part];
+        }, []);
+      }
+    }
+  }
+
+  if (context === "profile" && profileId && profileId !== "") {
+    const profile = project.profiles?.find((p) => p.id === profileId);
+    if (!profile) return [];
+
+    const profileItemId = `profile-${currentProjectId}-${profileId}`;
+    if (profile.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(
+        profile.rootPackages[0].packages,
+        [profileItemId],
+        false
+      );
+      if (found) {
+        return found.reduce((acc, part, i) => {
+          if (i === 0) return [part];
+          return [...acc, acc[acc.length - 1] + "-" + part];
+        }, []);
+      }
+    }
+  }
+
+  return [];
+}
+
 // ============================================================
 // FORM SUBMIT HANDLER
 // ============================================================
-function handleItemDetailsSubmit(e) {
+async function handleItemDetailsSubmit(e) {
   e.preventDefault();
   const form = e.target;
 
-  if (form.id === "package-form") handleSavePackage(form);
-  else if (form.id === "class-form") handleSaveClass(form);
+  if (form.id === "package-form") await handleSavePackage(form);
+  else if (form.id === "class-form") await handleSaveClass(form);
 }
 
 // ============================================================
 // PACKAGE HANDLERS
 // ============================================================
-function handleSavePackage(form) {
+async function handleSavePackage(form) {
   const packageId = form.getAttribute("data-package-id");
+  const modelId = form.getAttribute("data-model-id") || originalItemData?.modelId || "";
+  const profileId = form.getAttribute("data-profile-id") || originalItemData?.profileId || "";
+
+  const context = modelId && modelId !== "" ? "model" : profileId && profileId !== "" ? "profile" : null;
+  if (!context) {
+    showToast("Не удалось определить контекст пакета (model/profile)", { type: "error" });
+    return;
+  }
+
   const updatedData = {
-    name: document.getElementById("pkg-name").value.trim(),
-    documentation: document.getElementById("pkg-documentation").value.trim(),
-    documentationRu: document
-      .getElementById("pkg-documentationRu")
-      .value.trim(),
-    details: document.getElementById("pkg-details").value.trim(),
+    id: packageId,
+    modelId: modelId || undefined,
+    profileId: profileId || undefined,
+
+    name: document.getElementById("pkg-name")?.value?.trim() ?? "",
+    documentation: document.getElementById("pkg-documentation")?.value?.trim() ?? "",
+    documentationRu: document.getElementById("pkg-documentationRu")?.value?.trim() ?? "",
+    details: document.getElementById("pkg-details")?.value?.trim() ?? "",
   };
 
-  alert("Функция сохранения пакета в разработке");
+  const saveBtn = document.getElementById("pkg-save-btn");
+  if (saveBtn) saveBtn.disabled = true;
+
+  try {
+    const updatedProject =
+      context === "model"
+        ? await updateModelPackageInBackend(currentProjectId, modelId, packageId, updatedData)
+        : await updateProfilePackageInBackend(currentProjectId, profileId, packageId, updatedData);
+
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    selectedTreeSnapshot = {
+      type: "package",
+      packageId,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
+      classId: null,
+    };
+
+    await renderProjectTreeSidebar(updatedProject);
+
+    const chain = findPackageParentChain(
+      updatedProject,
+      packageId,
+      modelId,
+      profileId,
+      context
+    );
+    expandTreePath(chain);
+    restoreSelectedTreeItemInTree();
+
+    const updatedPkg = findPackageById(
+      updatedProject,
+      packageId,
+      modelId,
+      profileId,
+      context
+    );
+    if (updatedPkg) {
+      const pkgView = {
+        ...updatedPkg,
+        modelId: modelId || "",
+        profileId: profileId || "",
+      };
+
+      originalItemData = JSON.parse(JSON.stringify(pkgView));
+      const itemDetailsContent = document.getElementById("item-details-content");
+      if (itemDetailsContent) {
+        itemDetailsContent.innerHTML = renderPackageDetails(pkgView, {
+          viewMode: getItemDetailsViewMode(),
+        });
+      }
+    }
+
+    showToast("Пакет сохранён", { type: "success" });
+  } catch (error) {
+    console.error("[handleSavePackage] Save failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка сохранения";
+    showToast(`Ошибка сохранения пакета: ${msg}`, { type: "error" });
+
+    // Rollback UI to original state (discard edits).
+    const itemDetailsContent = document.getElementById("item-details-content");
+    if (itemDetailsContent && originalItemData) {
+      itemDetailsContent.innerHTML = renderPackageDetails(originalItemData, {
+        viewMode: getItemDetailsViewMode(),
+      });
+    }
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
 }
 
 function handleCancelPackageEdit() {
@@ -1647,20 +2389,118 @@ function handleCancelPackageEdit() {
 // ============================================================
 // CLASS HANDLERS
 // ============================================================
-function handleSaveClass(form) {
+async function handleSaveClass(form) {
   const classId = form.getAttribute("data-class-id");
+
+  const modelId = form.getAttribute("data-model-id") || originalItemData?.modelId || "";
+  const profileId = form.getAttribute("data-profile-id") || originalItemData?.profileId || "";
+
+  const context = modelId && modelId !== "" ? "model" : profileId && profileId !== "" ? "profile" : null;
+  if (!context) {
+    showToast("Не удалось определить контекст класса (model/profile)", { type: "error" });
+    return;
+  }
+
+  const activeTab =
+    getActiveClassTabName() ||
+    lastClassTabName ||
+    (diagramMode?.isEnabled() ? "item-general" : "item-attributes");
+
   const updatedData = {
-    name: document.getElementById("cls-name").value.trim(),
-    stereotype: document.getElementById("cls-stereotype").value.trim(),
-    isAbstract: document.getElementById("cls-isAbstract").checked,
-    documentation: document.getElementById("cls-documentation").value.trim(),
-    documentationRu: document
-      .getElementById("cls-documentationRu")
-      .value.trim(),
-    details: document.getElementById("cls-details").value.trim(),
+    id: classId,
+    modelId: modelId || undefined,
+    profileId: profileId || undefined,
+
+    name: document.getElementById("cls-name")?.value?.trim() ?? "",
+    stereotype: document.getElementById("cls-stereotype")?.value?.trim() ?? "",
+    isAbstract: Boolean(document.getElementById("cls-isAbstract")?.checked),
+    documentation: document.getElementById("cls-documentation")?.value?.trim() ?? "",
+    documentationRu: document.getElementById("cls-documentationRu")?.value?.trim() ?? "",
+    details: document.getElementById("cls-details")?.value?.trim() ?? "",
+
+    // Other identifiers (pass through if present on the object)
+    refModelId: originalItemData?.refModelId ?? null,
+    refModelItemId: originalItemData?.refModelItemId ?? null,
   };
 
-  alert("Функция сохранения класса в разработке");
+  const saveBtn = document.getElementById("cls-save-btn");
+  if (saveBtn) saveBtn.disabled = true;
+
+  try {
+    const updatedProject =
+      context === "model"
+        ? await updateModelClassInBackend(currentProjectId, modelId, classId, updatedData)
+        : await updateProfileClassInBackend(currentProjectId, profileId, classId, updatedData);
+
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    selectedTreeSnapshot = {
+      type: "class",
+      classId,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
+      packageId: null,
+    };
+
+    await renderProjectTreeSidebar(updatedProject);
+
+    const chain = findClassParentChain(
+      updatedProject,
+      classId,
+      modelId,
+      profileId,
+      context
+    );
+    expandTreePath(chain);
+    restoreSelectedTreeItemInTree();
+
+    const updatedCls = findClassById(
+      updatedProject,
+      classId,
+      modelId,
+      profileId,
+      context
+    );
+    if (updatedCls) {
+      const clsView = {
+        ...updatedCls,
+        modelId: modelId || "",
+        profileId: profileId || "",
+      };
+
+      originalItemData = JSON.parse(JSON.stringify(clsView));
+      const itemDetailsContent = document.getElementById("item-details-content");
+      if (itemDetailsContent) {
+        itemDetailsContent.innerHTML = renderClassDetails(clsView, {
+          viewMode: getItemDetailsViewMode(),
+        });
+        if (activeTab) activateTab(activeTab);
+      }
+    }
+
+    showToast("Класс сохранён", { type: "success" });
+
+    // Keep data type picker lists fresh after class rename/update
+    if (context === "model") invalidateModelClassesSummary(modelId);
+    if (context === "profile") invalidateProfileClassesSummary(profileId);
+  } catch (error) {
+    console.error("[handleSaveClass] Save failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка сохранения";
+    showToast(`Ошибка сохранения класса: ${msg}`, { type: "error" });
+
+    // Rollback UI to original state (discard edits).
+    const itemDetailsContent = document.getElementById("item-details-content");
+    if (itemDetailsContent && originalItemData) {
+      itemDetailsContent.innerHTML = renderClassDetails(originalItemData, {
+        viewMode: getItemDetailsViewMode(),
+      });
+      if (activeTab) activateTab(activeTab);
+    }
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
 }
 
 function handleCancelClassEdit() {
@@ -1679,7 +2519,25 @@ function handleCancelClassEdit() {
 // ATTRIBUTE HANDLERS
 // ============================================================
 function handleAddAttribute(classId) {
-  alert("Функция добавления атрибута в разработке");
+  if (!classId) return;
+
+  getProjectById(currentProjectId).then((project) => {
+    if (!project) return;
+
+    const found = findClassWithContext(project, String(classId));
+    if (!found) return;
+
+    const existingNames = (found.cls?.attributes || [])
+      .map((a) => a?.name)
+      .filter(Boolean);
+
+    openCreateAttributeModal({
+      classId: String(classId),
+      modelId: found.modelId || "",
+      profileId: found.profileId || "",
+      existingNames,
+    });
+  });
 }
 
 async function handleEditAttribute(attrId) {
@@ -1689,7 +2547,12 @@ async function handleEditAttribute(attrId) {
   const found = findAttributeWithParent(project, attrId);
   if (!found) return;
 
-  openEditAttributeModal(found.attr);
+  const existingNames = (found.cls?.attributes || [])
+    .filter((a) => String(a?.id) !== String(attrId))
+    .map((a) => a?.name)
+    .filter(Boolean);
+
+  openEditAttributeModal(found.attr, { existingNames });
 }
 
 function handleDeleteAttribute(attrId) {
@@ -1704,14 +2567,38 @@ function handleAddLink(classId) {
   alert("Функция добавления связи в разработке");
 }
 
-async function handleEditLink(linkId, classId) {
+async function handleEditGeneralizationLink(linkId, classId) {
   const project = await getProjectById(currentProjectId);
   if (!project) return;
 
   const found = findLinkWithParent(project, classId, linkId);
   if (!found) return;
 
-  openEditLinkModal(found.link, found.cls.id);
+  if (String(found?.link?.relationKind || "") !== "Generalization") {
+    showToast("Редактирование поддерживается только для Generalization", { type: "error" });
+    return;
+  }
+
+  const generalizationLink = findGeneralizationLinkInProject(project, {
+    context: found.context,
+    modelId: found.modelId,
+    profileId: found.profileId,
+    linkId,
+  });
+
+  if (!generalizationLink) {
+    showToast("Не удалось найти данные связи Generalization", { type: "error" });
+    return;
+  }
+
+  openEditGeneralizationLinkModal(generalizationLink, found.cls.id, {
+    modelId: found.modelId || "",
+    profileId: found.profileId || "",
+  });
+}
+
+function handleEditAssociationLink(linkId, classId) {
+  showToast("Редактирование Association будет добавлено позже", { type: "info" });
 }
 
 async function handleDeleteLink(linkId, classId) {
@@ -1832,6 +2719,103 @@ function findClassById(
   return null;
 }
 
+/**
+ * Find a diagram by id in a specific context (model/profile).
+ *
+ * @param {object} project Exported project payload
+ * @param {string} diagramId Diagram id
+ * @param {string} [modelId]
+ * @param {string} [profileId]
+ * @param {'model'|'profile'|null} [context]
+ * @returns {object|null}
+ */
+function findDiagramById(
+  project,
+  diagramId,
+  modelId = "",
+  profileId = "",
+  context = null
+) {
+  const searchInPackages = (packages) => {
+    for (const pkg of packages) {
+      const d = pkg.diagrams?.find((x) => x.id === diagramId);
+      if (d) return d;
+
+      if (pkg.subPackages) {
+        const found = searchInPackages(pkg.subPackages);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  if (context === "model" && modelId && modelId !== "") {
+    const model = project.models?.find((m) => m.id === modelId);
+    if (model?.rootPackages?.[0]?.packages) {
+      return searchInPackages(model.rootPackages[0].packages);
+    }
+  }
+
+  if (context === "profile" && profileId && profileId !== "") {
+    const profile = project.profiles?.find((p) => p.id === profileId);
+    if (profile?.rootPackages?.[0]?.packages) {
+      return searchInPackages(profile.rootPackages[0].packages);
+    }
+  }
+
+  return null;
+}
+
+function findClassWithContext(project, classId) {
+  const searchInPackages = (packages) => {
+    for (const pkg of packages) {
+      if (pkg.classes) {
+        const cls = pkg.classes.find((c) => c.id === classId);
+        if (cls) return cls;
+      }
+      if (pkg.subPackages) {
+        const found = searchInPackages(pkg.subPackages);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  if (project.models) {
+    for (const model of project.models) {
+      if (model.rootPackages?.[0]?.packages) {
+        const cls = searchInPackages(model.rootPackages[0].packages);
+        if (cls) {
+          return {
+            cls,
+            context: "model",
+            modelId: model.id,
+            profileId: null,
+          };
+        }
+      }
+    }
+  }
+
+  if (project.profiles) {
+    for (const profile of project.profiles) {
+      if (profile.rootPackages?.[0]?.packages) {
+        const cls = searchInPackages(profile.rootPackages[0].packages);
+        if (cls) {
+          return {
+            cls,
+            context: "profile",
+            modelId: null,
+            profileId: profile.id,
+          };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
 function findAttributeWithParent(project, attrId) {
   const searchInPackages = (packages) => {
     for (const pkg of packages) {
@@ -1855,7 +2839,14 @@ function findAttributeWithParent(project, attrId) {
     for (const model of project.models) {
       if (model.rootPackages?.[0]?.packages) {
         const found = searchInPackages(model.rootPackages[0].packages);
-        if (found) return found;
+        if (found) {
+          return {
+            ...found,
+            context: "model",
+            modelId: model.id,
+            profileId: null,
+          };
+        }
       }
     }
   }
@@ -1864,7 +2855,14 @@ function findAttributeWithParent(project, attrId) {
     for (const profile of project.profiles) {
       if (profile.rootPackages?.[0]?.packages) {
         const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found) return found;
+        if (found) {
+          return {
+            ...found,
+            context: "profile",
+            modelId: null,
+            profileId: profile.id,
+          };
+        }
       }
     }
   }
@@ -1896,7 +2894,14 @@ function findLinkWithParent(project, classId, linkId) {
     for (const model of project.models) {
       if (model.rootPackages?.[0]?.packages) {
         const found = searchInPackages(model.rootPackages[0].packages);
-        if (found) return found;
+        if (found) {
+          return {
+            ...found,
+            context: "model",
+            modelId: model.id,
+            profileId: null,
+          };
+        }
       }
     }
   }
@@ -1905,9 +2910,48 @@ function findLinkWithParent(project, classId, linkId) {
     for (const profile of project.profiles) {
       if (profile.rootPackages?.[0]?.packages) {
         const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found) return found;
+        if (found) {
+          return {
+            ...found,
+            context: "profile",
+            modelId: null,
+            profileId: profile.id,
+          };
+        }
       }
     }
+  }
+
+  return null;
+}
+
+/**
+ * Find a GeneralizationLink object in exported Project data.
+ *
+ * @param {object} project Exported project
+ * @param {object} args
+ * @param {"model"|"profile"} args.context
+ * @param {string|null} args.modelId
+ * @param {string|null} args.profileId
+ * @param {string} args.linkId
+ * @returns {object|null} GeneralizationLink
+ */
+function findGeneralizationLinkInProject(project, { context, modelId, profileId, linkId }) {
+  const id = String(linkId || "");
+  if (!id) return null;
+
+  if (context === "model") {
+    const mId = String(modelId || "");
+    const m = (project?.models || []).find((x) => String(x?.id || "") === mId);
+    const list = m?.rootPackages?.[0]?.generalizationsList || [];
+    return (list || []).find((g) => String(g?.linkId || "") === id) || null;
+  }
+
+  if (context === "profile") {
+    const pId = String(profileId || "");
+    const p = (project?.profiles || []).find((x) => String(x?.id || "") === pId);
+    const list = p?.rootPackages?.[0]?.generalizationsList || [];
+    return (list || []).find((g) => String(g?.linkId || "") === id) || null;
   }
 
   return null;
@@ -1922,6 +2966,104 @@ function getItemDetailsViewMode() {
   return diagramMode?.isEnabled() ? "diagram" : "standard";
 }
 
+/**
+ * Render a simple read-only diagram info panel.
+ *
+ * Note: this is intentionally lightweight (no drawing libraries yet) and is used
+ * in diagram mode to show the currently selected diagram metadata.
+ *
+ * @param {object|null} diagram Diagram export object
+ * @returns {string} HTML string
+ */
+function renderDiagramPanel(diagram) {
+  if (!diagram) {
+    return `<div class="diagram-mode-placeholder">Диаграмма не найдена.</div>`;
+  }
+
+  const name = diagram.diagramName || "Диаграмма";
+  const type = diagram.diagramType || "";
+  const doc = diagram.documentation || "";
+  const details = diagram.details || "";
+
+  return `
+    <div class="item-section">
+      <div class="section-header">
+        <div class="section-title">📐 ${name}${type ? ` (${type})` : ""}</div>
+      </div>
+      <div class="form-section">
+        <div class="form-row">
+          <div class="form-cell">
+            <div class="form-group">
+              <label class="form-label">Описание</label>
+              <div class="text-muted">${doc ? doc : "—"}</div>
+            </div>
+          </div>
+          <div class="form-cell">
+            <div class="form-group">
+              <label class="form-label">Дополнительная информация</label>
+              <div class="text-muted">${details ? details : "—"}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Handle selecting a diagram node in the project tree.
+ *
+ * Responsibilities:
+ * - Resolve diagram by id in the current project export
+ * - Switch the page to diagram mode
+ * - Render diagram info into `#diagrams-container`
+ *
+ * @param {string} diagramId
+ * @param {string} [modelId]
+ * @param {string} [profileId]
+ */
+async function handleSelectDiagram(diagramId, modelId = "", profileId = "") {
+  const project = await getProjectById(currentProjectId);
+  if (!project) return;
+
+  const context =
+    modelId && modelId !== ""
+      ? "model"
+      : profileId && profileId !== ""
+      ? "profile"
+      : null;
+
+  if (!context) {
+    console.error("Diagram must belong to either a model or profile");
+    return;
+  }
+
+  const diagram = findDiagramById(
+    project,
+    diagramId,
+    modelId,
+    profileId,
+    context
+  );
+
+  // Selecting a diagram always switches to diagram mode
+  if (!diagramMode?.isEnabled()) {
+    diagramMode?.enter();
+  } else {
+    // Ensure layout is visible and item panel is cleared
+    diagramMode?.sync({ clearItem: true });
+  }
+
+  const diagramsContainer = document.getElementById("diagrams-container");
+  if (!diagramsContainer) {
+    showToast("Не найден контейнер диаграмм", { type: "error" });
+    return;
+  }
+
+  diagramsContainer.dataset.initialized = "1";
+  diagramsContainer.innerHTML = renderDiagramPanel(diagram);
+}
+
 async function rerenderSelectedItemDetailsForCurrentMode() {
   const selected = document.querySelector(
     ".project-tree-item .tree-structure-name.selected"
@@ -1929,6 +3071,14 @@ async function rerenderSelectedItemDetailsForCurrentMode() {
   if (!selected) return;
 
   const type = selected.getAttribute("data-type");
+  if (type === "diagram") {
+    const diagramId = selected.getAttribute("data-diagram-id");
+    const modelId = selected.getAttribute("data-model-id") || "";
+    const profileId = selected.getAttribute("data-profile-id") || "";
+    if (diagramId) await handleSelectDiagram(diagramId, modelId, profileId);
+    return;
+  }
+
   if (type === "package") {
     const packageId = selected.getAttribute("data-package-id");
     const modelId = selected.getAttribute("data-model-id") || "";

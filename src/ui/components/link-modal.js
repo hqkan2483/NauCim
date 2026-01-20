@@ -1,4 +1,6 @@
 import { closeModal, openModal } from "../modal.js";
+import { initDataTypePickerModal } from "./data-type-picker-modal.js";
+import { bindClassPickerInput } from "./class-picker-input.js";
 
 /**
  * Link Modal Component
@@ -8,86 +10,159 @@ import { closeModal, openModal } from "../modal.js";
 let currentProjectId = null;
 let editingLinkId = null;
 let editingClassId = null;
+let editingContext = null; // { modelId?: string, profileId?: string }
+let editingInitialRole = null; // 'child' | 'parent' (role of editing class)
 
 // Callbacks from pages
 let onUpdateCallback = null;
 
-function initLinkModal(projectId, callbacks = {}) {
+function initGeneralizationLinkModal(projectId, callbacks = {}) {
   currentProjectId = projectId;
   onUpdateCallback = callbacks.onUpdate || null;
 
-  const saveBtn = document.getElementById("save-link-edit-btn");
+  initDataTypePickerModal(projectId);
+
+  bindClassPickerInput(projectId, {
+    buttonId: "generalization-link-targetClass-picker-btn",
+    nameInputId: "generalization-link-targetClassName",
+    idInputId: "generalization-link-targetClassId",
+    getContext: () => editingContext,
+    filters: {
+      excludeStereotypes: ["CIMDatatype", "Primitive"],
+      includeTypes: ["Class"],
+    },
+  });
+
+  const saveBtn = document.getElementById("save-generalization-btn");
   if (saveBtn) {
-    saveBtn.addEventListener("click", handleSaveLinkEdit);
+    saveBtn.addEventListener("click", handleSaveGeneralizationLinkSave);
   }
 }
 
-function openEditLinkModal(link, classId) {
+/**
+ * Open Generalization link edit modal.
+ *
+ * Expects a GeneralizationLink (RootPackage.generalizationsList item).
+ * The UI role selector represents the role of the edited class.
+ *
+ * @param {object} generalizationLink
+ * @param {string} classId Edited class id (editingClassId)
+ * @param {{modelId?: string, profileId?: string}} [ctx]
+ */
+function openEditGeneralizationLinkModal(generalizationLink, classId, ctx = {}) {
   if (!currentProjectId) return;
-  if (!link) return;
+  if (!generalizationLink) return;
 
-  editingLinkId = link.linkId;
+  const linkId = generalizationLink?.linkId ? String(generalizationLink.linkId) : "";
+  if (!linkId) return;
+
+  editingLinkId = linkId;
   editingClassId = classId || null;
+  editingContext = {
+    modelId: ctx?.modelId ? String(ctx.modelId) : "",
+    profileId: ctx?.profileId ? String(ctx.profileId) : "",
+  };
 
-  const relationKindSelect = document.getElementById("edit-link-relationKind");
-  const roleSelect = document.getElementById("edit-link-role");
-  const targetClassNameInput = document.getElementById("edit-link-targetClassName");
-  const targetClassIdInput = document.getElementById("edit-link-targetClassId");
-  const multiplicityInput = document.getElementById("edit-link-multiplicity");
-  const targetClassRoleNameInput = document.getElementById("edit-link-targetClassRoleName");
-  const srcClassRoleNameInput = document.getElementById("edit-link-srcClassRoleName");
-  const targetDescriptionTextarea = document.getElementById("edit-link-targetDescription");
+  const parent = generalizationLink?.parent || null;
+  const child = generalizationLink?.child || null;
+  const parentId = parent?.classId ? String(parent.classId) : "";
+  const childId = child?.classId ? String(child.classId) : "";
 
-  if (relationKindSelect) relationKindSelect.value = link.relationKind || "Association";
-  if (roleSelect) roleSelect.value = link.role || "unspecified";
-  if (targetClassNameInput) targetClassNameInput.value = link.targetClassName || "";
-  if (targetClassIdInput) targetClassIdInput.value = link.targetClassId || "";
-  if (multiplicityInput) multiplicityInput.value = link.multiplicity || "1";
-  if (targetClassRoleNameInput) targetClassRoleNameInput.value = link.targetClassRoleName || "";
-  if (srcClassRoleNameInput) srcClassRoleNameInput.value = link.srcClassRoleName || "";
-  if (targetDescriptionTextarea) targetDescriptionTextarea.value = link.targetDescription || "";
+  // Determine the role of the edited class and the "target" class.
+  let role = "child";
+  let target = parent;
+  if (editingClassId && String(editingClassId) === parentId) {
+    role = "parent";
+    target = child;
+  } else if (editingClassId && String(editingClassId) === childId) {
+    role = "child";
+    target = parent;
+  }
+  editingInitialRole = role;
 
-  const modal = document.getElementById("edit-link-modal");
+  const relationKindSelect = document.getElementById("generalization-link-relationKind");
+  const roleSelect = document.getElementById("generalization-link-role");
+  const targetClassNameInput = document.getElementById("generalization-link-targetClassName");
+  const targetClassIdInput = document.getElementById("generalization-link-targetClassId");
+  const multiplicityInput = document.getElementById("generalization-link-multiplicity");
+  const stereotypeInput = document.getElementById("generalization-link-stereotype");
+  const documentationTextarea = document.getElementById("generalization-link-documentation");
+  const documentationRuTextarea = document.getElementById("generalization-link-documentationRu");
+  const detailsTextarea = document.getElementById("generalization-link-details");
+
+  if (relationKindSelect) relationKindSelect.value = "Generalization";
+  if (roleSelect) roleSelect.value = role;
+  if (targetClassNameInput) targetClassNameInput.value = String(target?.className ?? "");
+  if (targetClassIdInput) targetClassIdInput.value = String(target?.classId ?? "");
+  if (multiplicityInput) multiplicityInput.value = "1";
+  if (stereotypeInput) stereotypeInput.value = String(generalizationLink?.stereotype ?? "");
+  if (documentationTextarea) documentationTextarea.value = String(generalizationLink?.documentation ?? "");
+  if (documentationRuTextarea) documentationRuTextarea.value = String(generalizationLink?.documentationRu ?? "");
+  if (detailsTextarea) detailsTextarea.value = String(generalizationLink?.details ?? "");
+
+  const modal = document.getElementById("generalization-link-modal");
   if (modal) openModal(modal);
 }
 
-function handleSaveLinkEdit() {
+function handleSaveGeneralizationLinkSave() {
   if (!currentProjectId || !editingLinkId) return;
 
-  const relationKindSelect = document.getElementById("edit-link-relationKind");
-  const targetClassNameInput = document.getElementById("edit-link-targetClassName");
-  if (!relationKindSelect || !targetClassNameInput) return;
+  const role = document.getElementById("generalization-link-role")?.value || "child";
+  const targetClassId = document.getElementById("generalization-link-targetClassId")?.value.trim() || "";
+  const targetClassNameInput = document.getElementById("generalization-link-targetClassName");
 
-  const relationKind = relationKindSelect.value;
-  const targetClassName = targetClassNameInput.value.trim();
-
-  if (!targetClassName) {
-    targetClassNameInput.focus();
+  if (!targetClassId) {
+    if (targetClassNameInput) targetClassNameInput.focus();
     return;
   }
 
-  const updates = {
-    relationKind,
-    role: document.getElementById("edit-link-role")?.value || "unspecified",
-    targetClassName,
-    targetClassId: document.getElementById("edit-link-targetClassId")?.value.trim() || "",
-    multiplicity: document.getElementById("edit-link-multiplicity")?.value.trim() || "1",
-    targetClassRoleName: document.getElementById("edit-link-targetClassRoleName")?.value.trim() || "",
-    srcClassRoleName: document.getElementById("edit-link-srcClassRoleName")?.value.trim() || "",
-    targetDescription: document.getElementById("edit-link-targetDescription")?.value.trim() || "",
+  const documentation = document.getElementById("generalization-link-documentation")?.value ?? "";
+  const documentationRu = document.getElementById("generalization-link-documentationRu")?.value ?? "";
+  const details = document.getElementById("generalization-link-details")?.value ?? "";
+  const stereotype = document.getElementById("generalization-link-stereotype")?.value ?? "";
+
+  const editingId = editingClassId ? String(editingClassId) : "";
+  if (!editingId) return;
+
+  // Build payload per docs: send classIds only (no className).
+  const generalizationLink = {
+    linkId: String(editingLinkId),
+    linkType: "Generalization",
+    documentation: String(documentation),
+    documentationRu: String(documentationRu),
+    details: String(details),
+    stereotype: String(stereotype),
+    parent:
+      role === "child"
+        ? { classId: String(targetClassId) }
+        : { classId: String(editingId) },
+    child:
+      role === "child"
+        ? { classId: String(editingId) }
+        : { classId: String(targetClassId) },
   };
 
-  const modal = document.getElementById("edit-link-modal");
+  const modal = document.getElementById("generalization-link-modal");
   if (modal) closeModal(modal);
 
   const linkId = editingLinkId;
   const classId = editingClassId;
+  const ctx = editingContext;
   editingLinkId = null;
   editingClassId = null;
+  editingContext = null;
+  editingInitialRole = null;
 
   if (onUpdateCallback) {
-    onUpdateCallback(linkId, classId, updates);
+    onUpdateCallback(linkId, classId, {
+      ctx,
+      role: role || "",
+      generalizationLink,
+    });
   }
 }
 
-export { initLinkModal, openEditLinkModal };
+export {
+  initGeneralizationLinkModal,
+  openEditGeneralizationLinkModal,
+};

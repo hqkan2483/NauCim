@@ -1,0 +1,32 @@
+<div id="data-type-picker-modal" class="modal modal--data-type-picker">
+  <div class="modal-content modal-content--resizable modal-content--data-type-picker">
+    <button class="modal-close" data-modal-close aria-label="Закрыть">×</button>
+
+    <div class="modal-title">Выбор типа данных</div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" for="data-type-picker-search">
+        <input
+          type="text"
+          id="data-type-picker-search"
+          class="form-input"
+          placeholder="Введите имя класса..."
+          autocomplete="off"
+        />
+        </label>
+      </div>
+
+      <div class="data-type-picker-table-wrapper">
+        <div id="data-type-picker-table"></div>
+      </div>
+    </div>
+
+    <div class="modal-buttons">
+      <button class="btn btn-secondary" data-modal-close>Отмена</button>
+      <button class="btn btn-primary" id="data-type-picker-choose-btn" disabled>
+        Выбрать
+      </button>
+    </div>
+  </div>
+</div>

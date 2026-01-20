@@ -207,6 +207,7 @@ interface Package {
   details?: string; // Справочная и поясняющая информация
   modelId?: string; //идентификатор модели, которой принадлежит пакет (заполняется, если пакет принадлежит модели)
   profileId?: string; // идентификатор профиля, которому принадлежит пакет (заполняется, если пакет принадлежит профилю)
+  diagrams: Diagram[]; // Массив диаграмм, входящих в пакет
   classes: Class[]; // Массив классов, входящих в пакет
   subPackages: Package[]; // Вложенные пакеты
 }
@@ -405,7 +406,7 @@ interface Attribute {
 > - `AssociationLink` + `AssociationLinkEnd[]` (ассоциации)
 >
 > `ClassLink` может быть дополнительно обогащён бизнес-логикой (роль, имена ролей, описания концов и т.п.).
-> В дальнейшем планируется отказаться от `ClassLink` как части канонического контракта.
+> 
 
 Связи класса. справочная информация.
 
@@ -419,6 +420,8 @@ interface ClassLink {
   targetClassRoleName?: string; // имя роли для конца ассоциации для целевого класса (заполняется для Association)
   srcClassRoleName?: string; // имя роли для конца ассоциации для класса-источника (заполняется для Association)
   targetDescription?: string; // описание роли для конца ассоциации для целевого класса (заполняется для Association)
+  targetDocumentationRu: string; // Дополнительная информация для целевого класса (заполняется для Association)
+  targetDetails: string;
   multiplicity: string; // Кардинальность (например, "1", "0..1", "0..*")
 }
 ```
@@ -436,6 +439,36 @@ interface ClassLink {
   "srcClassRoleName": "PerLengthImpedance",
   "targetDescription": "Участки линии переменного тока, имеющие указанные удельные параметры.",
   "multiplicity": "0..*"
+}
+```
+
+---
+
+## Diagram
+
+Диаграмма классов
+
+```typescript
+interface Diagram {
+  id: string; // Уникальный идентификатор
+  diagramType: string; // тип диаграммы - ClassDiagram,
+  diagramName: string; // название диаграммы
+  documentation?: string; // Описание диаграммы
+  details?: string; // Справочная и поясняющая информация
+  diagramBody?: string; // тело диаграммы в текстовом виде или преобразованное в base64
+}
+```
+
+### Пример:
+
+```json
+{
+  "id": "DDID_E9FB4B7B_727E_4456_9697_0181F1285F2E",
+  "diagramType": "ClassDiagram",
+  "diagramName": "Диаграмма связей пакета Asset",
+  "documentation": "Описание назначения диаграммы",
+  "details": null,
+  "diagramBody": null,  
 }
 ```
 

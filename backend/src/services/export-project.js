@@ -29,7 +29,7 @@ export async function exportProject(projectId) {
       legalAct: true,
       accessRights: true,
     },
-    orderBy: { modifyDate: "desc" },
+    orderBy: {name: "asc" },
   });
 
   const profiles = await prisma.profile.findMany({
@@ -45,7 +45,7 @@ export async function exportProject(projectId) {
       legalAct: true,
       accessRights: true,
     },
-    orderBy: { modifyDate: "desc" },
+    orderBy: { name: "asc" },
   });
 
   const exportedModels = [];
@@ -81,8 +81,16 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
   const isModel = Boolean(modelId);
   const id = String(isModel ? modelId : profileId);
 
-  const [packages, generalizationsList, associationList] = await Promise.all([
+  const [packages, classNameById, generalizationsList, associationList] = await Promise.all([
     isModel ? exportPackagesTreeModel(id) : exportPackagesTreeProfile(id),
+    isModel
+      ? prisma.classModel
+          .findMany({ where: { modelId: id }, select: { id: true, name: true } })
+          .then((rows) => new Map((rows || []).map((c) => [String(c.id), String(c.name ?? "")])))
+      : prisma.classProfile
+          .findMany({ where: { profileId: id }, select: { id: true, name: true } })
+          .then((rows) => new Map((rows || []).map((c) => [String(c.id), String(c.name ?? "")])))
+          .catch(() => new Map()),
     isModel
       ? prisma.generalizationLinkModel.findMany({ where: { modelId: id }, include: { ends: true } })
       : prisma.generalizationLinkProfile.findMany({ where: { profileId: id }, include: { ends: true } }),
@@ -107,17 +115,17 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
     {
       packages,
       generalizationsList: generalizationsList.map((g) => ({
-        linkId: g.linkId,
+        linkId: g.id,
         linkType: g.linkType,
         documentation: g.documentation ?? null,
         documentationRu: g.documentationRu ?? null,
         details: g.details ?? null,
         stereotype: g.stereotype ?? "",
-        parent: mapGeneralizationEnd(g.ends, "parent"),
-        child: mapGeneralizationEnd(g.ends, "child"),
+        parent: mapGeneralizationEnd(g.ends, "parent", classNameById),
+        child: mapGeneralizationEnd(g.ends, "child", classNameById),
       })),
       associationList: associationList.map((a) => ({
-        linkId: a.linkId,
+        linkId: a.id,
         linkType: a.linkType,
         documentation: a.documentation ?? null,
         documentationRu: a.documentationRu ?? null,
@@ -127,7 +135,7 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
           linkEndId: e.linkEndId,
           linkEndName: e.linkEndName,
           linkEndClassId: e.linkEndClassId,
-          linkEndClassName: e.linkEndClassName,
+          linkEndClassName: classNameById.get(String(e.linkEndClassId)) ?? "",
           multiplicity: e.multiplicity ?? null,
           documentation: e.documentation ?? null,
           documentationRu: e.documentationRu ?? null,
@@ -139,16 +147,34 @@ async function exportRootPackagesFor({ modelId = null, profileId = null }) {
   ];
 }
 
-function mapGeneralizationEnd(ends, role) {
+function mapGeneralizationEnd(ends, role, classNameById) {
   const e = Array.isArray(ends) ? ends.find((x) => x?.role === role) : null;
+  const classId = e?.classId ?? null;
+  const nameFromClass =
+    classId && classNameById && typeof classNameById.get === "function" ? classNameById.get(String(classId)) : null;
   return {
-    classId: e?.classId ?? null,
-    className: e?.className ?? "",
+    classId,
+    className: nameFromClass ?? "",
   };
 }
 
+function sortClassLinks(list) {
+  const arr = Array.isArray(list) ? [...list] : [];
+  arr.sort((a, b) => {
+    const aRole = String(a?.role ?? "");
+    const bRole = String(b?.role ?? "");
+    const roleCmp = aRole.localeCompare(bRole, undefined, { sensitivity: "base" });
+    if (roleCmp !== 0) return roleCmp;
+
+    const aName = String(a?.targetClassName ?? "");
+    const bName = String(b?.targetClassName ?? "");
+    return aName.localeCompare(bName, undefined, { sensitivity: "base" });
+  });
+  return arr;
+}
+
 async function exportPackagesTreeModel(modelId) {
-  const [packages, classes, attributes, links, literals] = await Promise.all([
+  const [packages, classes, attributes, literals, diagrams, generalizationLinks, associationLinks] = await Promise.all([
     prisma.packageModel.findMany({
       where: { modelId },
       select: {
@@ -184,26 +210,13 @@ async function exportPackagesTreeModel(modelId) {
         id: true,
         classId: true,
         name: true,
-        type: true,
+        dataTypeId: true,
+        stereotype: true,
         multiplicity: true,
         documentation: true,
         documentationRu: true,
         details: true,
-        refModelId: true,
-        refModelItemId: true,
-      },
-    }),
-    prisma.linkModel.findMany({
-      where: { modelId },
-      select: {
-        id: true,
-        classId: true,
-        name: true,
-        type: true,
-        multiplicity: true,
-        documentation: true,
-        documentationRu: true,
-        details: true,
+        initialValue: true,
         refModelId: true,
         refModelItemId: true,
       },
@@ -219,6 +232,51 @@ async function exportPackagesTreeModel(modelId) {
         documentationRu: true,
       },
     }),
+    prisma.diagramModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        packageId: true,
+        diagramType: true,
+        diagramName: true,
+        documentation: true,
+        details: true,
+        diagramBody: true,
+      },
+    }),
+    prisma.generalizationLinkModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        linkType: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
+        ends: {
+          select: {
+            role: true,
+            classId: true,
+          },
+        },
+      },
+    }),
+    prisma.associationLinkModel.findMany({
+      where: { modelId },
+      select: {
+        id: true,
+        linkType: true,
+        linkEnd: {
+          select: {
+            linkEndName: true,
+            linkEndClassId: true,
+            multiplicity: true,
+            documentation: true,
+            documentationRu: true,
+            details: true,
+          },
+        },
+      },
+    }),
   ]);
 
   const classesByPackage = new Map();
@@ -228,9 +286,68 @@ async function exportPackagesTreeModel(modelId) {
     classesByPackage.set(c.packageId, list);
   }
 
+  const classNameById = new Map();
+  for (const c of classes) {
+    classNameById.set(c.id, c.name);
+  }
+
+  const generalizationLinksByClassId = new Map();
+  for (const g of generalizationLinks) {
+    const ends = Array.isArray(g?.ends) ? g.ends : [];
+    for (const e of ends) {
+      if (!e?.classId) continue;
+      const other = ends.find((x) => x?.classId && x.classId !== e.classId) || null;
+      if (!other?.classId) continue;
+
+      const list = generalizationLinksByClassId.get(e.classId) || [];
+      list.push({
+        linkId: g.id,
+        relationKind: g.linkType,
+        role: e.role,
+        targetClassId: other.classId,
+        targetClassName: classNameById.get(other.classId) ?? "",
+        targetClassRoleName: null,
+        srcClassRoleName: null,
+        targetDescription: g.documentation ?? null,
+        targetDocumentationRu: g.documentationRu ?? null,
+        targetDetails: g.details ?? null,
+        multiplicity: "1",
+      });
+      generalizationLinksByClassId.set(e.classId, list);
+    }
+  }
+
+  const associationLinksByClassId = new Map();
+  for (const a of associationLinks) {
+    const ends = Array.isArray(a?.linkEnd) ? a.linkEnd : [];
+    for (const e of ends) {
+      const srcClassId = e?.linkEndClassId;
+      if (!srcClassId) continue;
+
+      const other = ends.find((x) => x?.linkEndClassId && x.linkEndClassId !== srcClassId) || null;
+      if (!other?.linkEndClassId) continue;
+
+      const list = associationLinksByClassId.get(srcClassId) || [];
+      list.push({
+        linkId: a.id,
+        relationKind: a.linkType,
+        role: "unspecified",
+        targetClassId: other.linkEndClassId,
+        targetClassName: classNameById.get(other.linkEndClassId) ?? "",
+        targetClassRoleName: other.linkEndName ?? null,
+        srcClassRoleName: e.linkEndName ?? null,
+        targetDescription: other.documentation ?? null,
+        targetDocumentationRu: other.documentationRu ?? null,
+        targetDetails: other.details ?? null,
+        multiplicity: other.multiplicity ?? null,
+      });
+      associationLinksByClassId.set(srcClassId, list);
+    }
+  }
+
   const attrsByClass = groupBy(attributes, (a) => a.classId);
-  const linksByClass = groupBy(links, (l) => l.classId);
   const litsByClass = groupBy(literals, (l) => l.classId);
+  const diagramsByPackage = groupBy(diagrams, (d) => d.packageId);
 
   const nodesById = new Map();
   for (const p of packages) {
@@ -244,9 +361,16 @@ async function exportPackagesTreeModel(modelId) {
       details: p.details ?? null,
       modelId,
       profileId: null,
+      diagrams: [],
       classes: [],
       subPackages: [],
     });
+  }
+
+  for (const [packageId, list] of diagramsByPackage.entries()) {
+    const pkgNode = nodesById.get(packageId);
+    if (!pkgNode) continue;
+    pkgNode.diagrams = list.map(mapDiagram);
   }
 
   for (const [packageId, clsList] of classesByPackage.entries()) {
@@ -263,15 +387,14 @@ async function exportPackagesTreeModel(modelId) {
       details: c.details ?? null,
       isAbstract: c.isAbstract ?? null,
       attributes: (attrsByClass.get(c.id) || []).map((a) => ({
-        ...mapAttr(a),
+        ...mapAttr(a, { classNameById }),
         modelId,
         profileId: null,
       })),
-      links: (linksByClass.get(c.id) || []).map((l) => ({
-        ...mapLink(l),
-        modelId,
-        profileId: null,
-      })),
+      links: sortClassLinks([
+        ...(generalizationLinksByClassId.get(c.id) || []),
+        ...(associationLinksByClassId.get(c.id) || []),
+      ]),
       literals: (litsByClass.get(c.id) || []).map(mapLiteral),
       profileRelations: [],
       modelId,
@@ -300,7 +423,7 @@ async function exportPackagesTreeModel(modelId) {
 }
 
 async function exportPackagesTreeProfile(profileId) {
-  const [packages, classes, attributes, links, literals] = await Promise.all([
+  const [packages, classes, attributes, literals, diagrams, generalizationLinks, associationLinks] = await Promise.all([
     prisma.packageProfile.findMany({
       where: { profileId },
       select: {
@@ -336,26 +459,13 @@ async function exportPackagesTreeProfile(profileId) {
         id: true,
         classId: true,
         name: true,
-        type: true,
+        dataTypeId: true,
+        stereotype: true,
         multiplicity: true,
         documentation: true,
         documentationRu: true,
         details: true,
-        refModelId: true,
-        refModelItemId: true,
-      },
-    }),
-    prisma.linkProfile.findMany({
-      where: { profileId },
-      select: {
-        id: true,
-        classId: true,
-        name: true,
-        type: true,
-        multiplicity: true,
-        documentation: true,
-        documentationRu: true,
-        details: true,
+        initialValue: true,
         refModelId: true,
         refModelItemId: true,
       },
@@ -371,6 +481,51 @@ async function exportPackagesTreeProfile(profileId) {
         documentationRu: true,
       },
     }),
+    prisma.diagramProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        packageId: true,
+        diagramType: true,
+        diagramName: true,
+        documentation: true,
+        details: true,
+        diagramBody: true,
+      },
+    }),
+    prisma.generalizationLinkProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        linkType: true,
+        documentation: true,
+        documentationRu: true,
+        details: true,
+        ends: {
+          select: {
+            role: true,
+            classId: true,
+          },
+        },
+      },
+    }),
+    prisma.associationLinkProfile.findMany({
+      where: { profileId },
+      select: {
+        id: true,
+        linkType: true,
+        linkEnd: {
+          select: {
+            linkEndName: true,
+            linkEndClassId: true,
+            multiplicity: true,
+            documentation: true,
+            documentationRu: true,
+            details: true,
+          },
+        },
+      },
+    }),
   ]);
 
   const classesByPackage = new Map();
@@ -380,9 +535,68 @@ async function exportPackagesTreeProfile(profileId) {
     classesByPackage.set(c.packageId, list);
   }
 
+  const classNameById = new Map();
+  for (const c of classes) {
+    classNameById.set(c.id, c.name);
+  }
+
+  const generalizationLinksByClassId = new Map();
+  for (const g of generalizationLinks) {
+    const ends = Array.isArray(g?.ends) ? g.ends : [];
+    for (const e of ends) {
+      if (!e?.classId) continue;
+      const other = ends.find((x) => x?.classId && x.classId !== e.classId) || null;
+      if (!other?.classId) continue;
+
+      const list = generalizationLinksByClassId.get(e.classId) || [];
+      list.push({
+        linkId: g.id,
+        relationKind: g.linkType,
+        role: e.role,
+        targetClassId: other.classId,
+        targetClassName: classNameById.get(other.classId) ?? "",
+        targetClassRoleName: null,
+        srcClassRoleName: null,
+        targetDescription: g.documentation ?? null,
+        targetDocumentationRu: g.documentationRu ?? null,
+        targetDetails: g.details ?? null,
+        multiplicity: "1",
+      });
+      generalizationLinksByClassId.set(e.classId, list);
+    }
+  }
+
+  const associationLinksByClassId = new Map();
+  for (const a of associationLinks) {
+    const ends = Array.isArray(a?.linkEnd) ? a.linkEnd : [];
+    for (const e of ends) {
+      const srcClassId = e?.linkEndClassId;
+      if (!srcClassId) continue;
+
+      const other = ends.find((x) => x?.linkEndClassId && x.linkEndClassId !== srcClassId) || null;
+      if (!other?.linkEndClassId) continue;
+
+      const list = associationLinksByClassId.get(srcClassId) || [];
+      list.push({
+        linkId: a.id,
+        relationKind: a.linkType,
+        role: "unspecified",
+        targetClassId: other.linkEndClassId,
+        targetClassName: classNameById.get(other.linkEndClassId) ?? "",
+        targetClassRoleName: other.linkEndName ?? null,
+        srcClassRoleName: e.linkEndName ?? null,
+        targetDescription: other.documentation ?? null,
+        targetDocumentationRu: other.documentationRu ?? null,
+        targetDetails: other.details ?? null,
+        multiplicity: other.multiplicity ?? null,
+      });
+      associationLinksByClassId.set(srcClassId, list);
+    }
+  }
+
   const attrsByClass = groupBy(attributes, (a) => a.classId);
-  const linksByClass = groupBy(links, (l) => l.classId);
   const litsByClass = groupBy(literals, (l) => l.classId);
+  const diagramsByPackage = groupBy(diagrams, (d) => d.packageId);
 
   const nodesById = new Map();
   for (const p of packages) {
@@ -396,9 +610,16 @@ async function exportPackagesTreeProfile(profileId) {
       details: p.details ?? null,
       modelId: null,
       profileId,
+      diagrams: [],
       classes: [],
       subPackages: [],
     });
+  }
+
+  for (const [packageId, list] of diagramsByPackage.entries()) {
+    const pkgNode = nodesById.get(packageId);
+    if (!pkgNode) continue;
+    pkgNode.diagrams = list.map(mapDiagram);
   }
 
   for (const [packageId, clsList] of classesByPackage.entries()) {
@@ -415,15 +636,14 @@ async function exportPackagesTreeProfile(profileId) {
       details: c.details ?? null,
       isAbstract: c.isAbstract ?? null,
       attributes: (attrsByClass.get(c.id) || []).map((a) => ({
-        ...mapAttr(a),
+        ...mapAttr(a, { classNameById }),
         modelId: null,
         profileId,
       })),
-      links: (linksByClass.get(c.id) || []).map((l) => ({
-        ...mapLink(l),
-        modelId: null,
-        profileId,
-      })),
+      links: sortClassLinks([
+        ...(generalizationLinksByClassId.get(c.id) || []),
+        ...(associationLinksByClassId.get(c.id) || []),
+      ]),
       literals: (litsByClass.get(c.id) || []).map(mapLiteral),
       profileRelations: [],
       modelId: null,
@@ -462,35 +682,25 @@ function groupBy(items, keyFn) {
   return m;
 }
 
-function mapAttr(a) {
+function mapAttr(a, { classNameById = null } = {}) {
+  const dataTypeId = a?.dataTypeId ?? null;
+  const dataType = dataTypeId && classNameById ? classNameById.get(dataTypeId) || "" : "";
+
   return {
     id: a.id,
     name: a.name,
-    type: a.type ?? null,
+    dataType,
+    dataTypeId,
+    stereotype: a.stereotype ?? "",
     multiplicity: a.multiplicity ?? null,
     documentation: a.documentation ?? null,
     documentationRu: a.documentationRu ?? null,
     details: a.details ?? null,
+    initialValue: a.initialValue ?? "",
     modelId: a.modelId ?? null,
     profileId: a.profileId ?? null,
     refModelId: a.refModelId ?? null,
     refModelItemId: a.refModelItemId ?? null,
-  };
-}
-
-function mapLink(l) {
-  return {
-    id: l.id,
-    name: l.name ?? null,
-    type: l.type ?? null,
-    multiplicity: l.multiplicity ?? null,
-    documentation: l.documentation ?? null,
-    documentationRu: l.documentationRu ?? null,
-    details: l.details ?? null,
-    modelId: l.modelId ?? null,
-    profileId: l.profileId ?? null,
-    refModelId: l.refModelId ?? null,
-    refModelItemId: l.refModelItemId ?? null,
   };
 }
 
@@ -501,5 +711,16 @@ function mapLiteral(lit) {
     value: lit.value ?? null,
     documentation: lit.documentation ?? null,
     documentationRu: lit.documentationRu ?? null,
+  };
+}
+
+function mapDiagram(d) {
+  return {
+    id: d.id,
+    diagramType: d.diagramType ?? "",
+    diagramName: d.diagramName ?? "",
+    documentation: d.documentation ?? null,
+    details: d.details ?? null,
+    diagramBody: d.diagramBody ?? null,
   };
 }

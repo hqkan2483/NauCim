@@ -38,6 +38,10 @@
   line-height: 1.2;
 }
 
+.table.data-type-picker__table td{
+  padding: 8px 10px;
+}
+
 .page-project-details.diagram-mode .table td {
   padding: 5px;
 }

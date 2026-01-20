@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { newId } from "../utils/id-generation.js";
 
 export function isRootPackageLike(rp) {
   return rp && typeof rp === "object" && Array.isArray(rp.packages);
@@ -22,9 +22,9 @@ export async function clearModelGraph(tx, modelId) {
   await tx.generalizationClassRefModel.deleteMany({ where: { modelId: id } });
   await tx.generalizationLinkModel.deleteMany({ where: { modelId: id } });
   await tx.literalModel.deleteMany({ where: { modelId: id } });
-  await tx.linkModel.deleteMany({ where: { modelId: id } });
   await tx.attributeModel.deleteMany({ where: { modelId: id } });
   await tx.classModel.deleteMany({ where: { modelId: id } });
+  await tx.diagramModel.deleteMany({ where: { modelId: id } });
   await tx.packageModel.deleteMany({ where: { modelId: id } });
 }
 
@@ -35,9 +35,9 @@ export async function clearProfileGraph(tx, profileId) {
   await tx.generalizationClassRefProfile.deleteMany({ where: { profileId: id } });
   await tx.generalizationLinkProfile.deleteMany({ where: { profileId: id } });
   await tx.literalProfile.deleteMany({ where: { profileId: id } });
-  await tx.linkProfile.deleteMany({ where: { profileId: id } });
   await tx.attributeProfile.deleteMany({ where: { profileId: id } });
   await tx.classProfile.deleteMany({ where: { profileId: id } });
+  await tx.diagramProfile.deleteMany({ where: { profileId: id } });
   await tx.packageProfile.deleteMany({ where: { profileId: id } });
 }
 
@@ -68,18 +68,18 @@ async function importLinksModel(tx, modelId, rp) {
   const assoc = Array.isArray(rp?.associationList) ? rp.associationList : [];
 
   for (const g of gen) {
-    const linkId = toNonEmptyStr(g?.linkId) || `gen_${randomUUID()}`;
+    const srcId = toNonEmptyStr(g?.srcId) || toNonEmptyStr(g?.linkId);
+    const linkId = toNonEmptyStr(g?.linkId) || newId("gen");
 
     const parentClassId = toNonEmptyStr(g?.parent?.classId);
-    const parentClassName = toNonEmptyStr(g?.parent?.className) || "";
     const childClassId = toNonEmptyStr(g?.child?.classId);
-    const childClassName = toNonEmptyStr(g?.child?.className) || "";
 
     if (!parentClassId || !childClassId) continue;
 
     await tx.generalizationLinkModel.create({
       data: {
-        linkId,
+        id: linkId,
+        srcId,
         modelId,
         linkType: toNonEmptyStr(g?.linkType) || "Generalization",
         documentation: toStr(g?.documentation),
@@ -96,25 +96,25 @@ async function importLinksModel(tx, modelId, rp) {
           modelId,
           role: "parent",
           classId: parentClassId,
-          className: parentClassName,
         },
         {
           generalizationLinkId: linkId,
           modelId,
           role: "child",
           classId: childClassId,
-          className: childClassName,
         },
       ],
     });
   }
 
   for (const a of assoc) {
-    const linkId = toNonEmptyStr(a?.linkId) || `assoc_${randomUUID()}`;
+    const srcId = toNonEmptyStr(a?.srcId) || toNonEmptyStr(a?.linkId);
+    const linkId = toNonEmptyStr(a?.linkId) || newId("assoc");
 
     await tx.associationLinkModel.create({
       data: {
-        linkId,
+        id: linkId,
+        srcId,
         modelId,
         linkType: toNonEmptyStr(a?.linkType) || "Association",
         documentation: toStr(a?.documentation),
@@ -126,19 +126,19 @@ async function importLinksModel(tx, modelId, rp) {
 
     const linkEnd = Array.isArray(a?.linkEnd) ? a.linkEnd : [];
     for (const e of linkEnd) {
-      const linkEndId = toNonEmptyStr(e?.linkEndId) || `end_${randomUUID()}`;
+      const srcId = toNonEmptyStr(e?.srcId) || toNonEmptyStr(e?.linkEndId);
+      const linkEndId = toNonEmptyStr(e?.linkEndId) || newId("end");
       const endClassId = toNonEmptyStr(e?.linkEndClassId);
-      const endClassName = toNonEmptyStr(e?.linkEndClassName) || "";
       if (!endClassId) continue;
 
       await tx.associationLinkEndModel.create({
         data: {
           linkEndId,
+          srcId,
           associationLinkId: linkId,
           modelId,
           linkEndName: String(e?.linkEndName || ""),
           linkEndClassId: endClassId,
-          linkEndClassName: endClassName,
           multiplicity: toNonEmptyStr(e?.multiplicity) || "",
           documentation: toStr(e?.documentation),
           documentationRu: toStr(e?.documentationRu),
@@ -155,18 +155,18 @@ async function importLinksProfile(tx, profileId, rp) {
   const assoc = Array.isArray(rp?.associationList) ? rp.associationList : [];
 
   for (const g of gen) {
-    const linkId = toNonEmptyStr(g?.linkId) || `gen_${randomUUID()}`;
+    const srcId = toNonEmptyStr(g?.srcId) || toNonEmptyStr(g?.linkId);
+    const linkId = toNonEmptyStr(g?.linkId) || newId("gen");
 
     const parentClassId = toNonEmptyStr(g?.parent?.classId);
-    const parentClassName = toNonEmptyStr(g?.parent?.className) || "";
     const childClassId = toNonEmptyStr(g?.child?.classId);
-    const childClassName = toNonEmptyStr(g?.child?.className) || "";
 
     if (!parentClassId || !childClassId) continue;
 
     await tx.generalizationLinkProfile.create({
       data: {
-        linkId,
+        id: linkId,
+        srcId,
         profileId,
         linkType: toNonEmptyStr(g?.linkType) || "Generalization",
         documentation: toStr(g?.documentation),
@@ -183,25 +183,25 @@ async function importLinksProfile(tx, profileId, rp) {
           profileId,
           role: "parent",
           classId: parentClassId,
-          className: parentClassName,
         },
         {
           generalizationLinkId: linkId,
           profileId,
           role: "child",
           classId: childClassId,
-          className: childClassName,
         },
       ],
     });
   }
 
   for (const a of assoc) {
-    const linkId = toNonEmptyStr(a?.linkId) || `assoc_${randomUUID()}`;
+    const srcId = toNonEmptyStr(a?.srcId) || toNonEmptyStr(a?.linkId);
+    const linkId = toNonEmptyStr(a?.linkId) || newId("assoc");
 
     await tx.associationLinkProfile.create({
       data: {
-        linkId,
+        id: linkId,
+        srcId,
         profileId,
         linkType: toNonEmptyStr(a?.linkType) || "Association",
         documentation: toStr(a?.documentation),
@@ -213,19 +213,19 @@ async function importLinksProfile(tx, profileId, rp) {
 
     const linkEnd = Array.isArray(a?.linkEnd) ? a.linkEnd : [];
     for (const e of linkEnd) {
-      const linkEndId = toNonEmptyStr(e?.linkEndId) || `end_${randomUUID()}`;
+      const srcId = toNonEmptyStr(e?.srcId) || toNonEmptyStr(e?.linkEndId);
+      const linkEndId = toNonEmptyStr(e?.linkEndId) || newId("end");
       const endClassId = toNonEmptyStr(e?.linkEndClassId);
-      const endClassName = toNonEmptyStr(e?.linkEndClassName) || "";
       if (!endClassId) continue;
 
       await tx.associationLinkEndProfile.create({
         data: {
           linkEndId,
+          srcId,
           associationLinkId: linkId,
           profileId,
           linkEndName: String(e?.linkEndName || ""),
           linkEndClassId: endClassId,
-          linkEndClassName: endClassName,
           multiplicity: toNonEmptyStr(e?.multiplicity) || "",
           documentation: toStr(e?.documentation),
           documentationRu: toStr(e?.documentationRu),
@@ -238,11 +238,13 @@ async function importLinksProfile(tx, profileId, rp) {
 }
 
 async function importPackageTreeModel(tx, modelId, parentId, pkg) {
-  const pkgId = String(pkg.id);
+  const srcId = toNonEmptyStr(pkg?.srcId) || toNonEmptyStr(pkg?.id);
+  const pkgId = toNonEmptyStr(pkg?.id) || newId("pkg");
 
   await tx.packageModel.create({
     data: {
       id: pkgId,
+      srcId,
       modelId,
       parentId,
       name: String(pkg.name || ""),
@@ -254,12 +256,32 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
     },
   });
 
+  const diagrams = Array.isArray(pkg.diagrams) ? pkg.diagrams : [];
+  for (const d of diagrams) {
+    const srcId = toNonEmptyStr(d?.srcId) || toNonEmptyStr(d?.id);
+    await tx.diagramModel.create({
+      data: {
+        id: toNonEmptyStr(d?.id) || newId("dia"),
+        srcId,
+        modelId,
+        packageId: pkgId,
+        diagramType: toNonEmptyStr(d?.diagramType) ?? null,
+        diagramName: String(d?.diagramName || ""),
+        documentation: toStr(d?.documentation),
+        details: toStr(d?.details),
+        diagramBody: toStr(d?.diagramBody),
+      },
+    });
+  }
+
   const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
   for (const cls of classes) {
-    const classId = String(cls.id);
+    const srcId = toNonEmptyStr(cls?.srcId) || toNonEmptyStr(cls?.id);
+    const classId = toNonEmptyStr(cls?.id) || newId("cls");
     await tx.classModel.create({
       data: {
         id: classId,
+        srcId,
         modelId,
         packageId: pkgId,
         name: String(cls.name || ""),
@@ -276,47 +298,35 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
 
     const attributes = Array.isArray(cls.attributes) ? cls.attributes : [];
     for (const attr of attributes) {
+      const srcId = toNonEmptyStr(attr?.srcId) || toNonEmptyStr(attr?.id);
       await tx.attributeModel.create({
         data: {
-          id: String(attr.id),
+          id: toNonEmptyStr(attr?.id) || newId("attr"),
+          srcId,
           modelId,
           classId,
           name: String(attr.name || ""),
-          type: attr.type ?? null,
+          dataTypeId: toNonEmptyStr(attr?.dataTypeId),
+          stereotype: attr.stereotype ?? null,
           multiplicity: attr.multiplicity ?? null,
           documentation: attr.documentation ?? null,
           documentationRu: attr.documentationRu ?? null,
           details: attr.details ?? null,
+          initialValue: attr.initialValue ?? null,
           refModelId: attr.refModelId ?? null,
           refModelItemId: attr.refModelItemId ?? null,
         },
       });
     }
 
-    const links = Array.isArray(cls.links) ? cls.links : [];
-    for (const link of links) {
-      await tx.linkModel.create({
-        data: {
-          id: String(link.id),
-          modelId,
-          classId,
-          name: link?.name === undefined ? null : toStr(link?.name),
-          type: link.type ?? null,
-          multiplicity: link.multiplicity ?? null,
-          documentation: link.documentation ?? null,
-          documentationRu: link.documentationRu ?? null,
-          details: link.details ?? null,
-          refModelId: link.refModelId ?? null,
-          refModelItemId: link.refModelItemId ?? null,
-        },
-      });
-    }
 
     const literals = Array.isArray(cls.literals) ? cls.literals : [];
     for (const literal of literals) {
+      const srcId = toNonEmptyStr(literal?.srcId) || toNonEmptyStr(literal?.id);
       await tx.literalModel.create({
         data: {
-          id: String(literal.id),
+          id: toNonEmptyStr(literal?.id) || newId("lit"),
+          srcId,
           modelId,
           classId,
           name: String(literal.name || ""),
@@ -335,11 +345,13 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
 }
 
 async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
-  const pkgId = String(pkg.id);
+  const srcId = toNonEmptyStr(pkg?.srcId) || toNonEmptyStr(pkg?.id);
+  const pkgId = toNonEmptyStr(pkg?.id) || newId("pkg");
 
   await tx.packageProfile.create({
     data: {
       id: pkgId,
+      srcId,
       profileId,
       parentId,
       name: String(pkg.name || ""),
@@ -351,12 +363,32 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
     },
   });
 
+  const diagrams = Array.isArray(pkg.diagrams) ? pkg.diagrams : [];
+  for (const d of diagrams) {
+    const srcId = toNonEmptyStr(d?.srcId) || toNonEmptyStr(d?.id);
+    await tx.diagramProfile.create({
+      data: {
+        id: toNonEmptyStr(d?.id) || newId("dia"),
+        srcId,
+        profileId,
+        packageId: pkgId,
+        diagramType: toNonEmptyStr(d?.diagramType) ?? null,
+        diagramName: String(d?.diagramName || ""),
+        documentation: toStr(d?.documentation),
+        details: toStr(d?.details),
+        diagramBody: toStr(d?.diagramBody),
+      },
+    });
+  }
+
   const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
   for (const cls of classes) {
-    const classId = String(cls.id);
+    const srcId = toNonEmptyStr(cls?.srcId) || toNonEmptyStr(cls?.id);
+    const classId = toNonEmptyStr(cls?.id) || newId("cls");
     await tx.classProfile.create({
       data: {
         id: classId,
+        srcId,
         profileId,
         packageId: pkgId,
         name: String(cls.name || ""),
@@ -373,47 +405,35 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
 
     const attributes = Array.isArray(cls.attributes) ? cls.attributes : [];
     for (const attr of attributes) {
+      const srcId = toNonEmptyStr(attr?.srcId) || toNonEmptyStr(attr?.id);
       await tx.attributeProfile.create({
         data: {
-          id: String(attr.id),
+          id: toNonEmptyStr(attr?.id) || newId("attr"),
+          srcId,
           profileId,
           classId,
           name: String(attr.name || ""),
-          type: attr.type ?? null,
+          dataTypeId: toNonEmptyStr(attr?.dataTypeId),
+          stereotype: attr.stereotype ?? null,
           multiplicity: attr.multiplicity ?? null,
           documentation: attr.documentation ?? null,
           documentationRu: attr.documentationRu ?? null,
           details: attr.details ?? null,
+          initialValue: attr.initialValue ?? null,
           refModelId: attr.refModelId ?? null,
           refModelItemId: attr.refModelItemId ?? null,
         },
       });
     }
 
-    const links = Array.isArray(cls.links) ? cls.links : [];
-    for (const link of links) {
-      await tx.linkProfile.create({
-        data: {
-          id: String(link.id),
-          profileId,
-          classId,
-          name: link?.name === undefined ? null : toStr(link?.name),
-          type: link.type ?? null,
-          multiplicity: link.multiplicity ?? null,
-          documentation: link.documentation ?? null,
-          documentationRu: link.documentationRu ?? null,
-          details: link.details ?? null,
-          refModelId: link.refModelId ?? null,
-          refModelItemId: link.refModelItemId ?? null,
-        },
-      });
-    }
 
     const literals = Array.isArray(cls.literals) ? cls.literals : [];
     for (const literal of literals) {
+      const srcId = toNonEmptyStr(literal?.srcId) || toNonEmptyStr(literal?.id);
       await tx.literalProfile.create({
         data: {
-          id: String(literal.id),
+          id: toNonEmptyStr(literal?.id) || newId("lit"),
+          srcId,
           profileId,
           classId,
           name: String(literal.name || ""),

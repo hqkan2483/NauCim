@@ -1923,9 +1923,9 @@
       {
         "linkId": "EAID_060370F6_EFCA_4fb0_B85D_FA444E979230",
         "linkType": "Generalization",
-        "documentation": null,
-        "documentationRu": null,
-        "details": null,
+        "documentation": "documentation EquipmentContainer to Bay",
+        "documentationRu": "документация EquipmentContainer to Bay",
+        "details": " details EquipmentContainer to Bay",
         "stereotype": "",
         "parent": {
           "classId": "EAID_ABB9B11C_E9F2_4890_A8DF_235EE5DF89EA",
@@ -2005,10 +2005,10 @@
       {
         "linkId": "EAID_09E1D860_72D5_481e_911A_CD6DD254B5E9",
         "linkType": "Association",
-        "documentation": null,
-        "documentationRu": null,
-        "details": null,
-        "stereotype": "",
+        "documentation": "documentation PSRType to PowerSystemResources",
+        "documentationRu": "документация PSRType to PowerSystemResources",
+        "details": "details PSRType to PowerSystemResources",
+        "stereotype": "rs_rf",
         "linkEnd": [
           {
             "linkEndId": "EAID_dstE1D860_72D5_481e_911A_CD6DD254B5E9",
@@ -2017,9 +2017,9 @@
             "linkEndClassName": "PSRType",
             "multiplicity": "0..1",
             "documentation": "Дополнительный классификатор",
-            "documentationRu": null,
-            "details": null,
-            "stereotype": ""
+            "documentationRu": "дополнительный классификатор - сторона ассоциации PSRType",
+            "details": "details PSRType to PowerSystemResources сторона PSRType",
+            "stereotype": "rs"
           },
           {
             "linkEndId": "EAID_srcE1D860_72D5_481e_911A_CD6DD254B5E9",
@@ -2028,9 +2028,9 @@
             "linkEndClassName": " PowerSystemResource",
             "multiplicity": "0..*",
             "documentation": "Энергообъекты с дополнительным классификатором.",
-            "documentationRu": null,
-            "details": null,
-            "stereotype": ""
+            "documentationRu": "энергообъекты с дополнительным классификатором - сторона ассоциации PowerSystemResources",
+            "details": "details PSRType to PowerSystemResources сторона PowerSystemResources",
+            "stereotype": "rf"
           }
         ]
       },

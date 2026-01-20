@@ -17,6 +17,11 @@
   opacity: 0.6;
 }
 
+.modal-content--data-type-picker .btn {
+  font-size: 14px;
+  padding: 6px 12px;
+}
+
 .btn-primary {
   background: #005a9b;
   color: #ffffff;

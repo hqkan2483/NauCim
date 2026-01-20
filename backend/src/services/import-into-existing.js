@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { randomUUID } from "node:crypto";
 import { prisma } from "../db.js";
 import { exportProject } from "./export-project.js";
+import { newId } from "../utils/id-generation.js";
 import {
   clearModelGraph,
   clearProfileGraph,
@@ -48,8 +48,10 @@ async function readJsonFromPath(filePath) {
   return JSON.parse(raw);
 }
 
-function newId(prefix) {
-  return `${prefix}_${randomUUID()}`;
+function toOptionalString(v) {
+  if (v === undefined || v === null) return null;
+  const s = String(v).trim();
+  return s ? s : null;
 }
 
 function buildIdMapsForRootPackage(rp) {
@@ -91,23 +93,18 @@ function remapRootPackageGraph(rp, { targetModelId = null, targetProfileId = nul
   };
 
   function remapPackage(pkg) {
+    const srcId = toOptionalString(pkg?.srcId) || toOptionalString(pkg?.id);
     const newPkgId = packageIdMap.get(String(pkg.id)) ?? newId("pkg");
 
     const remappedClasses = (Array.isArray(pkg.classes) ? pkg.classes : []).map((cls) => {
+      const srcId = toOptionalString(cls?.srcId) || toOptionalString(cls?.id);
       const newClassId = classIdMap.get(String(cls.id)) ?? newId("cls");
 
       const remappedAttributes = (Array.isArray(cls.attributes) ? cls.attributes : []).map((a) => ({
         ...a,
         id: newId("attr"),
-        modelId: targetModelId ?? null,
-        profileId: targetProfileId ?? null,
-      }));
-
-      const remappedLinks = (Array.isArray(cls.links) ? cls.links : []).map((l) => ({
-        ...l,
-        id: newId("link"),
-        sourceClassId: l?.sourceClassId ? remapClassId(l.sourceClassId) : l?.sourceClassId ?? null,
-        targetClassId: l?.targetClassId ? remapClassId(l.targetClassId) : l?.targetClassId ?? null,
+        srcId: toOptionalString(a?.srcId) || toOptionalString(a?.id),
+        dataTypeId: a?.dataTypeId ? remapClassId(a.dataTypeId) : a?.dataTypeId ?? null,
         modelId: targetModelId ?? null,
         profileId: targetProfileId ?? null,
       }));
@@ -115,6 +112,7 @@ function remapRootPackageGraph(rp, { targetModelId = null, targetProfileId = nul
       const remappedLiterals = (Array.isArray(cls.literals) ? cls.literals : []).map((lit) => ({
         ...lit,
         id: newId("lit"),
+        srcId: toOptionalString(lit?.srcId) || toOptionalString(lit?.id),
         modelId: targetModelId ?? null,
         profileId: targetProfileId ?? null,
       }));
@@ -122,10 +120,12 @@ function remapRootPackageGraph(rp, { targetModelId = null, targetProfileId = nul
       return {
         ...cls,
         id: newClassId,
+        srcId,
         modelId: targetModelId ?? null,
         profileId: targetProfileId ?? null,
         attributes: remappedAttributes,
-        links: remappedLinks,
+        // Ignore incoming cls.links (derived/legacy payload field)
+        links: [],
         literals: remappedLiterals,
       };
     });
@@ -135,6 +135,7 @@ function remapRootPackageGraph(rp, { targetModelId = null, targetProfileId = nul
     return {
       ...pkg,
       id: newPkgId,
+      srcId,
       modelId: targetModelId ?? null,
       profileId: targetProfileId ?? null,
       classes: remappedClasses,
@@ -144,6 +145,7 @@ function remapRootPackageGraph(rp, { targetModelId = null, targetProfileId = nul
 
   const remappedGeneralizationsList = (Array.isArray(rp?.generalizationsList) ? rp.generalizationsList : []).map((g) => ({
     ...g,
+    srcId: toOptionalString(g?.srcId) || toOptionalString(g?.linkId),
     linkId: newId("gen"),
     parent: g?.parent
       ? { ...g.parent, classId: g.parent.classId ? remapClassId(g.parent.classId) : g.parent.classId ?? null }
@@ -155,9 +157,11 @@ function remapRootPackageGraph(rp, { targetModelId = null, targetProfileId = nul
 
   const remappedAssociationList = (Array.isArray(rp?.associationList) ? rp.associationList : []).map((a) => ({
     ...a,
+    srcId: toOptionalString(a?.srcId) || toOptionalString(a?.linkId),
     linkId: newId("assoc"),
     linkEnd: (Array.isArray(a?.linkEnd) ? a.linkEnd : []).map((e) => ({
       ...e,
+      srcId: toOptionalString(e?.srcId) || toOptionalString(e?.linkEndId),
       linkEndId: newId("end"),
       linkEndClassId: e?.linkEndClassId ? remapClassId(e.linkEndClassId) : e?.linkEndClassId ?? null,
     })),

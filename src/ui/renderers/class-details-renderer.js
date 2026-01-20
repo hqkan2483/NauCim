@@ -42,7 +42,9 @@ function renderClassDetails(cls, { viewMode = 'standard' } = {}) {
  */
 function renderClassForm(cls) {
   return `
-    <form class="item-form" id="class-form" data-class-id="${cls.id}">
+    <form class="item-form" id="class-form" data-class-id="${cls.id}"
+          data-model-id="${cls.modelId || ''}"
+          data-profile-id="${cls.profileId || ''}">
       <div class="form-section">
         <div class="form-section-title">
           <div class="form-row">
@@ -96,7 +98,7 @@ function renderClassForm(cls) {
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary btn--class-details">💾 Сохранить изменения</button>
+        <button type="submit" class="btn btn-primary btn--class-details" id="cls-save-btn">💾 Сохранить изменения</button>
         <button type="button" class="btn btn-secondary btn--class-details" id="cls-cancel-btn">↩️ Отмена</button>
       </div>
     </form>
@@ -357,6 +359,7 @@ function renderClassLinks(cls) {
     cls.links.forEach(link => {
       const linkIcon = link.relationKind === 'Generalization' ? '⬆️' : '↔️';
       const roleLabel = link.role === 'child' ? '(потомок от)' : (link.role === 'parent' ? '(родитель для)' : (link.role === 'unspecified' ? '' : link.role || ''));
+      const editAction = link.relationKind === 'Generalization' ? 'edit-generalization-link' : 'edit-association-link';
 
       html += `
         <tr data-link-id="${link.linkId}">
@@ -375,7 +378,7 @@ function renderClassLinks(cls) {
           <td>
             <div class="table-actions">
               <button class="btn-icon"
-                      data-action="edit-link"
+                      data-action="${editAction}"
                       data-class-id="${cls.id}"
                       data-link-id="${link.linkId}"
                       title="Редактировать">
