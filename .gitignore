@@ -17,4 +17,4 @@ source/css/*.css
 source/css/*.map
 Thumbs.db
 _temp/*
-NauCim.code-workspace
+*.code-workspace
