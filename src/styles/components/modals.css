@@ -34,17 +34,36 @@
   position: relative;
   background: var(--bg-primary);
   border-radius: 12px;
-  padding: 25px;
+
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
 }
 
+/* Edit-link modals: header/footer always visible, scroll only the body */
 .modal-content--edit-link.modal-content {
- padding: 25px 40px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
+.modal-content--edit-link .modal-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.modal-content--edit-link .modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.modal-content--edit-link .modal-footer {
+  flex: 0 0 auto;
+}
 
 /* Opt-in: resizable modal window (native browser resize handle) */
 .modal-content--resizable {
@@ -61,19 +80,25 @@
   width: min(720px, 90vw);
 }
 
+.modal-content--edit-link.modal-content--resizable {
+  overflow: hidden;
+}
+
 .modal-content--data-type-picker.modal-content {
   padding: 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
+
 .modal-header {
   display: flex;
   gap: 20px;
   justify-content: space-between;
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
   flex-wrap: wrap;
-
+  padding: 15px 25px;
+  background-color: var(--main-color-01);
 }
 
 .modal-title {
@@ -88,7 +113,7 @@
 }
 
 /* Draggable modals: drag by title/header */
-.modal--draggable .modal-title {
+.modal--draggable .modal-header {
   cursor: move;
   user-select: none;
   -webkit-user-select: none;
@@ -99,6 +124,14 @@
   font-size: 16px;
   margin-bottom: 10px;
   flex-shrink: 0;
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.modal-content--edit-link .modal-body {
+  padding: 25px 40px;
 }
 
 .modal-content--data-type-picker .modal-body {
@@ -125,7 +158,7 @@
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: 20px;
+  /* margin-top: 20px; */
 }
 
 .modal-content--data-type-picker .modal-buttons {
@@ -157,4 +190,9 @@
 
 .modal-content--data-type-picker .data-type-picker__row.is-selected {
   background: var(--main-color-01);
+}
+
+.modal-footer {
+  padding: 15px 25px;
+  border-top: 1px solid var(--border-color);
 }

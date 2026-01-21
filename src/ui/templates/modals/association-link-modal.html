@@ -7,261 +7,276 @@
     </div>
 
     <form class="modal-form">
-      <div class="form-row">
-        <div class="form-group form-group__line">
-          <label class="form-label" for="association-link-relationKind"
-            >Тип связи *</label
-          >
-          <select
-            id="association-link-relationKind"
-            class="form-select"
-            required
-            disabled
-          >
-            <option value="Generalization">
-              Generalization (Наследование)
-            </option>
-            <option value="Association">Association (Ассоциация)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-section--edit-link">
-        <!-- <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="association-link-stereotype"
-              >Стереотип</label
-            >
-            <input
-              type="text"
-              id="association-link-stereotype"
-              class="form-input"
-              placeholder="Например: rs, rf"
-            />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="association-link-documentation"
-              >Описание</label
-            >
-            <textarea
-              id="association-link-documentation"
-              class="form-textarea"
-              rows="2"
-            ></textarea>
-          </div>
-        </div>
-
+      <div class="modal-body">
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="association-link-documentationRu"
-              >Описание (RU)</label
+          <div class="form-group form-group__line">
+            <label class="form-label" for="association-link-relationKind"
+              >Тип связи *</label
             >
-            <textarea
-              id="association-link-documentationRu"
-              class="form-textarea"
-              rows="2"
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="association-link-details"
-              >Детали</label
-            >
-            <textarea
-              id="association-link-details"
-              class="form-textarea"
-              rows="2"
-            ></textarea>
-          </div>
-        </div> -->
-      </div>
-
-      <div class="form-column-section">
-        <div class="form-column-item" id="association-src-end">
-          <div class="form-item__title">Исходный узел</div>
-
-          <div class="form-group">
-            <label class="form-label" for="association-sourceClassName"
-              >Класс*</label
-            >
-            <div class="input-with-button">
-              <input
-                type="text"
-                id="association-sourceClassName"
-                class="form-input"
-                required
-                placeholder="Название класса"
-              />
-
-              <button
-                type="button"
-                class="btn-icon btn-icon--input"
-                id="association-sourceClass-picker-btn"
-                title="Выбрать класс"
-                aria-label="Выбрать класс"
-              >
-                <span class="css-icon-menu" aria-hidden="true"></span>
-              </button>
-            </div>
-
-            <input type="hidden" id="association-sourceClassId" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="association-src-role"
-              >Имя узла</label
-            >
-            <input
-              type="text"
-              id="association-src-role"
-              class="form-input"
-              placeholder="..."
-            />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="association-src-stereotype"
-              >Стереотип</label
-            >
-            <input
-              type="text"
-              id="association-src-stereotype"
-              class="form-input"
-              placeholder="Например: rs, rf"
-            />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="association-src-multiplicity"
-              >Мн.</label
-            >
-            <input
-              type="text"
-              id="association-src-multiplicity"
-              class="form-input"
-              placeholder="Например:  1, 0..1, 0..*"
+            <select
+              id="association-link-relationKind"
+              class="form-select"
+              required
               disabled
-            />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="association-src-documentation"
-              >Описание</label
             >
-            <textarea
-              id="association-src-documentation"
-              class="form-textarea"
-              rows="2"
-            ></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="association-src-documentationRu"
-              >Описание (RU)</label
-            >
-            <textarea
-              id="association-src-documentationRu"
-              class="form-textarea"
-              rows="2"
-            ></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="association-src-details"
-              >Детали</label
-            >
-            <textarea
-              id="association-src-details"
-              class="form-textarea"
-              rows="2"
-            ></textarea>
+              <option value="Generalization">
+                Generalization (Наследование)
+              </option>
+              <option value="Association">Association (Ассоциация)</option>
+            </select>
           </div>
         </div>
 
-        <div class="form-column-item" id="association-target-end">
-          <div class="form-item__title">Целевой узел</div>
-
-          <div class="form-group">
-            <label class="form-label" for="association-targetClassName"
-              >Класс*</label
-            >
-
-            <div class="input-with-button">
+        <div class="form-section--edit-link">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="association-link-stereotype"
+                >Стереотип</label
+              >
               <input
                 type="text"
-                id="association-targetClassName"
+                id="association-link-stereotype"
                 class="form-input"
-                required
-                placeholder="Название класса"
+                placeholder="Например: rs, rf"
               />
-
-              <button
-                type="button"
-                class="btn-icon btn-icon--input"
-                id="association-targetClass-picker-btn"
-                title="Выбрать класс"
-                aria-label="Выбрать класс"
-              >
-                <span class="css-icon-menu" aria-hidden="true"></span>
-              </button>
             </div>
 
-            <input type="hidden" id="association-targetClassId" />
+            <div class="form-group">
+              <label class="form-label" for="association-link-documentation"
+                >Описание</label
+              >
+              <textarea
+                id="association-link-documentation"
+                class="form-textarea"
+                rows="2"
+              ></textarea>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="association-target-role">Имя узла</label>
-            <input
-              type="text"
-              id="association-target-role"
-              class="form-input"
-              placeholder="..."
-            />
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="association-link-documentationRu"
+                >Описание (RU)</label
+              >
+              <textarea
+                id="association-link-documentationRu"
+                class="form-textarea"
+                rows="2"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="association-link-details"
+                >Детали</label
+              >
+              <textarea
+                id="association-link-details"
+                class="form-textarea"
+                rows="2"
+              ></textarea>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="association-target-stereotype">Стереотип</label>
-            <input
-              type="text"
-              id="association-target-stereotype"
-              class="form-input"
-              placeholder="Например: rs, rf"
-            />
+        </div>
+
+        <div class="form-column-section">
+          <div class="form-column-item" id="association-src-end">
+            <p class="form-item__title">Исходный узел</p>
+
+            <div class="form-group">
+              <label class="form-label" for="association-sourceClassName"
+                >Класс*</label
+              >
+              <div class="input-with-button">
+                <input
+                  type="text"
+                  id="association-sourceClassName"
+                  class="form-input"
+                  required
+                  placeholder="Название класса"
+                  disabled
+                />
+
+                <!-- <button
+                  type="button"
+                  class="btn-icon btn-icon--input"
+                  id="association-sourceClass-picker-btn"
+                  title="Выбрать класс"
+                  aria-label="Выбрать класс"
+                >
+                  <span class="css-icon-menu" aria-hidden="true"></span>
+                </button> -->
+              </div>
+
+              <input type="hidden" id="association-sourceClassId" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="association-src-role"
+                >Имя узла</label
+              >
+              <input
+                type="text"
+                id="association-src-role"
+                class="form-input"
+                placeholder="..."
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="association-src-stereotype"
+                >Стереотип</label
+              >
+              <input
+                type="text"
+                id="association-src-stereotype"
+                class="form-input"
+                placeholder="Например: rs, rf"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="association-src-multiplicity"
+                >Мн.</label
+              >
+              <input
+                type="text"
+                id="association-src-multiplicity"
+                class="form-input"
+                placeholder="Например:  1, 0..1, 0..*"
+
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="association-src-documentation"
+                >Описание</label
+              >
+              <textarea
+                id="association-src-documentation"
+                class="form-textarea"
+                rows="2"
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="association-src-documentationRu"
+                >Описание (RU)</label
+              >
+              <textarea
+                id="association-src-documentationRu"
+                class="form-textarea"
+                rows="2"
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="association-src-details"
+                >Детали</label
+              >
+              <textarea
+                id="association-src-details"
+                class="form-textarea"
+                rows="2"
+              ></textarea>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="association-target-multiplicity">Мн.</label>
-            <input
-              type="text"
-              id="association-target-multiplicity"
-              class="form-input"
-              placeholder="Например:  1, 0..1, 0..*"
-              disabled
-            />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="association-target-documentation">Описание</label>
-            <textarea
-              id="association-target-documentation"
-              class="form-textarea"
-              rows="2"
-            ></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="association-target-documentationRu">Описание (RU)</label>
-            <textarea
-              id="association-target-documentationRu"
-              class="form-textarea"
-              rows="2"
-            ></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="association-target-details">Детали</label>
-            <textarea
-              id="association-target-details"
-              class="form-textarea"
-              rows="2"
-            ></textarea>
+
+          <div class="form-column-item" id="association-target-end">
+            <div class="form-item__title">Целевой узел</div>
+
+            <div class="form-group">
+              <label class="form-label" for="association-targetClassName"
+                >Класс*</label
+              >
+
+              <div class="input-with-button">
+                <input
+                  type="text"
+                  id="association-targetClassName"
+                  class="form-input"
+                  required
+                  placeholder="Название класса"
+                />
+
+                <button
+                  type="button"
+                  class="btn-icon btn-icon--input"
+                  id="association-targetClass-picker-btn"
+                  title="Выбрать класс"
+                  aria-label="Выбрать класс"
+                >
+                  <span class="css-icon-menu" aria-hidden="true"></span>
+                </button>
+              </div>
+
+              <input type="hidden" id="association-targetClassId" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="association-target-role"
+                >Имя узла</label
+              >
+              <input
+                type="text"
+                id="association-target-role"
+                class="form-input"
+                placeholder="..."
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="association-target-stereotype"
+                >Стереотип</label
+              >
+              <input
+                type="text"
+                id="association-target-stereotype"
+                class="form-input"
+                placeholder="Например: rs, rf"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="association-target-multiplicity"
+                >Мн.</label
+              >
+              <input
+                type="text"
+                id="association-target-multiplicity"
+                class="form-input"
+                placeholder="Например:  1, 0..1, 0..*"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="association-target-documentation"
+                >Описание</label
+              >
+              <textarea
+                id="association-target-documentation"
+                class="form-textarea"
+                rows="2"
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="association-target-documentationRu"
+                >Описание (RU)</label
+              >
+              <textarea
+                id="association-target-documentationRu"
+                class="form-textarea"
+                rows="2"
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="association-target-details"
+                >Детали</label
+              >
+              <textarea
+                id="association-target-details"
+                class="form-textarea"
+                rows="2"
+              ></textarea>
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="modal-buttons">
-        <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+      <div class="modal-buttons modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>
+          Отмена
+        </button>
         <button type="button" class="btn btn-primary" id="save-association-btn">
           Сохранить
         </button>
