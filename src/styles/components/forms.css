@@ -32,6 +32,39 @@
   padding-bottom: 10px;
 }
 
+.modal-form .form-section--edit-link {
+  padding: 10px 15px 2px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.modal-form .form-column-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.form-column-item {
+  display: flex;
+  flex-direction: column;
+   padding: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.form-item__title {
+
+  align-self: self-start;
+  margin-top: -25px;
+  margin-bottom: 10px;
+  padding: 0 20px;
+  font-weight: 600;
+
+  background: var(--bg-primary);
+}
+
+
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -40,7 +73,7 @@
   margin-bottom: 15px;
 }
 
-.modal-open .modal-content .form-row {
+.modal-content .form-row {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   row-gap: 10px;
   column-gap: 20px;
@@ -50,6 +83,10 @@
 .page-project-details.diagram-mode .form-row {
   row-gap: 10px;
   margin-bottom: 10px;
+}
+
+.modal-form .form-section--edit-link .form-row {
+  margin-bottom: 0;
 }
 
 .form-row:last-child {
@@ -247,6 +284,36 @@
   padding: 4px 10px;
   height: auto;
   background: var(--bg-primary);
+}
+
+/* Pure CSS icon (3 horizontal lines). Use inside buttons to avoid inline SVG. */
+.css-icon-menu {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  position: relative;
+  pointer-events: none;
+}
+
+.css-icon-menu::before,
+.css-icon-menu::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+.css-icon-menu::before {
+  top: -5px;
+}
+
+.css-icon-menu::after {
+  top: 5px;
 }
 
 /* Form validation */

@@ -59,7 +59,7 @@ function ensureDraggableModal(modalEl) {
     // Only left button drag (mouse). For touch, button is typically -1.
     if (typeof e.button === "number" && e.button !== 0 && e.pointerType === "mouse") return;
 
-    const handle = e.target.closest("[data-modal-drag-handle], .modal-title");
+    const handle = e.target.closest("[data-modal-drag-handle], .modal-header");
     if (!handle) return;
 
     // Don't start drag from inside inputs/buttons etc.

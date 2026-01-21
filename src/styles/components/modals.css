@@ -34,22 +34,38 @@
   position: relative;
   background: var(--bg-primary);
   border-radius: 12px;
-  padding: 25px;
+
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* All modals: header/footer always visible, scroll only the body */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.modal-header,
+.modal-footer {
+  flex: 0 0 auto;
+}
+
+.modal-body {
+  flex: 1 1 auto;
   overflow-y: auto;
+  min-height: 0;
 }
-
-.modal-content--edit-link.modal-content {
- padding: 25px 40px;
-}
-
 
 /* Opt-in: resizable modal window (native browser resize handle) */
 .modal-content--resizable {
   resize: both;
-  overflow: auto;
+  overflow: hidden;
 
   /* Let user grow it within viewport */
   max-width: 90vw;
@@ -62,18 +78,21 @@
 }
 
 .modal-content--data-type-picker.modal-content {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  padding: 0;
 }
+
 .modal-header {
   display: flex;
   gap: 20px;
   justify-content: space-between;
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
   flex-wrap: wrap;
+  padding: 15px 25px;
+  background-color: var(--main-color-01);
+}
 
+.modal-header .modal-title {
+  margin-bottom: 0;
 }
 
 .modal-title {
@@ -88,7 +107,7 @@
 }
 
 /* Draggable modals: drag by title/header */
-.modal--draggable .modal-title {
+.modal--draggable .modal-header {
   cursor: move;
   user-select: none;
   -webkit-user-select: none;
@@ -97,16 +116,22 @@
 
 .modal-content--data-type-picker .modal-title {
   font-size: 16px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
   flex-shrink: 0;
 }
 
+.modal-body {
+  padding: 25px;
+}
+
+.modal-content--edit-link .modal-body {
+  padding: 25px 40px;
+}
+
 .modal-content--data-type-picker .modal-body {
-  flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  min-height: 0;
 }
 
 .modal-content--data-type-picker .form-group {
@@ -114,10 +139,10 @@
 }
 
 .modal-content--data-type-picker .data-type-picker-table-wrapper {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  min-height: 0;
   margin-top: 10px;
 }
 
@@ -125,7 +150,7 @@
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: 20px;
+  /* margin-top: 20px; */
 }
 
 .modal-content--data-type-picker .modal-buttons {
@@ -157,4 +182,9 @@
 
 .modal-content--data-type-picker .data-type-picker__row.is-selected {
   background: var(--main-color-01);
+}
+
+.modal-footer {
+  padding: 15px 25px;
+  border-top: 1px solid var(--border-color);
 }
