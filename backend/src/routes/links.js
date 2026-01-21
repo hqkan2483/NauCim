@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { asyncHandler, sendError } from "../utils/http.js";
 import { updateGeneralizationLinkAndExportProject } from "../services/update-generalization-link.js";
+import { updateAssociationLinkAndExportProject } from "../services/update-association-link.js";
 
 export const linksRouter = Router();
 
@@ -71,3 +72,77 @@ linksRouter.put(
     }
   })
 );
+
+const linkEndSchema = z
+  .object({
+    linkEndId: z.string().min(1),
+    linkEndName: z.string(),
+    linkEndClassId: z.string().min(1),
+    linkEndClassName: z.string().optional(), // ignored
+    multiplicity: z.string().optional(),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+    stereotype: z.string().optional(),
+  })
+  .passthrough();
+
+const associationLinkSchema = z
+  .object({
+    linkId: z.string().min(1),
+    linkType: z.string().optional(),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
+    details: z.string().nullable().optional(),
+    stereotype: z.string().optional(),
+    linkEnd: z.array(linkEndSchema).length(2),
+  })
+  .passthrough();
+
+/**
+ * Update an existing Association link and return a full exported Project.
+ *
+ * Request:
+ * - Path param: :linkId
+ * - Body: AssociationLink (per docs/DATA_STRUCTURES.md)
+ * - Optional query params:
+ *   - modelId / profileId: disambiguates where to update
+ *   - editingClassId: used for extra safety validation
+ */
+linksRouter.put(
+  "/association/:linkId",
+  asyncHandler(async (req, res) => {
+    const linkIdParam = String(req.params.linkId || "");
+
+    const parsed = associationLinkSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid AssociationLink", parsed.error.flatten());
+    }
+
+    const body = parsed.data;
+    if (String(body.linkId) !== linkIdParam) {
+      return sendError(res, 400, "linkId mismatch");
+    }
+
+    const modelId = req.query.modelId ? String(req.query.modelId) : "";
+    const profileId = req.query.profileId ? String(req.query.profileId) : "";
+    const editingClassId = req.query.editingClassId ? String(req.query.editingClassId) : "";
+
+    try {
+      const project = await updateAssociationLinkAndExportProject({
+        linkId: linkIdParam,
+        modelId,
+        profileId,
+        editingClassId,
+        payload: body,
+      });
+
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to update association link";
+      return sendError(res, status, msg);
+    }
+  })
+);
+

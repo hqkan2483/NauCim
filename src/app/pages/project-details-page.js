@@ -83,7 +83,10 @@ import {
   createModelDiagram as createModelDiagramInBackend,
   createProfileDiagram as createProfileDiagramInBackend,
 } from "../../services/diagram-service.js";
-import { updateGeneralizationLink as updateGeneralizationLinkInBackend } from "../../services/link-service.js";
+import { 
+  updateGeneralizationLink as updateGeneralizationLinkInBackend,
+  updateAssociationLink as updateAssociationLinkInBackend 
+} from "../../services/link-service.js";
 import { initPackageTreeContextMenu } from "../../ui/components/package-context-menu.js";
 import {
   initCreatePackageModal,
@@ -502,23 +505,20 @@ document.addEventListener("DOMContentLoaded", async () => {
           await renderProjectTreeSidebar(updatedProject);
           const chain = findClassParentChain(updatedProject, classId, modelId, profileId, context);
           expandTreePath(chain);
-          restoreSelectedTreeItemInTree();
 
-          const updatedCls = findClassById(updatedProject, classId, modelId, profileId, context);
-          const itemDetailsContent = document.getElementById("item-details-content");
-          if (itemDetailsContent && updatedCls) {
-            const clsView = {
-              ...updatedCls,
-              modelId: modelId || "",
-              profileId: profileId || "",
-            };
-            originalItemData = JSON.parse(JSON.stringify(clsView));
+          requestAnimationFrame(async () => {
+            const selector =
+              context === "model"
+                ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+                : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
 
-            itemDetailsContent.innerHTML = renderClassDetails(clsView, {
-              viewMode: getItemDetailsViewMode(),
-            });
-            restoreClassTab("item-links");
-          }
+            const classEl = document.querySelector(selector);
+            if (classEl) {
+              setSelectedTreeItem(classEl);
+              classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              await handleSelectClass(classId, modelId, profileId, "item-links");
+            }
+          });
 
           showToast("Связь сохранена", { type: "success" });
         } catch (error) {
@@ -529,7 +529,68 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
     });
 
-    initAssociationLinkModal(currentProjectId);
+    initAssociationLinkModal(currentProjectId, {
+      onUpdate: async (linkId, classId, payload, context) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const tabToRestore = "item-links";
+        const modelId = context?.modelId || "";
+        const profileId = context?.profileId || "";
+
+        try {
+          const updatedProject = await updateAssociationLinkInBackend({
+            linkId: String(linkId),
+            modelId: String(modelId),
+            profileId: String(profileId),
+            editingClassId: String(classId),
+            payload,
+            project,
+          });
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: modelId ? modelId : null,
+            profileId: profileId ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          const chain = findClassParentChain(
+            updatedProject,
+            classId,
+            modelId,
+            profileId,
+            modelId ? "model" : "profile"
+          );
+          expandTreePath(chain);
+
+          requestAnimationFrame(async () => {
+            const selector = modelId
+              ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+              : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+            const classEl = document.querySelector(selector);
+            if (classEl) {
+              setSelectedTreeItem(classEl);
+              classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              await handleSelectClass(classId, modelId, profileId, tabToRestore);
+            }
+          });
+
+          showToast("Связь сохранена", { type: "success" });
+        } catch (error) {
+          console.error("[associationLinkModal.onUpdate] Save failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка сохранения";
+          showToast(`Ошибка сохранения связи: ${msg}`, { type: "error" });
+        }
+      },
+    });
 
     /**
      * Modal: create nested package (subpackage).
@@ -2631,6 +2692,7 @@ async function handleEditAssociationLink(linkId, classId) {
   await openEditAssociationLinkModal(associationLink, found.cls.id, {
     modelId: found.modelId || "",
     profileId: found.profileId || "",
+    editingClassName: found.cls.name || "",
   });
 }
 

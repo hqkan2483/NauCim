@@ -33,3 +33,33 @@ export async function updateGeneralizationLink({
   const suffix = qs.toString() ? `?${qs.toString()}` : "";
   return await apiClient.put(`/api/links/generalization/${encodeURIComponent(id)}${suffix}`, payload);
 }
+
+/**
+ * Update an existing Association link.
+ * Backend responds with the full exported Project.
+ *
+ * @param {object} args
+ * @param {string} args.linkId
+ * @param {string} [args.modelId]
+ * @param {string} [args.profileId]
+ * @param {string} [args.editingClassId]
+ * @param {object} args.payload AssociationLink
+ * @returns {Promise<object>} Full exported project
+ */
+export async function updateAssociationLink({
+  linkId,
+  modelId = "",
+  profileId = "",
+  editingClassId = "",
+  payload,
+}) {
+  const id = String(linkId || "");
+  const qs = new URLSearchParams();
+  if (modelId) qs.set("modelId", String(modelId));
+  if (profileId) qs.set("profileId", String(profileId));
+  if (editingClassId) qs.set("editingClassId", String(editingClassId));
+
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
+  return await apiClient.put(`/api/links/association/${encodeURIComponent(id)}${suffix}`, payload);
+}
+
