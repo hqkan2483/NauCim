@@ -4,32 +4,38 @@
       ×
     </button>
 
-    <div class="modal-title">Создать диаграмму</div>
-
-    <div class="form-group">
-      <label class="form-label" for="create-diagram-name">Название *</label>
-      <input type="text" id="create-diagram-name" class="form-input" required />
-      <div
-        id="create-diagram-name-error"
-        class="validation-feedback validation-error hidden"
-        role="alert"
-        aria-live="polite"
-      ></div>
+    <div class="modal-header">
+      <div class="modal-title">Создать диаграмму</div>
     </div>
 
-    <div class="form-group">
-      <label class="form-label" for="create-diagram-documentation">Описание</label>
-      <textarea id="create-diagram-documentation" class="form-textarea" rows="3"></textarea>
-    </div>
+    <form class="modal-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="create-diagram-name">Название *</label>
+          <input type="text" id="create-diagram-name" class="form-input" required />
+          <div
+            id="create-diagram-name-error"
+            class="validation-feedback validation-error hidden"
+            role="alert"
+            aria-live="polite"
+          ></div>
+        </div>
 
-    <div class="form-group">
-      <label class="form-label" for="create-diagram-details">Дополнительная информация</label>
-      <textarea id="create-diagram-details" class="form-textarea" rows="4"></textarea>
-    </div>
+        <div class="form-group">
+          <label class="form-label" for="create-diagram-documentation">Описание</label>
+          <textarea id="create-diagram-documentation" class="form-textarea" rows="3"></textarea>
+        </div>
 
-    <div class="modal-buttons">
-      <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
-      <button type="button" class="btn btn-primary" id="create-diagram-save-btn">Создать</button>
-    </div>
+        <div class="form-group">
+          <label class="form-label" for="create-diagram-details">Дополнительная информация</label>
+          <textarea id="create-diagram-details" class="form-textarea" rows="4"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-buttons modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+        <button type="button" class="btn btn-primary" id="create-diagram-save-btn">Создать</button>
+      </div>
+    </form>
   </div>
 </div>

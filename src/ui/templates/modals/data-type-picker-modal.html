@@ -2,31 +2,39 @@
   <div class="modal-content modal-content--resizable modal-content--data-type-picker">
     <button class="modal-close" data-modal-close aria-label="Закрыть">×</button>
 
-    <div class="modal-title">Выбор типа данных</div>
-
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label" for="data-type-picker-search">
-        <input
-          type="text"
-          id="data-type-picker-search"
-          class="form-input"
-          placeholder="Введите имя класса..."
-          autocomplete="off"
-        />
-        </label>
-      </div>
-
-      <div class="data-type-picker-table-wrapper">
-        <div id="data-type-picker-table"></div>
-      </div>
+    <div class="modal-header">
+      <div class="modal-title">Выбор типа данных</div>
     </div>
 
-    <div class="modal-buttons">
-      <button class="btn btn-secondary" data-modal-close>Отмена</button>
-      <button class="btn btn-primary" id="data-type-picker-choose-btn" disabled>
-        Выбрать
-      </button>
-    </div>
+    <form class="modal-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="data-type-picker-search">Поиск</label>
+          <input
+            type="text"
+            id="data-type-picker-search"
+            class="form-input"
+            placeholder="Введите имя класса..."
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="data-type-picker-table-wrapper">
+          <div id="data-type-picker-table"></div>
+        </div>
+      </div>
+
+      <div class="modal-buttons modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          id="data-type-picker-choose-btn"
+          disabled
+        >
+          Выбрать
+        </button>
+      </div>
+    </form>
   </div>
 </div>

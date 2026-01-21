@@ -4,52 +4,63 @@
       ×
     </button>
 
-    <div class="modal-title">Создать класс</div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label" for="create-cls-name">Класс *</label>
-        <input type="text" id="create-cls-name" class="form-input" required />
-        <div
-          id="create-cls-name-error"
-          class="validation-feedback validation-error hidden"
-          role="alert"
-          aria-live="polite"
-        ></div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-checkbox-label">
-          <span>Абстрактный класс</span>
-          <input type="checkbox" id="create-cls-isAbstract" class="form-checkbox" />
-        </label>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="create-cls-stereotype">Стереотип</label>
-        <input type="text" id="create-cls-stereotype" class="form-input" placeholder="Например: rs, rf" />
-      </div>
+    <div class="modal-header">
+      <div class="modal-title">Создать класс</div>
     </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label" for="create-cls-documentation">Описание</label>
-        <textarea id="create-cls-documentation" class="form-textarea" rows="3"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="create-cls-documentationRu">Описание (RU)</label>
-        <textarea id="create-cls-documentationRu" class="form-textarea" rows="3"></textarea>
-      </div>
-    </div>
+    <form class="modal-form">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="create-cls-name">Класс *</label>
+            <input type="text" id="create-cls-name" class="form-input" required />
+            <div
+              id="create-cls-name-error"
+              class="validation-feedback validation-error hidden"
+              role="alert"
+              aria-live="polite"
+            ></div>
+          </div>
 
-    <div class="form-group">
-      <label class="form-label" for="create-cls-details">Детали</label>
-      <textarea id="create-cls-details" class="form-textarea" rows="4"></textarea>
-    </div>
+          <div class="form-group">
+            <label class="form-checkbox-label">
+              <span>Абстрактный класс</span>
+              <input type="checkbox" id="create-cls-isAbstract" class="form-checkbox" />
+            </label>
+          </div>
 
-    <div class="modal-buttons">
-      <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
-      <button type="button" class="btn btn-primary" id="create-cls-save-btn">Создать</button>
-    </div>
+          <div class="form-group">
+            <label class="form-label" for="create-cls-stereotype">Стереотип</label>
+            <input
+              type="text"
+              id="create-cls-stereotype"
+              class="form-input"
+              placeholder="Например: rs, rf"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="create-cls-documentation">Описание</label>
+            <textarea id="create-cls-documentation" class="form-textarea" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="create-cls-documentationRu">Описание (RU)</label>
+            <textarea id="create-cls-documentationRu" class="form-textarea" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="create-cls-details">Детали</label>
+          <textarea id="create-cls-details" class="form-textarea" rows="4"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-buttons modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+        <button type="button" class="btn btn-primary" id="create-cls-save-btn">Создать</button>
+      </div>
+    </form>
   </div>
 </div>

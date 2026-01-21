@@ -4,44 +4,50 @@
       ×
     </button>
 
-    <div class="modal-title">Создать пакет</div>
-
-    <div class="form-group">
-      <label class="form-label" for="create-pkg-name">Пакет *</label>
-      <input
-        type="text"
-        id="create-pkg-name"
-        class="form-input"
-        placeholder="Например: Wires, Core"
-        required
-      />
-      <div
-        id="create-pkg-name-error"
-        class="validation-feedback validation-error hidden"
-        role="alert"
-        aria-live="polite"
-      ></div>
+    <div class="modal-header">
+      <div class="modal-title">Создать пакет</div>
     </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label" for="create-pkg-documentation">Описание</label>
-        <textarea id="create-pkg-documentation" class="form-textarea" rows="3"></textarea>
+    <form class="modal-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="create-pkg-name">Пакет *</label>
+          <input
+            type="text"
+            id="create-pkg-name"
+            class="form-input"
+            placeholder="Например: Wires, Core"
+            required
+          />
+          <div
+            id="create-pkg-name-error"
+            class="validation-feedback validation-error hidden"
+            role="alert"
+            aria-live="polite"
+          ></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="create-pkg-documentation">Описание</label>
+            <textarea id="create-pkg-documentation" class="form-textarea" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="create-pkg-documentationRu">Описание (RU)</label>
+            <textarea id="create-pkg-documentationRu" class="form-textarea" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="create-pkg-details">Детали</label>
+          <textarea id="create-pkg-details" class="form-textarea" rows="4"></textarea>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="create-pkg-documentationRu">Описание (RU)</label>
-        <textarea id="create-pkg-documentationRu" class="form-textarea" rows="3"></textarea>
+
+      <div class="modal-buttons modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+        <button type="button" class="btn btn-primary" id="create-pkg-save-btn">Создать</button>
       </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="create-pkg-details">Детали</label>
-      <textarea id="create-pkg-details" class="form-textarea" rows="4"></textarea>
-    </div>
-
-    <div class="modal-buttons">
-      <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
-      <button type="button" class="btn btn-primary" id="create-pkg-save-btn">Создать</button>
-    </div>
+    </form>
   </div>
 </div>

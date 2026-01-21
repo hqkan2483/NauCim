@@ -1,30 +1,31 @@
 <div id="edit-project-modal" class="modal">
   <div class="modal-content modal-content--resizable modal-content--edit-project">
-    <button
-        class="modal-close"
-        data-modal-close
-        aria-label="Закрыть"
-      >
-        ×
-    </button>
-    <div class="modal-title">Редактировать проект</div>
-    <div class="form-group">
-      <label class="form-label">Название проекта *</label>
-      <input type="text" id="edit-project-name" class="form-input" required minlength="3" />
+    <button type="button" class="modal-close" data-modal-close aria-label="Закрыть">×</button>
+
+    <div class="modal-header">
+      <div class="modal-title">Редактировать проект</div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Описание</label>
-      <textarea id="edit-project-desc" class="form-textarea"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Версия</label>
-      <input type="text" id="edit-project-version" class="form-input" />
-    </div>
-    <div class="modal-buttons">
-      <button class="btn btn-secondary" data-modal-close>Отмена</button>
-      <button class="btn btn-primary" id="save-project-edit-btn">
-        Сохранить
-      </button>
-    </div>
+
+    <form class="modal-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Название проекта *</label>
+          <input type="text" id="edit-project-name" class="form-input" required minlength="3" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Описание</label>
+          <textarea id="edit-project-desc" class="form-textarea"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Версия</label>
+          <input type="text" id="edit-project-version" class="form-input" />
+        </div>
+      </div>
+
+      <div class="modal-buttons modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+        <button type="button" class="btn btn-primary" id="save-project-edit-btn">Сохранить</button>
+      </div>
+    </form>
   </div>
 </div>

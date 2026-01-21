@@ -6,127 +6,99 @@
       <div class="modal-title">Редактирование связи</div>
     </div>
     <form class="modal-form">
-      <div class="form-row">
-        <div class="form-group form-group__line">
-          <label class="form-label" for="generalization-link-relationKind"
-            >Тип связи *</label
-          >
-          <select
-            id="generalization-link-relationKind"
-            class="form-select"
-            required
-            disabled
-          >
-            <option value="Generalization">
-              Generalization (Наследование)
-            </option>
-            <option value="Association">Association (Ассоциация)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="generalization-link-targetClassName"
-            >Целевой класс *</label
-          >
-          <div class="input-with-button">
-            <input
-              type="text"
-              id="generalization-link-targetClassName"
-              class="form-input"
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group form-group__line">
+            <label class="form-label" for="generalization-link-relationKind">Тип связи *</label>
+            <select
+              id="generalization-link-relationKind"
+              class="form-select"
               required
-              placeholder="Название целевого класса"
-            />
-            <button
-              type="button"
-              class="btn-icon btn-icon--input"
-              id="generalization-link-targetClass-picker-btn"
-              title="Выбрать класс"
-              aria-label="Выбрать класс"
+              disabled
             >
-              <span class="css-icon-menu" aria-hidden="true"></span>
-            </button>
+              <option value="Generalization">Generalization (Наследование)</option>
+              <option value="Association">Association (Ассоциация)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="generalization-link-targetClassName">Целевой класс *</label>
+            <div class="input-with-button">
+              <input
+                type="text"
+                id="generalization-link-targetClassName"
+                class="form-input"
+                required
+                placeholder="Название целевого класса"
+              />
+              <button
+                type="button"
+                class="btn-icon btn-icon--input"
+                id="generalization-link-targetClass-picker-btn"
+                title="Выбрать класс"
+                aria-label="Выбрать класс"
+              >
+                <span class="css-icon-menu" aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <input type="hidden" id="generalization-link-targetClassId" />
           </div>
 
-          <input type="hidden" id="generalization-link-targetClassId" />
+          <div class="form-group">
+            <label class="form-label" for="generalization-link-role">Роль</label>
+            <select id="generalization-link-role" class="form-select">
+              <option value="child">Потомок (child)</option>
+              <option value="parent">Родитель (parent)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="generalization-link-multiplicity">Мн.</label>
+            <input
+              type="text"
+              id="generalization-link-multiplicity"
+              class="form-input"
+              placeholder="Например:  1, 0..1, 0..*"
+              disabled
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="generalization-link-stereotype">Стереотип</label>
+            <input
+              type="text"
+              id="generalization-link-stereotype"
+              class="form-input"
+              placeholder="Например: rs, rf"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="generalization-link-documentation">Описание</label>
+            <textarea id="generalization-link-documentation" class="form-textarea" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="generalization-link-documentationRu">Описание (RU)</label>
+            <textarea id="generalization-link-documentationRu" class="form-textarea" rows="2"></textarea>
+          </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="generalization-link-role">Роль</label>
-          <select id="generalization-link-role" class="form-select">
-            <option value="child">Потомок (child)</option>
-            <option value="parent">Родитель (parent)</option>
-          </select>
+          <label class="form-label" for="generalization-link-details">Детали</label>
+          <textarea id="generalization-link-details" class="form-textarea" rows="2"></textarea>
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="generalization-link-multiplicity"
-            >Мн.</label
-          >
-          <input
-            type="text"
-            id="generalization-link-multiplicity"
-            class="form-input"
-            placeholder="Например:  1, 0..1, 0..*"
-            disabled
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="generalization-link-stereotype"
-            >Стереотип</label
-          >
-          <input
-            type="text"
-            id="generalization-link-stereotype"
-            class="form-input"
-            placeholder="Например: rs, rf"
-          />
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="generalization-link-documentation"
-            >Описание</label
-          >
-          <textarea
-            id="generalization-link-documentation"
-            class="form-textarea"
-            rows="2"
-          ></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="generalization-link-documentationRu"
-            >Описание (RU)</label
-          >
-          <textarea
-            id="generalization-link-documentationRu"
-            class="form-textarea"
-            rows="2"
-          ></textarea>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="generalization-link-details"
-          >Детали</label
-        >
-        <textarea
-          id="generalization-link-details"
-          class="form-textarea"
-          rows="2"
-        ></textarea>
-      </div>
-
-      <div class="modal-buttons">
-        <button class="btn btn-secondary" data-modal-close>Отмена</button>
-        <button class="btn btn-primary" id="save-generalization-btn">
-          Сохранить
-        </button>
+      <div class="modal-buttons modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+        <button type="button" class="btn btn-primary" id="save-generalization-btn">Сохранить</button>
       </div>
     </form>
   </div>
