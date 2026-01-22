@@ -4,6 +4,7 @@ import { prisma } from "../db.js";
 import { asyncHandler, sendError } from "../utils/http.js";
 import { importProfileRootPackages } from "../services/import-into-existing.js";
 import { exportProject } from "../services/export-project.js";
+import { deleteProfileClassAndExportProject } from "../services/delete-class.js";
 import { deleteProfileAttributeAndExportProject } from "../services/delete-attribute.js";
 import { newId } from "../utils/id-generation.js";
 
@@ -562,6 +563,29 @@ profilesRouter.put(
     const project = await exportProject(profile.projectId);
     if (!project) return sendError(res, 404, "Project not found");
     res.json(project);
+  })
+);
+
+/**
+ * Delete a class from a profile graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :profileId, :classId
+ */
+profilesRouter.delete(
+  "/:profileId/classes/:classId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const classId = String(req.params.classId);
+
+    try {
+      const project = await deleteProfileClassAndExportProject({ profileId, classId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete class";
+      return sendError(res, status, msg);
+    }
   })
 );
 

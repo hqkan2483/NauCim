@@ -8,6 +8,8 @@ import {
   updateProfileClass as backendUpdateProfileClass,
   createModelClass as backendCreateModelClass,
   createProfileClass as backendCreateProfileClass,
+  deleteModelClass as backendDeleteModelClass,
+  deleteProfileClass as backendDeleteProfileClass,
   listModelClassesSummary as backendListModelClassesSummary,
   listProfileClassesSummary as backendListProfileClassesSummary,
 } from "../backend/class-backend-service.js";
@@ -34,6 +36,32 @@ export async function createProfileClass(profileId, packageId, payload) {
   if (!profileId) throw new Error("Profile ID is required");
   if (!packageId) throw new Error("Package ID is required");
   return backendCreateProfileClass(String(profileId), String(packageId), payload);
+}
+
+/**
+ * Delete a class from a model graph.
+ *
+ * @param {string} modelId
+ * @param {string} classId
+ * @returns {Promise<object>} Full exported project
+ */
+export async function deleteModelClass(modelId, classId) {
+  if (!modelId) throw new Error("Model ID is required");
+  if (!classId) throw new Error("Class ID is required");
+  return backendDeleteModelClass(String(modelId), String(classId));
+}
+
+/**
+ * Delete a class from a profile graph.
+ *
+ * @param {string} profileId
+ * @param {string} classId
+ * @returns {Promise<object>} Full exported project
+ */
+export async function deleteProfileClass(profileId, classId) {
+  if (!profileId) throw new Error("Profile ID is required");
+  if (!classId) throw new Error("Class ID is required");
+  return backendDeleteProfileClass(String(profileId), String(classId));
 }
 
 export async function listModelClassesSummary(modelId, { filters = {} } = {}) {

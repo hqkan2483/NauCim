@@ -41,6 +41,36 @@ export async function createProfileClass(profileId, packageId, payload) {
   );
 }
 
+/**
+ * Delete a class from a model graph and return full updated project.
+ *
+ * @param {string} modelId
+ * @param {string} classId
+ * @returns {Promise<object>} Full exported project
+ */
+export async function deleteModelClass(modelId, classId) {
+  return apiClient.del(
+    `/api/models/${encodeURIComponent(String(modelId))}/classes/${encodeURIComponent(
+      String(classId)
+    )}`
+  );
+}
+
+/**
+ * Delete a class from a profile graph and return full updated project.
+ *
+ * @param {string} profileId
+ * @param {string} classId
+ * @returns {Promise<object>} Full exported project
+ */
+export async function deleteProfileClass(profileId, classId) {
+  return apiClient.del(
+    `/api/profiles/${encodeURIComponent(String(profileId))}/classes/${encodeURIComponent(
+      String(classId)
+    )}`
+  );
+}
+
 // Lightweight lookup lists for data type picker
 export async function listModelClassesSummary(modelId, { filters = {} } = {}) {
   const exclude = Array.isArray(filters?.excludeStereotypes) ? filters.excludeStereotypes : [];

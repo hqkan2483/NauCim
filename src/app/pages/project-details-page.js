@@ -79,12 +79,16 @@ import {
   updateProfileClass as updateProfileClassInBackend,
   createModelClass as createModelClassInBackend,
   createProfileClass as createProfileClassInBackend,
+  deleteModelClass as deleteModelClassInBackend,
+  deleteProfileClass as deleteProfileClassInBackend,
   invalidateModelClassesSummary,
   invalidateProfileClassesSummary,
 } from "../../services/class-service.js";
 import {
   createModelDiagram as createModelDiagramInBackend,
   createProfileDiagram as createProfileDiagramInBackend,
+  deleteModelDiagram as deleteModelDiagramInBackend,
+  deleteProfileDiagram as deleteProfileDiagramInBackend,
 } from "../../services/diagram-service.js";
 import { 
   updateGeneralizationLink as updateGeneralizationLinkInBackend,
@@ -1157,15 +1161,15 @@ function bindEvents() {
       onViewProperties: async () => {
         showToast("Просмотр свойств класса — в разработке", { type: "info" });
       },
-      onDeleteClass: async () => {
-        showToast("Удаление класса — в разработке", { type: "info" });
+      onDeleteClass: async (ctx) => {
+        await handleDeleteClass(ctx?.classId || "");
       },
     });
 
     // Right-click context menu on diagram nodes.
     initDiagramTreeContextMenu(projectStructureEl, {
-      onDeleteDiagram: async () => {
-        showToast("Удаление диаграммы — в разработке", { type: "info" });
+      onDeleteDiagram: async (ctx) => {
+        await handleDeleteDiagram(ctx?.diagramId || "", ctx);
       },
     });
   }
@@ -2734,6 +2738,85 @@ async function handleSaveClass(form) {
   }
 }
 
+/**
+ * Delete a class and refresh tree + show its parent package.
+ *
+ * @param {string} classId - Class ID to delete
+ */
+async function handleDeleteClass(classId) {
+  if (!classId) return;
+  if (!confirm("Удалить класс?")) return;
+
+  try {
+    const project = await getProjectById(currentProjectId);
+    if (!project) return;
+
+    const found = findClassWithContext(project, String(classId));
+    if (!found?.cls) return;
+
+    const context = found.context;
+    const modelId = found.modelId || "";
+    const profileId = found.profileId || "";
+    const packageId = String(found.packageId || found.cls?.packageId || "");
+
+    if (!packageId) {
+      showToast("Не удалось определить пакет класса", { type: "error" });
+      return;
+    }
+
+    const updatedProject =
+      context === "model"
+        ? await deleteModelClassInBackend(currentProjectId, modelId, classId)
+        : await deleteProfileClassInBackend(currentProjectId, profileId, classId);
+
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    selectedTreeSnapshot = {
+      type: "package",
+      packageId,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
+      classId: null,
+      diagramId: null,
+    };
+
+    await renderProjectTreeSidebar(updatedProject);
+    const chain = findPackageParentChain(
+      updatedProject,
+      packageId,
+      modelId,
+      profileId,
+      context
+    );
+    expandTreePath(chain);
+
+    requestAnimationFrame(async () => {
+      const selector =
+        context === "model"
+          ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-model-id="${cssEscape(modelId)}"]`
+          : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+      const pkgEl = document.querySelector(selector);
+      if (pkgEl) {
+        setSelectedTreeItem(pkgEl);
+        pkgEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        await handleSelectPackage(packageId, modelId, profileId);
+      }
+    });
+
+    showToast("Класс удалён", { type: "success" });
+
+    if (context === "model") invalidateModelClassesSummary(modelId);
+    if (context === "profile") invalidateProfileClassesSummary(profileId);
+  } catch (error) {
+    console.error("[handleDeleteClass] Failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка удаления";
+    showToast(`Ошибка удаления класса: ${msg}`, { type: "error" });
+  }
+}
+
 function handleCancelClassEdit() {
   if (!originalItemData) return;
   if (!confirm("Отменить изменения? Несохранённые данные будут потеряны."))
@@ -3041,6 +3124,86 @@ function handleDeleteLiteral(literalId) {
 }
 
 // ============================================================
+// DIAGRAM HANDLERS
+// ============================================================
+/**
+ * Delete a diagram and refresh tree + show its parent package.
+ *
+ * @param {string} diagramId - Diagram ID to delete
+ * @param {object} [ctx] - Optional diagram context from tree
+ */
+async function handleDeleteDiagram(diagramId, ctx = {}) {
+  if (!diagramId) return;
+  if (!confirm("Удалить диаграмму?")) return;
+
+  try {
+    const project = await getProjectById(currentProjectId);
+    if (!project) return;
+
+    const context = ctx?.modelId ? "model" : ctx?.profileId ? "profile" : null;
+    const modelId = ctx?.modelId || "";
+    const profileId = ctx?.profileId || "";
+
+    const found = findDiagramWithContext(project, String(diagramId), modelId, profileId, context);
+    if (!found?.diagram) return;
+
+    const packageId = String(found.packageId || "");
+    if (!packageId) {
+      showToast("Не удалось определить пакет диаграммы", { type: "error" });
+      return;
+    }
+
+    const updatedProject =
+      found.context === "model"
+        ? await deleteModelDiagramInBackend(currentProjectId, found.modelId, diagramId)
+        : await deleteProfileDiagramInBackend(currentProjectId, found.profileId, diagramId);
+
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    selectedTreeSnapshot = {
+      type: "package",
+      packageId,
+      modelId: found.context === "model" ? found.modelId : null,
+      profileId: found.context === "profile" ? found.profileId : null,
+      classId: null,
+      diagramId: null,
+    };
+
+    await renderProjectTreeSidebar(updatedProject);
+    const chain = findPackageParentChain(
+      updatedProject,
+      packageId,
+      found.modelId,
+      found.profileId,
+      found.context
+    );
+    expandTreePath(chain);
+
+    requestAnimationFrame(async () => {
+      const selector =
+        found.context === "model"
+          ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-model-id="${cssEscape(found.modelId)}"]`
+          : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-profile-id="${cssEscape(found.profileId)}"]`;
+
+      const pkgEl = document.querySelector(selector);
+      if (pkgEl) {
+        setSelectedTreeItem(pkgEl);
+        pkgEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        await handleSelectPackage(packageId, found.modelId, found.profileId);
+      }
+    });
+
+    showToast("Диаграмма удалена", { type: "success" });
+  } catch (error) {
+    console.error("[handleDeleteDiagram] Failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка удаления";
+    showToast(`Ошибка удаления диаграммы: ${msg}`, { type: "error" });
+  }
+}
+
+// ============================================================
 // FIND HELPERS
 // ============================================================
 function findPackageById(
@@ -3163,12 +3326,124 @@ function findDiagramById(
   return null;
 }
 
+/**
+ * Find a diagram in the project tree and return its context and parent package.
+ *
+ * @param {object} project - Full project object
+ * @param {string} diagramId - Diagram ID to find
+ * @param {string} [modelId]
+ * @param {string} [profileId]
+ * @param {'model'|'profile'|null} [context]
+ * @returns {null|{diagram: object, context: 'model'|'profile', modelId: string|null, profileId: string|null, packageId: string|null}}
+ */
+function findDiagramWithContext(
+  project,
+  diagramId,
+  modelId = "",
+  profileId = "",
+  context = null
+) {
+  const searchInPackages = (packages) => {
+    for (const pkg of packages) {
+      const diagram = pkg.diagrams?.find((x) => x.id === diagramId);
+      if (diagram) return { diagram, packageId: pkg.id || null };
+
+      if (pkg.subPackages) {
+        const found = searchInPackages(pkg.subPackages);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const useModel = context === "model" || (modelId && modelId !== "");
+  const useProfile = context === "profile" || (profileId && profileId !== "");
+
+  if (useModel && project.models) {
+    const model = project.models.find((m) => m.id === modelId) || null;
+    if (model?.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(model.rootPackages[0].packages);
+      if (found?.diagram) {
+        return {
+          diagram: found.diagram,
+          context: "model",
+          modelId: model.id,
+          profileId: null,
+          packageId: found.packageId ?? null,
+        };
+      }
+    }
+  }
+
+  if (useProfile && project.profiles) {
+    const profile = project.profiles.find((p) => p.id === profileId) || null;
+    if (profile?.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(profile.rootPackages[0].packages);
+      if (found?.diagram) {
+        return {
+          diagram: found.diagram,
+          context: "profile",
+          modelId: null,
+          profileId: profile.id,
+          packageId: found.packageId ?? null,
+        };
+      }
+    }
+  }
+
+  // Fallback: search all models/profiles if context not provided.
+  if (!useModel && !useProfile) {
+    if (project.models) {
+      for (const model of project.models) {
+        if (model.rootPackages?.[0]?.packages) {
+          const found = searchInPackages(model.rootPackages[0].packages);
+          if (found?.diagram) {
+            return {
+              diagram: found.diagram,
+              context: "model",
+              modelId: model.id,
+              profileId: null,
+              packageId: found.packageId ?? null,
+            };
+          }
+        }
+      }
+    }
+
+    if (project.profiles) {
+      for (const profile of project.profiles) {
+        if (profile.rootPackages?.[0]?.packages) {
+          const found = searchInPackages(profile.rootPackages[0].packages);
+          if (found?.diagram) {
+            return {
+              diagram: found.diagram,
+              context: "profile",
+              modelId: null,
+              profileId: profile.id,
+              packageId: found.packageId ?? null,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Find a class in the project tree and return its context and parent package.
+ *
+ * @param {object} project - Full project object
+ * @param {string} classId - Class ID to find
+ * @returns {null|{cls: object, context: 'model'|'profile', modelId: string|null, profileId: string|null, packageId: string|null}}
+ */
 function findClassWithContext(project, classId) {
   const searchInPackages = (packages) => {
     for (const pkg of packages) {
       if (pkg.classes) {
         const cls = pkg.classes.find((c) => c.id === classId);
-        if (cls) return cls;
+        if (cls) return { cls, packageId: pkg.id || null };
       }
       if (pkg.subPackages) {
         const found = searchInPackages(pkg.subPackages);
@@ -3181,13 +3456,14 @@ function findClassWithContext(project, classId) {
   if (project.models) {
     for (const model of project.models) {
       if (model.rootPackages?.[0]?.packages) {
-        const cls = searchInPackages(model.rootPackages[0].packages);
-        if (cls) {
+        const found = searchInPackages(model.rootPackages[0].packages);
+        if (found?.cls) {
           return {
-            cls,
+            cls: found.cls,
             context: "model",
             modelId: model.id,
             profileId: null,
+            packageId: found.packageId ?? null,
           };
         }
       }
@@ -3197,13 +3473,14 @@ function findClassWithContext(project, classId) {
   if (project.profiles) {
     for (const profile of project.profiles) {
       if (profile.rootPackages?.[0]?.packages) {
-        const cls = searchInPackages(profile.rootPackages[0].packages);
-        if (cls) {
+        const found = searchInPackages(profile.rootPackages[0].packages);
+        if (found?.cls) {
           return {
-            cls,
+            cls: found.cls,
             context: "profile",
             modelId: null,
             profileId: profile.id,
+            packageId: found.packageId ?? null,
           };
         }
       }
