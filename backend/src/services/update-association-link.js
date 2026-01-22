@@ -127,52 +127,67 @@ export async function updateAssociationLinkAndExportProject({
  * @param {Array} args.linkEnd - Array of 2 linkEnd objects
  */
 export async function validateUniqueAssociationNames({ scope, linkId, linkEnd }) {
+  // For each class participating in the link, the name of the *other* end must be unique
+  // among all associations of that class.
   for (const end of linkEnd) {
     const classId = String(end?.linkEndClassId || "");
-    const endName = String(end?.linkEndName || "").trim();
-    
-    if (!endName) continue; // Empty names are allowed, skip validation
-    
-    if (scope.kind === "model") {
-      // Check if any other association end on this class has the same name
-      const conflictingEnd = await prisma.associationLinkEndModel.findFirst({
-        where: {
-          modelId: scope.modelId,
-          linkEndClassId: classId,
-          linkEndName: endName,
-          associationLinkId: { not: linkId }, // Exclude current link
-        },
-        select: { linkEndId: true, linkEndName: true },
-      });
-      
-      if (conflictingEnd) {
+    const other = linkEnd.find((e) => e !== end) || null;
+    const otherName = String(other?.linkEndName || "").trim();
+    if (!classId || !otherName) continue;
+
+    const links = await fetchAssociationsForClass(scope, classId);
+    for (const link of links) {
+      if (String(link.id) === String(linkId || "")) continue;
+
+      const otherEndName = getOtherEndName(link.linkEnd || [], classId);
+      if (!otherEndName) continue;
+
+      if (otherEndName === otherName) {
         const err = new Error(
-          `Association name "${endName}" is already used in this class. Each association must have a unique name within a class.`
-        );
-        err.status = 409; // Conflict
-        throw err;
-      }
-    } else {
-      // Profile
-      const conflictingEnd = await prisma.associationLinkEndProfile.findFirst({
-        where: {
-          profileId: scope.profileId,
-          linkEndClassId: classId,
-          linkEndName: endName,
-          associationLinkId: { not: linkId },
-        },
-        select: { linkEndId: true, linkEndName: true },
-      });
-      
-      if (conflictingEnd) {
-        const err = new Error(
-          `Association name "${endName}" is already used in this class. Each association must have a unique name within a class.`
+          `Association for this class already uses other-end name "${otherName}". Names of opposite ends must be unique per class.`
         );
         err.status = 409;
         throw err;
       }
     }
   }
+}
+
+async function fetchAssociationsForClass(scope, classId) {
+  if (scope.kind === "model") {
+    return prisma.associationLinkModel.findMany({
+      where: {
+        modelId: scope.modelId,
+        linkEnd: {
+          some: { linkEndClassId: classId },
+        },
+      },
+      select: {
+        id: true,
+        linkEnd: { select: { linkEndId: true, linkEndClassId: true, linkEndName: true } },
+      },
+    });
+  }
+
+  return prisma.associationLinkProfile.findMany({
+    where: {
+      profileId: scope.profileId,
+      linkEnd: {
+        some: { linkEndClassId: classId },
+      },
+    },
+    select: {
+      id: true,
+      linkEnd: { select: { linkEndId: true, linkEndClassId: true, linkEndName: true } },
+    },
+  });
+}
+
+function getOtherEndName(ends, classId) {
+  const endArr = Array.isArray(ends) ? ends : [];
+  const selfEnd = endArr.find((e) => String(e?.linkEndClassId || "") === String(classId));
+  const otherEnd = endArr.find((e) => e !== selfEnd) || null;
+  return String(otherEnd?.linkEndName || "").trim();
 }
 
 /**

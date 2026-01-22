@@ -2,6 +2,8 @@ import { closeModal, openModal } from "../modal.js";
 import { initDataTypePickerModal } from "./data-type-picker-modal.js";
 import { bindClassPickerInput } from "./class-picker-input.js";
 import { showToast } from "./toast.js";
+import { getProjectById } from "../../services/project-service.js";
+import { validateUniqueAssociationNames as validateAssocNamesFrontend } from "../../services/link-service.js";
 
 let currentProjectId = null;
 let editingAssociationLinkId = null;
@@ -11,6 +13,7 @@ let onUpdateCallback = null;
 let currentLinkEndIds = { src: null, target: null }; // Store linkEndIds
 let onCreateCallback = null;
 let isCreatingAssociation = false;
+let validationInProgress = false;
 
 /**
  * Initialize the Association Link modal.
@@ -54,6 +57,20 @@ function initAssociationLinkModal(projectId, callbacks = {}) {
     saveBtn.addEventListener("click", async (e) => {
       e.preventDefault();
       await saveAssociationLink();
+    });
+  }
+
+  const targetRoleInput = document.getElementById("association-target-role");
+  if (targetRoleInput) {
+    targetRoleInput.addEventListener("input", () => {
+      validateAssociationNameUniqueness().catch((err) => console.error("[validateAssociationNameUniqueness]", err));
+    });
+  }
+
+  const targetClassIdInput = document.getElementById("association-targetClassId");
+  if (targetClassIdInput) {
+    targetClassIdInput.addEventListener("change", () => {
+      validateAssociationNameUniqueness().catch((err) => console.error("[validateAssociationNameUniqueness]", err));
     });
   }
 }
@@ -126,9 +143,13 @@ async function openEditAssociationLinkModal(associationLink, classId, ctx = {}) 
   
   // Populate target end fields
   populateLinkEnd("target", targetEnd);
-
   const modal = document.getElementById("association-link-modal");
   if (modal) openModal(modal);
+
+  // Запускаем проверку уже после открытия, чтобы ошибки сразу были видны
+  requestAnimationFrame(() => {
+    validateAssociationNameUniqueness().catch((err) => console.error("[validateAssociationNameUniqueness]", err));
+  });
 }
 
 async function openCreateAssociationLinkModal(classId, ctx = {}) {
@@ -167,6 +188,11 @@ async function openCreateAssociationLinkModal(classId, ctx = {}) {
 
   const modal = document.getElementById("association-link-modal");
   if (modal) openModal(modal);
+
+  // Проверяем сразу после отображения модалки
+  requestAnimationFrame(() => {
+    validateAssociationNameUniqueness().catch((err) => console.error("[validateAssociationNameUniqueness]", err));
+  });
 }
 
 /**
@@ -235,6 +261,9 @@ async function saveAssociationLink() {
   }
 
   try {
+    const validationOk = await validateAssociationNameUniqueness();
+    if (!validationOk) return;
+
     // Collect main link data
     const stereotype = document.getElementById("association-link-stereotype")?.value || "";
     const documentation = document.getElementById("association-link-documentation")?.value || "";
@@ -287,6 +316,75 @@ async function saveAssociationLink() {
     const msg = error?.message ? String(error.message) : "Ошибка сохранения";
     showToast(`Ошибка сохранения связи: ${msg}`, { type: "error" });
   }
+}
+
+async function validateAssociationNameUniqueness() {
+  if (validationInProgress) return true;
+  validationInProgress = true;
+
+  const errorEl = document.getElementById("association-link-validation-error");
+  const saveBtn = document.getElementById("save-association-btn");
+  const clearError = () => {
+    if (errorEl) {
+      errorEl.style.display = "none";
+      errorEl.textContent = "";
+      errorEl.setAttribute("aria-hidden", "true");
+    }
+    if (saveBtn) saveBtn.disabled = false;
+  };
+
+  clearError();
+
+  try {
+    const project = await getProjectById(currentProjectId);
+    if (!project) return true;
+
+    const payload = buildCurrentPayloadForValidation();
+    if (!payload) return true;
+
+    await validateAssocNamesFrontend({
+      linkId: editingAssociationLinkId || "",
+      payload,
+      project,
+    });
+
+    return true;
+  } catch (error) {
+    const msg = error?.message ? String(error.message) : "Имя узла уже используется";
+    if (errorEl) {
+      errorEl.textContent = msg;
+      errorEl.style.display = "block";
+      errorEl.setAttribute("aria-hidden", "false");
+    } else {
+      showToast(msg, { type: "error" });
+    }
+    if (saveBtn) saveBtn.disabled = true;
+    return false;
+  } finally {
+    validationInProgress = false;
+  }
+}
+
+function buildCurrentPayloadForValidation() {
+  const stereotype = document.getElementById("association-link-stereotype")?.value || "";
+  const documentation = document.getElementById("association-link-documentation")?.value || "";
+  const documentationRu = document.getElementById("association-link-documentationRu")?.value || "";
+  const details = document.getElementById("association-link-details")?.value || "";
+
+  const srcEnd = collectLinkEnd("source", currentLinkEndIds.src || undefined);
+  const targetEnd = collectLinkEnd("target", currentLinkEndIds.target || undefined);
+
+  if (!srcEnd.linkEndClassId || !targetEnd.linkEndClassId) return null;
+
+  return {
+    ...(editingAssociationLinkId ? { linkId: editingAssociationLinkId } : {}),
+    linkType: "Association",
+    documentation: documentation || null,
+    documentationRu: documentationRu || null,
+    details: details || null,
+    stereotype,
+    linkEnd: [srcEnd, targetEnd],
+  };
 }
 
 export { initAssociationLinkModal, openEditAssociationLinkModal, openCreateAssociationLinkModal };

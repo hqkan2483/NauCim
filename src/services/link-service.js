@@ -60,10 +60,8 @@ export async function createGeneralizationLink(args) {
 export async function updateAssociationLink(args) {
   if (!args?.linkId) throw new Error("linkId is required");
   if (!args?.payload) throw new Error("payload is required");
-  
-  // Frontend validation for unique association names
+  // Frontend validation for unique association names (other-end name uniqueness)
   validateUniqueAssociationNames(args);
-  
   return await repoUpdateAssociationLink(args);
 }
 
@@ -85,37 +83,33 @@ export async function createAssociationLink(args) {
  * @param {object} args.payload - Association link payload
  * @param {object} args.project - Current project data
  */
-function validateUniqueAssociationNames({ linkId, payload, project }) {
+export function validateUniqueAssociationNames({ linkId, payload, project }) {
   if (!project || !payload?.linkEnd) return;
-  
+
   const linkEnd = Array.isArray(payload.linkEnd) ? payload.linkEnd : [];
   if (linkEnd.length !== 2) {
     throw new Error("Association link must have exactly 2 linkEnd entries");
   }
-  
+
+  // For each class in the link, the name of the opposite end must be unique across its associations
   for (const end of linkEnd) {
     const classId = String(end?.linkEndClassId || "");
-    const endName = String(end?.linkEndName || "").trim();
-    
-    if (!endName || !classId) continue; // Skip empty names
-    
-    // Find all association links involving this class
+    const other = linkEnd.find((e) => e !== end) || null;
+    const otherName = String(other?.linkEndName || "").trim();
+
+    if (!classId || !otherName) continue;
+
     const allLinks = findAllAssociationLinksForClass(project, classId);
-    
-    // Check if any other link has the same name
     for (const link of allLinks) {
       if (linkId && String(link.linkId) === String(linkId)) continue; // Skip current link when editing
-      
-      const linkEnds = Array.isArray(link.linkEnd) ? link.linkEnd : [];
-      for (const otherEnd of linkEnds) {
-        const otherClassId = String(otherEnd?.linkEndClassId || "");
-        const otherEndName = String(otherEnd?.linkEndName || "").trim();
-        
-        if (otherClassId === classId && otherEndName === endName) {
-          throw new Error(
-            `Association name "${endName}" is already used in this class. Each association must have a unique name within a class.`
-          );
-        }
+
+      const otherEndName = getOtherEndNameFromLink(link, classId);
+      if (!otherEndName) continue;
+
+      if (otherEndName === otherName) {
+        throw new Error(
+          `Ассоциация для этого класса уже использует имя узла "${otherName}". Имена противоположных узлов должны быть уникальны.`
+        );
       }
     }
   }
@@ -130,34 +124,121 @@ function validateUniqueAssociationNames({ linkId, payload, project }) {
  */
 function findAllAssociationLinksForClass(project, classId) {
   const links = [];
-  
-  // Search in models
+
+  // 1) Модели/профили, где ассоциации лежат в корневых пакетах (associationList)
+  const collectFromRootPackages = (rootPackages) => {
+    if (!Array.isArray(rootPackages)) return;
+    const rp = rootPackages[0];
+    const assocList = Array.isArray(rp?.associationList) ? rp.associationList : [];
+    for (const link of assocList) {
+      const linkEnds = Array.isArray(link?.linkEnd) ? link.linkEnd : [];
+      const hasClass = linkEnds.some((end) => String(end?.linkEndClassId || "") === classId);
+      if (hasClass) links.push(link);
+    }
+  };
+
+  if (Array.isArray(project?.models)) {
+    for (const model of project.models) {
+      collectFromRootPackages(model?.rootPackages);
+    }
+  }
+
+  if (Array.isArray(project?.profiles)) {
+    for (const profile of project.profiles) {
+      collectFromRootPackages(profile?.rootPackages);
+    }
+  }
+
+  // 2) Модели/профили, где ассоциации лежат отдельно в associationLinks
   if (Array.isArray(project?.models)) {
     for (const model of project.models) {
       if (Array.isArray(model?.associationLinks)) {
         for (const link of model.associationLinks) {
           const linkEnds = Array.isArray(link.linkEnd) ? link.linkEnd : [];
-          const hasClass = linkEnds.some(end => String(end?.linkEndClassId || "") === classId);
+          const hasClass = linkEnds.some((end) => String(end?.linkEndClassId || "") === classId);
           if (hasClass) links.push(link);
         }
       }
     }
   }
-  
-  // Search in profiles
+
   if (Array.isArray(project?.profiles)) {
     for (const profile of project.profiles) {
       if (Array.isArray(profile?.associationLinks)) {
         for (const link of profile.associationLinks) {
           const linkEnds = Array.isArray(link.linkEnd) ? link.linkEnd : [];
-          const hasClass = linkEnds.some(end => String(end?.linkEndClassId || "") === classId);
+          const hasClass = linkEnds.some((end) => String(end?.linkEndClassId || "") === classId);
           if (hasClass) links.push(link);
         }
       }
     }
   }
-  
+
+  // 3) Ассоциации, встроенные в классы (export содержит cls.links)
+  const classLinks = collectClassLinks(project, classId);
+  links.push(...classLinks);
+
   return links;
+}
+
+function collectClassLinks(project, classId) {
+  const result = [];
+
+  const processPackages = (packages) => {
+    if (!Array.isArray(packages)) return;
+    for (const pkg of packages) {
+      if (Array.isArray(pkg?.classes)) {
+        for (const cls of pkg.classes) {
+          if (String(cls?.id || "") !== classId) continue;
+          if (Array.isArray(cls.links)) {
+            for (const link of cls.links) {
+              if (link?.relationKind === "Association") {
+                result.push({
+                  linkId: link.linkId,
+                  targetClassRoleName: link.targetClassRoleName ?? link.srcClassRoleName ?? "",
+                  linkEnd: [
+                    { linkEndClassId: cls.id, linkEndName: link.srcClassRoleName ?? "" },
+                    { linkEndClassId: link.targetClassId ?? "", linkEndName: link.targetClassRoleName ?? "" },
+                  ],
+                });
+              }
+            }
+          }
+        }
+      }
+
+      if (Array.isArray(pkg?.subPackages) && pkg.subPackages.length) {
+        processPackages(pkg.subPackages);
+      }
+    }
+  };
+
+  if (Array.isArray(project?.models)) {
+    for (const model of project.models) {
+      const root = model?.rootPackages || [];
+      processPackages(root);
+    }
+  }
+
+  if (Array.isArray(project?.profiles)) {
+    for (const profile of project.profiles) {
+      const root = profile?.rootPackages || [];
+      processPackages(root);
+    }
+  }
+
+  return result;
+}
+
+function getOtherEndNameFromLink(link, classId) {
+  if (link?.targetClassRoleName !== undefined) {
+    return String(link.targetClassRoleName || "").trim();
+  }
+
+  const ends = Array.isArray(link?.linkEnd) ? link.linkEnd : [];
+  const selfEnd = ends.find((e) => String(e?.linkEndClassId || "") === String(classId));
+  const otherEnd = ends.find((e) => e !== selfEnd) || null;
+  return String(otherEnd?.linkEndName || "").trim();
 }
 
 /**
