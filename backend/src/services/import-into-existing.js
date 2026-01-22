@@ -264,6 +264,8 @@ export async function importProfileRootPackages({ profileId, path: filePath = nu
     throw err;
   }
 
+  normalized = normalized.map(liftLinksFromPackagesToRootPackage);
+
   await prisma.$transaction(async (tx) => {
     await clearProfileGraph(tx, id);
 

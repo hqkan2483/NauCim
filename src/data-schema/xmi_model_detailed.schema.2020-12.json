@@ -8,7 +8,9 @@
     "totalElements",
     "totalAttributes",
     "totalLinks",
-    "rootPackages"
+    "packages",
+    "generalizationsList",
+    "associationList"
   ],
   "properties": {
     "totalPackages": {
@@ -27,10 +29,22 @@
       "type": "integer",
       "minimum": 0
     },
-    "rootPackages": {
+    "packages": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/package"
+      }
+    },
+    "generalizationsList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/generalizationsListEntry"
+      }
+    },
+    "associationList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/associationListEntry"
       }
     }
   },
@@ -42,7 +56,6 @@
         "linkEndId",
         "linkEndName",
         "linkEndClassId",
-        "linkEndClassName",
         "multiplicity",
         "documentation",
         "documentationRu",
@@ -60,12 +73,6 @@
           "type": "string"
         },
         "linkEndClassId": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "linkEndClassName": {
           "type": [
             "string",
             "null"
@@ -195,17 +202,10 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "classId",
-            "className"
+            "classId"
           ],
           "properties": {
             "classId": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "className": {
               "type": [
                 "string",
                 "null"
@@ -217,17 +217,10 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "classId",
-            "className"
+            "classId"
           ],
           "properties": {
             "classId": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "className": {
               "type": [
                 "string",
                 "null"
@@ -248,8 +241,8 @@
         "documentationRu",
         "details",
         "elementCount",
-        "elements",
-        "children"
+        "classes",
+        "subPackages"
       ],
       "properties": {
         "id": {
@@ -275,37 +268,25 @@
           ]
         },
         "details": {
-         "type": [
-          "string",
-          "null"
-        ]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "elementCount": {
           "type": "integer",
           "minimum": 0
         },
-        "elements": {
+        "classes": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/element"
+            "$ref": "#/$defs/class"
           }
         },
-        "children": {
+        "subPackages": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/package"
-          }
-        },
-        "generalizationsList": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/generalizationsListEntry"
-          }
-        },
-        "associationList": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/associationListEntry"
           }
         }
       }
@@ -359,7 +340,7 @@
         }
       }
     },
-    "element": {
+    "class": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -370,16 +351,9 @@
         "documentation",
         "documentationRu",
         "details",
-        "visibility",
         "isAbstract",
-        "attributeCount",
-        "linkCount",
         "attributes",
-        "links",
-        "literals",
-        "profileRelations",
-        "modelId",
-        "modelItemId"
+        "literals"
       ],
       "properties": {
         "id": {
@@ -413,19 +387,8 @@
             "null"
           ]
         },
-        "visibility": {
-          "type": "string"
-        },
         "isAbstract": {
           "type": "boolean"
-        },
-        "attributeCount": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "linkCount": {
-          "type": "integer",
-          "minimum": 0
         },
         "attributes": {
           "type": "array",
@@ -433,35 +396,11 @@
             "$ref": "#/$defs/attribute"
           }
         },
-        "links": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/link"
-          }
-        },
         "literals": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/enumLiteral"
           }
-        },
-        "profileRelations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/profileRelation"
-          }
-        },
-        "modelId": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "modelItemId": {
-          "type": [
-            "string",
-            "null"
-          ]
         }
       }
     },
@@ -471,13 +410,12 @@
       "required": [
         "name",
         "id",
-        "type",
+        "dataTypeId",
         "stereotype",
         "documentation",
         "documentationRu",
         "details",
         "multiplicity",
-        "visibility",
         "initialValue"
       ],
       "properties": {
@@ -490,7 +428,7 @@
             "null"
           ]
         },
-        "type": {
+        "dataTypeId": {
           "type": [
             "string",
             "null"
@@ -520,72 +458,7 @@
         "multiplicity": {
           "type": "string"
         },
-        "visibility": {
-          "type": "string"
-        },
         "initialValue": {
-          "type": "string"
-        }
-      }
-    },
-    "link": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "linkId",
-        "relationKind",
-        "role",
-        "targetClassId",
-        "targetClassName",
-        "targetClassRoleName",
-        "srcClassRoleName",
-        "targetDescription",
-        "multiplicity"
-      ],
-      "properties": {
-        "linkId": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "relationKind": {
-          "type": "string"
-        },
-        "role": {
-          "type": "string"
-        },
-        "targetClassId": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "targetClassName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "targetClassRoleName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "srcClassRoleName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "targetDescription": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "multiplicity": {
           "type": "string"
         }
       }

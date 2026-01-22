@@ -59,15 +59,15 @@ def main() -> int:
     parser.add_argument(
         "instance",
         nargs="?",
-        default="utils/222.json",
-        help="Path to JSON instance to validate (default: utils/222.json)",
+        default="models-data/focl-import-model.json",
+        help="Path to JSON instance to validate (default: models-data/focl-import-model.json)",
     )
     parser.add_argument(
         "schemas",
         nargs="*",
         default=[
-            "data-schema/xmi_model_detailed.schema.draft-07.json",
-            "data-schema/xmi_model_detailed.schema.2020-12.json",
+            "src/data-schema/xmi_model_detailed.schema.draft-07.json",
+            "src/data-schema/xmi_model_detailed.schema.2020-12.json",
         ],
         help=(
             "One or more schema paths. Defaults to both project schemas: "

@@ -46,8 +46,12 @@ export async function importModelGraph(tx, modelId, rp) {
 
   const topPackages = Array.isArray(rp?.packages) ? rp.packages : [];
   for (const pkg of topPackages) {
-    await importPackageTreeModel(tx, id, null, pkg);
+    await importPackageTreeModel(tx, id, null, pkg, { skipAttributes: true });
   }
+
+  // Import attributes after all classes exist, because AttributeModel.dataTypeId
+  // references ClassModel(id, modelId) and may point to a class located in a later package.
+  await importAttributesModel(tx, id, rp);
 
   await importLinksModel(tx, id, rp);
 }
@@ -57,10 +61,114 @@ export async function importProfileGraph(tx, profileId, rp) {
 
   const topPackages = Array.isArray(rp?.packages) ? rp.packages : [];
   for (const pkg of topPackages) {
-    await importPackageTreeProfile(tx, id, null, pkg);
+    await importPackageTreeProfile(tx, id, null, pkg, { skipAttributes: true });
   }
 
+  // Same rationale as model import: attributes may reference datatype classes defined later.
+  await importAttributesProfile(tx, id, rp);
+
   await importLinksProfile(tx, id, rp);
+}
+
+function* walkPackages(topPackages) {
+  const stack = Array.isArray(topPackages) ? [...topPackages].reverse() : [];
+  while (stack.length) {
+    const pkg = stack.pop();
+    if (!pkg || typeof pkg !== "object") continue;
+    yield pkg;
+    const subPackages = Array.isArray(pkg.subPackages) ? pkg.subPackages : [];
+    for (let i = subPackages.length - 1; i >= 0; i--) {
+      stack.push(subPackages[i]);
+    }
+  }
+}
+
+async function importAttributesModel(tx, modelId, rp) {
+  const topPackages = Array.isArray(rp?.packages) ? rp.packages : [];
+
+  for (const pkg of walkPackages(topPackages)) {
+    const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
+    for (const cls of classes) {
+      const classId = toNonEmptyStr(cls?.id);
+      if (!classId) continue;
+
+      const attributes = Array.isArray(cls.attributes) ? cls.attributes : [];
+      for (const attr of attributes) {
+        const srcId = toNonEmptyStr(attr?.srcId) || toNonEmptyStr(attr?.id);
+        try {
+          await tx.attributeModel.create({
+            data: {
+              id: toNonEmptyStr(attr?.id) || newId("attr"),
+              srcId,
+              modelId,
+              classId,
+              name: String(attr?.name || ""),
+              dataTypeId: toNonEmptyStr(attr?.dataTypeId),
+              stereotype: attr?.stereotype ?? null,
+              multiplicity: attr?.multiplicity ?? null,
+              documentation: attr?.documentation ?? null,
+              documentationRu: attr?.documentationRu ?? null,
+              details: attr?.details ?? null,
+              initialValue: attr?.initialValue ?? null,
+              refModelId: attr?.refModelId ?? null,
+              refModelItemId: attr?.refModelItemId ?? null,
+            },
+          });
+        } catch (e) {
+          throw new Error(
+            `Failed to import model attribute: classId=${classId}, className=${String(cls?.name || "")}, attrId=${String(
+              attr?.id || ""
+            )}, attrName=${String(attr?.name || "")}, dataTypeId=${String(attr?.dataTypeId || "")}`,
+            { cause: e }
+          );
+        }
+      }
+    }
+  }
+}
+
+async function importAttributesProfile(tx, profileId, rp) {
+  const topPackages = Array.isArray(rp?.packages) ? rp.packages : [];
+
+  for (const pkg of walkPackages(topPackages)) {
+    const classes = Array.isArray(pkg.classes) ? pkg.classes : [];
+    for (const cls of classes) {
+      const classId = toNonEmptyStr(cls?.id);
+      if (!classId) continue;
+
+      const attributes = Array.isArray(cls.attributes) ? cls.attributes : [];
+      for (const attr of attributes) {
+        const srcId = toNonEmptyStr(attr?.srcId) || toNonEmptyStr(attr?.id);
+        try {
+          await tx.attributeProfile.create({
+            data: {
+              id: toNonEmptyStr(attr?.id) || newId("attr"),
+              srcId,
+              profileId,
+              classId,
+              name: String(attr?.name || ""),
+              dataTypeId: toNonEmptyStr(attr?.dataTypeId),
+              stereotype: attr?.stereotype ?? null,
+              multiplicity: attr?.multiplicity ?? null,
+              documentation: attr?.documentation ?? null,
+              documentationRu: attr?.documentationRu ?? null,
+              details: attr?.details ?? null,
+              initialValue: attr?.initialValue ?? null,
+              refModelId: attr?.refModelId ?? null,
+              refModelItemId: attr?.refModelItemId ?? null,
+            },
+          });
+        } catch (e) {
+          throw new Error(
+            `Failed to import profile attribute: classId=${classId}, className=${String(cls?.name || "")}, attrId=${String(
+              attr?.id || ""
+            )}, attrName=${String(attr?.name || "")}, dataTypeId=${String(attr?.dataTypeId || "")}`,
+            { cause: e }
+          );
+        }
+      }
+    }
+  }
 }
 
 async function importLinksModel(tx, modelId, rp) {
@@ -237,7 +345,7 @@ async function importLinksProfile(tx, profileId, rp) {
   }
 }
 
-async function importPackageTreeModel(tx, modelId, parentId, pkg) {
+async function importPackageTreeModel(tx, modelId, parentId, pkg, options = {}) {
   const srcId = toNonEmptyStr(pkg?.srcId) || toNonEmptyStr(pkg?.id);
   const pkgId = toNonEmptyStr(pkg?.id) || newId("pkg");
 
@@ -296,30 +404,6 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
       },
     });
 
-    const attributes = Array.isArray(cls.attributes) ? cls.attributes : [];
-    for (const attr of attributes) {
-      const srcId = toNonEmptyStr(attr?.srcId) || toNonEmptyStr(attr?.id);
-      await tx.attributeModel.create({
-        data: {
-          id: toNonEmptyStr(attr?.id) || newId("attr"),
-          srcId,
-          modelId,
-          classId,
-          name: String(attr.name || ""),
-          dataTypeId: toNonEmptyStr(attr?.dataTypeId),
-          stereotype: attr.stereotype ?? null,
-          multiplicity: attr.multiplicity ?? null,
-          documentation: attr.documentation ?? null,
-          documentationRu: attr.documentationRu ?? null,
-          details: attr.details ?? null,
-          initialValue: attr.initialValue ?? null,
-          refModelId: attr.refModelId ?? null,
-          refModelItemId: attr.refModelItemId ?? null,
-        },
-      });
-    }
-
-
     const literals = Array.isArray(cls.literals) ? cls.literals : [];
     for (const literal of literals) {
       const srcId = toNonEmptyStr(literal?.srcId) || toNonEmptyStr(literal?.id);
@@ -340,11 +424,11 @@ async function importPackageTreeModel(tx, modelId, parentId, pkg) {
 
   const subPackages = Array.isArray(pkg.subPackages) ? pkg.subPackages : [];
   for (const sp of subPackages) {
-    await importPackageTreeModel(tx, modelId, pkgId, sp);
+    await importPackageTreeModel(tx, modelId, pkgId, sp, options);
   }
 }
 
-async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
+async function importPackageTreeProfile(tx, profileId, parentId, pkg, options = {}) {
   const srcId = toNonEmptyStr(pkg?.srcId) || toNonEmptyStr(pkg?.id);
   const pkgId = toNonEmptyStr(pkg?.id) || newId("pkg");
 
@@ -403,30 +487,6 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
       },
     });
 
-    const attributes = Array.isArray(cls.attributes) ? cls.attributes : [];
-    for (const attr of attributes) {
-      const srcId = toNonEmptyStr(attr?.srcId) || toNonEmptyStr(attr?.id);
-      await tx.attributeProfile.create({
-        data: {
-          id: toNonEmptyStr(attr?.id) || newId("attr"),
-          srcId,
-          profileId,
-          classId,
-          name: String(attr.name || ""),
-          dataTypeId: toNonEmptyStr(attr?.dataTypeId),
-          stereotype: attr.stereotype ?? null,
-          multiplicity: attr.multiplicity ?? null,
-          documentation: attr.documentation ?? null,
-          documentationRu: attr.documentationRu ?? null,
-          details: attr.details ?? null,
-          initialValue: attr.initialValue ?? null,
-          refModelId: attr.refModelId ?? null,
-          refModelItemId: attr.refModelItemId ?? null,
-        },
-      });
-    }
-
-
     const literals = Array.isArray(cls.literals) ? cls.literals : [];
     for (const literal of literals) {
       const srcId = toNonEmptyStr(literal?.srcId) || toNonEmptyStr(literal?.id);
@@ -447,6 +507,6 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg) {
 
   const subPackages = Array.isArray(pkg.subPackages) ? pkg.subPackages : [];
   for (const sp of subPackages) {
-    await importPackageTreeProfile(tx, profileId, pkgId, sp);
+    await importPackageTreeProfile(tx, profileId, pkgId, sp, options);
   }
 }

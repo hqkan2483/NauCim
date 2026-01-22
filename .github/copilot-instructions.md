@@ -133,6 +133,14 @@ This document defines all data structures used in the application:
 
 Always refer to this document when working with data structures.
 
+### Import Formats (XMI → JSON)
+
+For the XMI import pipeline, the parser produces a dedicated JSON format that is validated by JSON Schema (2020-12). This format is documented here:
+
+- `docs/XMI_IMPORT_DATA_STRUCTURES.md` - XMI import JSON structures (based on `src/data-schema/xmi_model_detailed.schema.2020-12.json`)
+
+Note: the XMI import JSON format is an interchange/import format and does not have to match the canonical in-app contract 1:1.
+
 ## Development Conventions
 
 ### File Organization

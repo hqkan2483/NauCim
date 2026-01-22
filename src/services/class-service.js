@@ -3,6 +3,8 @@ import {
   updateProfileClass as repoUpdateProfileClass,
   createModelClass as repoCreateModelClass,
   createProfileClass as repoCreateProfileClass,
+  deleteModelClass as repoDeleteModelClass,
+  deleteProfileClass as repoDeleteProfileClass,
   listModelClassesSummary as repoListModelClassesSummary,
   listProfileClassesSummary as repoListProfileClassesSummary,
 } from "./repositories/class-repository.js";
@@ -138,7 +140,50 @@ async function createProfileClass(projectId, profileId, packageId, payload) {
   }
 }
 
+/**
+ * Delete a class from a model graph and return full updated project.
+ *
+ * @param {string} projectId
+ * @param {string} modelId
+ * @param {string} classId
+ * @returns {Promise<object|null>}
+ */
+async function deleteModelClass(projectId, modelId, classId) {
+  if (!projectId || !modelId || !classId) return null;
+  try {
+    return await repoDeleteModelClass(String(modelId), String(classId));
+  } catch (error) {
+    console.error(
+      `[deleteModelClass] Failed for model ${modelId}, class ${classId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+/**
+ * Delete a class from a profile graph and return full updated project.
+ *
+ * @param {string} projectId
+ * @param {string} profileId
+ * @param {string} classId
+ * @returns {Promise<object|null>}
+ */
+async function deleteProfileClass(projectId, profileId, classId) {
+  if (!projectId || !profileId || !classId) return null;
+  try {
+    return await repoDeleteProfileClass(String(profileId), String(classId));
+  } catch (error) {
+    console.error(
+      `[deleteProfileClass] Failed for profile ${profileId}, class ${classId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
 export { updateModelClass, updateProfileClass, createModelClass, createProfileClass };
+export { deleteModelClass, deleteProfileClass };
 
 export {
   listModelClassesSummary,

@@ -21,6 +21,7 @@ class Attribute:
     name: str
     attr_id: Optional[str] = None  # NEW in v3.12: XMI ID
     attribute_type: Optional[str] = None
+    data_type_id: Optional[str] = None
     description: Optional[str] = None
     stereotype: Optional[str] = None
     multiplicity: str = "1"
@@ -607,10 +608,12 @@ class XMIPackageParser:
                             default_value = child.get('default')
 
                             attr_type = None
+                            data_type_id = None
                             for type_elem in child:
                                 type_tag = type_elem.tag.split('}')[-1] if '}' in type_elem.tag else type_elem.tag
                                 if type_tag == 'type':
                                     type_ref = type_elem.get(f"{{{self.namespace['xmi']}}}idref")
+                                    data_type_id = type_ref
                                     if type_ref and type_ref in type_lookup:
                                         attr_type = type_lookup[type_ref]
                                     break
@@ -623,6 +626,7 @@ class XMIPackageParser:
                                 name=attr_name,
                             attr_id=attr_id,  # NEW in v3.12
                                 attribute_type=attr_type,
+                                data_type_id=data_type_id,
                                 description=description,
                                 multiplicity=multiplicity,
                                 visibility=visibility,
@@ -1014,13 +1018,12 @@ class XMIPackageParser:
             return {
                 'name': attr.name,
                 'id': attr.attr_id,  # NEW in v3.9
-                'type': attr.attribute_type,
+                'dataTypeId': attr.data_type_id,
                 'stereotype': attr.stereotype or "",  # NEW v3.12
                 'documentation': attr.description,
                 'documentationRu': "",
                 'details': "",
                 'multiplicity': attr.multiplicity,
-                'visibility': attr.visibility,
                 'initialValue': attr.initial_value,
             }
 
@@ -1036,11 +1039,9 @@ class XMIPackageParser:
                 'stereotype': gen.get('stereotype') or "",
                 'parent': {
                     'classId': parent.get('class_id'),
-                    'className': parent.get('class_name'),
                 },
                 'child': {
                     'classId': child.get('class_id'),
-                    'className': child.get('class_name'),
                 },
             }
 
@@ -1049,7 +1050,6 @@ class XMIPackageParser:
                 'linkEndId': end.get('link_end_id'),
                 'linkEndName': end.get('link_end_name') or "",
                 'linkEndClassId': end.get('link_end_class_id'),
-                'linkEndClassName': end.get('link_end_class_name'),
                 'multiplicity': end.get('multiplicity') or "1",
                 'documentation': end.get('documentation') or "",
                 'documentationRu': "",
@@ -1078,23 +1078,13 @@ class XMIPackageParser:
                 'documentation': elem.description,
                 'documentationRu': "",
                 'details': "",
-                'visibility': elem.visibility,
                 'isAbstract': elem.is_abstract,
-                'attributeCount': len(elem.attributes),
-                'linkCount': len(elem.links),
                 'attributes': [attribute_to_dict(attr) for attr in elem.attributes],
-                'links': [link_to_dict(link) for link in elem.links],
                 'literals': [literal_to_dict(lit) for lit in elem.literals],
-                # Added for NauCim schema compatibility (2020-12 + draft-07)
-                'profileRelations': [],
-                'modelId': None,
-                'modelItemId': None,
             }
 
         def package_to_dict(
             package: Package,
-            include_generalizations_list: bool = False,
-            include_associacion_list: bool = False,
         ) -> dict:
             data = {
                 'id': package.xmi_id,
@@ -1104,24 +1094,12 @@ class XMIPackageParser:
                 'documentationRu': "",
                 'details': "",
                 'elementCount': len(package.elements),
-                'elements': [element_to_dict(elem) for elem in package.elements],
-                'children': [
-                    package_to_dict(child, include_generalizations_list=False, include_associacion_list=False)
+                'classes': [element_to_dict(elem) for elem in package.elements],
+                'subPackages': [
+                    package_to_dict(child)
                     for child in package.children
                 ]
             }
-
-            if include_generalizations_list:
-                data['generalizationsList'] = [
-                    generalization_list_entry_to_dict(gen) for gen in self.generalizations_list
-                ]
-
-            if include_associacion_list:
-                # Note: schemas use camelCase; list is still stored internally as self.associacion_list
-                data['associationList'] = [
-                    association_list_entry_to_dict(assoc) for assoc in self.associacion_list
-                ]
-
             return data
 
         result = {
@@ -1129,8 +1107,14 @@ class XMIPackageParser:
             'totalElements': len(self.elements_by_id),
             'totalAttributes': self.total_attributes,
             'totalLinks': self.total_links,
-            'rootPackages': [
-                package_to_dict(root, include_generalizations_list=True, include_associacion_list=True)
+            'generalizationsList': [
+                generalization_list_entry_to_dict(gen) for gen in self.generalizations_list
+            ],
+            'associationList': [
+                association_list_entry_to_dict(assoc) for assoc in self.associacion_list
+            ],
+            'packages': [
+                package_to_dict(root)
                 for root in self.root_packages
             ]
         }

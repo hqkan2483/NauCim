@@ -1,5 +1,6 @@
 import { prisma } from "../db.js";
 import { exportProject } from "./export-project.js";
+import { resolveGeneralizationScope } from "./link-scope.js";
 
 /**
  * Update an existing Generalization link (Model/Profile) and return full exported Project.
@@ -68,6 +69,15 @@ export async function updateGeneralizationLinkAndExportProject({
     }
   }
 
+  // Validate unique parent constraint before updating
+  await validateUniqueParentConstraint({
+    linkId: id,
+    parentClassId: requestedParentId,
+    childClassId: requestedChildId,
+    modelId: scope.kind === "model" ? scope.modelId : "",
+    profileId: scope.kind === "profile" ? scope.profileId : "",
+  });
+
   await prisma.$transaction(async (tx) => {
     if (scope.kind === "model") {
       await updateGeneralizationLinkModel(tx, {
@@ -99,81 +109,6 @@ export async function updateGeneralizationLinkAndExportProject({
   return exported;
 }
 
-/**
- * Resolve where the generalization link lives (model or profile).
- * If modelId/profileId provided, they are used for disambiguation.
- *
- * @param {object} args
- * @param {string} args.id
- * @param {string} args.modelId
- * @param {string} args.profileId
- * @returns {Promise<null|{kind:'model', modelId:string, projectId:string, ends:Array}|{kind:'profile', profileId:string, projectId:string, ends:Array}>}
- */
-async function resolveGeneralizationScope({ id, modelId, profileId }) {
-  const mid = String(modelId || "");
-  const pid = String(profileId || "");
-
-  if (mid && pid) {
-    const err = new Error("Provide either modelId or profileId, not both");
-    err.status = 400;
-    throw err;
-  }
-
-  if (mid) {
-    const g = await prisma.generalizationLinkModel.findFirst({
-      where: { id, modelId: mid },
-      select: {
-        id: true,
-        modelId: true,
-        model: { select: { projectId: true } },
-        ends: { select: { role: true, classId: true } },
-      },
-    });
-    if (!g) return null;
-    return { kind: "model", modelId: g.modelId, projectId: g.model.projectId, ends: g.ends || [] };
-  }
-
-  if (pid) {
-    const g = await prisma.generalizationLinkProfile.findFirst({
-      where: { id, profileId: pid },
-      select: {
-        id: true,
-        profileId: true,
-        profile: { select: { projectId: true } },
-        ends: { select: { role: true, classId: true } },
-      },
-    });
-    if (!g) return null;
-    return { kind: "profile", profileId: g.profileId, projectId: g.profile.projectId, ends: g.ends || [] };
-  }
-
-  // No hint: try model first, then profile.
-  const gm = await prisma.generalizationLinkModel.findUnique({
-    where: { id },
-    select: {
-      modelId: true,
-      model: { select: { projectId: true } },
-      ends: { select: { role: true, classId: true } },
-    },
-  });
-  if (gm) {
-    return { kind: "model", modelId: gm.modelId, projectId: gm.model.projectId, ends: gm.ends || [] };
-  }
-
-  const gp = await prisma.generalizationLinkProfile.findUnique({
-    where: { id },
-    select: {
-      profileId: true,
-      profile: { select: { projectId: true } },
-      ends: { select: { role: true, classId: true } },
-    },
-  });
-  if (gp) {
-    return { kind: "profile", profileId: gp.profileId, projectId: gp.profile.projectId, ends: gp.ends || [] };
-  }
-
-  return null;
-}
 
 /**
  * Update GeneralizationLinkModel + its ends.
@@ -320,5 +255,82 @@ async function assertClassExistsInProfile(tx, profileId, classId) {
     const err = new Error(`Class not found in profile: ${classId}`);
     err.status = 400;
     throw err;
+  }
+}
+
+/**
+ * Validate that the child class doesn't already have another parent.
+ * Business rule: Each class can have only one parent in generalization hierarchy.
+ * 
+ * @param {object} args
+ * @param {string} args.linkId - Current link ID being updated
+ * @param {string} args.parentClassId - New parent class ID
+ * @param {string} args.childClassId - New child class ID (the one that will have a parent)
+ * @param {string} [args.modelId] - Model ID if in model context
+ * @param {string} [args.profileId] - Profile ID if in profile context
+ * @throws {Error} If child already has another parent
+ */
+export async function validateUniqueParentConstraint({ linkId, parentClassId, childClassId, modelId, profileId }) {
+  const mid = String(modelId || "");
+  const pid = String(profileId || "");
+  
+  if (mid) {
+    // Check in model context
+    const existingLinks = await prisma.generalizationLinkModel.findMany({
+      where: {
+        modelId: mid,
+        id: { not: String(linkId) }, // Exclude current link being updated
+        ends: {
+          some: {
+            classId: String(childClassId),
+            role: "child"
+          }
+        }
+      },
+      include: {
+        ends: {
+          where: { role: "parent" },
+          select: { classId: true }
+        }
+      }
+    });
+    
+    if (existingLinks.length > 0) {
+      const existingParentId = existingLinks[0]?.ends[0]?.classId || "unknown";
+      const err = new Error(
+        `Класс уже имеет родителя. Каждый класс может иметь только одного родителя в иерархии наследования. Существующая связь с родителем: ${existingParentId}`
+      );
+      err.status = 400;
+      throw err;
+    }
+  } else if (pid) {
+    // Check in profile context
+    const existingLinks = await prisma.generalizationLinkProfile.findMany({
+      where: {
+        profileId: pid,
+        id: { not: String(linkId) }, // Exclude current link being updated
+        ends: {
+          some: {
+            classId: String(childClassId),
+            role: "child"
+          }
+        }
+      },
+      include: {
+        ends: {
+          where: { role: "parent" },
+          select: { classId: true }
+        }
+      }
+    });
+    
+    if (existingLinks.length > 0) {
+      const existingParentId = existingLinks[0]?.ends[0]?.classId || "unknown";
+      const err = new Error(
+        `Класс уже имеет родителя. Каждый класс может иметь только одного родителя в иерархии наследования. Существующая связь с родителем: ${existingParentId}`
+      );
+      err.status = 400;
+      throw err;
+    }
   }
 }

@@ -1,6 +1,8 @@
 import {
   createModelDiagram as repoCreateModelDiagram,
   createProfileDiagram as repoCreateProfileDiagram,
+  deleteModelDiagram as repoDeleteModelDiagram,
+  deleteProfileDiagram as repoDeleteProfileDiagram,
 } from "./repositories/diagram-repository.js";
 
 /**
@@ -35,4 +37,46 @@ async function createProfileDiagram(projectId, profileId, packageId, payload) {
   }
 }
 
-export { createModelDiagram, createProfileDiagram };
+/**
+ * Delete a diagram from a model graph and return full updated project.
+ *
+ * @param {string} projectId
+ * @param {string} modelId
+ * @param {string} diagramId
+ * @returns {Promise<object|null>}
+ */
+async function deleteModelDiagram(projectId, modelId, diagramId) {
+  if (!projectId || !modelId || !diagramId) return null;
+  try {
+    return await repoDeleteModelDiagram(String(modelId), String(diagramId));
+  } catch (error) {
+    console.error(
+      `[deleteModelDiagram] Failed for model ${modelId}, diagram ${diagramId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+/**
+ * Delete a diagram from a profile graph and return full updated project.
+ *
+ * @param {string} projectId
+ * @param {string} profileId
+ * @param {string} diagramId
+ * @returns {Promise<object|null>}
+ */
+async function deleteProfileDiagram(projectId, profileId, diagramId) {
+  if (!projectId || !profileId || !diagramId) return null;
+  try {
+    return await repoDeleteProfileDiagram(String(profileId), String(diagramId));
+  } catch (error) {
+    console.error(
+      `[deleteProfileDiagram] Failed for profile ${profileId}, diagram ${diagramId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+export { createModelDiagram, createProfileDiagram, deleteModelDiagram, deleteProfileDiagram };

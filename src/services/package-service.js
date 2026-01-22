@@ -3,6 +3,8 @@ import {
   updateProfilePackage as repoUpdateProfilePackage,
   createModelSubpackage as repoCreateModelSubpackage,
   createProfileSubpackage as repoCreateProfileSubpackage,
+  deleteModelPackage as repoDeleteModelPackage,
+  deleteProfilePackage as repoDeleteProfilePackage,
 } from "./repositories/package-repository.js";
 
 /**
@@ -63,4 +65,53 @@ async function createProfileSubpackage(projectId, profileId, parentPackageId, pa
   }
 }
 
-export { updateModelPackage, updateProfilePackage, createModelSubpackage, createProfileSubpackage };
+/**
+ * Delete a package from a model graph and return full updated project.
+ *
+ * @param {string} projectId
+ * @param {string} modelId
+ * @param {string} packageId
+ * @returns {Promise<object|null>}
+ */
+async function deleteModelPackage(projectId, modelId, packageId) {
+  if (!projectId || !modelId || !packageId) return null;
+  try {
+    return await repoDeleteModelPackage(String(modelId), String(packageId));
+  } catch (error) {
+    console.error(
+      `[deleteModelPackage] Failed for model ${modelId}, package ${packageId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+/**
+ * Delete a package from a profile graph and return full updated project.
+ *
+ * @param {string} projectId
+ * @param {string} profileId
+ * @param {string} packageId
+ * @returns {Promise<object|null>}
+ */
+async function deleteProfilePackage(projectId, profileId, packageId) {
+  if (!projectId || !profileId || !packageId) return null;
+  try {
+    return await repoDeleteProfilePackage(String(profileId), String(packageId));
+  } catch (error) {
+    console.error(
+      `[deleteProfilePackage] Failed for profile ${profileId}, package ${packageId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+export {
+  updateModelPackage,
+  updateProfilePackage,
+  createModelSubpackage,
+  createProfileSubpackage,
+  deleteModelPackage,
+  deleteProfilePackage,
+};

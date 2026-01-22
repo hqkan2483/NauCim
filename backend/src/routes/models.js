@@ -4,6 +4,9 @@ import { prisma } from "../db.js";
 import { asyncHandler, sendError } from "../utils/http.js";
 import { importModelRootPackages } from "../services/import-into-existing.js";
 import { exportProject } from "../services/export-project.js";
+import { deleteModelPackageAndExportProject } from "../services/delete-package.js";
+import { deleteModelClassAndExportProject } from "../services/delete-class.js";
+import { deleteModelAttributeAndExportProject } from "../services/delete-attribute.js";
 import { newId } from "../utils/id-generation.js";
 
 export const modelsRouter = Router();
@@ -433,6 +436,29 @@ modelsRouter.put(
   })
 );
 
+/**
+ * Delete a package from a model graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :modelId, :packageId
+ */
+modelsRouter.delete(
+  "/:modelId/packages/:packageId",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const packageId = String(req.params.packageId);
+
+    try {
+      const project = await deleteModelPackageAndExportProject({ modelId, packageId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete package";
+      return sendError(res, status, msg);
+    }
+  })
+);
+
 // Create a nested package inside a model package.
 // Returns full updated project (export payload).
 modelsRouter.post(
@@ -558,6 +584,29 @@ modelsRouter.put(
     const project = await exportProject(model.projectId);
     if (!project) return sendError(res, 404, "Project not found");
     res.json(project);
+  })
+);
+
+/**
+ * Delete a class from a model graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :modelId, :classId
+ */
+modelsRouter.delete(
+  "/:modelId/classes/:classId",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const classId = String(req.params.classId);
+
+    try {
+      const project = await deleteModelClassAndExportProject({ modelId, classId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete class";
+      return sendError(res, status, msg);
+    }
   })
 );
 
@@ -701,6 +750,29 @@ modelsRouter.put(
     const project = await exportProject(model.projectId);
     if (!project) return sendError(res, 404, "Project not found");
     res.json(project);
+  })
+);
+
+/**
+ * Delete an attribute from a model graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :modelId, :attributeId
+ */
+modelsRouter.delete(
+  "/:modelId/attributes/:attributeId",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const attributeId = String(req.params.attributeId);
+
+    try {
+      const project = await deleteModelAttributeAndExportProject({ modelId, attributeId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete attribute";
+      return sendError(res, status, msg);
+    }
   })
 );
 

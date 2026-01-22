@@ -4,6 +4,9 @@ import { prisma } from "../db.js";
 import { asyncHandler, sendError } from "../utils/http.js";
 import { importProfileRootPackages } from "../services/import-into-existing.js";
 import { exportProject } from "../services/export-project.js";
+import { deleteProfilePackageAndExportProject } from "../services/delete-package.js";
+import { deleteProfileClassAndExportProject } from "../services/delete-class.js";
+import { deleteProfileAttributeAndExportProject } from "../services/delete-attribute.js";
 import { newId } from "../utils/id-generation.js";
 
 export const profilesRouter = Router();
@@ -436,6 +439,29 @@ profilesRouter.put(
   })
 );
 
+/**
+ * Delete a package from a profile graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :profileId, :packageId
+ */
+profilesRouter.delete(
+  "/:profileId/packages/:packageId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const packageId = String(req.params.packageId);
+
+    try {
+      const project = await deleteProfilePackageAndExportProject({ profileId, packageId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete package";
+      return sendError(res, status, msg);
+    }
+  })
+);
+
 // Create a nested package inside a profile package.
 // Returns full updated project (export payload).
 profilesRouter.post(
@@ -561,6 +587,29 @@ profilesRouter.put(
     const project = await exportProject(profile.projectId);
     if (!project) return sendError(res, 404, "Project not found");
     res.json(project);
+  })
+);
+
+/**
+ * Delete a class from a profile graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :profileId, :classId
+ */
+profilesRouter.delete(
+  "/:profileId/classes/:classId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const classId = String(req.params.classId);
+
+    try {
+      const project = await deleteProfileClassAndExportProject({ profileId, classId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete class";
+      return sendError(res, status, msg);
+    }
   })
 );
 
@@ -704,6 +753,29 @@ profilesRouter.put(
     const project = await exportProject(profile.projectId);
     if (!project) return sendError(res, 404, "Project not found");
     res.json(project);
+  })
+);
+
+/**
+ * Delete an attribute from a profile graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :profileId, :attributeId
+ */
+profilesRouter.delete(
+  "/:profileId/attributes/:attributeId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const attributeId = String(req.params.attributeId);
+
+    try {
+      const project = await deleteProfileAttributeAndExportProject({ profileId, attributeId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete attribute";
+      return sendError(res, status, msg);
+    }
   })
 );
 

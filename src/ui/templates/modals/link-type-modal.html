@@ -1,0 +1,32 @@
+<div id="link-type-modal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" data-modal-close aria-label="Закрыть">×</button>
+
+    <div class="modal-header">
+      <div class="modal-title">Выбор типа связи</div>
+    </div>
+
+    <form class="modal-form">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group form-group__line">
+            <label class="form-label" for="link-type-relationKind">Тип связи *</label>
+            <select
+              id="link-type-relationKind"
+              class="form-select"
+              required
+            >
+              <option value="Generalization">Generalization (Наследование)</option>
+              <option value="Association">Association (Ассоциация)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-buttons modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+        <button type="button" class="btn btn-primary" id="link-type-choose-btn">Выбор</button>
+      </div>
+    </form>
+  </div>
+</div>
