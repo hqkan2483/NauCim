@@ -112,6 +112,7 @@ NauCIM/
 ## Документация
 
 - 📘 **[Структуры данных V5](docs/DATA_STRUCTURES.md)** - Канонический контракт данных (Project, Model, Profile, Class, Attribute)
+- 📥 **[Импорт модели из XMI (JSON)](docs/XMI_IMPORT_DATA_STRUCTURES.md)** - Структуры данных и формат JSON для импорта (XMI → JSON Schema 2020-12)
 - 🏗️ **[Архитектура](docs/ARCHITECTURE.md)** - Структура приложения и границы модулей
 - 📝 **[Соглашения](docs/CONVENTIONS.md)** - Правила кодирования и контракты данных
 - 🚀 **[Запуск локально](docs/RUN_LOCAL.md)** - Как запустить приложение на локальном сервере
@@ -215,6 +216,7 @@ NauCIM/
 - **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Описание архитектуры приложения
 - **[CONVENTIONS.md](docs/CONVENTIONS.md)** - Соглашения о разработке и стиль кода
 - **[DATA_STRUCTURES.md](docs/DATA_STRUCTURES.md)** - Контракт данных (канонический источник)
+- **[XMI_IMPORT_DATA_STRUCTURES.md](docs/XMI_IMPORT_DATA_STRUCTURES.md)** - Формат импорта модели из XMI (JSON)
 - **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Руководство для GitHub Copilot
 
 ### Модульная архитектура
