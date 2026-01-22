@@ -13,12 +13,12 @@
 
 ```ts
 interface XmiModelDetailed {
-  totalPackages: number;   // >= 0, количество пакетов (включая вложенные)
-  totalElements: number;   // >= 0, количество UML элементов (классы/типы/перечисления)
+  totalPackages: number; // >= 0, количество пакетов (включая вложенные)
+  totalElements: number; // >= 0, количество UML элементов (классы/типы/перечисления)
   totalAttributes: number; // >= 0, количество атрибутов классов
-  totalLinks: number;      // >= 0, количество связей (используется для статистики)
+  totalLinks: number; // >= 0, количество связей (используется для статистики)
 
-  packages: Package[];     // корневые пакеты модели
+  packages: Package[]; // корневые пакеты модели
 }
 ```
 
@@ -33,18 +33,18 @@ interface XmiModelDetailed {
 
 ```ts
 interface Package {
-  id: string;              // xmi:id пакета, непустой
+  id: string; // xmi:id пакета, непустой
   name: string;
-  type: string;            // обычно "Package"
+  type: string; // обычно "Package"
 
   documentation: string | null;
   documentationRu: string | null;
   details: string | null;
 
-  elementCount: number;    // >= 0, количество элементов в этом пакете
+  elementCount: number; // >= 0, количество элементов в этом пакете
 
-  classes: UmlClass[];     // UML элементы (Class/Interface/DataType/Enumeration/PrimitiveType)
-  subPackages: Package[];  // дочерние пакеты
+  classes: UmlClass[]; // UML элементы (Class/Interface/DataType/Enumeration/PrimitiveType)
+  subPackages: Package[]; // дочерние пакеты
 
   // Опционально (парсер добавляет только в корневые пакеты):
   generalizationsList?: GeneralizationLink[];
@@ -67,9 +67,9 @@ interface Package {
 
 ```ts
 interface UmlClass {
-  id: string;              // xmi:id, непустой
+  id: string; // xmi:id, непустой
   name: string;
-  type: string;            // "Class" | "Interface" | "DataType" | "Enumeration" | "PrimitiveType" | ...
+  type: string; // "Class" | "Interface" | "DataType" | "Enumeration" | "PrimitiveType" | ...
 
   stereotype: string;
 
@@ -97,7 +97,7 @@ interface UmlClass {
 ```ts
 interface Attribute {
   name: string;
-  id: string | null;        // xmi:id ownedAttribute
+  id: string | null; // xmi:id ownedAttribute
 
   dataTypeId: string | null; // xmi:idref из ownedAttribute/type
 
@@ -107,8 +107,8 @@ interface Attribute {
   documentationRu: string | null;
   details: string | null;
 
-  multiplicity: string;     // например: "1", "0..1", "0..*", "1..*"
-  initialValue: string;     // значение по умолчанию/инициализации
+  multiplicity: string; // например: "1", "0..1", "0..*", "1..*"
+  initialValue: string; // значение по умолчанию/инициализации
 }
 ```
 
@@ -125,7 +125,7 @@ interface Attribute {
 ```ts
 interface EnumLiteral {
   name: string;
-  id: string | null;        // xmi:id ownedLiteral
+  id: string | null; // xmi:id ownedLiteral
   documentation: string;
   initialValue: string;
 }
