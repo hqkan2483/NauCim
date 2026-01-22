@@ -95,6 +95,8 @@ import {
   deleteAssociationLink as deleteAssociationLinkInBackend
 } from "../../services/link-service.js";
 import { initPackageTreeContextMenu } from "../../ui/components/package-context-menu.js";
+import { initClassTreeContextMenu } from "../../ui/components/class-context-menu.js";
+import { initDiagramTreeContextMenu } from "../../ui/components/diagram-context-menu.js";
 import {
   initCreatePackageModal,
   openCreatePackageModal,
@@ -1148,6 +1150,23 @@ function bindEvents() {
         if (literalId) handleSelectLiteral(literalId, parentClassId, modelId, profileId);
         return;
       }
+    });
+
+    // Right-click context menu on class nodes.
+    initClassTreeContextMenu(projectStructureEl, {
+      onViewProperties: async () => {
+        showToast("Просмотр свойств класса — в разработке", { type: "info" });
+      },
+      onDeleteClass: async () => {
+        showToast("Удаление класса — в разработке", { type: "info" });
+      },
+    });
+
+    // Right-click context menu on diagram nodes.
+    initDiagramTreeContextMenu(projectStructureEl, {
+      onDeleteDiagram: async () => {
+        showToast("Удаление диаграммы — в разработке", { type: "info" });
+      },
     });
   }
 
