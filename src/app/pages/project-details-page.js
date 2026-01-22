@@ -73,6 +73,8 @@ import {
   updateProfilePackage as updateProfilePackageInBackend,
   createModelSubpackage as createModelSubpackageInBackend,
   createProfileSubpackage as createProfileSubpackageInBackend,
+  deleteModelPackage as deleteModelPackageInBackend,
+  deleteProfilePackage as deleteProfilePackageInBackend,
 } from "../../services/package-service.js";
 import {
   updateModelClass as updateModelClassInBackend,
@@ -1025,8 +1027,8 @@ function bindEvents() {
           existingDiagramNamesNormalized,
         });
       },
-      onDeletePackage: async () => {
-        showToast("Удаление пакетов будет реализовано позже.", { type: "info" });
+      onDeletePackage: async (ctx) => {
+        await handleDeletePackage(ctx);
       },
     });
 
@@ -2609,6 +2611,119 @@ async function handleSavePackage(form) {
   }
 }
 
+/**
+ * Delete a package and refresh tree + show its parent container.
+ * If the package contains nested items, shows an extra warning.
+ *
+ * @param {{ packageId?: string, modelId?: string, profileId?: string }} ctx
+ */
+async function handleDeletePackage(ctx = {}) {
+  const packageId = String(ctx?.packageId || "");
+  if (!packageId) return;
+
+  try {
+    const project = await getProjectById(currentProjectId);
+    if (!project) return;
+
+    const context = ctx?.modelId ? "model" : ctx?.profileId ? "profile" : null;
+    const modelId = ctx?.modelId || "";
+    const profileId = ctx?.profileId || "";
+
+    const found = findPackageWithContext(project, packageId, modelId, profileId, context);
+    if (!found?.pkg) return;
+
+    const ok = confirm("Удалить пакет?");
+    if (!ok) return;
+
+    const hasContent = packageHasContents(found.pkg);
+    if (hasContent) {
+      const okNested = confirm(
+        "Пакет содержит вложенные элементы. Будут удалены все пакеты, классы и диаграммы внутри. Продолжить?"
+      );
+      if (!okNested) return;
+    }
+
+    const updatedProject =
+      found.context === "model"
+        ? await deleteModelPackageInBackend(currentProjectId, found.modelId, packageId)
+        : await deleteProfilePackageInBackend(currentProjectId, found.profileId, packageId);
+
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    const parentPackageId = String(found.parentPackageId || "");
+
+    selectedTreeSnapshot = parentPackageId
+      ? {
+          type: "package",
+          packageId: parentPackageId,
+          modelId: found.context === "model" ? found.modelId : null,
+          profileId: found.context === "profile" ? found.profileId : null,
+          classId: null,
+          diagramId: null,
+        }
+      : {
+          type: found.context,
+          modelId: found.context === "model" ? found.modelId : null,
+          profileId: found.context === "profile" ? found.profileId : null,
+        };
+
+    await renderProjectTreeSidebar(updatedProject);
+
+    if (parentPackageId) {
+      const chain = findPackageParentChain(
+        updatedProject,
+        parentPackageId,
+        found.modelId,
+        found.profileId,
+        found.context
+      );
+      expandTreePath(chain);
+
+      requestAnimationFrame(async () => {
+        const selector =
+          found.context === "model"
+            ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-model-id="${cssEscape(found.modelId)}"]`
+            : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-profile-id="${cssEscape(found.profileId)}"]`;
+
+        const pkgEl = document.querySelector(selector);
+        if (pkgEl) {
+          setSelectedTreeItem(pkgEl);
+          pkgEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          await handleSelectPackage(parentPackageId, found.modelId, found.profileId);
+        }
+      });
+    } else {
+      requestAnimationFrame(async () => {
+        if (found.context === "model") {
+          const selector = `.tree-structure-name[data-type="model"][data-model-id="${cssEscape(found.modelId)}"]`;
+          const modelEl = document.querySelector(selector);
+          if (modelEl) {
+            setSelectedTreeItem(modelEl);
+            modelEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            await selectModel(found.modelId);
+          }
+        } else if (found.context === "profile") {
+          const selector = `.tree-structure-name[data-type="profile"][data-profile-id="${cssEscape(found.profileId)}"]`;
+          const profileEl = document.querySelector(selector);
+          if (profileEl) {
+            setSelectedTreeItem(profileEl);
+            profileEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            await selectProfile(found.profileId);
+          }
+        }
+      });
+    }
+
+    showToast("Пакет удалён", { type: "success" });
+  } catch (error) {
+    console.error("[handleDeletePackage] Failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка удаления";
+    showToast(`Ошибка удаления пакета: ${msg}`, { type: "error" });
+  }
+}
+
 function handleCancelPackageEdit() {
   if (!originalItemData) return;
   if (!confirm("Отменить изменения?  Несохранённые данные будут потеряны."))
@@ -3421,6 +3536,123 @@ function findDiagramWithContext(
               modelId: null,
               profileId: profile.id,
               packageId: found.packageId ?? null,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Returns true if package contains any subpackages, classes or diagrams.
+ *
+ * @param {object} pkg
+ * @returns {boolean}
+ */
+function packageHasContents(pkg) {
+  if (!pkg) return false;
+  if (Array.isArray(pkg.subPackages) && pkg.subPackages.length > 0) return true;
+  if (Array.isArray(pkg.classes) && pkg.classes.length > 0) return true;
+  if (Array.isArray(pkg.diagrams) && pkg.diagrams.length > 0) return true;
+  return false;
+}
+
+/**
+ * Find a package in the project tree and return its context and parent package.
+ *
+ * @param {object} project - Full project object
+ * @param {string} packageId - Package ID to find
+ * @param {string} [modelId]
+ * @param {string} [profileId]
+ * @param {'model'|'profile'|null} [context]
+ * @returns {null|{pkg: object, context: 'model'|'profile', modelId: string|null, profileId: string|null, parentPackageId: string|null}}
+ */
+function findPackageWithContext(
+  project,
+  packageId,
+  modelId = "",
+  profileId = "",
+  context = null
+) {
+  const searchInPackages = (packages, parentId = null) => {
+    for (const pkg of packages) {
+      if (pkg.id === packageId) return { pkg, parentPackageId: parentId };
+
+      if (pkg.subPackages) {
+        const found = searchInPackages(pkg.subPackages, pkg.id || null);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const useModel = context === "model" || (modelId && modelId !== "");
+  const useProfile = context === "profile" || (profileId && profileId !== "");
+
+  if (useModel && project.models) {
+    const model = project.models.find((m) => m.id === modelId) || null;
+    if (model?.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(model.rootPackages[0].packages);
+      if (found?.pkg) {
+        return {
+          pkg: found.pkg,
+          context: "model",
+          modelId: model.id,
+          profileId: null,
+          parentPackageId: found.parentPackageId ?? null,
+        };
+      }
+    }
+  }
+
+  if (useProfile && project.profiles) {
+    const profile = project.profiles.find((p) => p.id === profileId) || null;
+    if (profile?.rootPackages?.[0]?.packages) {
+      const found = searchInPackages(profile.rootPackages[0].packages);
+      if (found?.pkg) {
+        return {
+          pkg: found.pkg,
+          context: "profile",
+          modelId: null,
+          profileId: profile.id,
+          parentPackageId: found.parentPackageId ?? null,
+        };
+      }
+    }
+  }
+
+  if (!useModel && !useProfile) {
+    if (project.models) {
+      for (const model of project.models) {
+        if (model.rootPackages?.[0]?.packages) {
+          const found = searchInPackages(model.rootPackages[0].packages);
+          if (found?.pkg) {
+            return {
+              pkg: found.pkg,
+              context: "model",
+              modelId: model.id,
+              profileId: null,
+              parentPackageId: found.parentPackageId ?? null,
+            };
+          }
+        }
+      }
+    }
+
+    if (project.profiles) {
+      for (const profile of project.profiles) {
+        if (profile.rootPackages?.[0]?.packages) {
+          const found = searchInPackages(profile.rootPackages[0].packages);
+          if (found?.pkg) {
+            return {
+              pkg: found.pkg,
+              context: "profile",
+              modelId: null,
+              profileId: profile.id,
+              parentPackageId: found.parentPackageId ?? null,
             };
           }
         }

@@ -4,6 +4,7 @@ import { prisma } from "../db.js";
 import { asyncHandler, sendError } from "../utils/http.js";
 import { importProfileRootPackages } from "../services/import-into-existing.js";
 import { exportProject } from "../services/export-project.js";
+import { deleteProfilePackageAndExportProject } from "../services/delete-package.js";
 import { deleteProfileClassAndExportProject } from "../services/delete-class.js";
 import { deleteProfileAttributeAndExportProject } from "../services/delete-attribute.js";
 import { newId } from "../utils/id-generation.js";
@@ -435,6 +436,29 @@ profilesRouter.put(
     const project = await exportProject(profile.projectId);
     if (!project) return sendError(res, 404, "Project not found");
     res.json(project);
+  })
+);
+
+/**
+ * Delete a package from a profile graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :profileId, :packageId
+ */
+profilesRouter.delete(
+  "/:profileId/packages/:packageId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const packageId = String(req.params.packageId);
+
+    try {
+      const project = await deleteProfilePackageAndExportProject({ profileId, packageId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete package";
+      return sendError(res, status, msg);
+    }
   })
 );
 
