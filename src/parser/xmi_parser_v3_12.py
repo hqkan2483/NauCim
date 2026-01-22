@@ -1085,8 +1085,6 @@ class XMIPackageParser:
 
         def package_to_dict(
             package: Package,
-            include_generalizations_list: bool = False,
-            include_associacion_list: bool = False,
         ) -> dict:
             data = {
                 'id': package.xmi_id,
@@ -1098,22 +1096,10 @@ class XMIPackageParser:
                 'elementCount': len(package.elements),
                 'classes': [element_to_dict(elem) for elem in package.elements],
                 'subPackages': [
-                    package_to_dict(child, include_generalizations_list=False, include_associacion_list=False)
+                    package_to_dict(child)
                     for child in package.children
                 ]
             }
-
-            if include_generalizations_list:
-                data['generalizationsList'] = [
-                    generalization_list_entry_to_dict(gen) for gen in self.generalizations_list
-                ]
-
-            if include_associacion_list:
-                # Note: schemas use camelCase; list is still stored internally as self.associacion_list
-                data['associationList'] = [
-                    association_list_entry_to_dict(assoc) for assoc in self.associacion_list
-                ]
-
             return data
 
         result = {
@@ -1121,8 +1107,14 @@ class XMIPackageParser:
             'totalElements': len(self.elements_by_id),
             'totalAttributes': self.total_attributes,
             'totalLinks': self.total_links,
+            'generalizationsList': [
+                generalization_list_entry_to_dict(gen) for gen in self.generalizations_list
+            ],
+            'associationList': [
+                association_list_entry_to_dict(assoc) for assoc in self.associacion_list
+            ],
             'packages': [
-                package_to_dict(root, include_generalizations_list=True, include_associacion_list=True)
+                package_to_dict(root)
                 for root in self.root_packages
             ]
         }

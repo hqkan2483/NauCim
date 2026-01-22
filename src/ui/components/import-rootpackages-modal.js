@@ -13,13 +13,24 @@ function readFileAsText(file) {
 }
 
 function normalizeRootPackagesJson(json) {
-  // The common format in /models-data is: [ { packages: [...], ... } ]
-  // i.e. rootPackages array. Also accept a single rootPackage object.
-  if (Array.isArray(json)) return json;
+  // Accept:
+  // - Legacy: [ { packages: [...], ... } ]  (rootPackages array)
+  // - Legacy: { rootPackages: [ { packages: [...] } ] }
+  // - New XMI import: { total*, packages: [...] }
+  // - New XMI import: { packages: [...] }
+  // - Convenience: [ {id,name,type,...}, ... ] (array of packages) -> wrapped into { packages: [...] }
+  if (Array.isArray(json)) {
+    if (json.length > 0 && json.every((p) => p && typeof p === "object" && "id" in p && "name" in p)) {
+      return { packages: json };
+    }
+    return json;
+  }
+
   if (json && typeof json === "object") {
     if (Array.isArray(json.rootPackages)) return json.rootPackages;
     return json;
   }
+
   return null;
 }
 
@@ -95,7 +106,7 @@ function bindImportModal({
           const parsed = JSON.parse(text);
           const normalized = normalizeRootPackagesJson(parsed);
           if (normalized === null) {
-            showToast("Некорректный JSON: ожидается rootPackage/rootPackages", { type: "error" });
+            showToast("Некорректный JSON: ожидается объект с packages или rootPackages", { type: "error" });
             return;
           }
           payload = { rootPackages: normalized };

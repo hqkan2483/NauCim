@@ -8,7 +8,9 @@
     "totalElements",
     "totalAttributes",
     "totalLinks",
-    "packages"
+    "packages",
+    "generalizationsList",
+    "associationList"
   ],
   "properties": {
     "totalPackages": {
@@ -31,6 +33,18 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/package"
+      }
+    },
+    "generalizationsList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/generalizationsListEntry"
+      }
+    },
+    "associationList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/associationListEntry"
       }
     }
   },
@@ -254,10 +268,10 @@
           ]
         },
         "details": {
-         "type": [
-          "string",
-          "null"
-        ]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "elementCount": {
           "type": "integer",
@@ -273,18 +287,6 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/package"
-          }
-        },
-        "generalizationsList": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/generalizationsListEntry"
-          }
-        },
-        "associationList": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/associationListEntry"
           }
         }
       }
@@ -316,7 +318,6 @@
         }
       }
     },
-
     "profileRelation": {
       "type": "object",
       "additionalProperties": false,
@@ -462,6 +463,5 @@
         }
       }
     }
-    
   }
 }

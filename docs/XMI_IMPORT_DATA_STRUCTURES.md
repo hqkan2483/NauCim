@@ -19,6 +19,10 @@ interface XmiModelDetailed {
   totalLinks: number; // >= 0, количество связей (используется для статистики)
 
   packages: Package[]; // корневые пакеты модели
+
+  // связи модели (агрегировано на уровне всей модели)
+  generalizationsList: GeneralizationLink[];
+  associationList: AssociationLink[];
 }
 ```
 
@@ -45,10 +49,6 @@ interface Package {
 
   classes: UmlClass[]; // UML элементы (Class/Interface/DataType/Enumeration/PrimitiveType)
   subPackages: Package[]; // дочерние пакеты
-
-  // Опционально (парсер добавляет только в корневые пакеты):
-  generalizationsList?: GeneralizationLink[];
-  associationList?: AssociationLink[];
 }
 ```
 
@@ -57,7 +57,7 @@ interface Package {
 - `classes` — это то, что внутри парсера называется `package.elements` (в него попадают классы, интерфейсы, типы и перечисления).
 - `subPackages` строится из `package.children` после `_build_hierarchy()`.
 - `elementCount` = `len(classes)`.
-- `generalizationsList`/`associationList` по текущей реализации добавляются **только в объекты верхнего уровня** (в корневые `packages[]`).
+- `generalizationsList`/`associationList` находятся в корневом объекте и относятся ко всей модели.
 
 ---
 
