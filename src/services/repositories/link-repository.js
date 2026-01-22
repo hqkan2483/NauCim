@@ -7,7 +7,9 @@ import {
   updateGeneralizationLink as backendUpdateGeneralizationLink,
   updateAssociationLink as backendUpdateAssociationLink,
   createGeneralizationLink as backendCreateGeneralizationLink,
-  createAssociationLink as backendCreateAssociationLink
+  createAssociationLink as backendCreateAssociationLink,
+  deleteGeneralizationLink as backendDeleteGeneralizationLink,
+  deleteAssociationLink as backendDeleteAssociationLink
 } from "../backend/link-backend-service.js";
 
 /**
@@ -36,5 +38,25 @@ export async function createGeneralizationLink(args) {
 
 export async function createAssociationLink(args) {
   return await backendCreateAssociationLink(args);
+}
+
+/**
+ * Delete GeneralizationLink and return full updated project.
+ *
+ * @param {object} args
+ * @returns {Promise<object>} Full exported project
+ */
+export async function deleteGeneralizationLink(args) {
+  return await backendDeleteGeneralizationLink(args);
+}
+
+/**
+ * Delete AssociationLink and return full updated project.
+ *
+ * @param {object} args
+ * @returns {Promise<object>} Full exported project
+ */
+export async function deleteAssociationLink(args) {
+  return await backendDeleteAssociationLink(args);
 }
 

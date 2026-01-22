@@ -2,7 +2,9 @@ import {
   updateGeneralizationLink as repoUpdateGeneralizationLink,
   updateAssociationLink as repoUpdateAssociationLink,
   createGeneralizationLink as repoCreateGeneralizationLink,
-  createAssociationLink as repoCreateAssociationLink
+  createAssociationLink as repoCreateAssociationLink,
+  deleteGeneralizationLink as repoDeleteGeneralizationLink,
+  deleteAssociationLink as repoDeleteAssociationLink
 } from "./repositories/link-repository.js";
 
 /**
@@ -75,6 +77,38 @@ export async function createAssociationLink(args) {
 }
 
 /**
+ * Delete an existing GeneralizationLink.
+ * Backend returns the full updated project.
+ *
+ * @param {object} args
+ * @param {string} args.linkId
+ * @param {string} [args.modelId]
+ * @param {string} [args.profileId]
+ * @param {string} [args.editingClassId]
+ * @returns {Promise<object>} Full exported project
+ */
+export async function deleteGeneralizationLink(args) {
+  if (!args?.linkId) throw new Error("linkId is required");
+  return await repoDeleteGeneralizationLink(args);
+}
+
+/**
+ * Delete an existing AssociationLink.
+ * Backend returns the full updated project.
+ *
+ * @param {object} args
+ * @param {string} args.linkId
+ * @param {string} [args.modelId]
+ * @param {string} [args.profileId]
+ * @param {string} [args.editingClassId]
+ * @returns {Promise<object>} Full exported project
+ */
+export async function deleteAssociationLink(args) {
+  if (!args?.linkId) throw new Error("linkId is required");
+  return await repoDeleteAssociationLink(args);
+}
+
+/**
  * Validate that association names are unique within each class (frontend validation).
  * Checks that no other association on the same class has the same linkEndName.
  *
@@ -108,7 +142,7 @@ export function validateUniqueAssociationNames({ linkId, payload, project }) {
 
       if (otherEndName === otherName) {
         throw new Error(
-          `Ассоциация для этого класса уже использует имя узла "${otherName}". Имена противоположных узлов должны быть уникальны.`
+          `Ассоциация для этого класса уже использует имя узла "${otherName}". Имена связей одного класса должны быть уникальны.`
         );
       }
     }

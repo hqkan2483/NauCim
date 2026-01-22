@@ -3,6 +3,8 @@ import {
   createProfileAttribute as backendCreateProfileAttribute,
   updateModelAttribute as backendUpdateModelAttribute,
   updateProfileAttribute as backendUpdateProfileAttribute,
+  deleteModelAttribute as backendDeleteModelAttribute,
+  deleteProfileAttribute as backendDeleteProfileAttribute,
 } from "../backend/attribute-backend-service.js";
 
 export async function createModelAttribute(modelId, classId, payload) {
@@ -23,4 +25,28 @@ export async function updateModelAttribute(modelId, attributeId, updates) {
 export async function updateProfileAttribute(profileId, attributeId, updates) {
   if (!profileId || !attributeId) return null;
   return backendUpdateProfileAttribute(String(profileId), String(attributeId), updates);
+}
+
+/**
+ * Delete an attribute from a model graph.
+ *
+ * @param {string} modelId
+ * @param {string} attributeId
+ * @returns {Promise<object>} Full exported project
+ */
+export async function deleteModelAttribute(modelId, attributeId) {
+  if (!modelId || !attributeId) return null;
+  return backendDeleteModelAttribute(String(modelId), String(attributeId));
+}
+
+/**
+ * Delete an attribute from a profile graph.
+ *
+ * @param {string} profileId
+ * @param {string} attributeId
+ * @returns {Promise<object>} Full exported project
+ */
+export async function deleteProfileAttribute(profileId, attributeId) {
+  if (!profileId || !attributeId) return null;
+  return backendDeleteProfileAttribute(String(profileId), String(attributeId));
 }

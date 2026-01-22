@@ -3,6 +3,8 @@ import {
   createProfileAttribute as repoCreateProfileAttribute,
   updateModelAttribute as repoUpdateModelAttribute,
   updateProfileAttribute as repoUpdateProfileAttribute,
+  deleteModelAttribute as repoDeleteModelAttribute,
+  deleteProfileAttribute as repoDeleteProfileAttribute,
 } from "./repositories/attribute-repository.js";
 
 /**
@@ -63,9 +65,53 @@ async function createProfileAttribute(projectId, profileId, classId, payload) {
   }
 }
 
+/**
+ * Delete an attribute from a model graph and return full updated project.
+ *
+ * @param {string} projectId
+ * @param {string} modelId
+ * @param {string} attributeId
+ * @returns {Promise<object|null>}
+ */
+async function deleteModelAttribute(projectId, modelId, attributeId) {
+  if (!projectId || !modelId || !attributeId) return null;
+  try {
+    return await repoDeleteModelAttribute(String(modelId), String(attributeId));
+  } catch (error) {
+    console.error(
+      `[deleteModelAttribute] Failed for model ${modelId}, attribute ${attributeId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+/**
+ * Delete an attribute from a profile graph and return full updated project.
+ *
+ * @param {string} projectId
+ * @param {string} profileId
+ * @param {string} attributeId
+ * @returns {Promise<object|null>}
+ */
+async function deleteProfileAttribute(projectId, profileId, attributeId) {
+  if (!projectId || !profileId || !attributeId) return null;
+  try {
+    return await repoDeleteProfileAttribute(String(profileId), String(attributeId));
+  } catch (error) {
+    console.error(
+      `[deleteProfileAttribute] Failed for profile ${profileId}, attribute ${attributeId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
 export {
   updateModelAttribute,
   updateProfileAttribute,
   createModelAttribute,
   createProfileAttribute,
+  deleteModelAttribute,
+  deleteProfileAttribute,
 };

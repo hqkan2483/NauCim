@@ -5,6 +5,8 @@ import { updateGeneralizationLinkAndExportProject } from "../services/update-gen
 import { updateAssociationLinkAndExportProject } from "../services/update-association-link.js";
 import { createGeneralizationLinkAndExportProject } from "../services/create-generalization-link.js";
 import { createAssociationLinkAndExportProject } from "../services/create-association-link.js";
+import { deleteGeneralizationLinkAndExportProject } from "../services/delete-generalization-link.js";
+import { deleteAssociationLinkAndExportProject } from "../services/delete-association-link.js";
 
 export const linksRouter = Router();
 
@@ -222,6 +224,74 @@ linksRouter.put(
     } catch (e) {
       const status = Number(e?.status || 500);
       const msg = e?.message ? String(e.message) : "Failed to update association link";
+      return sendError(res, status, msg);
+    }
+  })
+);
+
+/**
+ * Delete an existing Generalization link and return a full exported Project.
+ *
+ * Request:
+ * - Path param: :linkId
+ * - Optional query params:
+ *   - modelId / profileId: disambiguates where to delete
+ *   - editingClassId: used for extra safety validation
+ */
+linksRouter.delete(
+  "/generalization/:linkId",
+  asyncHandler(async (req, res) => {
+    const linkIdParam = String(req.params.linkId || "");
+    const modelId = req.query.modelId ? String(req.query.modelId) : "";
+    const profileId = req.query.profileId ? String(req.query.profileId) : "";
+    const editingClassId = req.query.editingClassId ? String(req.query.editingClassId) : "";
+
+    try {
+      const project = await deleteGeneralizationLinkAndExportProject({
+        linkId: linkIdParam,
+        modelId,
+        profileId,
+        editingClassId,
+      });
+
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete generalization link";
+      return sendError(res, status, msg);
+    }
+  })
+);
+
+/**
+ * Delete an existing Association link and return a full exported Project.
+ *
+ * Request:
+ * - Path param: :linkId
+ * - Optional query params:
+ *   - modelId / profileId: disambiguates where to delete
+ *   - editingClassId: used for extra safety validation
+ */
+linksRouter.delete(
+  "/association/:linkId",
+  asyncHandler(async (req, res) => {
+    const linkIdParam = String(req.params.linkId || "");
+    const modelId = req.query.modelId ? String(req.query.modelId) : "";
+    const profileId = req.query.profileId ? String(req.query.profileId) : "";
+    const editingClassId = req.query.editingClassId ? String(req.query.editingClassId) : "";
+
+    try {
+      const project = await deleteAssociationLinkAndExportProject({
+        linkId: linkIdParam,
+        modelId,
+        profileId,
+        editingClassId,
+      });
+
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete association link";
       return sendError(res, status, msg);
     }
   })

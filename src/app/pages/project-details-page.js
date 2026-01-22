@@ -90,7 +90,9 @@ import {
   updateGeneralizationLink as updateGeneralizationLinkInBackend,
   updateAssociationLink as updateAssociationLinkInBackend,
   createGeneralizationLink as createGeneralizationLinkInBackend,
-  createAssociationLink as createAssociationLinkInBackend
+  createAssociationLink as createAssociationLinkInBackend,
+  deleteGeneralizationLink as deleteGeneralizationLinkInBackend,
+  deleteAssociationLink as deleteAssociationLinkInBackend
 } from "../../services/link-service.js";
 import { initPackageTreeContextMenu } from "../../ui/components/package-context-menu.js";
 import {
@@ -118,6 +120,8 @@ import {
   updateProfileAttribute as updateProfileAttributeInBackend,
   createModelAttribute as createModelAttributeInBackend,
   createProfileAttribute as createProfileAttributeInBackend,
+  deleteModelAttribute as deleteModelAttributeInBackend,
+  deleteProfileAttribute as deleteProfileAttributeInBackend,
 } from "../../services/attribute-service.js";
 
 // ============================================================
@@ -2763,9 +2767,74 @@ async function handleEditAttribute(attrId) {
   openEditAttributeModal(found.attr, { existingNames });
 }
 
-function handleDeleteAttribute(attrId) {
+/**
+ * Delete an attribute and refresh tree + selected class view.
+ *
+ * @param {string} attrId - Attribute ID to delete
+ */
+async function handleDeleteAttribute(attrId) {
   if (!confirm("Удалить атрибут?")) return;
-  alert("Функция удаления атрибута в разработке");
+
+  try {
+    const project = await getProjectById(currentProjectId);
+    if (!project) return;
+
+    const found = findAttributeWithParent(project, attrId);
+    if (!found) return;
+
+    const { cls, context, modelId, profileId } = found;
+    const classId = String(cls?.id || "");
+    if (!classId) return;
+
+    const tabToRestore = "item-attributes";
+
+    const updatedProject =
+      context === "model"
+        ? await deleteModelAttributeInBackend(currentProjectId, modelId, attrId)
+        : await deleteProfileAttributeInBackend(currentProjectId, profileId, attrId);
+
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    selectedTreeSnapshot = {
+      type: "class",
+      classId,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
+      packageId: null,
+    };
+
+    await renderProjectTreeSidebar(updatedProject);
+    const chain = findClassParentChain(
+      updatedProject,
+      classId,
+      modelId,
+      profileId,
+      context
+    );
+    expandTreePath(chain);
+
+    requestAnimationFrame(async () => {
+      const selector =
+        context === "model"
+          ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+          : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+      const classEl = document.querySelector(selector);
+      if (classEl) {
+        setSelectedTreeItem(classEl);
+        classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        await handleSelectClass(classId, modelId, profileId, tabToRestore);
+      }
+    });
+
+    showToast("Атрибут удалён", { type: "success" });
+  } catch (error) {
+    console.error("[handleDeleteAttribute] Failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка удаления";
+    showToast(`Ошибка удаления атрибута: ${msg}`, { type: "error" });
+  }
 }
 
 // ============================================================
@@ -2854,29 +2923,85 @@ async function handleEditAssociationLink(linkId, classId) {
   });
 }
 
+/**
+ * Delete a link and refresh tree + selected class view.
+ *
+ * @param {string} linkId - Link ID to delete
+ * @param {string} classId - Current class ID (for selection restore)
+ */
 async function handleDeleteLink(linkId, classId) {
   if (!confirm("Удалить связь?")) return;
 
-  const project = await getProjectById(currentProjectId);
-  if (!project) return;
+  try {
+    const project = await getProjectById(currentProjectId);
+    if (!project) return;
 
-  const tabToRestore = getActiveClassTabName() || lastClassTabName;
+    const tabToRestore = "item-links";
 
-  const found = findLinkWithParent(project, classId, linkId);
-  if (!found) return;
+    const found = findLinkWithParent(project, classId, linkId);
+    if (!found) return;
 
-  if (!Array.isArray(found.cls.links)) return;
-  const idx = found.cls.links.findIndex((l) => l.linkId === linkId);
-  if (idx < 0) return;
+    const context = found.context;
+    const modelId = found.modelId || "";
+    const profileId = found.profileId || "";
+    const relationKind = String(found?.link?.relationKind || "");
 
-  found.cls.links.splice(idx, 1);
+    const updatedProject =
+      relationKind === "Generalization"
+        ? await deleteGeneralizationLinkInBackend({
+            linkId,
+            modelId,
+            profileId,
+            editingClassId: classId,
+          })
+        : await deleteAssociationLinkInBackend({
+            linkId,
+            modelId,
+            profileId,
+            editingClassId: classId,
+          });
 
-  const itemDetailsContent = document.getElementById("item-details-content");
-  if (itemDetailsContent) {
-    itemDetailsContent.innerHTML = renderClassDetails(found.cls, {
-      viewMode: getItemDetailsViewMode(),
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    selectedTreeSnapshot = {
+      type: "class",
+      classId,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
+      packageId: null,
+    };
+
+    await renderProjectTreeSidebar(updatedProject);
+    const chain = findClassParentChain(
+      updatedProject,
+      classId,
+      modelId,
+      profileId,
+      context
+    );
+    expandTreePath(chain);
+
+    requestAnimationFrame(async () => {
+      const selector =
+        context === "model"
+          ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+          : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+      const classEl = document.querySelector(selector);
+      if (classEl) {
+        setSelectedTreeItem(classEl);
+        classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        await handleSelectClass(classId, modelId, profileId, tabToRestore);
+      }
     });
-    restoreClassTab(tabToRestore);
+
+    showToast("Связь удалена", { type: "success" });
+  } catch (error) {
+    console.error("[handleDeleteLink] Failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка удаления";
+    showToast(`Ошибка удаления связи: ${msg}`, { type: "error" });
   }
 }
 

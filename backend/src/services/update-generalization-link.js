@@ -1,5 +1,6 @@
 import { prisma } from "../db.js";
 import { exportProject } from "./export-project.js";
+import { resolveGeneralizationScope } from "./link-scope.js";
 
 /**
  * Update an existing Generalization link (Model/Profile) and return full exported Project.
@@ -108,81 +109,6 @@ export async function updateGeneralizationLinkAndExportProject({
   return exported;
 }
 
-/**
- * Resolve where the generalization link lives (model or profile).
- * If modelId/profileId provided, they are used for disambiguation.
- *
- * @param {object} args
- * @param {string} args.id
- * @param {string} args.modelId
- * @param {string} args.profileId
- * @returns {Promise<null|{kind:'model', modelId:string, projectId:string, ends:Array}|{kind:'profile', profileId:string, projectId:string, ends:Array}>}
- */
-async function resolveGeneralizationScope({ id, modelId, profileId }) {
-  const mid = String(modelId || "");
-  const pid = String(profileId || "");
-
-  if (mid && pid) {
-    const err = new Error("Provide either modelId or profileId, not both");
-    err.status = 400;
-    throw err;
-  }
-
-  if (mid) {
-    const g = await prisma.generalizationLinkModel.findFirst({
-      where: { id, modelId: mid },
-      select: {
-        id: true,
-        modelId: true,
-        model: { select: { projectId: true } },
-        ends: { select: { role: true, classId: true } },
-      },
-    });
-    if (!g) return null;
-    return { kind: "model", modelId: g.modelId, projectId: g.model.projectId, ends: g.ends || [] };
-  }
-
-  if (pid) {
-    const g = await prisma.generalizationLinkProfile.findFirst({
-      where: { id, profileId: pid },
-      select: {
-        id: true,
-        profileId: true,
-        profile: { select: { projectId: true } },
-        ends: { select: { role: true, classId: true } },
-      },
-    });
-    if (!g) return null;
-    return { kind: "profile", profileId: g.profileId, projectId: g.profile.projectId, ends: g.ends || [] };
-  }
-
-  // No hint: try model first, then profile.
-  const gm = await prisma.generalizationLinkModel.findUnique({
-    where: { id },
-    select: {
-      modelId: true,
-      model: { select: { projectId: true } },
-      ends: { select: { role: true, classId: true } },
-    },
-  });
-  if (gm) {
-    return { kind: "model", modelId: gm.modelId, projectId: gm.model.projectId, ends: gm.ends || [] };
-  }
-
-  const gp = await prisma.generalizationLinkProfile.findUnique({
-    where: { id },
-    select: {
-      profileId: true,
-      profile: { select: { projectId: true } },
-      ends: { select: { role: true, classId: true } },
-    },
-  });
-  if (gp) {
-    return { kind: "profile", profileId: gp.profileId, projectId: gp.profile.projectId, ends: gp.ends || [] };
-  }
-
-  return null;
-}
 
 /**
  * Update GeneralizationLinkModel + its ends.

@@ -4,6 +4,7 @@ import { prisma } from "../db.js";
 import { asyncHandler, sendError } from "../utils/http.js";
 import { importModelRootPackages } from "../services/import-into-existing.js";
 import { exportProject } from "../services/export-project.js";
+import { deleteModelAttributeAndExportProject } from "../services/delete-attribute.js";
 import { newId } from "../utils/id-generation.js";
 
 export const modelsRouter = Router();
@@ -701,6 +702,29 @@ modelsRouter.put(
     const project = await exportProject(model.projectId);
     if (!project) return sendError(res, 404, "Project not found");
     res.json(project);
+  })
+);
+
+/**
+ * Delete an attribute from a model graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :modelId, :attributeId
+ */
+modelsRouter.delete(
+  "/:modelId/attributes/:attributeId",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const attributeId = String(req.params.attributeId);
+
+    try {
+      const project = await deleteModelAttributeAndExportProject({ modelId, attributeId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete attribute";
+      return sendError(res, status, msg);
+    }
   })
 );
 

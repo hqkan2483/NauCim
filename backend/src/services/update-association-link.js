@@ -1,5 +1,6 @@
 import { prisma } from "../db.js";
 import { exportProject } from "./export-project.js";
+import { resolveAssociationScope } from "./link-scope.js";
 
 /**
  * Update an existing Association link (Model/Profile) and return full exported Project.
@@ -190,81 +191,6 @@ function getOtherEndName(ends, classId) {
   return String(otherEnd?.linkEndName || "").trim();
 }
 
-/**
- * Resolve where the association link lives (model or profile).
- * If modelId/profileId provided, they are used for disambiguation.
- *
- * @param {object} args
- * @param {string} args.id - Link ID
- * @param {string} args.modelId - Optional model ID
- * @param {string} args.profileId - Optional profile ID
- * @returns {Promise<null|{kind:'model', modelId:string, projectId:string, ends:Array}|{kind:'profile', profileId:string, projectId:string, ends:Array}>}
- */
-async function resolveAssociationScope({ id, modelId, profileId }) {
-  const mid = String(modelId || "");
-  const pid = String(profileId || "");
-
-  if (mid && pid) {
-    const err = new Error("Provide either modelId or profileId, not both");
-    err.status = 400;
-    throw err;
-  }
-
-  if (mid) {
-    const a = await prisma.associationLinkModel.findFirst({
-      where: { id, modelId: mid },
-      select: {
-        id: true,
-        modelId: true,
-        model: { select: { projectId: true } },
-        linkEnd: { select: { linkEndId: true, linkEndClassId: true, linkEndName: true } },
-      },
-    });
-    if (!a) return null;
-    return { kind: "model", modelId: a.modelId, projectId: a.model.projectId, ends: a.linkEnd || [] };
-  }
-
-  if (pid) {
-    const a = await prisma.associationLinkProfile.findFirst({
-      where: { id, profileId: pid },
-      select: {
-        id: true,
-        profileId: true,
-        profile: { select: { projectId: true } },
-        linkEnd: { select: { linkEndId: true, linkEndClassId: true, linkEndName: true } },
-      },
-    });
-    if (!a) return null;
-    return { kind: "profile", profileId: a.profileId, projectId: a.profile.projectId, ends: a.linkEnd || [] };
-  }
-
-  // No hint: try model first, then profile.
-  const am = await prisma.associationLinkModel.findUnique({
-    where: { id },
-    select: {
-      modelId: true,
-      model: { select: { projectId: true } },
-      linkEnd: { select: { linkEndId: true, linkEndClassId: true, linkEndName: true } },
-    },
-  });
-  if (am) {
-    return { kind: "model", modelId: am.modelId, projectId: am.model.projectId, ends: am.linkEnd || [] };
-  }
-
-  const ap = await prisma.associationLinkProfile.findUnique({
-    where: { id },
-    select: {
-      profileId: true,
-      profile: { select: { projectId: true } },
-      linkEnd: { select: { linkEndId: true, linkEndClassId: true, linkEndName: true } },
-    },
-  });
-  if (ap) {
-    return { kind: "profile", profileId: ap.profileId, projectId: ap.profile.projectId, ends: ap.linkEnd || [] };
-  }
-
-  return null;
-}
 
 /**
  * Update AssociationLinkModel and its ends.
