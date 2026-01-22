@@ -5,7 +5,9 @@
 
 import { 
   updateGeneralizationLink as backendUpdateGeneralizationLink,
-  updateAssociationLink as backendUpdateAssociationLink
+  updateAssociationLink as backendUpdateAssociationLink,
+  createGeneralizationLink as backendCreateGeneralizationLink,
+  createAssociationLink as backendCreateAssociationLink
 } from "../backend/link-backend-service.js";
 
 /**
@@ -26,5 +28,13 @@ export async function updateGeneralizationLink(args) {
  */
 export async function updateAssociationLink(args) {
   return await backendUpdateAssociationLink(args);
+}
+
+export async function createGeneralizationLink(args) {
+  return await backendCreateGeneralizationLink(args);
+}
+
+export async function createAssociationLink(args) {
+  return await backendCreateAssociationLink(args);
 }
 

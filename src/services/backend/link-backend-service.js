@@ -63,3 +63,27 @@ export async function updateAssociationLink({
   return await apiClient.put(`/api/links/association/${encodeURIComponent(id)}${suffix}`, payload);
 }
 
+/**
+ * Create a new Generalization link.
+ */
+export async function createGeneralizationLink({ modelId = "", profileId = "", editingClassId = "", payload }) {
+  const qs = new URLSearchParams();
+  if (modelId) qs.set("modelId", String(modelId));
+  if (profileId) qs.set("profileId", String(profileId));
+  if (editingClassId) qs.set("editingClassId", String(editingClassId));
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
+  return await apiClient.post(`/api/links/generalization${suffix}`, payload);
+}
+
+/**
+ * Create a new Association link.
+ */
+export async function createAssociationLink({ modelId = "", profileId = "", editingClassId = "", payload }) {
+  const qs = new URLSearchParams();
+  if (modelId) qs.set("modelId", String(modelId));
+  if (profileId) qs.set("profileId", String(profileId));
+  if (editingClassId) qs.set("editingClassId", String(editingClassId));
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
+  return await apiClient.post(`/api/links/association${suffix}`, payload);
+}
+

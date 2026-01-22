@@ -170,7 +170,7 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
               data-tab="item-attributes">
         ✚ Добавить атрибут
       </button>
-      <button class="btn btn-primary tab-action-btn btn--class-details hidden"
+      <button class="btn btn-primary tab-action-btn btn--class-details"
               id="add-link-btn"
               data-class-id="${cls.id}"
               data-tab="item-links">

@@ -51,11 +51,14 @@ import {
 import {
   initGeneralizationLinkModal,
   openEditGeneralizationLinkModal,
+  openCreateGeneralizationLinkModal,
 } from "../../ui/components/link-modal.js";
 import {
   initAssociationLinkModal,
   openEditAssociationLinkModal,
+  openCreateAssociationLinkModal,
 } from "../../ui/components/association-link-modal.js";
+import { initLinkTypeModal, openLinkTypeModal } from "../../ui/components/link-type-modal.js";
 import {
   renderProjectTree,
   toggleTreeItem,
@@ -85,7 +88,9 @@ import {
 } from "../../services/diagram-service.js";
 import { 
   updateGeneralizationLink as updateGeneralizationLinkInBackend,
-  updateAssociationLink as updateAssociationLinkInBackend 
+  updateAssociationLink as updateAssociationLinkInBackend,
+  createGeneralizationLink as createGeneralizationLinkInBackend,
+  createAssociationLink as createAssociationLinkInBackend
 } from "../../services/link-service.js";
 import { initPackageTreeContextMenu } from "../../ui/components/package-context-menu.js";
 import {
@@ -124,6 +129,7 @@ let selectedProfileId = null;
 let selectedTreeSnapshot = null;
 let originalItemData = null;
 let lastClassTabName = null;
+let pendingAddLinkContext = null;
 
 // Diagram mode controller (Step 1)
 let diagramMode = null;
@@ -147,6 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "data-type-picker-modal",
     "generalization-link-modal",
     "association-link-modal",
+    "link-type-modal",
     "create-package-modal",
     "create-class-modal",
     "create-diagram-modal",
@@ -461,6 +468,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     initGeneralizationLinkModal(currentProjectId, {
+      onCreate: async (classId, updates) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const context = updates?.ctx?.modelId ? "model" : "profile";
+        const modelId = updates?.ctx?.modelId || "";
+        const profileId = updates?.ctx?.profileId || "";
+        const payload = updates?.generalizationLink;
+        if (!payload) return;
+
+        try {
+          const updatedProject = await createGeneralizationLinkInBackend({
+            modelId,
+            profileId,
+            editingClassId: String(classId || ""),
+            payload,
+            project,
+            linkId: "",
+          });
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: context === "model" ? modelId : null,
+            profileId: context === "profile" ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          const chain = findClassParentChain(updatedProject, classId, modelId, profileId, context);
+          expandTreePath(chain);
+
+          requestAnimationFrame(async () => {
+            const selector =
+              context === "model"
+                ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+                : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+            const classEl = document.querySelector(selector);
+            if (classEl) {
+              setSelectedTreeItem(classEl);
+              classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              await handleSelectClass(classId, modelId, profileId, "item-links");
+            }
+          });
+
+          showToast("Связь создана", { type: "success" });
+        } catch (error) {
+          console.error("[linkModal.onCreate] Save failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка создания";
+          showToast(`Ошибка создания связи: ${msg}`, { type: "error" });
+        }
+      },
       onUpdate: async (linkId, classId, updates) => {
         const project = await getProjectById(currentProjectId);
         if (!project) return;
@@ -488,6 +552,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             profileId: context === "profile" ? String(profileId) : "",
             editingClassId: String(classId),
             payload,
+            project,
           });
 
           if (!updatedProject) {
@@ -529,7 +594,81 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
     });
 
+    initLinkTypeModal({
+      onSelect: (relationKind) => {
+        if (!pendingAddLinkContext) return;
+        const { classId, ctx } = pendingAddLinkContext;
+        pendingAddLinkContext = null;
+
+        if (relationKind === "Generalization") {
+          openCreateGeneralizationLinkModal(classId, ctx);
+        } else if (relationKind === "Association") {
+          openCreateAssociationLinkModal(classId, ctx);
+        }
+      },
+    });
+
     initAssociationLinkModal(currentProjectId, {
+      onCreate: async (classId, payload, context) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const tabToRestore = "item-links";
+        const modelId = context?.modelId || "";
+        const profileId = context?.profileId || "";
+
+        try {
+          const updatedProject = await createAssociationLinkInBackend({
+            modelId: String(modelId),
+            profileId: String(profileId),
+            editingClassId: String(classId),
+            payload,
+            project,
+            linkId: "",
+          });
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: modelId ? modelId : null,
+            profileId: profileId ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          const chain = findClassParentChain(
+            updatedProject,
+            classId,
+            modelId,
+            profileId,
+            modelId ? "model" : "profile"
+          );
+          expandTreePath(chain);
+
+          requestAnimationFrame(async () => {
+            const selector = modelId
+              ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+              : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+            const classEl = document.querySelector(selector);
+            if (classEl) {
+              setSelectedTreeItem(classEl);
+              classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              await handleSelectClass(classId, modelId, profileId, tabToRestore);
+            }
+          });
+
+          showToast("Связь создана", { type: "success" });
+        } catch (error) {
+          console.error("[associationLinkModal.onCreate] Save failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка сохранения";
+          showToast(`Ошибка сохранения связи: ${msg}`, { type: "error" });
+        }
+      },
       onUpdate: async (linkId, classId, payload, context) => {
         const project = await getProjectById(currentProjectId);
         if (!project) return;
@@ -1860,7 +1999,8 @@ function handleItemDetailsClick(e) {
 
   const addLinkBtn = target.closest("#add-link-btn");
   if (addLinkBtn) {
-    handleAddLink(addLinkBtn.getAttribute("data-class-id"));
+    handleAddLink(addLinkBtn.getAttribute("data-class-id"))
+      .catch((err) => console.error("[handleAddLink] failed", err));
     return;
   }
 
@@ -2631,8 +2771,26 @@ function handleDeleteAttribute(attrId) {
 // ============================================================
 // LINK HANDLERS
 // ============================================================
-function handleAddLink(classId) {
-  alert("Функция добавления связи в разработке");
+async function handleAddLink(classId) {
+  if (!classId) return;
+
+  const project = await getProjectById(currentProjectId);
+  if (!project) return;
+
+  const found = findClassWithContext(project, String(classId));
+  if (!found) {
+    showToast("Класс не найден для добавления связи", { type: "error" });
+    return;
+  }
+
+  const ctx = {
+    modelId: found.modelId || "",
+    profileId: found.profileId || "",
+    editingClassName: found.cls?.name || "",
+  };
+
+  pendingAddLinkContext = { classId: String(classId), ctx };
+  openLinkTypeModal({ defaultType: "Generalization" });
 }
 
 async function handleEditGeneralizationLink(linkId, classId) {

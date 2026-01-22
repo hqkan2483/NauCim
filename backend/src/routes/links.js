@@ -3,6 +3,8 @@ import { z } from "zod";
 import { asyncHandler, sendError } from "../utils/http.js";
 import { updateGeneralizationLinkAndExportProject } from "../services/update-generalization-link.js";
 import { updateAssociationLinkAndExportProject } from "../services/update-association-link.js";
+import { createGeneralizationLinkAndExportProject } from "../services/create-generalization-link.js";
+import { createAssociationLinkAndExportProject } from "../services/create-association-link.js";
 
 export const linksRouter = Router();
 
@@ -15,7 +17,7 @@ const classRefSchema = z
 
 const generalizationLinkSchema = z
   .object({
-    linkId: z.string().min(1),
+    linkId: z.string().min(1).optional(),
     linkType: z.string().optional(),
     documentation: z.string().nullable().optional(),
     documentationRu: z.string().nullable().optional(),
@@ -47,6 +49,9 @@ linksRouter.put(
     }
 
     const body = parsed.data;
+    if (!body.linkId) {
+      return sendError(res, 400, "linkId is required for update");
+    }
     if (String(body.linkId) !== linkIdParam) {
       return sendError(res, 400, "linkId mismatch");
     }
@@ -75,7 +80,7 @@ linksRouter.put(
 
 const linkEndSchema = z
   .object({
-    linkEndId: z.string().min(1),
+    linkEndId: z.string().min(1).optional(),
     linkEndName: z.string(),
     linkEndClassId: z.string().min(1),
     linkEndClassName: z.string().optional(), // ignored
@@ -89,7 +94,7 @@ const linkEndSchema = z
 
 const associationLinkSchema = z
   .object({
-    linkId: z.string().min(1),
+    linkId: z.string().min(1).optional(),
     linkType: z.string().optional(),
     documentation: z.string().nullable().optional(),
     documentationRu: z.string().nullable().optional(),
@@ -98,6 +103,79 @@ const associationLinkSchema = z
     linkEnd: z.array(linkEndSchema).length(2),
   })
   .passthrough();
+
+/**
+ * Create a new Generalization link and return a full exported Project.
+ *
+ * Request:
+ * - Body: GeneralizationLink (parent/child classId required). linkId is ignored if provided.
+ * - Query: modelId or profileId (required)
+ */
+linksRouter.post(
+  "/generalization",
+  asyncHandler(async (req, res) => {
+    const parsed = generalizationLinkSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid GeneralizationLink", parsed.error.flatten());
+    }
+
+    const body = parsed.data;
+    const modelId = req.query.modelId ? String(req.query.modelId) : "";
+    const profileId = req.query.profileId ? String(req.query.profileId) : "";
+    const editingClassId = req.query.editingClassId ? String(req.query.editingClassId) : "";
+
+    try {
+      const project = await createGeneralizationLinkAndExportProject({
+        modelId,
+        profileId,
+        editingClassId,
+        payload: body,
+      });
+
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to create generalization link";
+      return sendError(res, status, msg);
+    }
+  })
+);
+/**
+ * Create a new Association link and return a full exported Project.
+ *
+ * Request:
+ * - Body: AssociationLink (2 linkEnd entries required). linkId is ignored if provided.
+ * - Query: modelId or profileId (required)
+ */
+linksRouter.post(
+  "/association",
+  asyncHandler(async (req, res) => {
+    const parsed = associationLinkSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid AssociationLink", parsed.error.flatten());
+    }
+
+    const body = parsed.data;
+    const modelId = req.query.modelId ? String(req.query.modelId) : "";
+    const profileId = req.query.profileId ? String(req.query.profileId) : "";
+    const editingClassId = req.query.editingClassId ? String(req.query.editingClassId) : "";
+
+    try {
+      const project = await createAssociationLinkAndExportProject({
+        modelId,
+        profileId,
+        editingClassId,
+        payload: body,
+      });
+
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to create association link";
+      return sendError(res, status, msg);
+    }
+  })
+);
 
 /**
  * Update an existing Association link and return a full exported Project.
@@ -120,6 +198,9 @@ linksRouter.put(
     }
 
     const body = parsed.data;
+    if (!body.linkId) {
+      return sendError(res, 400, "linkId is required for update");
+    }
     if (String(body.linkId) !== linkIdParam) {
       return sendError(res, 400, "linkId mismatch");
     }

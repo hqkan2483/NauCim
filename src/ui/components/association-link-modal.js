@@ -9,6 +9,8 @@ let editingClassId = null;
 let editingContext = null; // { modelId?: string, profileId?: string }
 let onUpdateCallback = null;
 let currentLinkEndIds = { src: null, target: null }; // Store linkEndIds
+let onCreateCallback = null;
+let isCreatingAssociation = false;
 
 /**
  * Initialize the Association Link modal.
@@ -21,6 +23,7 @@ let currentLinkEndIds = { src: null, target: null }; // Store linkEndIds
 function initAssociationLinkModal(projectId, callbacks = {}) {
   currentProjectId = projectId;
   onUpdateCallback = callbacks?.onUpdate || null;
+  onCreateCallback = callbacks?.onCreate || null;
 
   initDataTypePickerModal(projectId);
 
@@ -77,6 +80,7 @@ async function openEditAssociationLinkModal(associationLink, classId, ctx = {}) 
     profileId: ctx?.profileId ? String(ctx.profileId) : "",
     editingClassName: ctx?.editingClassName ? String(ctx.editingClassName) : "",
   };
+  isCreatingAssociation = false;
 
   const relationKindSelect = document.getElementById("association-link-relationKind");
   const stereotypeInput = document.getElementById("association-link-stereotype");
@@ -127,6 +131,44 @@ async function openEditAssociationLinkModal(associationLink, classId, ctx = {}) 
   if (modal) openModal(modal);
 }
 
+async function openCreateAssociationLinkModal(classId, ctx = {}) {
+  if (!currentProjectId) return;
+
+  editingAssociationLinkId = null;
+  editingClassId = classId || null;
+  editingContext = {
+    modelId: ctx?.modelId ? String(ctx.modelId) : "",
+    profileId: ctx?.profileId ? String(ctx.profileId) : "",
+    editingClassName: ctx?.editingClassName ? String(ctx.editingClassName) : "",
+  };
+  isCreatingAssociation = true;
+
+  const relationKindSelect = document.getElementById("association-link-relationKind");
+  const stereotypeInput = document.getElementById("association-link-stereotype");
+  const documentationTextarea = document.getElementById("association-link-documentation");
+  const documentationRuTextarea = document.getElementById("association-link-documentationRu");
+  const detailsTextarea = document.getElementById("association-link-details");
+
+  if (relationKindSelect) relationKindSelect.value = "Association";
+  if (stereotypeInput) stereotypeInput.value = "";
+  if (documentationTextarea) documentationTextarea.value = "";
+  if (documentationRuTextarea) documentationRuTextarea.value = "";
+  if (detailsTextarea) detailsTextarea.value = "";
+
+  // Prefill source as editing class
+  populateLinkEnd("source", null);
+  const srcName = document.getElementById("association-sourceClassName");
+  const srcId = document.getElementById("association-sourceClassId");
+  if (srcName) srcName.value = ctx?.editingClassName ? String(ctx.editingClassName) : "";
+  if (srcId) srcId.value = classId ? String(classId) : "";
+
+  populateLinkEnd("target", null);
+  currentLinkEndIds = { src: "", target: "" };
+
+  const modal = document.getElementById("association-link-modal");
+  if (modal) openModal(modal);
+}
+
 /**
  * Populate a link end section with data.
  *
@@ -171,7 +213,7 @@ function collectLinkEnd(prefix, linkEndId) {
   const details = document.getElementById(`association-${rolePrefix}-details`)?.value || "";
 
   return {
-    linkEndId: String(linkEndId),
+    ...(linkEndId ? { linkEndId: String(linkEndId) } : {}),
     linkEndName: role,
     linkEndClassId: classId,
     multiplicity: mult,
@@ -187,18 +229,12 @@ function collectLinkEnd(prefix, linkEndId) {
  * Collects form data, validates, and calls the backend.
  */
 async function saveAssociationLink() {
-  if (!editingAssociationLinkId || !currentProjectId) {
+  if (!currentProjectId) {
     showToast("Отсутствуют необходимые данные для сохранения", { type: "error" });
     return;
   }
 
   try {
-    // Validate linkEndIds
-    if (!currentLinkEndIds.src || !currentLinkEndIds.target) {
-      showToast("Отсутствуют идентификаторы узлов связи", { type: "error" });
-      return;
-    }
-
     // Collect main link data
     const stereotype = document.getElementById("association-link-stereotype")?.value || "";
     const documentation = document.getElementById("association-link-documentation")?.value || "";
@@ -206,14 +242,14 @@ async function saveAssociationLink() {
     const details = document.getElementById("association-link-details")?.value || "";
 
     // Collect source end (editing class)
-    const srcEnd = collectLinkEnd("source", currentLinkEndIds.src);
+    const srcEnd = collectLinkEnd("source", currentLinkEndIds.src || undefined);
     if (!srcEnd.linkEndClassId) {
       showToast("Не указан класс исходного узла", { type: "error" });
       return;
     }
 
     // Collect target end
-    const targetEnd = collectLinkEnd("target", currentLinkEndIds.target);
+    const targetEnd = collectLinkEnd("target", currentLinkEndIds.target || undefined);
     if (!targetEnd.linkEndClassId) {
       showToast("Необходимо выбрать целевой класс", { type: "error" });
       return;
@@ -221,7 +257,7 @@ async function saveAssociationLink() {
 
     // Build payload
     const payload = {
-      linkId: editingAssociationLinkId,
+      ...(editingAssociationLinkId ? { linkId: editingAssociationLinkId } : {}),
       linkType: "Association",
       documentation: documentation || null,
       documentationRu: documentationRu || null,
@@ -235,9 +271,17 @@ async function saveAssociationLink() {
     if (modal) closeModal(modal);
 
     // Call update callback
-    if (onUpdateCallback) {
+    if (isCreatingAssociation && onCreateCallback) {
+      await onCreateCallback(editingClassId, payload, editingContext);
+    } else if (!isCreatingAssociation && onUpdateCallback) {
       await onUpdateCallback(editingAssociationLinkId, editingClassId, payload, editingContext);
     }
+
+    editingAssociationLinkId = null;
+    editingClassId = null;
+    editingContext = null;
+    currentLinkEndIds = { src: null, target: null };
+    isCreatingAssociation = false;
   } catch (error) {
     console.error("[saveAssociationLink] Failed:", error);
     const msg = error?.message ? String(error.message) : "Ошибка сохранения";
@@ -245,4 +289,4 @@ async function saveAssociationLink() {
   }
 }
 
-export { initAssociationLinkModal, openEditAssociationLinkModal };
+export { initAssociationLinkModal, openEditAssociationLinkModal, openCreateAssociationLinkModal };

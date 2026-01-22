@@ -126,7 +126,7 @@ export async function updateAssociationLinkAndExportProject({
  * @param {string} args.linkId - Current link ID being updated
  * @param {Array} args.linkEnd - Array of 2 linkEnd objects
  */
-async function validateUniqueAssociationNames({ scope, linkId, linkEnd }) {
+export async function validateUniqueAssociationNames({ scope, linkId, linkEnd }) {
   for (const end of linkEnd) {
     const classId = String(end?.linkEndClassId || "");
     const endName = String(end?.linkEndName || "").trim();
