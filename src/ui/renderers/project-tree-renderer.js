@@ -254,14 +254,14 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
     // Then render classes
     if (pkg.classes && pkg.classes.length > 0) {
       pkg.classes.forEach((cls, idx) => {
-        html += renderClassTree(cls, `${itemId}-cls-${idx}`, modelId, profileId);
+        html += renderClassTree(cls, `${itemId}-cls-${idx}`, modelId, profileId, pkg.id);
       });
     }
 
     // Then render diagrams
     if (pkg.diagrams && pkg.diagrams.length > 0) {
       pkg.diagrams.forEach((d, idx) => {
-        html += renderDiagramTree(d, `${itemId}-dia-${idx}`, modelId, profileId);
+        html += renderDiagramTree(d, `${itemId}-dia-${idx}`, modelId, profileId, pkg.id);
       });
     }
 
@@ -273,9 +273,20 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
 }
 
 /**
- * Render diagram tree (leaf node)
+ * Render diagram tree (leaf node).
+ *
+ * Important UI contract:
+ * - `data-package-id` is the diagram's parent package id.
+ * - Source of truth is the export payload: `diagram.packageId` (filled from Prisma).
+ * - `fallbackPackageId` is used only as a safety fallback during transitional payloads.
  */
-function renderDiagramTree(diagram, itemId, modelId = null, profileId = null) {
+function renderDiagramTree(
+  diagram,
+  itemId,
+  modelId = null,
+  profileId = null,
+  fallbackPackageId = null
+) {
   const name = diagram?.diagramName || "Диаграмма";
   const type = diagram?.diagramType || "";
 
@@ -288,6 +299,7 @@ function renderDiagramTree(diagram, itemId, modelId = null, profileId = null) {
         <span class="tree-structure-name"
               data-type="diagram"
               data-diagram-id="${diagram?.id || ""}"
+            data-package-id="${diagram?.packageId || fallbackPackageId || ""}"
               data-model-id="${modelId || ""}"
               data-profile-id="${profileId || ""}"
               data-action="select-diagram"
@@ -300,9 +312,20 @@ function renderDiagramTree(diagram, itemId, modelId = null, profileId = null) {
 }
 
 /**
- * Render class tree
+ * Render class tree.
+ *
+ * Important UI contract:
+ * - `data-package-id` is the class's parent package id.
+ * - Source of truth is the export payload: `cls.packageId` (filled from Prisma).
+ * - `fallbackPackageId` is used only as a safety fallback during transitional payloads.
  */
-function renderClassTree(cls, itemId, modelId = null, profileId = null) {
+function renderClassTree(
+  cls,
+  itemId,
+  modelId = null,
+  profileId = null,
+  fallbackPackageId = null
+) {
   const expandedItems = JSON.parse(
     localStorage.getItem(TREE_STORAGE_KEYS.expandedTreeItems) || "{}"
   );
@@ -344,6 +367,7 @@ function renderClassTree(cls, itemId, modelId = null, profileId = null) {
         <span class="tree-structure-name"
               data-type="class"
               data-class-id="${cls.id || ""}"
+              data-package-id="${cls.packageId || fallbackPackageId || ""}"
               data-model-id="${modelId || ""}"
               data-ref-model-id="${cls.refModelId || ""}"
               data-ref-model-item-id="${cls.refModelItemId || ""}"

@@ -319,14 +319,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(
-            updatedProject,
-            classId,
-            modelId,
-            profileId,
-            context
-          );
-          expandTreePath(chain);
+          revealClassInTree({ classId, modelId, profileId, context });
           restoreSelectedTreeItemInTree();
 
           const updatedCls = findClassById(
@@ -438,14 +431,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(
-            updatedProject,
+          revealClassInTree({
             classId,
             modelId,
             profileId,
-            modelId ? "model" : "profile"
-          );
-          expandTreePath(chain);
+            context: modelId ? "model" : "profile",
+          });
           restoreSelectedTreeItemInTree();
 
           const updatedCls = findClassById(
@@ -513,10 +504,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(updatedProject, classId, modelId, profileId, context);
-          expandTreePath(chain);
-
           requestAnimationFrame(async () => {
+            revealClassInTree({ classId, modelId, profileId, context });
             const selector =
               context === "model"
                 ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -580,10 +569,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(updatedProject, classId, modelId, profileId, context);
-          expandTreePath(chain);
-
           requestAnimationFrame(async () => {
+            revealClassInTree({ classId, modelId, profileId, context });
             const selector =
               context === "model"
                 ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -652,16 +639,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(
-            updatedProject,
-            classId,
-            modelId,
-            profileId,
-            modelId ? "model" : "profile"
-          );
-          expandTreePath(chain);
-
           requestAnimationFrame(async () => {
+            revealClassInTree({
+              classId,
+              modelId,
+              profileId,
+              context: modelId ? "model" : "profile",
+            });
             const selector = modelId
               ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
               : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
@@ -712,16 +696,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(
-            updatedProject,
-            classId,
-            modelId,
-            profileId,
-            modelId ? "model" : "profile"
-          );
-          expandTreePath(chain);
-
           requestAnimationFrame(async () => {
+            revealClassInTree({
+              classId,
+              modelId,
+              profileId,
+              context: modelId ? "model" : "profile",
+            });
             const selector = modelId
               ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
               : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
@@ -792,14 +773,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         await renderProjectTreeSidebar(updatedProject);
-        const chain = findPackageParentChain(
-          updatedProject,
-          newPackageId,
-          modelId,
-          profileId,
-          context
-        );
-        expandTreePath(chain);
+        revealPackageInTree({ packageId: newPackageId, modelId, profileId, context });
         restoreSelectedTreeItemInTree();
 
         await handleSelectPackage(newPackageId, modelId, profileId);
@@ -854,14 +828,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         await renderProjectTreeSidebar(updatedProject);
-        const chain = findClassParentChain(
-          updatedProject,
-          newClassId,
-          modelId,
-          profileId,
-          context
-        );
-        expandTreePath(chain);
+        revealClassInTree({ classId: newClassId, modelId, profileId, context });
         restoreSelectedTreeItemInTree();
 
         await handleSelectClass(newClassId, modelId, profileId);
@@ -916,14 +883,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         await renderProjectTreeSidebar(updatedProject);
-        const chain = findDiagramParentChain(
-          updatedProject,
-          newDiagramId,
-          modelId,
-          profileId,
-          context
-        );
-        expandTreePath(chain);
+        revealDiagramInTree({ diagramId: newDiagramId, modelId, profileId, context });
         restoreSelectedTreeItemInTree();
 
         await handleSelectDiagram(newDiagramId, modelId, profileId);
@@ -1164,7 +1124,7 @@ function bindEvents() {
         showToast("Просмотр свойств класса — в разработке", { type: "info" });
       },
       onDeleteClass: async (ctx) => {
-        await handleDeleteClass(ctx?.classId || "");
+        await handleDeleteClass(ctx);
       },
     });
 
@@ -2159,6 +2119,125 @@ function restoreClassTab(tabName) {
 // ============================================================
 // NAVIGATION
 // ============================================================
+/**
+ * Ensure the current project node is marked as expanded.
+ *
+ * This affects the tree renderer (which reads localStorage) and also makes
+ * expand operations persist across re-renders.
+ */
+function ensureCurrentProjectExpandedInTree() {
+  const expandedProjects = JSON.parse(localStorage.getItem("cim.expandedProjects") || "{}");
+  expandedProjects[currentProjectId] = true;
+  localStorage.setItem("cim.expandedProjects", JSON.stringify(expandedProjects));
+}
+
+function getTreePackageSelector({ packageId, modelId = "", profileId = "", context }) {
+  if (!packageId) return null;
+  if (context === "model") {
+    if (!modelId) return null;
+    return `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-model-id="${cssEscape(modelId)}"]`;
+  }
+  if (context === "profile") {
+    if (!profileId) return null;
+    return `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+  }
+  return null;
+}
+
+function getTreeClassSelector({ classId, modelId = "", profileId = "", context }) {
+  if (!classId) return null;
+  if (context === "model") {
+    if (!modelId) return null;
+    return `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`;
+  }
+  if (context === "profile") {
+    if (!profileId) return null;
+    return `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+  }
+  return null;
+}
+
+function getTreeDiagramSelector({ diagramId, modelId = "", profileId = "", context }) {
+  if (!diagramId) return null;
+  if (context === "model") {
+    if (!modelId) return null;
+    return `.tree-structure-name[data-type="diagram"][data-diagram-id="${cssEscape(diagramId)}"][data-model-id="${cssEscape(modelId)}"]`;
+  }
+  if (context === "profile") {
+    if (!profileId) return null;
+    return `.tree-structure-name[data-type="diagram"][data-diagram-id="${cssEscape(diagramId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+  }
+  return null;
+}
+
+/**
+ * Expand all ancestor tree items that are needed to reveal `el`.
+ *
+ * Uses DOM hierarchy + `data-item-id` on toggle buttons (no exported-tree traversal).
+ * Updates localStorage expansion state so the next render preserves the same expansion.
+ */
+function expandTreeToRevealElement(el) {
+  if (!(el instanceof HTMLElement)) return;
+
+  ensureCurrentProjectExpandedInTree();
+
+  const itemIds = [];
+  let treeItem = el.closest(".tree-structure-item, .project-tree-item");
+
+  while (treeItem) {
+    const toggleBtn = treeItem.querySelector(
+      ':scope > .tree-structure-header [data-action="toggle-tree-item"][data-item-id]'
+    );
+    const itemId = toggleBtn?.getAttribute("data-item-id") || "";
+    if (itemId) itemIds.push(itemId);
+
+    treeItem = treeItem.parentElement?.closest(".tree-structure-item, .project-tree-item") || null;
+  }
+
+  if (itemIds.length === 0) return;
+
+  const expandedItems = JSON.parse(localStorage.getItem("cim.expandedTreeItems") || "{}");
+  // Expand from root → leaf
+  [...itemIds].reverse().forEach((itemId) => {
+    expandedItems[itemId] = true;
+    expandTreeItem(itemId);
+  });
+  localStorage.setItem("cim.expandedTreeItems", JSON.stringify(expandedItems));
+}
+
+function revealPackageInTree({ packageId, modelId = "", profileId = "", context }) {
+  const selector = getTreePackageSelector({ packageId, modelId, profileId, context });
+  if (!selector) return null;
+  const el = document.querySelector(selector);
+  if (el) expandTreeToRevealElement(el);
+  return el;
+}
+
+function revealClassInTree({ classId, modelId = "", profileId = "", context }) {
+  const selector = getTreeClassSelector({ classId, modelId, profileId, context });
+  if (!selector) return null;
+  const classEl = document.querySelector(selector);
+  if (!classEl) return null;
+
+  // Prefer `packageId` coming from DOM attribute set by the tree renderer.
+  const packageId = String(classEl.getAttribute("data-package-id") || "");
+  if (packageId) revealPackageInTree({ packageId, modelId, profileId, context });
+  expandTreeToRevealElement(classEl);
+  return classEl;
+}
+
+function revealDiagramInTree({ diagramId, modelId = "", profileId = "", context }) {
+  const selector = getTreeDiagramSelector({ diagramId, modelId, profileId, context });
+  if (!selector) return null;
+  const diagramEl = document.querySelector(selector);
+  if (!diagramEl) return null;
+
+  const packageId = String(diagramEl.getAttribute("data-package-id") || "");
+  if (packageId) revealPackageInTree({ packageId, modelId, profileId, context });
+  expandTreeToRevealElement(diagramEl);
+  return diagramEl;
+}
+
 async function handleNavigateToPackage(packageId, modelId = "", profileId = "") {
   const context =
     modelId && modelId !== ""
@@ -2168,27 +2247,8 @@ async function handleNavigateToPackage(packageId, modelId = "", profileId = "") 
       : null;
   if (!context) return;
 
-  const project = await getProjectById(currentProjectId);
-  if (!project) return;
-
-  const parentChain = findPackageParentChain(
-    project,
-    packageId,
-    modelId,
-    profileId,
-    context
-  );
-  if (!parentChain || parentChain.length === 0) return;
-
-  expandTreePath(parentChain);
-
   requestAnimationFrame(async () => {
-    const selector =
-      context === "model"
-        ? `[data-type="package"][data-package-id="${packageId}"][data-model-id="${modelId}"]`
-        : `[data-type="package"][data-package-id="${packageId}"][data-profile-id="${profileId}"]`;
-
-    const packageEl = document.querySelector(selector);
+    const packageEl = revealPackageInTree({ packageId, modelId, profileId, context });
     if (packageEl) {
       setSelectedTreeItem(packageEl);
       packageEl.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -2219,34 +2279,8 @@ async function handleNavigateToClass(
     return;
   }
 
-  const project = await getProjectById(currentProjectId);
-  if (!project) return;
-
-  const parentChain = findClassParentChain(
-    project,
-    classId,
-    modelId,
-    profileId,
-    context
-  );
-  if (!parentChain || parentChain.length === 0) {
-    if (showAlertOnNotFound) {
-      alert(
-        "Класс не найден в дереве в пределах текущей модели/профиля (по targetClassId)."
-      );
-    }
-    return;
-  }
-
-  expandTreePath(parentChain);
-
   requestAnimationFrame(async () => {
-    const selector =
-      context === "model"
-        ? `[data-type="class"][data-class-id="${classId}"][data-model-id="${modelId}"]`
-        : `[data-type="class"][data-class-id="${classId}"][data-profile-id="${profileId}"]`;
-
-    const classEl = document.querySelector(selector);
+    const classEl = revealClassInTree({ classId, modelId, profileId, context });
     if (classEl) {
       setSelectedTreeItem(classEl);
       classEl.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -2569,15 +2603,7 @@ async function handleSavePackage(form) {
     };
 
     await renderProjectTreeSidebar(updatedProject);
-
-    const chain = findPackageParentChain(
-      updatedProject,
-      packageId,
-      modelId,
-      profileId,
-      context
-    );
-    expandTreePath(chain);
+    revealPackageInTree({ packageId, modelId, profileId, context });
     restoreSelectedTreeItemInTree();
 
     const updatedPkg = findPackageById(
@@ -2694,16 +2720,8 @@ async function handleDeletePackage(ctx = {}) {
     await renderProjectTreeSidebar(updatedProject);
 
     if (parentPackageId) {
-      const chain = findPackageParentChain(
-        updatedProject,
-        parentPackageId,
-        modelId,
-        profileId,
-        context
-      );
-      expandTreePath(chain);
-
       requestAnimationFrame(async () => {
+        revealPackageInTree({ packageId: parentPackageId, modelId, profileId, context });
         const selector =
           context === "model"
             ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -2817,15 +2835,7 @@ async function handleSaveClass(form) {
     };
 
     await renderProjectTreeSidebar(updatedProject);
-
-    const chain = findClassParentChain(
-      updatedProject,
-      classId,
-      modelId,
-      profileId,
-      context
-    );
-    expandTreePath(chain);
+    revealClassInTree({ classId, modelId, profileId, context });
     restoreSelectedTreeItemInTree();
 
     const updatedCls = findClassById(
@@ -2876,11 +2886,22 @@ async function handleSaveClass(form) {
 }
 
 /**
- * Delete a class and refresh tree + show its parent package.
+ * Deletes a class and refreshes the tree.
  *
- * @param {string} classId - Class ID to delete
+ * UI responsibilities:
+ * - Confirm destructive action
+ * - Call backend through service layer
+ * - Re-render tree and re-select the class's parent package
+ *
+ * Data/Context rules:
+ * - `modelId` OR `profileId` must be provided
+ * - `packageId` should come from DOM (`data-package-id`) to avoid tree traversal
+ *   (source of truth: Prisma ClassModel/ClassProfile.packageId → export payload).
+ *
+ * @param {{ classId?: string, packageId?: (string|null), modelId?: string, profileId?: string }} ctx
  */
-async function handleDeleteClass(classId) {
+async function handleDeleteClass(ctx = {}) {
+  const classId = String(ctx?.classId || "");
   if (!classId) return;
   if (!confirm("Удалить класс?")) return;
 
@@ -2888,13 +2909,17 @@ async function handleDeleteClass(classId) {
     const project = await getProjectById(currentProjectId);
     if (!project) return;
 
-    const found = findClassWithContext(project, String(classId));
-    if (!found?.cls) return;
+    const modelId = String(ctx?.modelId || "");
+    const profileId = String(ctx?.profileId || "");
+    const context = modelId ? "model" : profileId ? "profile" : null;
+    if (!context) return;
 
-    const context = found.context;
-    const modelId = found.modelId || "";
-    const profileId = found.profileId || "";
-    const packageId = String(found.packageId || found.cls?.packageId || "");
+    // Prefer DOM-provided `packageId` (data-package-id). Fallback to payload lookup.
+    let packageId = String(ctx?.packageId || "");
+    if (!packageId) {
+      const cls = findClassById(project, classId, modelId, profileId, context);
+      packageId = String(cls?.packageId || "");
+    }
 
     if (!packageId) {
       showToast("Не удалось определить пакет класса", { type: "error" });
@@ -2920,16 +2945,8 @@ async function handleDeleteClass(classId) {
     };
 
     await renderProjectTreeSidebar(updatedProject);
-    const chain = findPackageParentChain(
-      updatedProject,
-      packageId,
-      modelId,
-      profileId,
-      context
-    );
-    expandTreePath(chain);
-
     requestAnimationFrame(async () => {
+      revealPackageInTree({ packageId, modelId, profileId, context });
       const selector =
         context === "model"
           ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -3045,16 +3062,8 @@ async function handleDeleteAttribute(attrId) {
     };
 
     await renderProjectTreeSidebar(updatedProject);
-    const chain = findClassParentChain(
-      updatedProject,
-      classId,
-      modelId,
-      profileId,
-      context
-    );
-    expandTreePath(chain);
-
     requestAnimationFrame(async () => {
+      revealClassInTree({ classId, modelId, profileId, context });
       const selector =
         context === "model"
           ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -3213,16 +3222,8 @@ async function handleDeleteLink(linkId, classId) {
     };
 
     await renderProjectTreeSidebar(updatedProject);
-    const chain = findClassParentChain(
-      updatedProject,
-      classId,
-      modelId,
-      profileId,
-      context
-    );
-    expandTreePath(chain);
-
     requestAnimationFrame(async () => {
+      revealClassInTree({ classId, modelId, profileId, context });
       const selector =
         context === "model"
           ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -3277,23 +3278,26 @@ async function handleDeleteDiagram(diagramId, ctx = {}) {
     const project = await getProjectById(currentProjectId);
     if (!project) return;
 
-    const context = ctx?.modelId ? "model" : ctx?.profileId ? "profile" : null;
-    const modelId = ctx?.modelId || "";
-    const profileId = ctx?.profileId || "";
+    const modelId = String(ctx?.modelId || "");
+    const profileId = String(ctx?.profileId || "");
+    const context = modelId ? "model" : profileId ? "profile" : null;
+    if (!context) return;
 
-    const found = findDiagramWithContext(project, String(diagramId), modelId, profileId, context);
-    if (!found?.diagram) return;
-
-    const packageId = String(found.packageId || "");
+    // Prefer DOM-provided `packageId` (data-package-id). Fallback to payload lookup.
+    let packageId = String(ctx?.packageId || "");
+    if (!packageId) {
+      const found = findDiagramWithContext(project, String(diagramId), modelId, profileId, context);
+      packageId = String(found?.packageId || found?.diagram?.packageId || "");
+    }
     if (!packageId) {
       showToast("Не удалось определить пакет диаграммы", { type: "error" });
       return;
     }
 
     const updatedProject =
-      found.context === "model"
-        ? await deleteModelDiagramInBackend(currentProjectId, found.modelId, diagramId)
-        : await deleteProfileDiagramInBackend(currentProjectId, found.profileId, diagramId);
+      context === "model"
+        ? await deleteModelDiagramInBackend(currentProjectId, modelId, diagramId)
+        : await deleteProfileDiagramInBackend(currentProjectId, profileId, diagramId);
 
     if (!updatedProject) {
       throw new Error("Backend did not return updated project");
@@ -3302,33 +3306,25 @@ async function handleDeleteDiagram(diagramId, ctx = {}) {
     selectedTreeSnapshot = {
       type: "package",
       packageId,
-      modelId: found.context === "model" ? found.modelId : null,
-      profileId: found.context === "profile" ? found.profileId : null,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
       classId: null,
       diagramId: null,
     };
 
     await renderProjectTreeSidebar(updatedProject);
-    const chain = findPackageParentChain(
-      updatedProject,
-      packageId,
-      found.modelId,
-      found.profileId,
-      found.context
-    );
-    expandTreePath(chain);
-
     requestAnimationFrame(async () => {
+      revealPackageInTree({ packageId, modelId, profileId, context });
       const selector =
-        found.context === "model"
-          ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-model-id="${cssEscape(found.modelId)}"]`
-          : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-profile-id="${cssEscape(found.profileId)}"]`;
+        context === "model"
+          ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-model-id="${cssEscape(modelId)}"]`
+          : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-profile-id="${cssEscape(profileId)}"]`;
 
       const pkgEl = document.querySelector(selector);
       if (pkgEl) {
         setSelectedTreeItem(pkgEl);
         pkgEl.scrollIntoView({ behavior: "smooth", block: "center" });
-        await handleSelectPackage(packageId, found.modelId, found.profileId);
+        await handleSelectPackage(packageId, modelId, profileId);
       }
     });
 

@@ -378,6 +378,9 @@ async function exportPackagesTreeModel(modelId) {
 
     pkgNode.classes = clsList.map((c) => ({
       id: c.id,
+      // `packageId` is part of the canonical export contract; it matches Prisma ClassModel/ClassProfile.packageId.
+      // UI uses it to determine parent package context without tree traversal.
+      packageId: c.packageId ?? null,
       name: c.name,
       type: c.type ?? "Class",
       stereotype: c.stereotype ?? null,
@@ -626,6 +629,7 @@ async function exportPackagesTreeProfile(profileId) {
 
     pkgNode.classes = clsList.map((c) => ({
       id: c.id,
+      packageId: c.packageId ?? null,
       name: c.name,
       type: c.type ?? "Class",
       stereotype: c.stereotype ?? null,
@@ -715,6 +719,9 @@ function mapLiteral(lit) {
 function mapDiagram(d) {
   return {
     id: d.id,
+    // `packageId` is part of the canonical export contract; it allows UI to locate the parent package
+    // without tree traversal. Source of truth: DiagramModel/DiagramProfile.packageId in Prisma.
+    packageId: d.packageId ?? null,
     diagramType: d.diagramType ?? "",
     diagramName: d.diagramName ?? "",
     documentation: d.documentation ?? null,

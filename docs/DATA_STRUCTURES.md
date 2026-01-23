@@ -277,7 +277,7 @@ interface Class {
   name: string; // Название класса (например, "ACLineSegment")
   type: string; // тип: Class, Enumeration
   stereotype: string; // Стереотип. Может иметь значение, назначенное  пользователем, например "rs"
-  packageName?: string; // Имя пакета, к которому принадлежит класс
+  packageId?: string | null; // ID пакета, к которому принадлежит класс (source of truth: Prisma ClassModel/ClassProfile.packageId)
   documentation?: string; // Описание класса
   documentationRu?: string; // Дополнительное описание на русском языке
   details?: string; // Справочная и поясняющая информация
@@ -450,6 +450,7 @@ interface ClassLink {
 ```typescript
 interface Diagram {
   id: string; // Уникальный идентификатор
+  packageId?: string | null; // ID пакета, к которому принадлежит диаграмма (source of truth: Prisma DiagramModel/DiagramProfile.packageId)
   diagramType: string; // тип диаграммы - ClassDiagram,
   diagramName: string; // название диаграммы
   documentation?: string; // Описание диаграммы
