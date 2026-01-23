@@ -5,6 +5,15 @@
 > All code, documentation, and development must follow the data structures defined in this document.  
 > When in doubt about data structure definitions, always refer to this document as the source of truth.
 
+## Contract-first requirement (mandatory)
+
+If a feature requires data that does not exist in the current structures:
+
+1. **First update the data contract** (this document) and the corresponding data structures (export/import/persistence as needed).
+2. **Only then** implement the UI/service functionality that depends on that data.
+
+No “guessing”, tree traversal fallbacks, or ad-hoc derived fields in UI code to compensate for missing contract fields.
+
 Этот документ описывает все структуры данных, используемые в приложении.
 
 ---
@@ -699,6 +708,27 @@ interface Literal {
 ```
 
 ---
+
+## ProfileItemRef
+
+Ссылка на объект в профиле
+
+```typescript
+interface ProfileItemRef {
+  profileId: string; //идентификатор профиля
+  profileObjectId: string; // Уникальный идентификатор объекта в профиле
+}
+```
+
+### Пример:
+
+```json
+
+  {
+    "profileId": "EAID_8AD35949_9281_4c08_9F00_D16F95C75B3F",
+    "profileObjectId": "EAID_D396E6CF_BA6C_4c5c_84C4_058B7E88C5DC",
+  },
+```
 
 ## Enums
 

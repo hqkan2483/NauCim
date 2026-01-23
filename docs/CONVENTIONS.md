@@ -398,7 +398,16 @@ class ProjectModal {
 
 Canonical dictionary (single source of truth): [UI_DATA_ATTRIBUTES.md](UI_DATA_ATTRIBUTES.md)
 
+Rules (mandatory):
+
+- If a feature requires tree navigation/search and the UI lacks context, **first extend the DOM contract** by adding the missing canonical `data-*` in renderers, **then** implement the feature.
+- Do not add fallback logic that traverses exported project trees to infer parents/context. Missing `data-*` is a renderer/contract bug.
+
 ### Inline Documentation
+
+Rule (mandatory):
+
+- **All functions must be documented in code.** Use JSDoc for function purpose, parameters, and return value. For small trivial helpers, a short docblock is still required.
 
 ```javascript
 /**
@@ -494,6 +503,10 @@ When working with data structures:
 2. Follow the defined interfaces exactly
 3. Don't create ad-hoc data structures
 4. Update the data contract if structures change
+
+Rule (mandatory):
+
+- If a feature requires data that does not exist in the current structures, **first update the data contract** (and persistence/import/export as needed), **then** implement the feature.
 
 ```javascript
 // ✅ Good: Following data contract

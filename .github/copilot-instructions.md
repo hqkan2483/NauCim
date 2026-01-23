@@ -133,6 +133,23 @@ This document defines all data structures used in the application:
 
 Always refer to this document when working with data structures.
 
+### Contract-first requirements (mandatory)
+
+1. **UI tree/search features must be data-attribute-driven**
+
+- If a feature requires tree navigation/search and required context is missing in the DOM, **first extend the UI DOM contract** by adding canonical `data-*` attributes in the renderer(s) (see `docs/UI_DATA_ATTRIBUTES.md`).
+- Only after that, implement the feature logic.
+- Do not add fallbacks that traverse exported trees to infer parents/context.
+
+2. **Data must exist in the canonical structures**
+
+- If a feature requires data that does not exist in the current structures, **first update the data contract** (`docs/DATA_STRUCTURES.md`) and the related persistence/import/export pipeline as needed.
+- Only after that, implement services/UI depending on that data.
+
+3. **All functions must be documented**
+
+- Add code documentation for every function (JSDoc preferred): purpose, parameters, return value.
+
 ### Import Formats (XMI → JSON)
 
 For the XMI import pipeline, the parser produces a dedicated JSON format that is validated by JSON Schema (2020-12). This format is documented here:
@@ -180,6 +197,7 @@ Note: the XMI import JSON format is an interchange/import format and does not ha
 3. **Respect the separation of concerns**: data layer, UI layer, and styling are separate
 4. **Follow the modularization strategy** when refactoring or adding new features
 5. **Reference the data contract** (`docs/DATA_STRUCTURES.md`) for data structures
+6. **Follow contract-first rules**: extend DOM `data-*` first, update data structures first, and document every function
 
 ## Technology Stack
 
