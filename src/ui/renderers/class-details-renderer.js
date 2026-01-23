@@ -167,12 +167,16 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
       <button class="btn btn-primary tab-action-btn btn--class-details"
               id="add-attribute-btn"
               data-class-id="${cls.id}"
+              data-model-id="${cls.modelId || ''}"
+              data-profile-id="${cls.profileId || ''}"
               data-tab="item-attributes">
         ✚ Добавить атрибут
       </button>
       <button class="btn btn-primary tab-action-btn btn--class-details"
               id="add-link-btn"
               data-class-id="${cls.id}"
+              data-model-id="${cls.modelId || ''}"
+              data-profile-id="${cls.profileId || ''}"
               data-tab="item-links">
         ✚ Добавить связь
       </button>
@@ -185,6 +189,8 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
       <button class="btn btn-primary tab-action-btn btn--class-details"
               id="add-literal-btn"
               data-class-id="${cls.id}"
+              data-model-id="${cls.modelId || ''}"
+              data-profile-id="${cls.profileId || ''}"
               data-tab="item-literals">
         ✚ Добавить значение
       </button>
@@ -387,6 +393,9 @@ function renderClassLinks(cls) {
                       data-action="${editAction}"
                       data-class-id="${cls.id}"
                       data-link-id="${link.linkId}"
+                      data-model-id="${cls.modelId || ''}"
+                      data-profile-id="${cls.profileId || ''}"
+                      data-relation-kind="${link.relationKind || ''}"
                       title="Редактировать">
                 ✏️
               </button>
@@ -394,6 +403,9 @@ function renderClassLinks(cls) {
                       data-action="delete-link"
                       data-class-id="${cls.id}"
                       data-link-id="${link.linkId}"
+                      data-model-id="${cls.modelId || ''}"
+                      data-profile-id="${cls.profileId || ''}"
+                      data-relation-kind="${link.relationKind || ''}"
                       title="Удалить">
                 🗑️
               </button>

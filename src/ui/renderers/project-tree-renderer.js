@@ -254,14 +254,14 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
     // Then render classes
     if (pkg.classes && pkg.classes.length > 0) {
       pkg.classes.forEach((cls, idx) => {
-        html += renderClassTree(cls, `${itemId}-cls-${idx}`, modelId, profileId, pkg.id);
+        html += renderClassTree(cls, `${itemId}-cls-${idx}`, modelId, profileId);
       });
     }
 
     // Then render diagrams
     if (pkg.diagrams && pkg.diagrams.length > 0) {
       pkg.diagrams.forEach((d, idx) => {
-        html += renderDiagramTree(d, `${itemId}-dia-${idx}`, modelId, profileId, pkg.id);
+        html += renderDiagramTree(d, `${itemId}-dia-${idx}`, modelId, profileId);
       });
     }
 
@@ -278,14 +278,13 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
  * Important UI contract:
  * - `data-package-id` is the diagram's parent package id.
  * - Source of truth is the export payload: `diagram.packageId` (filled from Prisma).
- * - `fallbackPackageId` is used only as a safety fallback during transitional payloads.
+ * Contract: `diagram.packageId` must be present in the export payload.
  */
 function renderDiagramTree(
   diagram,
   itemId,
   modelId = null,
-  profileId = null,
-  fallbackPackageId = null
+  profileId = null
 ) {
   const name = diagram?.diagramName || "Диаграмма";
   const type = diagram?.diagramType || "";
@@ -299,7 +298,8 @@ function renderDiagramTree(
         <span class="tree-structure-name"
               data-type="diagram"
               data-diagram-id="${diagram?.id || ""}"
-            data-package-id="${diagram?.packageId || fallbackPackageId || ""}"
+            data-package-id="${diagram?.packageId || ""}"
+            data-contract-missing-package-id="${diagram?.packageId ? "" : "1"}"
               data-model-id="${modelId || ""}"
               data-profile-id="${profileId || ""}"
               data-action="select-diagram"
@@ -317,14 +317,13 @@ function renderDiagramTree(
  * Important UI contract:
  * - `data-package-id` is the class's parent package id.
  * - Source of truth is the export payload: `cls.packageId` (filled from Prisma).
- * - `fallbackPackageId` is used only as a safety fallback during transitional payloads.
+ * Contract: `cls.packageId` must be present in the export payload.
  */
 function renderClassTree(
   cls,
   itemId,
   modelId = null,
-  profileId = null,
-  fallbackPackageId = null
+  profileId = null
 ) {
   const expandedItems = JSON.parse(
     localStorage.getItem(TREE_STORAGE_KEYS.expandedTreeItems) || "{}"
@@ -367,7 +366,8 @@ function renderClassTree(
         <span class="tree-structure-name"
               data-type="class"
               data-class-id="${cls.id || ""}"
-              data-package-id="${cls.packageId || fallbackPackageId || ""}"
+              data-package-id="${cls.packageId || ""}"
+              data-contract-missing-package-id="${cls.packageId ? "" : "1"}"
               data-model-id="${modelId || ""}"
               data-ref-model-id="${cls.refModelId || ""}"
               data-ref-model-item-id="${cls.refModelItemId || ""}"
@@ -444,7 +444,6 @@ function renderAttributeTree(attr, itemId, parentClassId, modelId = null, profil
               data-type="attribute"
               data-attr-id="${attr.id || ""}"
             data-class-id="${classId}"
-            data-parent-class-id="${classId}"
             data-model-id="${modelId || ""}"
             data-profile-id="${profileId || ""}"
               data-action="select-attribute"
@@ -493,9 +492,9 @@ function renderLinkTree(link, itemId, parentClassId, modelId = null, profileId =
         <span class="tree-structure-name"
               data-type="link"
               data-link-id="${link.linkId || ""}"
-              data-link-kind="${link.relationKind || ""}"
+              data-relation-kind="${link.relationKind || ""}"
               data-target-class-id="${link.targetClassId || ""}"
-            data-parent-class-id="${parentClassId || ""}"
+            data-class-id="${parentClassId || ""}"
             data-model-id="${modelId || ""}"
             data-profile-id="${profileId || ""}"
               data-action="select-link"
@@ -535,7 +534,6 @@ function renderLiteralTree(literal, itemId, parentClassId, modelId = null, profi
               data-type="literal"
               data-literal-id="${literal.id || ""}"
             data-class-id="${classId}"
-            data-parent-class-id="${classId}"
             data-model-id="${modelId || ""}"
             data-profile-id="${profileId || ""}"
               data-action="select-literal"

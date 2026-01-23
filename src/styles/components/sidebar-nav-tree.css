@@ -286,11 +286,11 @@
   padding-left: 2px;
 }
 
-.tree-structure-name[data-type="link"][data-link-kind="Generalization"] {
+.tree-structure-name[data-type="link"][data-relation-kind="Generalization"] {
   color: var(--generalization-link); /* Light blue for inheritance */
 }
 
-.tree-structure-name[data-type="link"][data-link-kind="Association"] {
+.tree-structure-name[data-type="link"][data-relation-kind="Association"] {
   color: var(--association-link); /* Light green for association */
 }
 
@@ -299,12 +299,25 @@
   font-style: normal;
 }
 
+/* Contract diagnostics: highlight nodes rendered without required packageId */
+.tree-structure-name[data-contract-missing-package-id="1"] {
+  background: var(--warning-block);
+  outline: 1px dashed var(--warning);
+  outline-offset: 2px;
+}
+
+.tree-structure-name[data-contract-missing-package-id="1"]::after {
+  content: " !";
+  color: var(--warning);
+  font-weight: 700;
+  margin-left: 4px;
+}
+
 /* Highlight active link */
 .tree-structure-name[data-type="link"].active {
   background: var(--white-02);
   font-weight: 500;
 }
-
 
 /* Кнопка разворачивания дерева  */
 .project-expand-btn {
