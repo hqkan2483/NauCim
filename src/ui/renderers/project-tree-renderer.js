@@ -417,9 +417,15 @@ function renderClassTree(
 }
 
 /**
- * Render attribute tree (leaf node)
+ * Render attribute tree (leaf node).
+ *
+ * Data/UI contract:
+ * - Renders `data-class-id` for the attribute's parent class.
+ * - `attr.classId` is preferred (canonical export contract).
+ * - `parentClassId` is a renderer fallback for legacy payloads.
  */
 function renderAttributeTree(attr, itemId, parentClassId, modelId = null, profileId = null) {
+  const classId = attr?.classId || parentClassId || "";
   let attrName = attr.name || "Атрибут";
   if (attr.stereotype) {
     attrName = `«${attr.stereotype}» ${attrName}`;
@@ -437,7 +443,8 @@ function renderAttributeTree(attr, itemId, parentClassId, modelId = null, profil
         <span class="tree-structure-name"
               data-type="attribute"
               data-attr-id="${attr.id || ""}"
-            data-parent-class-id="${parentClassId || ""}"
+            data-class-id="${classId}"
+            data-parent-class-id="${classId}"
             data-model-id="${modelId || ""}"
             data-profile-id="${profileId || ""}"
               data-action="select-attribute"
@@ -504,9 +511,15 @@ function renderLinkTree(link, itemId, parentClassId, modelId = null, profileId =
  * Render literal tree (for Enumeration classes)
  * @param {Object} literal - Literal object
  * @param {string} itemId - Unique item ID
+ *
+ * Data/UI contract:
+ * - Renders `data-class-id` for the literal's parent class.
+ * - `literal.classId` is preferred (canonical export contract).
+ * - `parentClassId` is a renderer fallback for legacy payloads.
  * @returns {string} HTML string
  */
 function renderLiteralTree(literal, itemId, parentClassId, modelId = null, profileId = null) {
+  const classId = literal?.classId || parentClassId || "";
   let literalName = literal.name || "Значение";
 
   let descriptionStr = "";
@@ -521,7 +534,8 @@ function renderLiteralTree(literal, itemId, parentClassId, modelId = null, profi
         <span class="tree-structure-name"
               data-type="literal"
               data-literal-id="${literal.id || ""}"
-            data-parent-class-id="${parentClassId || ""}"
+            data-class-id="${classId}"
+            data-parent-class-id="${classId}"
             data-model-id="${modelId || ""}"
             data-profile-id="${profileId || ""}"
               data-action="select-literal"

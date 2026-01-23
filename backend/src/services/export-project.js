@@ -690,6 +690,9 @@ function mapAttr(a, { classNameById = null } = {}) {
 
   return {
     id: a.id,
+    // `classId` is part of the canonical export contract for Attribute; it matches Prisma AttributeModel/AttributeProfile.classId.
+    // UI uses it to identify the parent class without traversing the exported tree.
+    classId: a.classId,
     name: a.name,
     dataType,
     dataTypeId,
@@ -709,8 +712,11 @@ function mapAttr(a, { classNameById = null } = {}) {
 function mapLiteral(lit) {
   return {
     id: lit.id,
+    // `classId` is part of the canonical export contract for Literal; it matches Prisma LiteralModel/LiteralProfile.classId.
+    // UI uses it to identify the parent class without traversing the exported tree.
+    classId: lit.classId,
     name: lit.name,
-    value: lit.value ?? null,
+    initialValue: lit.value ?? null,
     documentation: lit.documentation ?? null,
     documentationRu: lit.documentationRu ?? null,
   };

@@ -364,6 +364,7 @@ interface Class {
 ```typescript
 interface Attribute {
   id: string; // Уникальный идентификатор
+  classId: string; // ID родительского класса (source of truth: Prisma AttributeModel/AttributeProfile.classId)
   name: string; // Название атрибута (например, "r")
   dataType: string; // Тип данных (например, "Float", "String", "Integer"). Может быть назначен пользовательский тип данных
   dataTypeId?: string; //идентификатор типа данных в модели или профиле
@@ -679,6 +680,7 @@ interface ModelRef {
 interface Literal {
   name: string; //значение литерала
   id: string; // Уникальный идентификатор
+  classId: string; // ID родительского класса (source of truth: Prisma LiteralModel/LiteralProfile.classId)
   documentation?: string; // Описание значения
   initialValue?: string; // Значение по умолчанию
 }

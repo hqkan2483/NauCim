@@ -7,6 +7,7 @@ import { exportProject } from "../services/export-project.js";
 import { deleteProfilePackageAndExportProject } from "../services/delete-package.js";
 import { deleteProfileClassAndExportProject } from "../services/delete-class.js";
 import { deleteProfileAttributeAndExportProject } from "../services/delete-attribute.js";
+import { deleteProfileLiteralAndExportProject } from "../services/delete-literal.js";
 import { newId } from "../utils/id-generation.js";
 
 export const profilesRouter = Router();
@@ -16,6 +17,10 @@ function normalizeName(name) {
 }
 
 function normalizeAttrName(name) {
+  return String(name ?? "").trim().toLocaleLowerCase();
+}
+
+function normalizeLiteralName(name) {
   return String(name ?? "").trim().toLocaleLowerCase();
 }
 
@@ -103,6 +108,32 @@ async function assertUniqueAttributeNameInProfileClass({
 
   if (conflict) {
     const err = new Error("Attribute name already exists in this class");
+    err.status = 409;
+    throw err;
+  }
+}
+
+async function assertUniqueLiteralNameInProfileClass({
+  profileId,
+  classId,
+  name,
+  excludeLiteralId = null,
+}) {
+  const normalized = normalizeLiteralName(name);
+  if (!normalized) return;
+
+  const lits = await prisma.literalProfile.findMany({
+    where: { profileId: String(profileId), classId: String(classId) },
+    select: { id: true, name: true },
+  });
+
+  const conflict = lits.find((l) => {
+    if (excludeLiteralId && String(l.id) === String(excludeLiteralId)) return false;
+    return normalizeLiteralName(l.name) === normalized;
+  });
+
+  if (conflict) {
+    const err = new Error("Literal name already exists in this class");
     err.status = 409;
     throw err;
   }
@@ -219,6 +250,29 @@ const createAttributeSchema = z
     documentation: z.string().nullable().optional(),
     documentationRu: z.string().nullable().optional(),
     details: z.string().nullable().optional(),
+    initialValue: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+const updateLiteralSchema = z
+  .object({
+    id: z.string().min(1).optional(),
+    profileId: z.string().min(1).optional(),
+    classId: z.string().min(1).optional(),
+    srcId: z.string().nullable().optional(),
+
+    name: z.string().optional(),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
+    initialValue: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+const createLiteralSchema = z
+  .object({
+    name: z.string().min(1),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
     initialValue: z.string().nullable().optional(),
   })
   .passthrough();
@@ -776,6 +830,91 @@ profilesRouter.delete(
   })
 );
 
+// Update a literal inside a profile graph.
+// Returns full updated project (export payload).
+profilesRouter.put(
+  "/:profileId/literals/:literalId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const literalId = String(req.params.literalId);
+
+    const parsed = updateLiteralSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid literal update", parsed.error.flatten());
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { id: profileId },
+      select: { id: true, projectId: true },
+    });
+    if (!profile) return sendError(res, 404, "Profile not found");
+
+    const existing = await prisma.literalProfile.findFirst({
+      where: { id: literalId, profileId },
+      select: { id: true, profileId: true, classId: true },
+    });
+    if (!existing) return sendError(res, 404, "Literal not found");
+
+    if (parsed.data.name !== undefined) {
+      const trimmed = String(parsed.data.name ?? "").trim();
+      if (!trimmed) return sendError(res, 400, "Literal name is required");
+
+      try {
+        await assertUniqueLiteralNameInProfileClass({
+          profileId,
+          classId: existing.classId,
+          name: trimmed,
+          excludeLiteralId: literalId,
+        });
+      } catch (e) {
+        if (e?.status === 409) return sendError(res, 409, e.message);
+        throw e;
+      }
+    }
+
+    const allowed = {
+      name: parsed.data.name,
+      documentation: parsed.data.documentation,
+      documentationRu: parsed.data.documentationRu,
+      value: parsed.data.initialValue,
+      srcId: parsed.data.srcId,
+    };
+    const data = Object.fromEntries(Object.entries(allowed).filter(([, v]) => v !== undefined));
+
+    await prisma.literalProfile.update({
+      where: { id: literalId },
+      data,
+    });
+
+    const project = await exportProject(profile.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+/**
+ * Delete a literal from a profile graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :profileId, :literalId
+ */
+profilesRouter.delete(
+  "/:profileId/literals/:literalId",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const literalId = String(req.params.literalId);
+
+    try {
+      const project = await deleteProfileLiteralAndExportProject({ profileId, literalId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete literal";
+      return sendError(res, status, msg);
+    }
+  })
+);
+
 // Create an attribute inside a profile class.
 // Returns full updated project (export payload).
 profilesRouter.post(
@@ -841,6 +980,64 @@ profilesRouter.post(
         initialValue: parsed.data.initialValue ?? null,
         refModelId: null,
         refModelItemId: null,
+      },
+    });
+
+    const project = await exportProject(profile.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Create a literal inside a profile class.
+// Returns full updated project (export payload).
+profilesRouter.post(
+  "/:profileId/classes/:classId/literals",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const classId = String(req.params.classId);
+
+    const parsed = createLiteralSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid literal create", parsed.error.flatten());
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { id: profileId },
+      select: { id: true, projectId: true },
+    });
+    if (!profile) return sendError(res, 404, "Profile not found");
+
+    const cls = await prisma.classProfile.findFirst({
+      where: { id: classId, profileId },
+      select: { id: true },
+    });
+    if (!cls) return sendError(res, 404, "Class not found");
+
+    const normalizedName = String(parsed.data.name ?? "").trim();
+    if (!normalizedName) return sendError(res, 400, "Literal name is required");
+
+    try {
+      await assertUniqueLiteralNameInProfileClass({
+        profileId,
+        classId,
+        name: normalizedName,
+      });
+    } catch (e) {
+      if (e?.status === 409) return sendError(res, 409, e.message);
+      throw e;
+    }
+
+    await prisma.literalProfile.create({
+      data: {
+        id: newId("lit"),
+        srcId: null,
+        profileId,
+        classId,
+        name: normalizedName,
+        value: parsed.data.initialValue ?? null,
+        documentation: parsed.data.documentation ?? null,
+        documentationRu: parsed.data.documentationRu ?? null,
       },
     });
 

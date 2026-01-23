@@ -290,12 +290,18 @@ function renderClassAttributes(cls) {
               <button class="btn-icon"
                       data-action="edit-attribute"
                       data-attr-id="${attr.id}"
+                      data-class-id="${cls.id || ''}"
+                      data-model-id="${cls.modelId || ''}"
+                      data-profile-id="${cls.profileId || ''}"
                       title="Редактировать">
                 ✏️
               </button>
               <button class="btn-icon btn-icon-danger"
                       data-action="delete-attribute"
                       data-attr-id="${attr.id}"
+                      data-class-id="${cls.id || ''}"
+                      data-model-id="${cls.modelId || ''}"
+                      data-profile-id="${cls.profileId || ''}"
                       title="Удалить">
                 🗑️
               </button>
@@ -445,12 +451,18 @@ function renderClassLiterals(cls) {
               <button class="btn-icon"
                       data-action="edit-literal"
                       data-literal-id="${lit.id}"
+                      data-class-id="${cls.id || ''}"
+                      data-model-id="${cls.modelId || ''}"
+                      data-profile-id="${cls.profileId || ''}"
                       title="Редактировать">
                 ✏️
               </button>
               <button class="btn-icon btn-icon-danger"
                       data-action="delete-literal"
                       data-literal-id="${lit.id}"
+                      data-class-id="${cls.id || ''}"
+                      data-model-id="${cls.modelId || ''}"
+                      data-profile-id="${cls.profileId || ''}"
                       title="Удалить">
                 🗑️
               </button>

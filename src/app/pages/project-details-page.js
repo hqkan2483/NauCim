@@ -49,6 +49,11 @@ import {
   openCreateAttributeModal,
 } from "../../ui/components/attribute-modal.js";
 import {
+  initLiteralModal,
+  openEditLiteralModal,
+  openCreateLiteralModal,
+} from "../../ui/components/literal-modal.js";
+import {
   initGeneralizationLinkModal,
   openEditGeneralizationLinkModal,
   openCreateGeneralizationLinkModal,
@@ -131,6 +136,14 @@ import {
   deleteModelAttribute as deleteModelAttributeInBackend,
   deleteProfileAttribute as deleteProfileAttributeInBackend,
 } from "../../services/attribute-service.js";
+import {
+  updateModelLiteral as updateModelLiteralInBackend,
+  updateProfileLiteral as updateProfileLiteralInBackend,
+  createModelLiteral as createModelLiteralInBackend,
+  createProfileLiteral as createProfileLiteralInBackend,
+  deleteModelLiteral as deleteModelLiteralInBackend,
+  deleteProfileLiteral as deleteProfileLiteralInBackend,
+} from "../../services/literal-service.js";
 
 // ============================================================
 // STATE
@@ -162,6 +175,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "import-model-modal",
     "import-profile-modal",
     "edit-attribute-modal",
+    "edit-literal-modal",
     "data-type-picker-modal",
     "generalization-link-modal",
     "association-link-modal",
@@ -466,6 +480,136 @@ document.addEventListener("DOMContentLoaded", async () => {
           console.error("[attributeModal.onCreate] Create failed:", error);
           const msg = error?.message ? String(error.message) : "Ошибка добавления";
           showToast(`Ошибка добавления атрибута: ${msg}`, { type: "error" });
+        }
+      },
+    });
+
+    initLiteralModal(currentProjectId, {
+      onUpdate: async (literalId, updates, meta = {}) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const tabToRestore = "item-literals";
+        lastClassTabName = tabToRestore;
+
+        const classId = String(meta?.classId || "");
+        const modelId = String(meta?.context?.modelId || "");
+        const profileId = String(meta?.context?.profileId || "");
+        const context = modelId ? "model" : profileId ? "profile" : null;
+        if (!context || !classId) return;
+
+        try {
+          const payload = {
+            id: String(literalId),
+            name: updates.name,
+            documentation: updates.documentation,
+            documentationRu: updates.documentationRu,
+            initialValue: updates.initialValue,
+          };
+
+          const updatedProject =
+            context === "model"
+              ? await updateModelLiteralInBackend(currentProjectId, modelId, literalId, payload)
+              : await updateProfileLiteralInBackend(
+                  currentProjectId,
+                  profileId,
+                  literalId,
+                  payload
+                );
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: context === "model" ? modelId : null,
+            profileId: context === "profile" ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          requestAnimationFrame(async () => {
+            revealClassInTree({ classId, modelId, profileId, context });
+            const selector =
+              context === "model"
+                ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+                : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+            const classEl = document.querySelector(selector);
+            if (classEl) {
+              setSelectedTreeItem(classEl);
+              classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              await handleSelectClass(classId, modelId, profileId, tabToRestore);
+            }
+          });
+
+          showToast("Литерал обновлён", { type: "success" });
+        } catch (error) {
+          console.error("[literalModal.onUpdate] Update failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка обновления";
+          showToast(`Ошибка обновления литерала: ${msg}`, { type: "error" });
+        }
+      },
+      onCreate: async ({ classId, context: ctx, updates }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const tabToRestore = "item-literals";
+        lastClassTabName = tabToRestore;
+
+        const modelId = String(ctx?.modelId || "");
+        const profileId = String(ctx?.profileId || "");
+        const context = modelId ? "model" : profileId ? "profile" : null;
+        if (!context) return;
+
+        try {
+          const payload = {
+            name: updates.name,
+            documentation: updates.documentation,
+            documentationRu: updates.documentationRu,
+            initialValue: updates.initialValue,
+          };
+
+          const updatedProject =
+            context === "model"
+              ? await createModelLiteralInBackend(currentProjectId, modelId, classId, payload)
+              : await createProfileLiteralInBackend(currentProjectId, profileId, classId, payload);
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: context === "model" ? modelId : null,
+            profileId: context === "profile" ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          requestAnimationFrame(async () => {
+            revealClassInTree({ classId, modelId, profileId, context });
+            const selector =
+              context === "model"
+                ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+                : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+            const classEl = document.querySelector(selector);
+            if (classEl) {
+              setSelectedTreeItem(classEl);
+              classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              await handleSelectClass(classId, modelId, profileId, tabToRestore);
+            }
+          });
+
+          showToast("Литерал добавлен", { type: "success" });
+        } catch (error) {
+          console.error("[literalModal.onCreate] Create failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка добавления";
+          showToast(`Ошибка добавления литерала: ${msg}`, { type: "error" });
         }
       },
     });
@@ -1088,7 +1232,12 @@ function bindEvents() {
       );
       if (selectAttributeEl) {
         const attrId = selectAttributeEl.getAttribute("data-attr-id");
-        const parentClassId = selectAttributeEl.getAttribute("data-parent-class-id");
+        // `data-class-id` is the canonical UI contract (export Attribute.classId → DOM).
+        // `data-parent-class-id` is kept as a backward-compatible alias.
+        const parentClassId =
+          selectAttributeEl.getAttribute("data-class-id") ||
+          selectAttributeEl.getAttribute("data-parent-class-id") ||
+          "";
         const modelId = selectAttributeEl.getAttribute("data-model-id");
         const profileId = selectAttributeEl.getAttribute("data-profile-id");
         if (attrId) handleSelectAttribute(attrId, parentClassId, modelId, profileId);
@@ -1110,7 +1259,12 @@ function bindEvents() {
       const selectLiteralEl = target.closest("[data-action='select-literal']");
       if (selectLiteralEl) {
         const literalId = selectLiteralEl.getAttribute("data-literal-id");
-        const parentClassId = selectLiteralEl.getAttribute("data-parent-class-id");
+        // `data-class-id` is the canonical UI contract (export Literal.classId → DOM).
+        // `data-parent-class-id` is kept as a backward-compatible alias.
+        const parentClassId =
+          selectLiteralEl.getAttribute("data-class-id") ||
+          selectLiteralEl.getAttribute("data-parent-class-id") ||
+          "";
         const modelId = selectLiteralEl.getAttribute("data-model-id");
         const profileId = selectLiteralEl.getAttribute("data-profile-id");
         if (literalId) handleSelectLiteral(literalId, parentClassId, modelId, profileId);
@@ -1789,8 +1943,15 @@ function handleSelectEnumeration(classId, modelId = "", profileId = "") {
 }
 
 /**
- * Handle select attribute from tree
- * Opens parent class with attributes tab active
+ * Handle select attribute from tree.
+ *
+ * UI contract:
+ * - Tree attribute nodes should provide parent class id via `data-class-id`.
+ * - This is sourced from the canonical export payload (`Attribute.classId`).
+ *
+ * Behavior:
+ * - If parent class id is provided, opens that class with "Attributes" tab.
+ * - Falls back to a project traversal only if DOM context is missing (legacy payloads).
  */
 async function handleSelectAttribute(attrId, parentClassId = "", modelId = "", profileId = "") {
   if (parentClassId) {
@@ -1849,8 +2010,15 @@ async function handleSelectLink(linkId, parentClassId = "", modelId = "", profil
 }
 
 /**
- * Handle select literal from tree
- * Opens parent class with literals tab active
+ * Handle select literal from tree.
+ *
+ * UI contract:
+ * - Tree literal nodes should provide parent class id via `data-class-id`.
+ * - This is sourced from the canonical export payload (`Literal.classId`).
+ *
+ * Behavior:
+ * - If parent class id is provided, opens that class with "Literals" tab.
+ * - Falls back to a project traversal only if DOM context is missing (legacy payloads).
  */
 async function handleSelectLiteral(literalId, parentClassId = "", modelId = "", profileId = "") {
   if (parentClassId) {
@@ -2005,20 +2173,32 @@ function handleItemDetailsClick(e) {
 
   const addLiteralBtn = target.closest("#add-literal-btn");
   if (addLiteralBtn) {
-    handleAddLiteral(addLiteralBtn.getAttribute("data-class-id"));
+    handleAddLiteral({
+      classId: addLiteralBtn.getAttribute("data-class-id") || "",
+      modelId: addLiteralBtn.getAttribute("data-model-id") || "",
+      profileId: addLiteralBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 
   // Edit/Delete buttons
   const editAttrBtn = target.closest("[data-action='edit-attribute']");
   if (editAttrBtn) {
-    handleEditAttribute(editAttrBtn.getAttribute("data-attr-id"));
+    handleEditAttribute(editAttrBtn.getAttribute("data-attr-id"), {
+      classId: editAttrBtn.getAttribute("data-class-id") || "",
+      modelId: editAttrBtn.getAttribute("data-model-id") || "",
+      profileId: editAttrBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 
   const deleteAttrBtn = target.closest("[data-action='delete-attribute']");
   if (deleteAttrBtn) {
-    handleDeleteAttribute(deleteAttrBtn.getAttribute("data-attr-id"));
+    handleDeleteAttribute(deleteAttrBtn.getAttribute("data-attr-id"), {
+      classId: deleteAttrBtn.getAttribute("data-class-id") || "",
+      modelId: deleteAttrBtn.getAttribute("data-model-id") || "",
+      profileId: deleteAttrBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 
@@ -2051,13 +2231,21 @@ function handleItemDetailsClick(e) {
 
   const editLiteralBtn = target.closest("[data-action='edit-literal']");
   if (editLiteralBtn) {
-    handleEditLiteral(editLiteralBtn.getAttribute("data-literal-id"));
+    handleEditLiteral(editLiteralBtn.getAttribute("data-literal-id"), {
+      classId: editLiteralBtn.getAttribute("data-class-id") || "",
+      modelId: editLiteralBtn.getAttribute("data-model-id") || "",
+      profileId: editLiteralBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 
   const deleteLiteralBtn = target.closest("[data-action='delete-literal']");
   if (deleteLiteralBtn) {
-    handleDeleteLiteral(deleteLiteralBtn.getAttribute("data-literal-id"));
+    handleDeleteLiteral(deleteLiteralBtn.getAttribute("data-literal-id"), {
+      classId: deleteLiteralBtn.getAttribute("data-class-id") || "",
+      modelId: deleteLiteralBtn.getAttribute("data-model-id") || "",
+      profileId: deleteLiteralBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 }
@@ -3008,15 +3196,40 @@ function handleAddAttribute(classId) {
   });
 }
 
-async function handleEditAttribute(attrId) {
+/**
+ * Open the attribute edit modal.
+ *
+ * UI contract:
+ * - Prefer DOM-provided context (`data-class-id`, `data-model-id`, `data-profile-id`).
+ * - When invoked from class details view, `originalItemData` is the most accurate local source.
+ * - Fall back to project traversal only when necessary (legacy callers).
+ */
+async function handleEditAttribute(attrId, ctx = {}) {
+  const id = String(attrId || "");
+  if (!id) return;
+
+  // Fast path: editing from an opened class view.
+  if (originalItemData?.id && Array.isArray(originalItemData?.attributes)) {
+    const currentAttr = originalItemData.attributes.find((a) => String(a?.id) === id) || null;
+    if (currentAttr) {
+      const existingNames = (originalItemData.attributes || [])
+        .filter((a) => String(a?.id) !== id)
+        .map((a) => a?.name)
+        .filter(Boolean);
+      openEditAttributeModal(currentAttr, { existingNames });
+      return;
+    }
+  }
+
   const project = await getProjectById(currentProjectId);
   if (!project) return;
 
-  const found = findAttributeWithParent(project, attrId);
+  // Fallback path: locate attribute and its owning class.
+  const found = findAttributeWithParent(project, id);
   if (!found) return;
 
   const existingNames = (found.cls?.attributes || [])
-    .filter((a) => String(a?.id) !== String(attrId))
+    .filter((a) => String(a?.id) !== id)
     .map((a) => a?.name)
     .filter(Boolean);
 
@@ -3028,19 +3241,44 @@ async function handleEditAttribute(attrId) {
  *
  * @param {string} attrId - Attribute ID to delete
  */
-async function handleDeleteAttribute(attrId) {
+/**
+ * Delete an attribute and refresh tree + selected class view.
+ *
+ * Data/UI contract:
+ * - Attribute export includes `classId` (source of truth: Prisma Attribute*.classId).
+ * - Tree/details DOM should carry `data-class-id` so UI can avoid inferring the parent class.
+ *
+ * @param {string} attrId - Attribute ID to delete
+ * @param {{classId?: string, modelId?: string, profileId?: string}} [ctx]
+ */
+async function handleDeleteAttribute(attrId, ctx = {}) {
   if (!confirm("Удалить атрибут?")) return;
 
   try {
     const project = await getProjectById(currentProjectId);
     if (!project) return;
 
-    const found = findAttributeWithParent(project, attrId);
-    if (!found) return;
+    // Prefer DOM-provided context.
+    const ctxClassId = String(ctx?.classId || "");
+    const ctxModelId = String(ctx?.modelId || "");
+    const ctxProfileId = String(ctx?.profileId || "");
+    const ctxContext = ctxModelId ? "model" : ctxProfileId ? "profile" : null;
 
-    const { cls, context, modelId, profileId } = found;
-    const classId = String(cls?.id || "");
-    if (!classId) return;
+    let classId = ctxClassId;
+    let modelId = ctxModelId;
+    let profileId = ctxProfileId;
+    let context = ctxContext;
+
+    if (!classId || !context) {
+      const found = findAttributeWithParent(project, attrId);
+      if (!found) return;
+      classId = String(found.cls?.id || "");
+      context = found.context;
+      modelId = found.modelId || "";
+      profileId = found.profileId || "";
+    }
+
+    if (!classId || !context) return;
 
     const tabToRestore = "item-attributes";
 
@@ -3248,17 +3486,140 @@ async function handleDeleteLink(linkId, classId) {
 // ============================================================
 // LITERAL HANDLERS
 // ============================================================
-function handleAddLiteral(classId) {
-  alert("Функция добавления значения в разработке");
+function handleAddLiteral(ctx = {}) {
+  const classId = String(ctx?.classId || "");
+  const modelId = String(ctx?.modelId || "");
+  const profileId = String(ctx?.profileId || "");
+  if (!classId) return;
+
+  // Prefer current class details snapshot (no traversal)
+  if (originalItemData?.id && String(originalItemData.id) === classId) {
+    const existingNames = (originalItemData.literals || []).map((l) => l?.name).filter(Boolean);
+    openCreateLiteralModal({ classId, modelId, profileId, existingNames });
+    return;
+  }
+
+  // Fallback: use project payload, but keep context explicit (no parent inference)
+  getProjectById(currentProjectId).then((project) => {
+    if (!project) return;
+    const context = modelId ? "model" : profileId ? "profile" : null;
+    if (!context) return;
+    const cls = findClassById(project, classId, modelId, profileId, context);
+    if (!cls) return;
+    const existingNames = (cls.literals || []).map((l) => l?.name).filter(Boolean);
+    openCreateLiteralModal({ classId, modelId, profileId, existingNames });
+  });
 }
 
-function handleEditLiteral(literalId) {
-  alert("Функция редактирования значения в разработке");
+function handleEditLiteral(literalId, ctx = {}) {
+  const id = String(literalId || "");
+  if (!id) return;
+
+  const classId = String(ctx?.classId || "");
+  const modelId = String(ctx?.modelId || "");
+  const profileId = String(ctx?.profileId || "");
+  if (!classId) return;
+
+  // Fast path: current class view snapshot
+  if (originalItemData?.id && String(originalItemData.id) === classId) {
+    const currentLit = (originalItemData.literals || []).find((l) => String(l?.id) === id) || null;
+    if (currentLit) {
+      const existingNames = (originalItemData.literals || [])
+        .filter((l) => String(l?.id) !== id)
+        .map((l) => l?.name)
+        .filter(Boolean);
+      openEditLiteralModal(
+        {
+          ...currentLit,
+          modelId,
+          profileId,
+        },
+        { existingNames }
+      );
+      return;
+    }
+  }
+
+  // Fallback: use project payload scoped by explicit classId
+  getProjectById(currentProjectId).then((project) => {
+    if (!project) return;
+    const context = modelId ? "model" : profileId ? "profile" : null;
+    if (!context) return;
+    const cls = findClassById(project, classId, modelId, profileId, context);
+    if (!cls) return;
+    const currentLit = (cls.literals || []).find((l) => String(l?.id) === id) || null;
+    if (!currentLit) return;
+
+    const existingNames = (cls.literals || [])
+      .filter((l) => String(l?.id) !== id)
+      .map((l) => l?.name)
+      .filter(Boolean);
+
+    openEditLiteralModal(
+      {
+        ...currentLit,
+        modelId,
+        profileId,
+      },
+      { existingNames }
+    );
+  });
 }
 
-function handleDeleteLiteral(literalId) {
+async function handleDeleteLiteral(literalId, ctx = {}) {
+  const id = String(literalId || "");
+  if (!id) return;
   if (!confirm("Удалить значение?")) return;
-  alert("Функция удаления значения в разработке");
+
+  const classId = String(ctx?.classId || "");
+  const modelId = String(ctx?.modelId || "");
+  const profileId = String(ctx?.profileId || "");
+  const context = modelId ? "model" : profileId ? "profile" : null;
+  if (!context || !classId) return;
+
+  const tabToRestore = "item-literals";
+  lastClassTabName = tabToRestore;
+
+  try {
+    const updatedProject =
+      context === "model"
+        ? await deleteModelLiteralInBackend(currentProjectId, modelId, id)
+        : await deleteProfileLiteralInBackend(currentProjectId, profileId, id);
+
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    selectedTreeSnapshot = {
+      type: "class",
+      classId,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
+      packageId: null,
+    };
+
+    await renderProjectTreeSidebar(updatedProject);
+    requestAnimationFrame(async () => {
+      revealClassInTree({ classId, modelId, profileId, context });
+      const selector =
+        context === "model"
+          ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+          : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+      const classEl = document.querySelector(selector);
+      if (classEl) {
+        setSelectedTreeItem(classEl);
+        classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        await handleSelectClass(classId, modelId, profileId, tabToRestore);
+      }
+    });
+
+    showToast("Литерал удалён", { type: "success" });
+  } catch (error) {
+    console.error("[handleDeleteLiteral] Failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка удаления";
+    showToast(`Ошибка удаления литерала: ${msg}`, { type: "error" });
+  }
 }
 
 // ============================================================
