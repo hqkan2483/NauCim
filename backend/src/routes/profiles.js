@@ -212,6 +212,8 @@ const updateClassSchema = z
 const createClassSchema = z
   .object({
     name: z.string().min(1),
+    refModelId: z.string().min(1),
+    refModelItemId: z.string().min(1),
     stereotype: z.string().nullable().optional(),
     documentation: z.string().nullable().optional(),
     documentationRu: z.string().nullable().optional(),
@@ -615,6 +617,33 @@ profilesRouter.put(
       }
     }
 
+    // refModelId/refModelItemId are required for ClassProfile.
+    // If caller tries to change them, validate parent existence and uniqueness within the same profile.
+    if (parsed.data.refModelId !== undefined || parsed.data.refModelItemId !== undefined) {
+      const refModelId = String(parsed.data.refModelId ?? "").trim();
+      const refModelItemId = String(parsed.data.refModelItemId ?? "").trim();
+      if (!refModelId || !refModelItemId) {
+        return sendError(res, 400, "refModelId and refModelItemId must be non-empty");
+      }
+
+      const parentClass = await prisma.classModel.findFirst({
+        where: { id: refModelItemId, modelId: refModelId },
+        select: { id: true },
+      });
+      if (!parentClass) return sendError(res, 404, "Parent model class not found");
+
+      const dup = await prisma.classProfile.findFirst({
+        where: {
+          profileId,
+          refModelId,
+          refModelItemId,
+          NOT: { id: classId },
+        },
+        select: { id: true },
+      });
+      if (dup) return sendError(res, 409, "This model class is already present in the profile");
+    }
+
     const allowed = {
       name: parsed.data.name,
       stereotype: parsed.data.stereotype,
@@ -692,6 +721,26 @@ profilesRouter.post(
     const name = String(parsed.data.name ?? "").trim();
     if (!name) return sendError(res, 400, "Class name is required");
 
+    const refModelId = String(parsed.data.refModelId ?? "").trim();
+    const refModelItemId = String(parsed.data.refModelItemId ?? "").trim();
+    if (!refModelId || !refModelItemId) {
+      return sendError(res, 400, "refModelId and refModelItemId are required");
+    }
+
+    const parentClass = await prisma.classModel.findFirst({
+      where: { id: refModelItemId, modelId: refModelId },
+      select: { id: true },
+    });
+    if (!parentClass) return sendError(res, 404, "Parent model class not found");
+
+    const existingForSameParent = await prisma.classProfile.findFirst({
+      where: { profileId, refModelId, refModelItemId },
+      select: { id: true },
+    });
+    if (existingForSameParent) {
+      return sendError(res, 409, "This model class is already present in the profile");
+    }
+
     try {
       await assertUniqueClassNameInProfile({ profileId, name });
     } catch (e) {
@@ -712,8 +761,8 @@ profilesRouter.post(
         documentationRu: parsed.data.documentationRu ?? null,
         details: parsed.data.details ?? null,
         isAbstract: parsed.data.isAbstract ?? null,
-        refModelId: null,
-        refModelItemId: null,
+        refModelId,
+        refModelItemId,
       },
     });
 

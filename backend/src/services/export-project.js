@@ -174,7 +174,7 @@ function sortClassLinks(list) {
 }
 
 async function exportPackagesTreeModel(modelId) {
-  const [packages, classes, attributes, literals, diagrams, generalizationLinks, associationLinks] = await Promise.all([
+  const [packages, classes, attributes, literals, diagrams, generalizationLinks, associationLinks, profileClassRefs] = await Promise.all([
     prisma.packageModel.findMany({
       where: { modelId },
       select: {
@@ -276,7 +276,26 @@ async function exportPackagesTreeModel(modelId) {
         },
       },
     }),
+    prisma.classProfile
+      .findMany({
+        where: { refModelId: modelId },
+        select: { id: true, profileId: true, refModelItemId: true },
+      })
+      .catch(() => []),
   ]);
+
+  const profileRelationsByModelClassId = new Map();
+  for (const r of profileClassRefs || []) {
+    const modelClassId = r?.refModelItemId;
+    if (!modelClassId) continue;
+    const list = profileRelationsByModelClassId.get(modelClassId) || [];
+    list.push({ profileId: r.profileId, profileObjectId: r.id });
+    profileRelationsByModelClassId.set(modelClassId, list);
+  }
+  for (const [k, list] of profileRelationsByModelClassId.entries()) {
+    list.sort((a, b) => String(a.profileId).localeCompare(String(b.profileId), undefined, { sensitivity: "base" }));
+    profileRelationsByModelClassId.set(k, list);
+  }
 
   const classesByPackage = new Map();
   for (const c of classes) {
@@ -398,7 +417,7 @@ async function exportPackagesTreeModel(modelId) {
         ...(associationLinksByClassId.get(c.id) || []),
       ]),
       literals: (litsByClass.get(c.id) || []).map(mapLiteral),
-      profileRelations: [],
+      profileRelations: profileRelationsByModelClassId.get(c.id) || [],
       modelId,
       profileId: null,
       refModelId: c.refModelId ?? null,

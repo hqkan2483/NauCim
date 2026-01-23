@@ -467,6 +467,17 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg, options = 
   for (const cls of classes) {
     const srcId = toNonEmptyStr(cls?.srcId) || toNonEmptyStr(cls?.id);
     const classId = toNonEmptyStr(cls?.id) || newId("cls");
+
+    const refModelId = toNonEmptyStr(cls?.refModelId);
+    const refModelItemId = toNonEmptyStr(cls?.refModelItemId);
+    if (!refModelId || !refModelItemId) {
+      const err = new Error(
+        "Invalid profile class import: missing refModelId/refModelItemId (each profile class must reference a model class)"
+      );
+      err.status = 400;
+      throw err;
+    }
+
     await tx.classProfile.create({
       data: {
         id: classId,
@@ -480,8 +491,8 @@ async function importPackageTreeProfile(tx, profileId, parentId, pkg, options = 
         documentationRu: cls.documentationRu ?? null,
         details: cls.details ?? null,
         isAbstract: cls.isAbstract ?? null,
-        refModelId: cls.refModelId ?? null,
-        refModelItemId: cls.refModelItemId ?? null,
+        refModelId,
+        refModelItemId,
       },
     });
 
