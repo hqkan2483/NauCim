@@ -11,7 +11,7 @@ function renderPackageForm(pkg) {
       <form class="item-form" id="package-form" data-package-id="${pkg.id}"
             data-model-id="${pkg.modelId || ''}"
             data-profile-id="${pkg.profileId || ''}"
-            data-parent-id="${pkg.parentId || ''}">
+        data-parent-id="${pkg.parentPackageId || pkg.parentId || ''}">
         <div class="form-section">
           <div class="form-section-title">
             <div class="form-row">

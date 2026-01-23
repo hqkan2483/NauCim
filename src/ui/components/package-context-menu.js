@@ -10,9 +10,34 @@
 /**
  * @typedef {object} PackageContext
  * @property {string} packageId
+ * @property {string|null} [parentPackageId] - Parent package id from DOM dataset (preferred for UI context).
  * @property {string} modelId
  * @property {string} profileId
  */
+
+/**
+ * Extracts package context from a rendered project-tree DOM node.
+ *
+ * UI-layer helper only: it reads `data-*` attributes that are emitted by renderers.
+ * Business logic should be implemented in the page/controller via callbacks.
+ *
+ * @param {HTMLElement} node - `.tree-structure-name[data-type="package"]` element.
+ * @returns {PackageContext|null}
+ */
+function getPackageContextFromTreeNode(node) {
+  if (!(node instanceof HTMLElement)) return null;
+  const packageId = node.getAttribute("data-package-id") || "";
+  if (!packageId) return null;
+
+  const modelId = node.getAttribute("data-model-id") || "";
+  const profileId = node.getAttribute("data-profile-id") || "";
+
+  // `data-parent-package-id` is rendered by the tree renderer. Empty string means "no parent".
+  const parentPackageIdRaw = node.getAttribute("data-parent-package-id") || "";
+  const parentPackageId = parentPackageIdRaw ? parentPackageIdRaw : null;
+
+  return { packageId, parentPackageId, modelId, profileId };
+}
 
 function clampToViewport({ x, y, width, height, padding = 8 }) {
   const vw = window.innerWidth;
@@ -93,16 +118,13 @@ export function initPackageTreeContextMenu(
     const node = target.closest('.tree-structure-name[data-type="package"]');
     if (!node) return;
 
-    const packageId = node.getAttribute("data-package-id") || "";
-    const modelId = node.getAttribute("data-model-id") || "";
-    const profileId = node.getAttribute("data-profile-id") || "";
-
-    if (!packageId) return;
+    const ctx = getPackageContextFromTreeNode(node);
+    if (!ctx) return;
 
     e.preventDefault();
     e.stopPropagation();
 
-    openAt(e.clientX, e.clientY, { packageId, modelId, profileId });
+    openAt(e.clientX, e.clientY, ctx);
   };
 
   const onDocMouseDown = (e) => {

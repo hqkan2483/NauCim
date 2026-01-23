@@ -229,6 +229,7 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
         <span class="tree-structure-name"
               data-type="package"
               data-package-id="${pkg.id || ""}"
+            data-parent-package-id="${pkg.parentPackageId || ""}"
               data-model-id="${pkg.modelId || ""}"
               data-profile-id="${pkg.profileId || ""}"
               data-action="select-package"

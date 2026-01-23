@@ -164,7 +164,7 @@ interface RootPackage {
         "documentationRu": null,
         "details": null,
         "elementCount": 1,
-       "classes": [
+        "classes": [
             {
               "id": "EAID_9A4F1243_5579_4da3_9DAD_D4CBAB29CC65",
               "name": "BusArrangement",
@@ -201,7 +201,7 @@ interface Package {
   id: string; // Уникальный идентификатор
   name: string; // Название пакета (например, "Wires")
   type: string; // Фиксированное значение: Package
-  parentPackage?: string; // Имя родительского пакета (для вложенности)
+  parentPackageId?: string | null; // ID родительского пакета (для вложенности). В экспортируемых данных облегчает навигацию по дереву.
   documentation?: string; // Описание пакета
   documentationRu?: string; // Дополнительное описание на русском языке
   details?: string; // Справочная и поясняющая информация
@@ -406,7 +406,6 @@ interface Attribute {
 > - `AssociationLink` + `AssociationLinkEnd[]` (ассоциации)
 >
 > `ClassLink` может быть дополнительно обогащён бизнес-логикой (роль, имена ролей, описания концов и т.п.).
-> 
 
 Связи класса. справочная информация.
 
@@ -468,7 +467,7 @@ interface Diagram {
   "diagramName": "Диаграмма связей пакета Asset",
   "documentation": "Описание назначения диаграммы",
   "details": null,
-  "diagramBody": null,  
+  "diagramBody": null
 }
 ```
 

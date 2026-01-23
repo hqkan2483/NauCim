@@ -88,7 +88,6 @@ model PackageModel {
 
   name            String
   type            String?
-  parentPackage   String?
   documentation   String?
   documentationRu String?
   details         String?
@@ -114,7 +113,6 @@ model PackageProfile {
 
   name            String
   type            String?
-  parentPackage   String?
   documentation   String?
   documentationRu String?
   details         String?

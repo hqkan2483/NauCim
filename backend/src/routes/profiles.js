@@ -143,7 +143,6 @@ const updatePackageSchema = z
 
     name: z.string().optional(),
     type: z.string().nullable().optional(),
-    parentPackage: z.string().nullable().optional(),
     documentation: z.string().nullable().optional(),
     documentationRu: z.string().nullable().optional(),
     details: z.string().nullable().optional(),
@@ -395,7 +394,6 @@ profilesRouter.put(
       documentationRu: parsed.data.documentationRu,
       details: parsed.data.details,
       type: parsed.data.type,
-      parentPackage: parsed.data.parentPackage,
       parentId: parsed.data.parentId,
       srcId: parsed.data.srcId,
     };
@@ -509,7 +507,6 @@ profilesRouter.post(
         parentId: parentPackageId,
         name,
         type: null,
-        parentPackage: null,
         documentation: parsed.data.documentation ?? null,
         documentationRu: parsed.data.documentationRu ?? null,
         details: parsed.data.details ?? null,

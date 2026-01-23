@@ -1377,6 +1377,15 @@ function cssEscape(value) {
 }
 
 function snapshotTreeEl(el) {
+  /**
+   * Creates a small, serializable snapshot of the currently selected tree element.
+   *
+   * Why: UI selection must survive tree re-rendering. We keep only ids and context
+   * so `restoreSelectedTreeItemInTree()` can find and re-select the same item.
+   *
+   * Note: `parentPackageId` is captured from the DOM (`data-parent-package-id`) and
+   * can be used by UI handlers to avoid re-traversing the package tree.
+   */
   if (!(el instanceof HTMLElement)) return null;
   const type = el.getAttribute("data-type") || null;
   return {
@@ -1384,6 +1393,7 @@ function snapshotTreeEl(el) {
     modelId: el.getAttribute("data-model-id") || null,
     profileId: el.getAttribute("data-profile-id") || null,
     packageId: el.getAttribute("data-package-id") || null,
+    parentPackageId: el.getAttribute("data-parent-package-id") || null,
     classId: el.getAttribute("data-class-id") || null,
     diagramId: el.getAttribute("data-diagram-id") || null,
   };
@@ -2612,10 +2622,19 @@ async function handleSavePackage(form) {
 }
 
 /**
- * Delete a package and refresh tree + show its parent container.
- * If the package contains nested items, shows an extra warning.
+ * Deletes a package from model/profile context and refreshes the tree.
  *
- * @param {{ packageId?: string, modelId?: string, profileId?: string }} ctx
+ * UI responsibilities:
+ * - Confirm destructive action (and extra warning for nested content)
+ * - Call backend through service layer
+ * - Re-render tree and re-select a sensible item (prefer parent package)
+ *
+ * Data/Context rules:
+ * - `modelId` OR `profileId` must be provided (mutually exclusive in normal flow)
+ * - `parentPackageId` should come from DOM (`data-parent-package-id`) or payload
+ *   to avoid extra tree traversal.
+ *
+ * @param {{ packageId?: string, parentPackageId?: (string|null), modelId?: string, profileId?: string }} ctx
  */
 async function handleDeletePackage(ctx = {}) {
   const packageId = String(ctx?.packageId || "");
@@ -2625,17 +2644,18 @@ async function handleDeletePackage(ctx = {}) {
     const project = await getProjectById(currentProjectId);
     if (!project) return;
 
-    const context = ctx?.modelId ? "model" : ctx?.profileId ? "profile" : null;
-    const modelId = ctx?.modelId || "";
-    const profileId = ctx?.profileId || "";
+    const modelId = String(ctx?.modelId || "");
+    const profileId = String(ctx?.profileId || "");
+    const context = modelId ? "model" : profileId ? "profile" : null;
+    if (!context) return;
 
-    const found = findPackageWithContext(project, packageId, modelId, profileId, context);
-    if (!found?.pkg) return;
+    const pkg = findPackageById(project, packageId, modelId, profileId, context);
+    if (!pkg) return;
 
     const ok = confirm("Удалить пакет?");
     if (!ok) return;
 
-    const hasContent = packageHasContents(found.pkg);
+    const hasContent = packageHasContents(pkg);
     if (hasContent) {
       const okNested = confirm(
         "Пакет содержит вложенные элементы. Будут удалены все пакеты, классы и диаграммы внутри. Продолжить?"
@@ -2644,29 +2664,31 @@ async function handleDeletePackage(ctx = {}) {
     }
 
     const updatedProject =
-      found.context === "model"
-        ? await deleteModelPackageInBackend(currentProjectId, found.modelId, packageId)
-        : await deleteProfilePackageInBackend(currentProjectId, found.profileId, packageId);
+      context === "model"
+        ? await deleteModelPackageInBackend(currentProjectId, modelId, packageId)
+        : await deleteProfilePackageInBackend(currentProjectId, profileId, packageId);
 
     if (!updatedProject) {
       throw new Error("Backend did not return updated project");
     }
 
-    const parentPackageId = String(found.parentPackageId || "");
+    const parentPackageId = String(
+      ctx?.parentPackageId || pkg?.parentPackageId || pkg?.parentId || ""
+    );
 
     selectedTreeSnapshot = parentPackageId
       ? {
           type: "package",
           packageId: parentPackageId,
-          modelId: found.context === "model" ? found.modelId : null,
-          profileId: found.context === "profile" ? found.profileId : null,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
           classId: null,
           diagramId: null,
         }
       : {
-          type: found.context,
-          modelId: found.context === "model" ? found.modelId : null,
-          profileId: found.context === "profile" ? found.profileId : null,
+          type: context,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
         };
 
     await renderProjectTreeSidebar(updatedProject);
@@ -2675,42 +2697,42 @@ async function handleDeletePackage(ctx = {}) {
       const chain = findPackageParentChain(
         updatedProject,
         parentPackageId,
-        found.modelId,
-        found.profileId,
-        found.context
+        modelId,
+        profileId,
+        context
       );
       expandTreePath(chain);
 
       requestAnimationFrame(async () => {
         const selector =
-          found.context === "model"
-            ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-model-id="${cssEscape(found.modelId)}"]`
-            : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-profile-id="${cssEscape(found.profileId)}"]`;
+          context === "model"
+            ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-model-id="${cssEscape(modelId)}"]`
+            : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-profile-id="${cssEscape(profileId)}"]`;
 
         const pkgEl = document.querySelector(selector);
         if (pkgEl) {
           setSelectedTreeItem(pkgEl);
           pkgEl.scrollIntoView({ behavior: "smooth", block: "center" });
-          await handleSelectPackage(parentPackageId, found.modelId, found.profileId);
+          await handleSelectPackage(parentPackageId, modelId, profileId);
         }
       });
     } else {
       requestAnimationFrame(async () => {
-        if (found.context === "model") {
-          const selector = `.tree-structure-name[data-type="model"][data-model-id="${cssEscape(found.modelId)}"]`;
+        if (context === "model") {
+          const selector = `.tree-structure-name[data-type="model"][data-model-id="${cssEscape(modelId)}"]`;
           const modelEl = document.querySelector(selector);
           if (modelEl) {
             setSelectedTreeItem(modelEl);
             modelEl.scrollIntoView({ behavior: "smooth", block: "center" });
-            await selectModel(found.modelId);
+            await selectModel(modelId);
           }
-        } else if (found.context === "profile") {
-          const selector = `.tree-structure-name[data-type="profile"][data-profile-id="${cssEscape(found.profileId)}"]`;
+        } else if (context === "profile") {
+          const selector = `.tree-structure-name[data-type="profile"][data-profile-id="${cssEscape(profileId)}"]`;
           const profileEl = document.querySelector(selector);
           if (profileEl) {
             setSelectedTreeItem(profileEl);
             profileEl.scrollIntoView({ behavior: "smooth", block: "center" });
-            await selectProfile(found.profileId);
+            await selectProfile(profileId);
           }
         }
       });
@@ -3570,6 +3592,15 @@ function packageHasContents(pkg) {
  * @param {'model'|'profile'|null} [context]
  * @returns {null|{pkg: object, context: 'model'|'profile', modelId: string|null, profileId: string|null, parentPackageId: string|null}}
  */
+/**
+ * @deprecated Legacy helper kept for reference.
+ * Prefer using:
+ * - DOM context: `data-parent-package-id` (UI layer), or
+ * - payload field: `pkg.parentPackageId` (transport/data contract).
+ *
+ * This function performed an extra traversal to infer `parentPackageId` when it
+ * wasn't available in the payload/DOM. Current UI flows should not depend on it.
+ */
 function findPackageWithContext(
   project,
   packageId,
@@ -3579,7 +3610,12 @@ function findPackageWithContext(
 ) {
   const searchInPackages = (packages, parentId = null) => {
     for (const pkg of packages) {
-      if (pkg.id === packageId) return { pkg, parentPackageId: parentId };
+      if (pkg.id === packageId) {
+        return {
+          pkg,
+          parentPackageId: pkg?.parentPackageId ?? parentId ?? null,
+        };
+      }
 
       if (pkg.subPackages) {
         const found = searchInPackages(pkg.subPackages, pkg.id || null);
