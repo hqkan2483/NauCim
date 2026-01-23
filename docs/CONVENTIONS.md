@@ -394,6 +394,10 @@ class ProjectModal {
 
 ## Documentation
 
+### UI `data-*` attributes
+
+Canonical dictionary (single source of truth): [UI_DATA_ATTRIBUTES.md](UI_DATA_ATTRIBUTES.md)
+
 ### Inline Documentation
 
 ```javascript

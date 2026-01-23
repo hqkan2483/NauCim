@@ -1,5 +1,8 @@
 # 📋 Документация: Data-атрибуты в Nautilus. CIM
 
+> ⚠️ Этот документ частично устарел.
+> Канонический словарь `data-*` для всего UI: [UI_DATA_ATTRIBUTES.md](UI_DATA_ATTRIBUTES.md)
+
 На основе анализа репозитория `thachanhtuan/NauCim` и структуры данных Version 5.
 
 ---
@@ -142,7 +145,7 @@
 | Data-атрибут           | Источник данных           | Описание            | Использование                                           |
 | ---------------------- | ------------------------- | ------------------- | ------------------------------------------------------- |
 | `data-link-id`         | `ClassLink.linkId`        | Уникальный ID связи | Идентификация в дереве, кнопках редактирования/удаления |
-| `data-link-kind`       | `ClassLink.relationKind`  | Тип связи           | `Generalization`, `Association`                         |
+| `data-relation-kind`   | `ClassLink.relationKind`  | Тип связи           | `Generalization`, `Association`                         |
 | `data-target-class-id` | `ClassLink.targetClassId` | ID целевого класса  | Связь с целевым классом                                 |
 | `data-action`          | —                         | Тип действия        | `select-link`, `edit-link`, `delete-link`               |
 
@@ -152,7 +155,7 @@
 <span
   data-type="link"
   data-link-id="EAID_13C9A56B"
-  data-link-kind="Generalization"
+  data-relation-kind="Generalization"
   data-target-class-id="EAID_F8D24DB4"
   data-action="select-link"
 >
@@ -305,7 +308,7 @@
 | `data-ref-model-item-id` | `string`   | `Class.refModelItemId`         | project-details | Ссылка на исходный класс (для профилей)                                           |
 | `data-is-enumeration`    | `boolean`  | `Class.type === 'Enumeration'` | project-details | Флаг Enumeration                                                                  |
 | `data-is-abstract`       | `boolean`  | `Class.isAbstract`             | project-details | Флаг абстрактного класса                                                          |
-| `data-link-kind`         | `string`   | `ClassLink.relationKind`       | project-details | Тип связи (Generalization/Association)                                            |
+| `data-relation-kind`     | `string`   | `ClassLink.relationKind`       | project-details | Тип связи (Generalization/Association)                                            |
 | `data-target-class-id`   | `string`   | `ClassLink.targetClassId`      | project-details | ID целевого класса связи                                                          |
 | `data-action`            | `string`   | —                              | All             | Тип действия (см. раздел Actions)                                                 |
 | `data-item-id`           | `string`   | Generated                      | project-details | Уникальный ID элемента дерева для expand/collapse                                 |
