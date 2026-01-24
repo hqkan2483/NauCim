@@ -772,6 +772,86 @@ profilesRouter.post(
   })
 );
 
+// Create an enumeration inside a profile package.
+// Stores it in ClassProfile with type="Enumeration".
+// Returns full updated project (export payload).
+profilesRouter.post(
+  "/:profileId/packages/:packageId/enumerations",
+  asyncHandler(async (req, res) => {
+    const profileId = String(req.params.profileId);
+    const packageId = String(req.params.packageId);
+
+    const parsed = createClassSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid enumeration create", parsed.error.flatten());
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { id: profileId },
+      select: { id: true, projectId: true },
+    });
+    if (!profile) return sendError(res, 404, "Profile not found");
+
+    const pkg = await prisma.packageProfile.findFirst({
+      where: { id: packageId, profileId },
+      select: { id: true },
+    });
+    if (!pkg) return sendError(res, 404, "Package not found");
+
+    const name = String(parsed.data.name ?? "").trim();
+    if (!name) return sendError(res, 400, "Enumeration name is required");
+
+    const refModelId = String(parsed.data.refModelId ?? "").trim();
+    const refModelItemId = String(parsed.data.refModelItemId ?? "").trim();
+    if (!refModelId || !refModelItemId) {
+      return sendError(res, 400, "refModelId and refModelItemId are required");
+    }
+
+    const parentClass = await prisma.classModel.findFirst({
+      where: { id: refModelItemId, modelId: refModelId },
+      select: { id: true },
+    });
+    if (!parentClass) return sendError(res, 404, "Parent model class not found");
+
+    const existingForSameParent = await prisma.classProfile.findFirst({
+      where: { profileId, refModelId, refModelItemId },
+      select: { id: true },
+    });
+    if (existingForSameParent) {
+      return sendError(res, 409, "This model class is already present in the profile");
+    }
+
+    try {
+      await assertUniqueClassNameInProfile({ profileId, name });
+    } catch (e) {
+      if (e?.status === 409) return sendError(res, 409, e.message);
+      throw e;
+    }
+
+    await prisma.classProfile.create({
+      data: {
+        id: newId("cls"),
+        srcId: null,
+        profileId,
+        packageId,
+        name,
+        type: "Enumeration",
+        stereotype: parsed.data.stereotype ?? null,
+        documentation: parsed.data.documentation ?? null,
+        documentationRu: parsed.data.documentationRu ?? null,
+        details: parsed.data.details ?? null,
+        isAbstract: parsed.data.isAbstract ?? null,
+        refModelId,
+        refModelItemId,
+      },
+    });
+
+    const project = await exportProject(profile.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
 // Update an attribute inside a profile graph.
 // Returns full updated project (export payload).
 profilesRouter.put(

@@ -117,9 +117,17 @@ import {
   openCreateClassModal,
 } from "../../ui/components/create-class-modal.js";
 import {
+  initCreateEnumerationModal,
+  openCreateEnumerationModal,
+} from "../../ui/components/create-enumeration-modal.js";
+import {
   initCreateDiagramModal,
   openCreateDiagramModal,
 } from "../../ui/components/create-diagram-modal.js";
+import {
+  createModelEnumeration as createModelEnumerationInBackend,
+  createProfileEnumeration as createProfileEnumerationInBackend,
+} from "../../services/enumeration-service.js";
 import {
   getSubpackageNameSet,
   getClassNameSet,
@@ -182,6 +190,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "link-type-modal",
     "create-package-modal",
     "create-class-modal",
+    "create-enumeration-modal",
     "create-diagram-modal",
   ]);
 
@@ -1001,6 +1010,61 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     /**
+     * Modal: create enumeration inside a package.
+     * Persists through service layer; backend returns full updated project.
+     */
+    initCreateEnumerationModal(currentProjectId, {
+      onCreate: async ({ packageId, modelId = "", profileId = "", payload }) => {
+        const context = modelId && modelId !== "" ? "model" : "profile";
+
+        const updatedProject =
+          context === "model"
+            ? await createModelEnumerationInBackend(
+                currentProjectId,
+                modelId,
+                packageId,
+                payload
+              )
+            : await createProfileEnumerationInBackend(
+                currentProjectId,
+                profileId,
+                packageId,
+                payload
+              );
+
+        if (!updatedProject) {
+          throw new Error("Backend did not return updated project");
+        }
+
+        const newEnumId = findClassIdByName(updatedProject, {
+          context,
+          modelId,
+          profileId,
+          name: payload?.name,
+        });
+
+        if (!newEnumId) {
+          throw new Error("Не удалось найти созданное перечисление в ответе сервера");
+        }
+
+        selectedTreeSnapshot = {
+          type: "class",
+          classId: newEnumId,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
+          packageId: null,
+          diagramId: null,
+        };
+
+        await renderProjectTreeSidebar(updatedProject);
+        revealClassInTree({ classId: newEnumId, modelId, profileId, context });
+        restoreSelectedTreeItemInTree();
+
+        await handleSelectClass(newEnumId, modelId, profileId);
+      },
+    });
+
+    /**
      * Modal: create diagram inside a package.
      * Persists through service layer; backend returns full updated project.
      */
@@ -1128,6 +1192,34 @@ function bindEvents() {
         });
 
         openCreateClassModal({
+          packageId,
+          modelId,
+          profileId,
+          existingClassNamesNormalized,
+        });
+      },
+      onCreateEnumeration: async ({ packageId, modelId = "", profileId = "" }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const context = modelId && modelId !== "" ? "model" : "profile";
+
+        // Profile enumerations require refModel linkage; the profile modal will be redesigned separately.
+        if (context === "profile") {
+          showToast(
+            "Создание перечислений в профиле пока не поддерживается (нужна привязка к модельному перечислению)",
+            { type: "info" }
+          );
+          return;
+        }
+
+        const existingClassNamesNormalized = getClassNameSet(project, {
+          context,
+          modelId,
+          profileId,
+        });
+
+        openCreateEnumerationModal({
           packageId,
           modelId,
           profileId,

@@ -1,0 +1,66 @@
+<div id="create-enumeration-modal" class="modal">
+  <div class="modal-content modal-content--resizable modal-content--edit-attribute">
+    <button type="button" class="modal-close" data-modal-close aria-label="Закрыть">
+      ×
+    </button>
+
+    <div class="modal-header">
+      <div class="modal-title">Создать перечисление</div>
+    </div>
+
+    <form class="modal-form">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="create-enum-name">Перечисление *</label>
+            <input type="text" id="create-enum-name" class="form-input" required />
+            <div
+              id="create-enum-name-error"
+              class="validation-feedback validation-error hidden"
+              role="alert"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-checkbox-label">
+              <span>Абстрактный класс</span>
+              <input type="checkbox" id="create-enum-isAbstract" class="form-checkbox" />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="create-enum-stereotype">Стереотип</label>
+            <input
+              type="text"
+              id="create-enum-stereotype"
+              class="form-input"
+              placeholder="Например: rs, rf"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="create-enum-documentation">Описание</label>
+            <textarea id="create-enum-documentation" class="form-textarea" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="create-enum-documentationRu">Описание (RU)</label>
+            <textarea id="create-enum-documentationRu" class="form-textarea" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="create-enum-details">Детали</label>
+          <textarea id="create-enum-details" class="form-textarea" rows="4"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-buttons modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Отмена</button>
+        <button type="button" class="btn btn-primary" id="create-enum-save-btn">Создать</button>
+      </div>
+    </form>
+  </div>
+</div>

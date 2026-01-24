@@ -54,6 +54,7 @@ function buildMenuEl() {
   el.innerHTML = `
     <button type="button" class="context-menu__item" data-action="create-package" role="menuitem">Создать пакет</button>
     <button type="button" class="context-menu__item" data-action="create-class" role="menuitem">Создать класс</button>
+    <button type="button" class="context-menu__item" data-action="create-enumeration" role="menuitem">Создать перечисление</button>
     <button type="button" class="context-menu__item" data-action="create-diagram" role="menuitem">Создать диаграмму</button>
     <div class="context-menu__sep" role="separator"></div>
     <button type="button" class="context-menu__item context-menu__item--danger" data-action="delete-package" role="menuitem">Удалить пакет</button>
@@ -69,6 +70,7 @@ function buildMenuEl() {
  * @param {object} callbacks
  * @param {(ctx: PackageContext) => void|Promise<void>} [callbacks.onCreatePackage]
  * @param {(ctx: PackageContext) => void|Promise<void>} [callbacks.onCreateClass]
+ * @param {(ctx: PackageContext) => void|Promise<void>} [callbacks.onCreateEnumeration]
  * @param {(ctx: PackageContext) => void|Promise<void>} [callbacks.onCreateDiagram]
  * @param {(ctx: PackageContext) => void|Promise<void>} [callbacks.onDeletePackage]
  * @returns {{ destroy: () => void }}
@@ -78,6 +80,7 @@ export function initPackageTreeContextMenu(
   {
     onCreatePackage,
     onCreateClass,
+    onCreateEnumeration,
     onCreateDiagram,
     onDeletePackage,
   } = {}
@@ -159,6 +162,8 @@ export function initPackageTreeContextMenu(
       await onCreatePackage(ctx);
     } else if (action === "create-class" && typeof onCreateClass === "function") {
       await onCreateClass(ctx);
+    } else if (action === "create-enumeration" && typeof onCreateEnumeration === "function") {
+      await onCreateEnumeration(ctx);
     } else if (action === "create-diagram" && typeof onCreateDiagram === "function") {
       await onCreateDiagram(ctx);
     } else if (action === "delete-package" && typeof onDeletePackage === "function") {

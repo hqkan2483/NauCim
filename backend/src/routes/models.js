@@ -715,6 +715,66 @@ modelsRouter.post(
   })
 );
 
+// Create an enumeration inside a model package.
+// Stores it in ClassModel with type="Enumeration".
+// Returns full updated project (export payload).
+modelsRouter.post(
+  "/:modelId/packages/:packageId/enumerations",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const packageId = String(req.params.packageId);
+
+    const parsed = createClassSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid enumeration create", parsed.error.flatten());
+    }
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const pkg = await prisma.packageModel.findFirst({
+      where: { id: packageId, modelId },
+      select: { id: true },
+    });
+    if (!pkg) return sendError(res, 404, "Package not found");
+
+    const name = String(parsed.data.name ?? "").trim();
+    if (!name) return sendError(res, 400, "Enumeration name is required");
+
+    try {
+      await assertUniqueClassNameInModel({ modelId, name });
+    } catch (e) {
+      if (e?.status === 409) return sendError(res, 409, e.message);
+      throw e;
+    }
+
+    await prisma.classModel.create({
+      data: {
+        id: newId("cls"),
+        srcId: null,
+        modelId,
+        packageId,
+        name,
+        type: "Enumeration",
+        stereotype: parsed.data.stereotype ?? null,
+        documentation: parsed.data.documentation ?? null,
+        documentationRu: parsed.data.documentationRu ?? null,
+        details: parsed.data.details ?? null,
+        isAbstract: parsed.data.isAbstract ?? null,
+        refModelId: null,
+        refModelItemId: null,
+      },
+    });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
 // Update an attribute inside a model graph.
 // Returns full updated project (export payload).
 modelsRouter.put(

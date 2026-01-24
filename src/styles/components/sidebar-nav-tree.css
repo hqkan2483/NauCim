@@ -371,11 +371,16 @@
   transition: transform 0.2s ease;
 }
 
+
 /* пустышка вместо кнопки */
 .tree-expand-spacer {
-  width: 14px;
+  width: 0px;
   height: 14px;
   flex-shrink: 0;
+}
+
+.tree-expand-spacer + .tree-structure-name {
+  padding-left: 0;
 }
 
 /* разные вспомогательные стили */
