@@ -381,7 +381,28 @@ profilesRouter.post(
     });
     if (existing) return sendError(res, 409, "Profile name already exists in this project");
 
-    const created = await prisma.profile.create({ data: parsed.data });
+    // Always create a root-level package for a new profile.
+    // Contract: package without parentId; default name "RootPackage".
+    const created = await prisma.$transaction(async (tx) => {
+      const profile = await tx.profile.create({ data: parsed.data });
+
+      await tx.packageProfile.create({
+        data: {
+          id: newId("pkg"),
+          srcId: null,
+          profileId: profile.id,
+          parentId: null,
+          name: "RootPackage",
+          type: null,
+          documentation: null,
+          documentationRu: null,
+          details: null,
+        },
+      });
+
+      return profile;
+    });
+
     res.status(201).json(created);
   })
 );
