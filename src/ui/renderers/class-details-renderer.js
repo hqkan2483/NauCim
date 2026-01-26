@@ -41,6 +41,34 @@ function renderClassDetails(cls, { viewMode = "standard" } = {}) {
  * @returns {string} HTML string
  */
 function renderClassForm(cls) {
+  /**
+   * Render "used in profiles" list based on backend export field `profileRelations`.
+   *
+   * Backend currently exports relations as objects like:
+   * - { profileId, profileObjectId }
+   * Some flows may additionally enrich with `profileName`/`name`.
+   *
+   * @param {Object} classObj
+   * @returns {string} HTML
+   */
+  function renderUsedInProfiles(classObj) {
+    const relations = Array.isArray(classObj?.profileRelations)
+      ? classObj.profileRelations
+      : [];
+
+    if (relations.length === 0) {
+      return '<span class="text-muted">Не используется </span>';
+    }
+
+    return relations
+      .map((p) => {
+        const name = p?.profileName || "Без имени";
+
+        return `<span class="form-multiselect-item">${name}</span>`;
+      })
+      .join("");
+  }
+
   return `
     <form class="item-form" id="class-form" data-class-id="${cls.id}"
           data-model-id="${cls.modelId || ""}"
@@ -89,18 +117,9 @@ function renderClassForm(cls) {
 
         <div class="form-row">
           <div class="form-cell">
-            <div class="form-label"> Используется в  профилях: </div>
             <div class="form-multiselect" id="cls-used-in-profiles">
-              ${
-                cls.usedInProfiles && cls.usedInProfiles.length > 0
-                  ? cls.usedInProfiles
-                      .map(
-                        (p) =>
-                          `<span class="form-multiselect-item">${p.name || "Без имени"}</span>`,
-                      )
-                      .join("")
-                  : '<span class="text-muted">Не используется в профилях</span>'
-              }
+              <span class="form-label">Используется в  профилях:  </span>
+              ${renderUsedInProfiles(cls)}
             </div>
           
           </div>

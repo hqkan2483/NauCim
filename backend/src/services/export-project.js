@@ -48,9 +48,11 @@ export async function exportProject(projectId) {
     orderBy: { name: "asc" },
   });
 
+  const profileNameById = new Map((profiles || []).map((p) => [String(p.id), String(p.name ?? "")]));
+
   const exportedModels = [];
   for (const m of models) {
-    const rootPackages = await exportRootPackagesFor({ modelId: m.id });
+    const rootPackages = await exportRootPackagesFor({ modelId: m.id, profileNameById });
     exportedModels.push({
       ...m,
       relatedProfiles: [],
@@ -60,7 +62,7 @@ export async function exportProject(projectId) {
 
   const exportedProfiles = [];
   for (const p of profiles) {
-    const rootPackages = await exportRootPackagesFor({ profileId: p.id });
+    const rootPackages = await exportRootPackagesFor({ profileId: p.id, profileNameById });
     exportedProfiles.push({
       ...p,
       relatedModels: [],
@@ -75,14 +77,14 @@ export async function exportProject(projectId) {
   };
 }
 
-async function exportRootPackagesFor({ modelId = null, profileId = null }) {
+async function exportRootPackagesFor({ modelId = null, profileId = null, profileNameById = null }) {
   if (!modelId && !profileId) return [];
 
   const isModel = Boolean(modelId);
   const id = String(isModel ? modelId : profileId);
 
   const [packages, classNameById, generalizationsList, associationList] = await Promise.all([
-    isModel ? exportPackagesTreeModel(id) : exportPackagesTreeProfile(id),
+    isModel ? exportPackagesTreeModel(id, { profileNameById }) : exportPackagesTreeProfile(id),
     isModel
       ? prisma.classModel
           .findMany({ where: { modelId: id }, select: { id: true, name: true } })
@@ -173,7 +175,7 @@ function sortClassLinks(list) {
   return arr;
 }
 
-async function exportPackagesTreeModel(modelId) {
+async function exportPackagesTreeModel(modelId, { profileNameById = null } = {}) {
   const [packages, classes, attributes, literals, diagrams, generalizationLinks, associationLinks, profileClassRefs] = await Promise.all([
     prisma.packageModel.findMany({
       where: { modelId },
@@ -289,11 +291,28 @@ async function exportPackagesTreeModel(modelId) {
     const modelClassId = r?.refModelItemId;
     if (!modelClassId) continue;
     const list = profileRelationsByModelClassId.get(modelClassId) || [];
-    list.push({ profileId: r.profileId, profileObjectId: r.id });
+    list.push({
+      profileId: r.profileId,
+      profileName:
+        profileNameById && typeof profileNameById.get === "function"
+          ? profileNameById.get(String(r.profileId)) ?? ""
+          : "",
+      // id of the class object inside the profile (ClassProfile.id)
+      profileClassId: r.id,
+    });
     profileRelationsByModelClassId.set(modelClassId, list);
   }
   for (const [k, list] of profileRelationsByModelClassId.entries()) {
-    list.sort((a, b) => String(a.profileId).localeCompare(String(b.profileId), undefined, { sensitivity: "base" }));
+    list.sort((a, b) => {
+      const aName = String(a?.profileName ?? "");
+      const bName = String(b?.profileName ?? "");
+      const nameCmp = aName.localeCompare(bName, undefined, { sensitivity: "base" });
+      if (nameCmp !== 0) return nameCmp;
+
+      return String(a?.profileId ?? "").localeCompare(String(b?.profileId ?? ""), undefined, {
+        sensitivity: "base",
+      });
+    });
     profileRelationsByModelClassId.set(k, list);
   }
 
