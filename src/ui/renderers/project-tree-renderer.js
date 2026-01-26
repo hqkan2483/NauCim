@@ -6,6 +6,14 @@
 
 import { buildTitleAttribute } from "../../utils/title-attribute-builder.js";
 import { TREE_STORAGE_KEYS } from "../trees/tree-storage-keys.js";
+import {
+  buildPackageContractAttrs,
+  buildClassContractAttrs,
+  buildDiagramContractAttrs,
+  buildAttributeContractAttrs,
+  buildLinkContractAttrs,
+  buildLiteralContractAttrs,
+} from "./tree-contract-attrs.js";
 
 /**
  * Render full project tree
@@ -129,7 +137,7 @@ function renderModelTree(model, projectId, index) {
     const rootPackage = model.rootPackages[0];
     if (rootPackage.packages) {
       rootPackage.packages.forEach((pkg, idx) => {
-        html += renderPackageTree(pkg, `${itemId}-pkg-${idx}`, model.id);
+        html += renderPackageTree(pkg, `${itemId}-pkg-${idx}`, model.id, null, "");
       });
     }
 
@@ -183,7 +191,7 @@ function renderProfileTree(profile, projectId, index) {
     const rootPackage = profile.rootPackages[0];
     if (rootPackage.packages) {
       rootPackage.packages.forEach((pkg, idx) => {
-        html += renderPackageTree(pkg, `${itemId}-pkg-${idx}`, null, profile.id);
+        html += renderPackageTree(pkg, `${itemId}-pkg-${idx}`, null, profile.id, "");
       });
     }
 
@@ -197,7 +205,13 @@ function renderProfileTree(profile, projectId, index) {
 /**
  * Render package tree
  */
-function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
+function renderPackageTree(
+  pkg,
+  itemId,
+  modelId = null,
+  profileId = null,
+  parentPackageId = ""
+) {
   const expandedItems = JSON.parse(
     localStorage.getItem(TREE_STORAGE_KEYS.expandedTreeItems) || "{}"
   );
@@ -227,12 +241,11 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
 
   html += `
         <span class="tree-structure-name"
-              data-type="package"
-              data-package-id="${pkg.id || ""}"
-            data-parent-package-id="${pkg.parentPackageId || ""}"
-              data-model-id="${pkg.modelId || ""}"
-              data-profile-id="${pkg.profileId || ""}"
-              data-action="select-package"
+              ${buildPackageContractAttrs(pkg, {
+                modelId,
+                profileId,
+                parentPackageId,
+              })}
               title="${buildTitleAttribute(pkg.documentation, pkg.documentationRu, pkg.name)}">
           ${pkg.name || "Пакет без названия"}
         </span>
@@ -247,7 +260,13 @@ function renderPackageTree(pkg, itemId, modelId = null, profileId = null) {
     // Render subpackages first
     if (pkg.subPackages && pkg.subPackages.length > 0) {
       pkg.subPackages.forEach((subPkg, idx) => {
-        html += renderPackageTree(subPkg, `${itemId}-sub-${idx}`, modelId, profileId);
+        html += renderPackageTree(
+          subPkg,
+          `${itemId}-sub-${idx}`,
+          modelId,
+          profileId,
+          pkg?.id || ""
+        );
       });
     }
 
@@ -296,13 +315,10 @@ function renderDiagramTree(
       <div class="tree-structure-header">
         <span class="tree-expand-spacer"></span>
         <span class="tree-structure-name"
-              data-type="diagram"
-              data-diagram-id="${diagram?.id || ""}"
-            data-package-id="${diagram?.packageId || ""}"
-            data-contract-missing-package-id="${diagram?.packageId ? "" : "1"}"
-              data-model-id="${modelId || ""}"
-              data-profile-id="${profileId || ""}"
-              data-action="select-diagram"
+              ${buildDiagramContractAttrs(diagram, {
+                modelId,
+                profileId,
+              })}
               title="${buildTitleAttribute(diagram?.documentation, null, name)}">
           ${label}
         </span>
@@ -364,17 +380,11 @@ function renderClassTree(
 
   html += `
         <span class="tree-structure-name"
-              data-type="class"
-              data-class-id="${cls.id || ""}"
-              data-package-id="${cls.packageId || ""}"
-              data-contract-missing-package-id="${cls.packageId ? "" : "1"}"
-              data-model-id="${modelId || ""}"
-              data-ref-model-id="${cls.refModelId || ""}"
-              data-ref-model-item-id="${cls.refModelItemId || ""}"
-              data-profile-id="${profileId || ""}"
-              data-is-enumeration="${isEnumeration}"
-              data-is-abstract="${isAbstract}"
-            data-action="${isEnumeration ? "select-enumeration" : "select-class"}"
+              ${buildClassContractAttrs(cls, {
+                modelId,
+                profileId,
+                packageId: cls?.packageId,
+              })}
               title="${buildTitleAttribute(cls.documentation, cls.documentationRu, cls.name)}">
           ${className}
         </span>
@@ -441,12 +451,11 @@ function renderAttributeTree(attr, itemId, parentClassId, modelId = null, profil
       <div class="tree-structure-header">
         <span class="tree-expand-spacer"></span>
         <span class="tree-structure-name"
-              data-type="attribute"
-              data-attr-id="${attr.id || ""}"
-            data-class-id="${classId}"
-            data-model-id="${modelId || ""}"
-            data-profile-id="${profileId || ""}"
-              data-action="select-attribute"
+              ${buildAttributeContractAttrs(attr, {
+                modelId,
+                profileId,
+                classId,
+              })}
               title="${buildTitleAttribute(attr.documentation, attr.documentationRu, attr.name)}">
           ${attrName}:  ${attr.dataType || "—"}${multiplicityStr}
         </span>
@@ -490,14 +499,11 @@ function renderLinkTree(link, itemId, parentClassId, modelId = null, profileId =
       <div class="tree-structure-header">
         <span class="tree-expand-spacer"></span>
         <span class="tree-structure-name"
-              data-type="link"
-              data-link-id="${link.linkId || ""}"
-              data-relation-kind="${link.relationKind || ""}"
-              data-target-class-id="${link.targetClassId || ""}"
-            data-class-id="${parentClassId || ""}"
-            data-model-id="${modelId || ""}"
-            data-profile-id="${profileId || ""}"
-              data-action="select-link"
+              ${buildLinkContractAttrs(link, {
+                modelId,
+                profileId,
+                classId: parentClassId || "",
+              })}
               title="${link.targetDescription || linkName}">
           ${linkIcon} ${linkName}${roleInfo}${multiplicityStr}
         </span>
@@ -531,12 +537,11 @@ function renderLiteralTree(literal, itemId, parentClassId, modelId = null, profi
       <div class="tree-structure-header">
         <span class="tree-expand-spacer"></span>
         <span class="tree-structure-name"
-              data-type="literal"
-              data-literal-id="${literal.id || ""}"
-            data-class-id="${classId}"
-            data-model-id="${modelId || ""}"
-            data-profile-id="${profileId || ""}"
-              data-action="select-literal"
+              ${buildLiteralContractAttrs(literal, {
+                modelId,
+                profileId,
+                classId,
+              })}
               title="${buildTitleAttribute(literal.documentation, literal.documentationRu, literal.name)}">
           🔢 ${literalName}${descriptionStr}
         </span>

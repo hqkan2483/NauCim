@@ -3,86 +3,16 @@
  * Renders the left panel tree (available models and profiles)
  */
 
-/**
- * Convert any id value to a canonical string id.
- * @param {string|number|null|undefined} value - Raw id value.
- * @returns {string} Canonical id string (or empty string).
- */
-function toIdString(value) {
-  if (value === null || value === undefined) return "";
-  return String(value);
-}
-
-/**
- * Build canonical model/profile context attributes.
- * @param {{modelId?: string|number, profileId?: string|number}} ctx - Context ids.
- * @returns {string} HTML attributes.
- */
-function buildContextDataAttrs(ctx = {}) {
-  return `
-    data-model-id="${toIdString(ctx.modelId)}"
-    data-profile-id="${toIdString(ctx.profileId)}"
-  `;
-}
-
-/**
- * Build canonical package node attributes per UI_DATA_ATTRIBUTES.md.
- * @param {Object} pkg - Package-like item.
- * @param {{modelId?: string|number, profileId?: string|number, parentPackageId?: string|number}} ctx - Context.
- * @returns {string} HTML attributes.
- */
-function buildPackageContractAttrs(pkg, ctx = {}) {
-  const packageId = toIdString(pkg?.id);
-  const parentPackageId = toIdString(ctx.parentPackageId);
-
-  // Contract marker (diagnostics only)
-  const missingPkgIdMarker = packageId ? "" : 'data-contract-missing-package-id="1"';
-
-  return `
-    data-type="package"
-    data-action="select-package"
-    data-package-id="${packageId}"
-    data-parent-package-id="${parentPackageId}"
-    ${buildContextDataAttrs(ctx)}
-    ${missingPkgIdMarker}
-  `;
-}
-
-/**
- * Build canonical class node attributes per UI_DATA_ATTRIBUTES.md.
- * @param {Object} cls - Class-like item.
- * @param {{modelId?: string|number, profileId?: string|number, packageId?: string|number}} ctx - Context.
- * @returns {string} HTML attributes.
- */
-function buildClassContractAttrs(cls, ctx = {}) {
-  const classId = toIdString(cls?.id);
-  const packageId = toIdString(ctx.packageId);
-
-  const isEnumeration =
-    cls?.isEnumeration === true ||
-    cls?.type === "enumeration" ||
-    String(cls?.stereotype || "").toLowerCase() === "enumeration";
-
-  const isAbstract = cls?.isAbstract === true;
-  const action = isEnumeration ? "select-enumeration" : "select-class";
-
-  return `
-    data-type="class"
-    data-action="${action}"
-    data-class-id="${classId}"
-    data-package-id="${packageId}"
-    data-is-enumeration="${isEnumeration ? "1" : "0"}"
-    data-is-abstract="${isAbstract ? "1" : "0"}"
-    ${buildContextDataAttrs(ctx)}
-  `;
-}
+import {
+  buildContextDataAttrs,
+  buildPackageContractAttrs,
+  buildClassContractAttrs,
+} from "./tree-contract-attrs.js";
 
 function buildItemDataAttrs(item) {
   return `
     data-item-id="${item?.id || ""}"
     data-item-type="${item?.type || ""}"
-    data-ref-model-id="${item?.refModelId || ""}"
-    data-ref-model-item-id="${item?.refModelItemId || ""}"
   `;
 }
 

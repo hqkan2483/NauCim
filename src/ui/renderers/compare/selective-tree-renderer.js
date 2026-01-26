@@ -1,14 +1,18 @@
 import { esc } from "../../../utils/text-utils.js";
+import {
+  buildPackageContractAttrs,
+  buildClassContractAttrs,
+} from "../tree-contract-attrs.js";
 
+/**
+ * Build generic item metadata attributes used by compare UI.
+ * @param {Object} item - Any item.
+ * @returns {string} HTML attributes.
+ */
 function buildItemDataAttrs(item) {
-  // Keep attribute names consistent with available-tree-renderer.js
   return `
-    data-item-id="${esc(item?.id || "")}"
-    data-item-type="${esc(item?.type || "")}"
-    data-model-id="${esc(item?.modelId || "")}"
-    data-profile-id="${esc(item?.profileId || "")}"
-    data-ref-model-id="${esc(item?.refModelId || "")}"
-    data-ref-model-item-id="${esc(item?.refModelItemId || "")}"
+    data-item-id="${esc(item?.id || "")}" 
+    data-item-type="${esc(item?.type || "")}" 
   `;
 }
 
@@ -68,15 +72,22 @@ export function renderSelectiveTree(objectData, state) {
   const expanded = state?.expandedKeys instanceof Set ? state.expandedKeys : new Set();
   const selected = state?.selectedKeys instanceof Set ? state.selectedKeys : new Set();
   const diffKeys = state?.diffKeys instanceof Set ? state.diffKeys : new Set();
+  const side = state?.side || "";
+  const isSelectable = side === "one";
 
   const keyIndex = new Map();
   const topPackages = getTopLevelPackages(objectData);
   const baseKey = makeKey(["obj", String(objectData?.id || "obj")]);
 
+  const ctxBase =
+    objectData?.objectType === "model"
+      ? { modelId: objectData?.id ?? "", profileId: "" }
+      : { modelId: "", profileId: objectData?.id ?? "" };
+
   let html = "";
   topPackages.forEach((pkg, idx) => {
     const pkgKey = makeItemKey(baseKey, "pkg", pkg, idx);
-    html += renderPackage(pkg, pkgKey);
+    html += renderPackage(pkg, pkgKey, "");
   });
 
   if (!html) {
@@ -85,7 +96,7 @@ export function renderSelectiveTree(objectData, state) {
 
   return { html, keyIndex };
 
-  function renderPackage(pkg, pkgKey) {
+  function renderPackage(pkg, pkgKey, parentPackageId) {
     const name = esc(pkg?.name || "Без имени");
     const childPkgs = getSubPackages(pkg);
     const classes = getClasses(pkg);
@@ -100,15 +111,22 @@ export function renderSelectiveTree(objectData, state) {
     keyIndex.set(pkgKey, { name: pkg?.name || "Без имени", type: "package", data: pkg });
 
     let out = `
-      <div class="tree-item-with-checkbox" data-key="${esc(pkgKey)}" ${buildItemDataAttrs(pkg)}>
-        <span class="tree-toggle" data-action="toggle-expand" data-key="${esc(pkgKey)}">${hasChildren ? (isExpanded ? "▾" : "▸") : ""}</span>
-        <input type="checkbox" class="tree-item-checkbox" data-action="toggle-check" data-key="${esc(pkgKey)}" ${selected.has(pkgKey) ? "checked" : ""}>
-        <span class="tree-item-label">📦 ${name}${errorIcon}</span>
+      <div class="tree-item-with-checkbox"
+           data-item-key="${esc(pkgKey)}"
+           data-side="${esc(side)}"
+           ${buildItemDataAttrs(pkg)}
+           ${buildPackageContractAttrs(pkg, {
+             ...ctxBase,
+             parentPackageId,
+           })}>
+        <span class="tree-toggle" data-action="toggle-expand">${hasChildren ? (isExpanded ? "▼" : "▶") : " "}</span>
+        <input type="checkbox" class="tree-item-checkbox" data-action="toggle-select" ${selected.has(pkgKey) ? "checked" : ""} ${isSelectable ? "" : "disabled"}>
+        <span class="tree-item-label" draggable="true">📦 ${name}${errorIcon}</span>
       </div>
     `;
 
     if (hasChildren) {
-      out += `<div class="tree-children ${isExpanded ? "" : "collapsed"}" data-children-for="${esc(pkgKey)}">`;
+      out += `<div class="tree-children ${isExpanded ? "" : "collapsed"}" data-parent="${esc(pkgKey)}">`;
 
       // Classes first
       classes.forEach((cls, cidx) => {
@@ -121,10 +139,17 @@ export function renderSelectiveTree(objectData, state) {
         keyIndex.set(classKey, { name: cls?.name || "Без имени", type: "class", data: cls });
 
         out += `
-          <div class="tree-item-with-checkbox" data-key="${esc(classKey)}" ${buildItemDataAttrs(cls)}>
-            <span class="tree-toggle"></span>
-            <input type="checkbox" class="tree-item-checkbox" data-action="toggle-check" data-key="${esc(classKey)}" ${selected.has(classKey) ? "checked" : ""}>
-            <span class="tree-item-label">📄 ${className}${classErrorIcon}</span>
+          <div class="tree-item-with-checkbox"
+               data-item-key="${esc(classKey)}"
+               data-side="${esc(side)}"
+               ${buildItemDataAttrs(cls)}
+               ${buildClassContractAttrs(cls, {
+                 ...ctxBase,
+                 packageId: pkg?.id ?? "",
+               })}>
+            <span class="tree-toggle"> </span>
+            <input type="checkbox" class="tree-item-checkbox" data-action="toggle-select" ${selected.has(classKey) ? "checked" : ""} ${isSelectable ? "" : "disabled"}>
+            <span class="tree-item-label" draggable="true">📄 ${className}${classErrorIcon}</span>
           </div>
         `;
       });
@@ -132,7 +157,7 @@ export function renderSelectiveTree(objectData, state) {
       // Subpackages
       childPkgs.forEach((p, pidx) => {
         const childKey = makeItemKey(pkgKey, "pkg", p, pidx);
-        out += renderPackage(p, childKey);
+        out += renderPackage(p, childKey, pkg?.id ?? "");
       });
 
       out += `</div>`;

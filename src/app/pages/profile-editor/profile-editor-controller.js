@@ -189,6 +189,9 @@ function initComponents() {
     });
 
     setTreeComponent(side, component);
+
+    // Initial compute of indeterminate markers for already-checked nodes.
+    component?.refreshAllIndicators?.();
   };
 
   initTreeForSide(SIDE_LEFT);
@@ -473,6 +476,9 @@ function renderAvailableTree() {
   );
 
   container.innerHTML = html;
+
+  // After DOM replacement, recompute "partial" checkbox markers.
+  leftTreeComponent?.refreshAllIndicators?.();
 }
 
 /**
@@ -493,6 +499,9 @@ function renderProfileTree() {
   );
 
   container.innerHTML = html;
+
+  // After DOM replacement, recompute "partial" checkbox markers.
+  rightTreeComponent?.refreshAllIndicators?.();
 }
 
 // ============================================================
