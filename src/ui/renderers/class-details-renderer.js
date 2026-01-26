@@ -64,7 +64,7 @@ function renderClassForm(cls) {
       .map((p) => {
         const name = p?.profileName || "Без имени";
 
-        return `<span class="form-multiselect-item">${name}</span>`;
+        return `<span class="form__object-link" data-profile-id="${p.profileId}" data-class-id="${p.profileClassId}">${name}</span>`;
       })
       .join("");
   }

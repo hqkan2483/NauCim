@@ -64,7 +64,6 @@
   background: var(--bg-primary);
 }
 
-
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -180,6 +179,16 @@
   gap: 12px;
   padding-left: 20px;
 }
+
+.form__object-link {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 0 10px;
+  color: var(--main-color);
+  cursor: pointer;
+}
+
 
 /* Поля ввода, текстовые области и выпадающие списки */
 .form-input,
