@@ -212,6 +212,7 @@ const updateClassSchema = z
 const createClassSchema = z
   .object({
     name: z.string().min(1),
+    type: z.string().nullable().optional(),
     refModelId: z.string().min(1),
     refModelItemId: z.string().min(1),
     stereotype: z.string().nullable().optional(),
@@ -776,7 +777,7 @@ profilesRouter.post(
         profileId,
         packageId,
         name,
-        type: null,
+        type: parsed.data.type ?? null,
         stereotype: parsed.data.stereotype ?? null,
         documentation: parsed.data.documentation ?? null,
         documentationRu: parsed.data.documentationRu ?? null,

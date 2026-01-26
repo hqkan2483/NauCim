@@ -18,6 +18,7 @@ import {
   prepareProfileForSave,
   getItemDetailsByKey,
 } from "../../../services/profile-editor-service.js";
+import { createProfileClass, deleteProfileClass } from "../../../services/class-service.js";
 import { formatTransferReport } from "../../../services/profile-editor-transfer-report.js";
 import { initEditorTree } from "../../../ui/components/editor-tree.js";
 import {
@@ -185,6 +186,93 @@ function cssEscape(value) {
   }
   // Minimal fallback (good enough for UUID-like ids)
   return String(value).replace(/"/g, "\\\"");
+}
+
+/**
+ * Normalize a class name for profile-wide uniqueness checks.
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+function normalizeClassName(name) {
+  return String(name ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * Whether a profile tree item is a ClassProfile-like object.
+ *
+ * @param {any} item
+ * @returns {boolean}
+ */
+function isProfileClassItem(item) {
+  if (!item || typeof item !== "object") return false;
+  const id = String(item?.id ?? "").trim();
+  const name = String(item?.name ?? "").trim();
+  const refModelId = String(item?.refModelId ?? "").trim();
+  const refModelItemId = String(item?.refModelItemId ?? "").trim();
+  return Boolean(id && name && refModelId && refModelItemId);
+}
+
+/**
+ * Collect all class names already present in the current profile (recursive).
+ *
+ * @param {Array} packages
+ * @returns {Set<string>} Normalized class names
+ */
+function collectProfileClassNames(packages) {
+  const names = new Set();
+
+  const walk = (pkgs) => {
+    if (!Array.isArray(pkgs)) return;
+    for (const pkg of pkgs) {
+      const classes = Array.isArray(pkg?.classes) ? pkg.classes : [];
+      for (const cls of classes) {
+        const n = normalizeClassName(cls?.name);
+        if (n) names.add(n);
+      }
+      walk(pkg?.subPackages);
+    }
+  };
+
+  walk(packages);
+  return names;
+}
+
+/**
+ * Find root profile package id (a package with no parentPackageId).
+ *
+ * @param {Array} packages
+ * @returns {string|null}
+ */
+function findRootProfilePackageId(packages) {
+  if (!Array.isArray(packages) || packages.length === 0) return null;
+  const root = packages.find((p) => p && (p.parentPackageId === null || p.parentPackageId === undefined || p.parentPackageId === ""));
+  return root?.id ? String(root.id) : (packages[0]?.id ? String(packages[0].id) : null);
+}
+
+/**
+ * Resolve the profile package id that should receive transferred classes:
+ * - active selection in the right tree (its data-package-id)
+ * - otherwise the profile root package (no parent)
+ *
+ * @returns {string|null}
+ */
+function resolveTargetProfilePackageId() {
+  const rightTreeRoot = document.getElementById("profile-tree");
+  if (!rightTreeRoot) return findRootProfilePackageId(profileData.items);
+
+  const activeKey = String(activeRightItem ?? "");
+  if (activeKey) {
+    const activeEl = rightTreeRoot.querySelector(`[data-item-key="${cssEscape(activeKey)}"]`);
+    if (activeEl instanceof HTMLElement) {
+      const pkgId = activeEl.getAttribute("data-package-id") || "";
+      if (pkgId) return String(pkgId);
+    }
+  }
+
+  return findRootProfilePackageId(profileData.items);
 }
 
 /**
@@ -977,37 +1065,124 @@ function bindEvents() {
 // PROFILE OPERATIONS
 // ============================================================
 
-function transferToProfile() {
+async function transferToProfile() {
   if (selectedLeftItems.size === 0) {
-    alert("Выберите элементы для переноса");
+    alert("Выберите классы для переноса");
     return;
   }
 
-  try {
-    // Transfer items
-    const result = transferItemsToProfile(
-      selectedLeftItems,
-      availableData,
-      profileData
-    );
+  if (!currentProjectId || !currentProfileId) {
+    alert("Не удалось определить текущий проект/профиль");
+    return;
+  }
 
-    // Backward safety (если кто-то вернёт старый формат)
-    if (result && result.profileData) {
-      profileData = result.profileData;
-      showTransferReport(result.report);
-    } else {
-      profileData = result;
+  const targetPackageId = resolveTargetProfilePackageId();
+  if (!targetPackageId) {
+    alert("Не найден целевой пакет профиля (корневой пакет отсутствует)");
+    return;
+  }
+
+  const existingNames = collectProfileClassNames(profileData.items);
+
+  /** @type {Array<string>} */
+  const transferred = [];
+  /** @type {Array<{name: string, reason: string}>} */
+  const skipped = [];
+  /** @type {Array<{name: string, reason: string}>} */
+  const failed = [];
+
+  let lastProject = null;
+
+  // Process only model classes (left-model-...) from the selected set.
+  const selectedKeys = Array.from(selectedLeftItems);
+  const modelClassKeys = selectedKeys.filter((k) => String(k).startsWith("left-model-") && String(k).includes("-cls-"));
+
+  if (modelClassKeys.length === 0) {
+    alert("Выберите хотя бы один класс модели (в левом дереве)");
+    return;
+  }
+
+  for (const itemKey of modelClassKeys) {
+    const item = getItemDetailsByKey(itemKey, availableData, profileData);
+    const className = String(item?.name ?? "").trim();
+
+    if (!item || !className) {
+      failed.push({ name: className || String(itemKey), reason: "Не удалось прочитать данные класса" });
+      continue;
     }
 
-    // Clear selection
-    selectedLeftItems.clear();
-    leftTreeComponent?.clearSelection();
+    const refModelId = item?.modelId ? String(item.modelId) : "";
+    const refModelItemId = item?.id ? String(item.id) : "";
 
-    // Re-render profile tree
+    if (!refModelId || !refModelItemId) {
+      failed.push({ name: className, reason: "Класс не относится к модели (нет modelId/id)" });
+      continue;
+    }
+
+    const normalized = normalizeClassName(className);
+    if (existingNames.has(normalized)) {
+      skipped.push({ name: className, reason: "В профиле уже есть класс с таким именем" });
+      continue;
+    }
+
+    // Build payload for backend ClassProfile creation.
+    // Note: no attributes/literals/links are sent (only the class itself).
+    const payload = {
+      name: className,
+      type: item?.type ?? null,
+      stereotype: item?.stereotype ?? null,
+      documentation: item?.documentation ?? null,
+      documentationRu: item?.documentationRu ?? null,
+      details: item?.details ?? null,
+      isAbstract: item?.isAbstract ?? null,
+      refModelId,
+      refModelItemId,
+    };
+
+    try {
+      // Backend persistence is performed per class (separate request for each class).
+      const project = await createProfileClass(
+        String(currentProjectId),
+        String(currentProfileId),
+        String(targetPackageId),
+        payload
+      );
+
+      lastProject = project;
+      transferred.push(className);
+      existingNames.add(normalized);
+    } catch (e) {
+      const status = Number(e?.status || 0);
+      const msg = e?.message ? String(e.message) : "Ошибка сохранения";
+
+      // Respect profile-wide uniqueness by name (backend returns 409).
+      if (status === 409) {
+        skipped.push({ name: className, reason: msg });
+      } else {
+        failed.push({ name: className, reason: msg });
+      }
+    }
+  }
+
+  if (lastProject) {
+    // Sync local UI state from backend and rerender both trees.
+    syncProfileDataFromProject(lastProject);
+    await loadAvailableData();
+    renderAvailableTree();
     renderProfileTree();
-  } catch (error) {
-    console.error("❌ Transfer failed:", error);
-    alert("Ошибка при переносе элементов: " + error.message);
+  }
+
+  // Clear selection
+  selectedLeftItems.clear();
+  leftTreeComponent?.clearSelection?.();
+
+  const lines = [];
+  if (transferred.length) lines.push(`Перенесено в профиль: ${transferred.join(", ")}`);
+  if (skipped.length) lines.push(`Не перенесено: ${skipped.map((x) => `${x.name} (${x.reason})`).join("; ")}`);
+  if (failed.length) lines.push(`Ошибки: ${failed.map((x) => `${x.name} (${x.reason})`).join("; ")}`);
+
+  if (lines.length) {
+    alert(lines.join("\n"));
   }
 }
 
@@ -1017,30 +1192,86 @@ function showTransferReport(report) {
   alert(message);
 }
 
-function removeFromProfile() {
+async function removeFromProfile() {
   if (selectedRightItems.size === 0) {
-    alert("Выберите элементы для удаления");
+    alert("Выберите классы для исключения из профиля");
     return;
   }
 
-  if (!confirm(`Удалить ${selectedRightItems.size} элемент(ов) из профиля?`)) {
+  if (!currentProjectId || !currentProfileId) {
+    alert("Не удалось определить текущий проект/профиль");
     return;
   }
 
-  try {
-    // Remove items
-    profileData = removeItemsFromProfile(selectedRightItems, profileData);
+  // Only classes can be excluded by this button (packages/diagrams have their own UX).
+  const selectedKeys = Array.from(selectedRightItems);
+  const classKeys = selectedKeys.filter((k) => String(k).includes("-cls-"));
 
-    // Clear selection
-    selectedRightItems.clear();
-    rightTreeComponent?.clearSelection();
+  if (classKeys.length === 0) {
+    alert("Выберите хотя бы один класс в правом дереве");
+    return;
+  }
 
-    // Re-render profile tree
+  if (!confirm(`Исключить ${classKeys.length} класс(ов) из профиля?`)) {
+    return;
+  }
+
+  /** @type {Array<string>} */
+  const removed = [];
+  /** @type {Array<{name: string, reason: string}>} */
+  const skipped = [];
+  /** @type {Array<{name: string, reason: string}>} */
+  const failed = [];
+
+  let lastProject = null;
+
+  for (const itemKey of classKeys) {
+    const item = getItemDetailsByKey(itemKey, availableData, profileData);
+    const classId = String(item?.id ?? "").trim();
+    const className = String(item?.name ?? "").trim();
+
+    if (!isProfileClassItem(item) || !classId) {
+      skipped.push({ name: className || String(itemKey), reason: "Выбранный элемент не является классом профиля" });
+      continue;
+    }
+
+    try {
+      // Backend removes ClassProfile row; relation to ClassModel is cleared by deletion.
+      const project = await deleteProfileClass(
+        String(currentProjectId),
+        String(currentProfileId),
+        classId
+      );
+      lastProject = project;
+      removed.push(className);
+    } catch (e) {
+      const status = Number(e?.status || 0);
+      const msg = e?.message ? String(e.message) : "Ошибка удаления";
+
+      if (status === 404) {
+        skipped.push({ name: className, reason: msg });
+      } else {
+        failed.push({ name: className, reason: msg });
+      }
+    }
+  }
+
+  if (lastProject) {
+    syncProfileDataFromProject(lastProject);
+    await loadAvailableData();
+    renderAvailableTree();
     renderProfileTree();
-  } catch (error) {
-    console.error("❌ Removal failed:", error);
-    alert("Ошибка при удалении элементов: " + error.message);
   }
+
+  // Clear selection
+  selectedRightItems.clear();
+  rightTreeComponent?.clearSelection?.();
+
+  const lines = [];
+  if (removed.length) lines.push(`Исключены из профиля: ${removed.join(", ")}`);
+  if (skipped.length) lines.push(`Не исключены: ${skipped.map((x) => `${x.name} (${x.reason})`).join("; ")}`);
+  if (failed.length) lines.push(`Ошибки: ${failed.map((x) => `${x.name} (${x.reason})`).join("; ")}`);
+  if (lines.length) alert(lines.join("\n"));
 }
 
 /**

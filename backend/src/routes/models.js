@@ -203,6 +203,7 @@ const updateClassSchema = z
 const createClassSchema = z
   .object({
     name: z.string().min(1),
+    type: z.string().nullable().optional(),
     stereotype: z.string().nullable().optional(),
     documentation: z.string().nullable().optional(),
     documentationRu: z.string().nullable().optional(),
@@ -698,7 +699,7 @@ modelsRouter.post(
         modelId,
         packageId,
         name,
-        type: null,
+        type: parsed.data.type ?? null,
         stereotype: parsed.data.stereotype ?? null,
         documentation: parsed.data.documentation ?? null,
         documentationRu: parsed.data.documentationRu ?? null,
