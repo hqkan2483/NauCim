@@ -6,6 +6,7 @@ import {
 } from "../../../services/project-service.js";
 import { esc } from "../../../utils/text-utils.js";
 import { renderSelectiveTree } from "../../../ui/renderers/compare/selective-tree-renderer.js";
+import { initEditorTree } from "../../../ui/components/editor-tree.js";
 import { renderSelectiveResultsList } from "../../../ui/renderers/compare/selective-results-renderer.js";
 
 // ============================================================
@@ -22,6 +23,9 @@ let currentObject2 = null;
 
 let selectiveKeyIndex1 = new Map();
 let selectiveKeyIndex2 = new Map();
+
+let compareTreeOne = null;
+let compareTreeTwo = null;
 
 // ============================================================
 // INIT
@@ -99,11 +103,37 @@ function bindEvents() {
   const objOneContent = document.getElementById("compare-object-one-content");
   const objTwoContent = document.getElementById("compare-object-two-content");
 
-  objOneContent?.addEventListener("click", (e) => handleTreeClick(e, "one"));
-  objTwoContent?.addEventListener("click", (e) => handleTreeClick(e, "two"));
+  // Compare trees are powered by the same component as profile-editor
+  // (tri-state + cascade + expand/collapse without re-render).
+  if (objOneContent && !compareTreeOne) {
+    compareTreeOne = initEditorTree("compare-object-one-content", {
+      allowDragDrop: false,
+      onExpand: (itemKey, isExpanded) => {
+        if (!itemKey) return;
+        if (isExpanded) selectiveExpanded.add(itemKey);
+        else selectiveExpanded.delete(itemKey);
+      },
+      onCheck: (itemKey, isChecked) => {
+        if (!itemKey) return;
+        if (isChecked) selectiveSelected.add(itemKey);
+        else selectiveSelected.delete(itemKey);
+      },
+    });
+  }
 
-  objOneContent?.addEventListener("change", (e) => handleTreeChange(e, "one"));
-  objTwoContent?.addEventListener("change", (e) => handleTreeChange(e, "two"));
+  if (objTwoContent && !compareTreeTwo) {
+    compareTreeTwo = initEditorTree("compare-object-two-content", {
+      allowDragDrop: false,
+      onExpand: (itemKey, isExpanded) => {
+        if (!itemKey) return;
+        if (isExpanded) selectiveExpanded.add(itemKey);
+        else selectiveExpanded.delete(itemKey);
+      },
+      onCheck: () => {
+        // Selection tracking is intentionally disabled for object 2.
+      },
+    });
+  }
 }
 
 function getSelectedMode() {
@@ -141,6 +171,8 @@ function applyMode(mode) {
     objOneContent.classList.remove("hidden");
     objOneContent.innerHTML = renderObjectTreePanel(obj1, "one");
 
+    compareTreeOne?.refreshAllIndicators();
+
     objTwoContent.classList.add("hidden");
     objTwoContent.innerHTML = "";
     return;
@@ -165,75 +197,26 @@ function applyMode(mode) {
     objOneContent.classList.remove("hidden");
     objOneContent.innerHTML = renderObjectTreePanel(obj1, "one");
 
+    compareTreeOne?.refreshAllIndicators();
+
     objTwoContent.classList.remove("hidden");
     objTwoContent.innerHTML = renderObjectTreePanel(obj2, "two");
+
+    compareTreeTwo?.refreshAllIndicators();
 
     return;
   }
 }
-
-function renderObjectTreePanel(obj, side) {
-  const state = {
-    expandedKeys: selectiveExpanded,
-    selectedKeys: side === "one" ? selectiveSelected : new Set(),
-    diffKeys: selectiveDiffKeys,
-  };
-
-  const rendered = renderSelectiveTree(obj, state);
-  if (side === "one") selectiveKeyIndex1 = rendered.keyIndex;
-  if (side === "two") selectiveKeyIndex2 = rendered.keyIndex;
-
-  return `
-    <div class="card">
-      <div class="editor-panel-content">${rendered.html}</div>
-    </div>
-  `;
-}
-
-function handleTreeClick(event, side) {
-  const target = event.target instanceof HTMLElement ? event.target : null;
-  if (!target) return;
-
-  const expandEl = target.closest('[data-action="toggle-expand"]');
-  if (expandEl) {
-    const key = expandEl.getAttribute("data-key");
-    if (!key) return;
-
-    // Render full tree once; then toggle UI state without re-rendering.
-    const isExpanded = selectiveExpanded.has(key);
-    if (isExpanded) selectiveExpanded.delete(key);
-    else selectiveExpanded.add(key);
-
-    const containerId = side === "one" ? "compare-object-one-content" : "compare-object-two-content";
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const cssEscape =
-      typeof CSS !== "undefined" && typeof CSS.escape === "function"
-        ? CSS.escape
-        : (v) => String(v).replace(/[^a-zA-Z0-9_\-]/g, "\\$&");
-
-    const children = container.querySelector(`[data-children-for="${cssEscape(key)}"]`);
-    if (children) {
-      children.classList.toggle("collapsed", isExpanded);
-      // Update arrow icon (only if there are children)
-      expandEl.textContent = isExpanded ? "▸" : "▾";
-    }
-
-    event.stopPropagation();
-  }
-}
-
-function handleTreeChange(event, side) {
   if (side !== "one") return; // selection currently only used for object 1
 
   const target = event.target instanceof HTMLElement ? event.target : null;
   if (!target) return;
 
-  const checkbox = target.closest('input[data-action="toggle-check"]');
+  const checkbox = target.closest('input[data-action="toggle-select"]');
   if (!checkbox) return;
 
-  const key = checkbox.getAttribute("data-key");
+  const treeItem = checkbox.closest("[data-item-key]");
+  const key = treeItem?.getAttribute("data-item-key") || "";
   if (!key) return;
 
   if (checkbox instanceof HTMLInputElement) {
@@ -443,9 +426,9 @@ function syncTreeDiffIcons(side) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const rows = container.querySelectorAll('.tree-item-with-checkbox[data-key]');
+  const rows = container.querySelectorAll('.tree-item-with-checkbox[data-item-key]');
   rows.forEach((row) => {
-    const key = row.getAttribute("data-key") || "";
+    const key = row.getAttribute("data-item-key") || "";
     const label = row.querySelector(".tree-item-label");
     if (!label) return;
 

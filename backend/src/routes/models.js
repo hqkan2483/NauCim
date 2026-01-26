@@ -7,6 +7,7 @@ import { exportProject } from "../services/export-project.js";
 import { deleteModelPackageAndExportProject } from "../services/delete-package.js";
 import { deleteModelClassAndExportProject } from "../services/delete-class.js";
 import { deleteModelAttributeAndExportProject } from "../services/delete-attribute.js";
+import { deleteModelLiteralAndExportProject } from "../services/delete-literal.js";
 import { newId } from "../utils/id-generation.js";
 
 export const modelsRouter = Router();
@@ -16,6 +17,10 @@ function normalizeName(name) {
 }
 
 function normalizeAttrName(name) {
+  return String(name ?? "").trim().toLocaleLowerCase();
+}
+
+function normalizeLiteralName(name) {
   return String(name ?? "").trim().toLocaleLowerCase();
 }
 
@@ -103,6 +108,27 @@ async function assertUniqueAttributeNameInModelClass({ modelId, classId, name, e
   }
 }
 
+async function assertUniqueLiteralNameInModelClass({ modelId, classId, name, excludeLiteralId = null }) {
+  const normalized = normalizeLiteralName(name);
+  if (!normalized) return;
+
+  const lits = await prisma.literalModel.findMany({
+    where: { modelId: String(modelId), classId: String(classId) },
+    select: { id: true, name: true },
+  });
+
+  const conflict = lits.find((l) => {
+    if (excludeLiteralId && String(l.id) === String(excludeLiteralId)) return false;
+    return normalizeLiteralName(l.name) === normalized;
+  });
+
+  if (conflict) {
+    const err = new Error("Literal name already exists in this class");
+    err.status = 409;
+    throw err;
+  }
+}
+
 const createModelSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
@@ -139,7 +165,6 @@ const updatePackageSchema = z
 
     name: z.string().optional(),
     type: z.string().nullable().optional(),
-    parentPackage: z.string().nullable().optional(),
     documentation: z.string().nullable().optional(),
     documentationRu: z.string().nullable().optional(),
     details: z.string().nullable().optional(),
@@ -178,6 +203,7 @@ const updateClassSchema = z
 const createClassSchema = z
   .object({
     name: z.string().min(1),
+    type: z.string().nullable().optional(),
     stereotype: z.string().nullable().optional(),
     documentation: z.string().nullable().optional(),
     documentationRu: z.string().nullable().optional(),
@@ -216,6 +242,29 @@ const createAttributeSchema = z
     documentation: z.string().nullable().optional(),
     documentationRu: z.string().nullable().optional(),
     details: z.string().nullable().optional(),
+    initialValue: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+const updateLiteralSchema = z
+  .object({
+    id: z.string().min(1).optional(),
+    modelId: z.string().min(1).optional(),
+    classId: z.string().min(1).optional(),
+    srcId: z.string().nullable().optional(),
+
+    name: z.string().optional(),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
+    initialValue: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+const createLiteralSchema = z
+  .object({
+    name: z.string().min(1),
+    documentation: z.string().nullable().optional(),
+    documentationRu: z.string().nullable().optional(),
     initialValue: z.string().nullable().optional(),
   })
   .passthrough();
@@ -391,7 +440,6 @@ modelsRouter.put(
       documentationRu: parsed.data.documentationRu,
       details: parsed.data.details,
       type: parsed.data.type,
-      parentPackage: parsed.data.parentPackage,
       parentId: parsed.data.parentId,
       srcId: parsed.data.srcId,
     };
@@ -506,7 +554,6 @@ modelsRouter.post(
         parentId: parentPackageId,
         name,
         type: null,
-        parentPackage: null,
         documentation: parsed.data.documentation ?? null,
         documentationRu: parsed.data.documentationRu ?? null,
         details: parsed.data.details ?? null,
@@ -652,7 +699,67 @@ modelsRouter.post(
         modelId,
         packageId,
         name,
-        type: null,
+        type: parsed.data.type ?? null,
+        stereotype: parsed.data.stereotype ?? null,
+        documentation: parsed.data.documentation ?? null,
+        documentationRu: parsed.data.documentationRu ?? null,
+        details: parsed.data.details ?? null,
+        isAbstract: parsed.data.isAbstract ?? null,
+        refModelId: null,
+        refModelItemId: null,
+      },
+    });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Create an enumeration inside a model package.
+// Stores it in ClassModel with type="Enumeration".
+// Returns full updated project (export payload).
+modelsRouter.post(
+  "/:modelId/packages/:packageId/enumerations",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const packageId = String(req.params.packageId);
+
+    const parsed = createClassSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid enumeration create", parsed.error.flatten());
+    }
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const pkg = await prisma.packageModel.findFirst({
+      where: { id: packageId, modelId },
+      select: { id: true },
+    });
+    if (!pkg) return sendError(res, 404, "Package not found");
+
+    const name = String(parsed.data.name ?? "").trim();
+    if (!name) return sendError(res, 400, "Enumeration name is required");
+
+    try {
+      await assertUniqueClassNameInModel({ modelId, name });
+    } catch (e) {
+      if (e?.status === 409) return sendError(res, 409, e.message);
+      throw e;
+    }
+
+    await prisma.classModel.create({
+      data: {
+        id: newId("cls"),
+        srcId: null,
+        modelId,
+        packageId,
+        name,
+        type: "Enumeration",
         stereotype: parsed.data.stereotype ?? null,
         documentation: parsed.data.documentation ?? null,
         documentationRu: parsed.data.documentationRu ?? null,
@@ -771,6 +878,91 @@ modelsRouter.delete(
     } catch (e) {
       const status = Number(e?.status || 500);
       const msg = e?.message ? String(e.message) : "Failed to delete attribute";
+      return sendError(res, status, msg);
+    }
+  })
+);
+
+// Update a literal inside a model graph.
+// Returns full updated project (export payload).
+modelsRouter.put(
+  "/:modelId/literals/:literalId",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const literalId = String(req.params.literalId);
+
+    const parsed = updateLiteralSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid literal update", parsed.error.flatten());
+    }
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const existing = await prisma.literalModel.findFirst({
+      where: { id: literalId, modelId },
+      select: { id: true, modelId: true, classId: true },
+    });
+    if (!existing) return sendError(res, 404, "Literal not found");
+
+    if (parsed.data.name !== undefined) {
+      const trimmed = String(parsed.data.name ?? "").trim();
+      if (!trimmed) return sendError(res, 400, "Literal name is required");
+
+      try {
+        await assertUniqueLiteralNameInModelClass({
+          modelId,
+          classId: existing.classId,
+          name: trimmed,
+          excludeLiteralId: literalId,
+        });
+      } catch (e) {
+        if (e?.status === 409) return sendError(res, 409, e.message);
+        throw e;
+      }
+    }
+
+    const allowed = {
+      name: parsed.data.name,
+      documentation: parsed.data.documentation,
+      documentationRu: parsed.data.documentationRu,
+      value: parsed.data.initialValue,
+      srcId: parsed.data.srcId,
+    };
+    const data = Object.fromEntries(Object.entries(allowed).filter(([, v]) => v !== undefined));
+
+    await prisma.literalModel.update({
+      where: { id: literalId },
+      data,
+    });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+/**
+ * Delete a literal from a model graph and return a full exported Project.
+ *
+ * Request:
+ * - Path params: :modelId, :literalId
+ */
+modelsRouter.delete(
+  "/:modelId/literals/:literalId",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const literalId = String(req.params.literalId);
+
+    try {
+      const project = await deleteModelLiteralAndExportProject({ modelId, literalId });
+      res.json(project);
+    } catch (e) {
+      const status = Number(e?.status || 500);
+      const msg = e?.message ? String(e.message) : "Failed to delete literal";
       return sendError(res, status, msg);
     }
   })
@@ -989,6 +1181,64 @@ modelsRouter.post(
         initialValue: parsed.data.initialValue ?? null,
         refModelId: null,
         refModelItemId: null,
+      },
+    });
+
+    const project = await exportProject(model.projectId);
+    if (!project) return sendError(res, 404, "Project not found");
+    res.json(project);
+  })
+);
+
+// Create a literal inside a model class.
+// Returns full updated project (export payload).
+modelsRouter.post(
+  "/:modelId/classes/:classId/literals",
+  asyncHandler(async (req, res) => {
+    const modelId = String(req.params.modelId);
+    const classId = String(req.params.classId);
+
+    const parsed = createLiteralSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(res, 400, "Invalid literal create", parsed.error.flatten());
+    }
+
+    const model = await prisma.model.findUnique({
+      where: { id: modelId },
+      select: { id: true, projectId: true },
+    });
+    if (!model) return sendError(res, 404, "Model not found");
+
+    const cls = await prisma.classModel.findFirst({
+      where: { id: classId, modelId },
+      select: { id: true },
+    });
+    if (!cls) return sendError(res, 404, "Class not found");
+
+    const normalizedName = String(parsed.data.name ?? "").trim();
+    if (!normalizedName) return sendError(res, 400, "Literal name is required");
+
+    try {
+      await assertUniqueLiteralNameInModelClass({
+        modelId,
+        classId,
+        name: normalizedName,
+      });
+    } catch (e) {
+      if (e?.status === 409) return sendError(res, 409, e.message);
+      throw e;
+    }
+
+    await prisma.literalModel.create({
+      data: {
+        id: newId("lit"),
+        srcId: null,
+        modelId,
+        classId,
+        name: normalizedName,
+        value: parsed.data.initialValue ?? null,
+        documentation: parsed.data.documentation ?? null,
+        documentationRu: parsed.data.documentationRu ?? null,
       },
     });
 

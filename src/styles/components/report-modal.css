@@ -1,0 +1,43 @@
+.report-modal__summary {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--info-block);
+  color: var(--primary-text);
+  line-height: 1.35;
+}
+
+.report-modal__section {
+  margin-top: 12px;
+}
+
+.report-modal__section-title {
+  font-weight: 600;
+  margin: 0 0 6px 0;
+}
+
+.report-modal__list {
+  margin: 0;
+  padding: 8px 12px 8px 26px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  max-height: min(50vh, 520px);
+  overflow: auto;
+}
+
+.report-modal__list li {
+  padding: 2px 0;
+}
+
+.report-modal__list li[data-kind="success"] {
+  color: #1f7a3a;
+}
+
+.report-modal__list li[data-kind="info"] {
+  color: #1b4f9c;
+}
+
+.report-modal__list li[data-kind="error"] {
+  color: #b42318;
+}

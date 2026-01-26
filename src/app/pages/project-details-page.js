@@ -49,6 +49,11 @@ import {
   openCreateAttributeModal,
 } from "../../ui/components/attribute-modal.js";
 import {
+  initLiteralModal,
+  openEditLiteralModal,
+  openCreateLiteralModal,
+} from "../../ui/components/literal-modal.js";
+import {
   initGeneralizationLinkModal,
   openEditGeneralizationLinkModal,
   openCreateGeneralizationLinkModal,
@@ -112,9 +117,17 @@ import {
   openCreateClassModal,
 } from "../../ui/components/create-class-modal.js";
 import {
+  initCreateEnumerationModal,
+  openCreateEnumerationModal,
+} from "../../ui/components/create-enumeration-modal.js";
+import {
   initCreateDiagramModal,
   openCreateDiagramModal,
 } from "../../ui/components/create-diagram-modal.js";
+import {
+  createModelEnumeration as createModelEnumerationInBackend,
+  createProfileEnumeration as createProfileEnumerationInBackend,
+} from "../../services/enumeration-service.js";
 import {
   getSubpackageNameSet,
   getClassNameSet,
@@ -131,6 +144,14 @@ import {
   deleteModelAttribute as deleteModelAttributeInBackend,
   deleteProfileAttribute as deleteProfileAttributeInBackend,
 } from "../../services/attribute-service.js";
+import {
+  updateModelLiteral as updateModelLiteralInBackend,
+  updateProfileLiteral as updateProfileLiteralInBackend,
+  createModelLiteral as createModelLiteralInBackend,
+  createProfileLiteral as createProfileLiteralInBackend,
+  deleteModelLiteral as deleteModelLiteralInBackend,
+  deleteProfileLiteral as deleteProfileLiteralInBackend,
+} from "../../services/literal-service.js";
 
 // ============================================================
 // STATE
@@ -162,12 +183,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     "import-model-modal",
     "import-profile-modal",
     "edit-attribute-modal",
+    "edit-literal-modal",
     "data-type-picker-modal",
     "generalization-link-modal",
     "association-link-modal",
     "link-type-modal",
     "create-package-modal",
     "create-class-modal",
+    "create-enumeration-modal",
     "create-diagram-modal",
   ]);
 
@@ -256,23 +279,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     initAttributeModal(currentProjectId, {
-      onUpdate: async (attrId, updates) => {
+      onUpdate: async (attrId, updates, meta = {}) => {
         const project = await getProjectById(currentProjectId);
         if (!project) return;
 
         const tabToRestore = getActiveClassTabName() || lastClassTabName;
 
-        const found = findAttributeWithParent(project, attrId);
-        if (!found) return;
+        const classId = String(meta?.classId || "");
+        const modelId = String(meta?.context?.modelId || "");
+        const profileId = String(meta?.context?.profileId || "");
+        const context = modelId ? "model" : profileId ? "profile" : null;
 
-        const context = found.context;
-        const modelId = found.modelId || "";
-        const profileId = found.profileId || "";
-        const classId = found.cls?.id;
-        if (!classId) return;
+        if (!classId || !context) {
+          console.error("[attributeModal.onUpdate] Missing context (classId/modelId/profileId)", {
+            attrId,
+            meta,
+          });
+          showToast("Не хватает контекста (classId/modelId/profileId) для сохранения атрибута", {
+            type: "error",
+          });
+          return;
+        }
 
-        const originalAttrSnapshot = JSON.parse(JSON.stringify(found.attr));
-        const originalClsSnapshot = JSON.parse(JSON.stringify(found.cls));
+        const cls =
+          originalItemData?.id && String(originalItemData.id) === classId
+            ? originalItemData
+            : findClassById(project, classId, modelId, profileId, context);
+        if (!cls) return;
+
+        const currentAttr = (cls?.attributes || []).find((a) => String(a?.id) === String(attrId)) || null;
+        if (!currentAttr) return;
+
+        const originalAttrSnapshot = JSON.parse(JSON.stringify(currentAttr));
+        const originalClsSnapshot = JSON.parse(JSON.stringify(cls));
 
         try {
           const payload = {
@@ -287,8 +326,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             initialValue: updates.initialValue,
 
             // Preserve external refs if present
-            refModelId: found.attr?.refModelId ?? null,
-            refModelItemId: found.attr?.refModelItemId ?? null,
+            refModelId: currentAttr?.refModelId ?? null,
+            refModelItemId: currentAttr?.refModelItemId ?? null,
           };
 
           const updatedProject =
@@ -319,14 +358,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(
-            updatedProject,
-            classId,
-            modelId,
-            profileId,
-            context
-          );
-          expandTreePath(chain);
+          revealClassInTree({ classId, modelId, profileId, context });
           restoreSelectedTreeItemInTree();
 
           const updatedCls = findClassById(
@@ -388,16 +420,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
 
       onCreate: async ({ classId, context, updates }) => {
-        const project = await getProjectById(currentProjectId);
-        if (!project) return;
-
         const tabToRestore = "item-attributes";
 
-        const foundClass = findClassWithContext(project, classId);
-        if (!foundClass) return;
-
-        const modelId = foundClass.modelId || context?.modelId || "";
-        const profileId = foundClass.profileId || context?.profileId || "";
+        const modelId = String(context?.modelId || "");
+        const profileId = String(context?.profileId || "");
+        const graphContext = modelId ? "model" : profileId ? "profile" : null;
+        if (!graphContext) {
+          console.error("[attributeModal.onCreate] Missing context (modelId/profileId)", {
+            classId,
+            context,
+          });
+          showToast("Не хватает контекста (modelId/profileId) для создания атрибута", { type: "error" });
+          return;
+        }
 
         try {
           const payload = {
@@ -411,7 +446,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             initialValue: updates.initialValue,
           };
 
-          const updatedProject = modelId
+          const updatedProject = graphContext === "model"
             ? await createModelAttributeInBackend(
                 currentProjectId,
                 modelId,
@@ -438,14 +473,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(
-            updatedProject,
+          revealClassInTree({
             classId,
             modelId,
             profileId,
-            modelId ? "model" : "profile"
-          );
-          expandTreePath(chain);
+            context: graphContext,
+          });
           restoreSelectedTreeItemInTree();
 
           const updatedCls = findClassById(
@@ -453,7 +486,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             classId,
             modelId,
             profileId,
-            modelId ? "model" : "profile"
+            graphContext
           );
 
           const itemDetailsContent = document.getElementById("item-details-content");
@@ -475,6 +508,136 @@ document.addEventListener("DOMContentLoaded", async () => {
           console.error("[attributeModal.onCreate] Create failed:", error);
           const msg = error?.message ? String(error.message) : "Ошибка добавления";
           showToast(`Ошибка добавления атрибута: ${msg}`, { type: "error" });
+        }
+      },
+    });
+
+    initLiteralModal(currentProjectId, {
+      onUpdate: async (literalId, updates, meta = {}) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const tabToRestore = "item-literals";
+        lastClassTabName = tabToRestore;
+
+        const classId = String(meta?.classId || "");
+        const modelId = String(meta?.context?.modelId || "");
+        const profileId = String(meta?.context?.profileId || "");
+        const context = modelId ? "model" : profileId ? "profile" : null;
+        if (!context || !classId) return;
+
+        try {
+          const payload = {
+            id: String(literalId),
+            name: updates.name,
+            documentation: updates.documentation,
+            documentationRu: updates.documentationRu,
+            initialValue: updates.initialValue,
+          };
+
+          const updatedProject =
+            context === "model"
+              ? await updateModelLiteralInBackend(currentProjectId, modelId, literalId, payload)
+              : await updateProfileLiteralInBackend(
+                  currentProjectId,
+                  profileId,
+                  literalId,
+                  payload
+                );
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: context === "model" ? modelId : null,
+            profileId: context === "profile" ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          requestAnimationFrame(async () => {
+            revealClassInTree({ classId, modelId, profileId, context });
+            const selector =
+              context === "model"
+                ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+                : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+            const classEl = document.querySelector(selector);
+            if (classEl) {
+              setSelectedTreeItem(classEl);
+              classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              await handleSelectClass(classId, modelId, profileId, tabToRestore);
+            }
+          });
+
+          showToast("Литерал обновлён", { type: "success" });
+        } catch (error) {
+          console.error("[literalModal.onUpdate] Update failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка обновления";
+          showToast(`Ошибка обновления литерала: ${msg}`, { type: "error" });
+        }
+      },
+      onCreate: async ({ classId, context: ctx, updates }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const tabToRestore = "item-literals";
+        lastClassTabName = tabToRestore;
+
+        const modelId = String(ctx?.modelId || "");
+        const profileId = String(ctx?.profileId || "");
+        const context = modelId ? "model" : profileId ? "profile" : null;
+        if (!context) return;
+
+        try {
+          const payload = {
+            name: updates.name,
+            documentation: updates.documentation,
+            documentationRu: updates.documentationRu,
+            initialValue: updates.initialValue,
+          };
+
+          const updatedProject =
+            context === "model"
+              ? await createModelLiteralInBackend(currentProjectId, modelId, classId, payload)
+              : await createProfileLiteralInBackend(currentProjectId, profileId, classId, payload);
+
+          if (!updatedProject) {
+            throw new Error("Backend did not return updated project");
+          }
+
+          selectedTreeSnapshot = {
+            type: "class",
+            classId,
+            modelId: context === "model" ? modelId : null,
+            profileId: context === "profile" ? profileId : null,
+            packageId: null,
+          };
+
+          await renderProjectTreeSidebar(updatedProject);
+          requestAnimationFrame(async () => {
+            revealClassInTree({ classId, modelId, profileId, context });
+            const selector =
+              context === "model"
+                ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+                : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+            const classEl = document.querySelector(selector);
+            if (classEl) {
+              setSelectedTreeItem(classEl);
+              classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              await handleSelectClass(classId, modelId, profileId, tabToRestore);
+            }
+          });
+
+          showToast("Литерал добавлен", { type: "success" });
+        } catch (error) {
+          console.error("[literalModal.onCreate] Create failed:", error);
+          const msg = error?.message ? String(error.message) : "Ошибка добавления";
+          showToast(`Ошибка добавления литерала: ${msg}`, { type: "error" });
         }
       },
     });
@@ -513,10 +676,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(updatedProject, classId, modelId, profileId, context);
-          expandTreePath(chain);
-
           requestAnimationFrame(async () => {
+            revealClassInTree({ classId, modelId, profileId, context });
             const selector =
               context === "model"
                 ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -541,9 +702,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const project = await getProjectById(currentProjectId);
         if (!project) return;
 
-        const found = findLinkWithParent(project, classId, linkId);
-        if (!found) return;
-
         // Currently only Generalization save is implemented.
         // if (String(found?.link?.relationKind || "") !== "Generalization") {
         //   showToast("Сохранение поддерживается только для Generalization", { type: "error" });
@@ -553,9 +711,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         const payload = updates?.generalizationLink;
         if (!payload) return;
 
-        const context = found.context;
-        const modelId = found.modelId || "";
-        const profileId = found.profileId || "";
+        const modelId = String(updates?.ctx?.modelId || "");
+        const profileId = String(updates?.ctx?.profileId || "");
+        const context = modelId ? "model" : profileId ? "profile" : null;
+        if (!context) {
+          console.error("[linkModal.onUpdate] Missing context (modelId/profileId)", { linkId, classId, updates });
+          showToast("Не хватает контекста (modelId/profileId) для сохранения связи", { type: "error" });
+          return;
+        }
 
         try {
           const updatedProject = await updateGeneralizationLinkInBackend({
@@ -580,10 +743,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(updatedProject, classId, modelId, profileId, context);
-          expandTreePath(chain);
-
           requestAnimationFrame(async () => {
+            revealClassInTree({ classId, modelId, profileId, context });
             const selector =
               context === "model"
                 ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -652,16 +813,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(
-            updatedProject,
-            classId,
-            modelId,
-            profileId,
-            modelId ? "model" : "profile"
-          );
-          expandTreePath(chain);
-
           requestAnimationFrame(async () => {
+            revealClassInTree({
+              classId,
+              modelId,
+              profileId,
+              context: modelId ? "model" : "profile",
+            });
             const selector = modelId
               ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
               : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
@@ -712,16 +870,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           };
 
           await renderProjectTreeSidebar(updatedProject);
-          const chain = findClassParentChain(
-            updatedProject,
-            classId,
-            modelId,
-            profileId,
-            modelId ? "model" : "profile"
-          );
-          expandTreePath(chain);
-
           requestAnimationFrame(async () => {
+            revealClassInTree({
+              classId,
+              modelId,
+              profileId,
+              context: modelId ? "model" : "profile",
+            });
             const selector = modelId
               ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
               : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
@@ -792,14 +947,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         await renderProjectTreeSidebar(updatedProject);
-        const chain = findPackageParentChain(
-          updatedProject,
-          newPackageId,
-          modelId,
-          profileId,
-          context
-        );
-        expandTreePath(chain);
+        revealPackageInTree({ packageId: newPackageId, modelId, profileId, context });
         restoreSelectedTreeItemInTree();
 
         await handleSelectPackage(newPackageId, modelId, profileId);
@@ -854,17 +1002,65 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         await renderProjectTreeSidebar(updatedProject);
-        const chain = findClassParentChain(
-          updatedProject,
-          newClassId,
-          modelId,
-          profileId,
-          context
-        );
-        expandTreePath(chain);
+        revealClassInTree({ classId: newClassId, modelId, profileId, context });
         restoreSelectedTreeItemInTree();
 
         await handleSelectClass(newClassId, modelId, profileId);
+      },
+    });
+
+    /**
+     * Modal: create enumeration inside a package.
+     * Persists through service layer; backend returns full updated project.
+     */
+    initCreateEnumerationModal(currentProjectId, {
+      onCreate: async ({ packageId, modelId = "", profileId = "", payload }) => {
+        const context = modelId && modelId !== "" ? "model" : "profile";
+
+        const updatedProject =
+          context === "model"
+            ? await createModelEnumerationInBackend(
+                currentProjectId,
+                modelId,
+                packageId,
+                payload
+              )
+            : await createProfileEnumerationInBackend(
+                currentProjectId,
+                profileId,
+                packageId,
+                payload
+              );
+
+        if (!updatedProject) {
+          throw new Error("Backend did not return updated project");
+        }
+
+        const newEnumId = findClassIdByName(updatedProject, {
+          context,
+          modelId,
+          profileId,
+          name: payload?.name,
+        });
+
+        if (!newEnumId) {
+          throw new Error("Не удалось найти созданное перечисление в ответе сервера");
+        }
+
+        selectedTreeSnapshot = {
+          type: "class",
+          classId: newEnumId,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
+          packageId: null,
+          diagramId: null,
+        };
+
+        await renderProjectTreeSidebar(updatedProject);
+        revealClassInTree({ classId: newEnumId, modelId, profileId, context });
+        restoreSelectedTreeItemInTree();
+
+        await handleSelectClass(newEnumId, modelId, profileId);
       },
     });
 
@@ -916,14 +1112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         await renderProjectTreeSidebar(updatedProject);
-        const chain = findDiagramParentChain(
-          updatedProject,
-          newDiagramId,
-          modelId,
-          profileId,
-          context
-        );
-        expandTreePath(chain);
+        revealDiagramInTree({ diagramId: newDiagramId, modelId, profileId, context });
         restoreSelectedTreeItemInTree();
 
         await handleSelectDiagram(newDiagramId, modelId, profileId);
@@ -1003,6 +1192,34 @@ function bindEvents() {
         });
 
         openCreateClassModal({
+          packageId,
+          modelId,
+          profileId,
+          existingClassNamesNormalized,
+        });
+      },
+      onCreateEnumeration: async ({ packageId, modelId = "", profileId = "" }) => {
+        const project = await getProjectById(currentProjectId);
+        if (!project) return;
+
+        const context = modelId && modelId !== "" ? "model" : "profile";
+
+        // Profile enumerations require refModel linkage; the profile modal will be redesigned separately.
+        if (context === "profile") {
+          showToast(
+            "Создание перечислений в профиле пока не поддерживается (нужна привязка к модельному перечислению)",
+            { type: "info" }
+          );
+          return;
+        }
+
+        const existingClassNamesNormalized = getClassNameSet(project, {
+          context,
+          modelId,
+          profileId,
+        });
+
+        openCreateEnumerationModal({
           packageId,
           modelId,
           profileId,
@@ -1128,7 +1345,8 @@ function bindEvents() {
       );
       if (selectAttributeEl) {
         const attrId = selectAttributeEl.getAttribute("data-attr-id");
-        const parentClassId = selectAttributeEl.getAttribute("data-parent-class-id");
+        // `data-class-id` is the canonical UI contract (export Attribute.classId → DOM).
+        const parentClassId = selectAttributeEl.getAttribute("data-class-id") || "";
         const modelId = selectAttributeEl.getAttribute("data-model-id");
         const profileId = selectAttributeEl.getAttribute("data-profile-id");
         if (attrId) handleSelectAttribute(attrId, parentClassId, modelId, profileId);
@@ -1139,7 +1357,7 @@ function bindEvents() {
       const selectLinkEl = target.closest("[data-action='select-link']");
       if (selectLinkEl) {
         const linkId = selectLinkEl.getAttribute("data-link-id");
-        const parentClassId = selectLinkEl.getAttribute("data-parent-class-id");
+        const parentClassId = selectLinkEl.getAttribute("data-class-id") || "";
         const modelId = selectLinkEl.getAttribute("data-model-id");
         const profileId = selectLinkEl.getAttribute("data-profile-id");
         if (linkId) handleSelectLink(linkId, parentClassId, modelId, profileId);
@@ -1150,7 +1368,8 @@ function bindEvents() {
       const selectLiteralEl = target.closest("[data-action='select-literal']");
       if (selectLiteralEl) {
         const literalId = selectLiteralEl.getAttribute("data-literal-id");
-        const parentClassId = selectLiteralEl.getAttribute("data-parent-class-id");
+        // `data-class-id` is the canonical UI contract (export Literal.classId → DOM).
+        const parentClassId = selectLiteralEl.getAttribute("data-class-id") || "";
         const modelId = selectLiteralEl.getAttribute("data-model-id");
         const profileId = selectLiteralEl.getAttribute("data-profile-id");
         if (literalId) handleSelectLiteral(literalId, parentClassId, modelId, profileId);
@@ -1164,7 +1383,7 @@ function bindEvents() {
         showToast("Просмотр свойств класса — в разработке", { type: "info" });
       },
       onDeleteClass: async (ctx) => {
-        await handleDeleteClass(ctx?.classId || "");
+        await handleDeleteClass(ctx);
       },
     });
 
@@ -1377,6 +1596,15 @@ function cssEscape(value) {
 }
 
 function snapshotTreeEl(el) {
+  /**
+   * Creates a small, serializable snapshot of the currently selected tree element.
+   *
+   * Why: UI selection must survive tree re-rendering. We keep only ids and context
+   * so `restoreSelectedTreeItemInTree()` can find and re-select the same item.
+   *
+   * Note: `parentPackageId` is captured from the DOM (`data-parent-package-id`) and
+   * can be used by UI handlers to avoid re-traversing the package tree.
+   */
   if (!(el instanceof HTMLElement)) return null;
   const type = el.getAttribute("data-type") || null;
   return {
@@ -1384,6 +1612,7 @@ function snapshotTreeEl(el) {
     modelId: el.getAttribute("data-model-id") || null,
     profileId: el.getAttribute("data-profile-id") || null,
     packageId: el.getAttribute("data-package-id") || null,
+    parentPackageId: el.getAttribute("data-parent-package-id") || null,
     classId: el.getAttribute("data-class-id") || null,
     diagramId: el.getAttribute("data-diagram-id") || null,
   };
@@ -1819,33 +2048,29 @@ function handleSelectEnumeration(classId, modelId = "", profileId = "") {
 }
 
 /**
- * Handle select attribute from tree
- * Opens parent class with attributes tab active
+ * Handle select attribute from tree.
+ *
+ * UI contract:
+ * - Tree attribute nodes should provide parent class id via `data-class-id`.
+ * - This is sourced from the canonical export payload (`Attribute.classId`).
+ *
+ * Behavior:
+ * - If parent class id is provided, opens that class with "Attributes" tab.
+ * - If DOM context is missing, fail fast (contract gap).
  */
 async function handleSelectAttribute(attrId, parentClassId = "", modelId = "", profileId = "") {
-  if (parentClassId) {
-    selectParentClassInTree({ id: parentClassId, modelId, profileId });
-    await handleSelectClass(parentClassId, modelId, profileId, "item-attributes");
+  if (!parentClassId) {
+    console.error("[handleSelectAttribute] Missing parent classId in DOM context", {
+      attrId,
+      modelId,
+      profileId,
+    });
+    showToast("Не хватает контекста (classId) для выбора атрибута", { type: "error" });
     return;
   }
 
-  const project = await getProjectById(currentProjectId);
-  if (!project) return;
-
-  const parentClass = findClassByAttributeId(project, attrId);
-  if (!parentClass) {
-    console.warn(`Parent class not found for attribute: ${attrId}`);
-    return;
-  }
-
-  const parentModelId = parentClass.modelId || "";
-  const parentProfileId = parentClass.profileId || "";
-
-  // ✅ Select parent class in tree
-  selectParentClassInTree(parentClass);
-
-  // Select parent class with attributes tab active
-  handleSelectClass(parentClass.id, parentModelId, parentProfileId, "item-attributes");
+  selectParentClassInTree({ id: parentClassId, modelId, profileId });
+  await handleSelectClass(parentClassId, modelId, profileId, "item-attributes");
 }
 
 /**
@@ -1853,59 +2078,44 @@ async function handleSelectAttribute(attrId, parentClassId = "", modelId = "", p
  * Opens parent class with links tab active
  */
 async function handleSelectLink(linkId, parentClassId = "", modelId = "", profileId = "") {
-  if (parentClassId) {
-    selectParentClassInTree({ id: parentClassId, modelId, profileId });
-    await handleSelectClass(parentClassId, modelId, profileId, "item-links");
+  if (!parentClassId) {
+    console.error("[handleSelectLink] Missing parent classId in DOM context", {
+      linkId,
+      modelId,
+      profileId,
+    });
+    showToast("Не хватает контекста (classId) для выбора связи", { type: "error" });
     return;
   }
 
-  const project = await getProjectById(currentProjectId);
-  if (!project) return;
-
-  const parentClass = findClassByLinkId(project, linkId);
-  if (!parentClass) {
-    console.warn(`Parent class not found for link: ${linkId}`);
-    return;
-  }
-
-  const parentModelId = parentClass.modelId || "";
-  const parentProfileId = parentClass.profileId || "";
-
-  // ✅ Select parent class in tree
-  selectParentClassInTree(parentClass);
-
-  // Select parent class with links tab active
-  handleSelectClass(parentClass.id, parentModelId, parentProfileId, "item-links");
+  selectParentClassInTree({ id: parentClassId, modelId, profileId });
+  await handleSelectClass(parentClassId, modelId, profileId, "item-links");
 }
 
 /**
- * Handle select literal from tree
- * Opens parent class with literals tab active
+ * Handle select literal from tree.
+ *
+ * UI contract:
+ * - Tree literal nodes should provide parent class id via `data-class-id`.
+ * - This is sourced from the canonical export payload (`Literal.classId`).
+ *
+ * Behavior:
+ * - If parent class id is provided, opens that class with "Literals" tab.
+ * - If DOM context is missing, fail fast (contract gap).
  */
 async function handleSelectLiteral(literalId, parentClassId = "", modelId = "", profileId = "") {
-  if (parentClassId) {
-    selectParentClassInTree({ id: parentClassId, modelId, profileId });
-    await handleSelectClass(parentClassId, modelId, profileId, "item-literals");
+  if (!parentClassId) {
+    console.error("[handleSelectLiteral] Missing parent classId in DOM context", {
+      literalId,
+      modelId,
+      profileId,
+    });
+    showToast("Не хватает контекста (classId) для выбора литерала", { type: "error" });
     return;
   }
 
-  const project = await getProjectById(currentProjectId);
-  if (!project) return;
-
-  const parentClass = findClassByLiteralId(project, literalId);
-  if (!parentClass) {
-    console.warn(`Parent class not found for literal: ${literalId}`);
-    return;
-  }
-
-  const parentModelId = parentClass.modelId || "";
-  const parentProfileId = parentClass.profileId || "";
-
-  // ✅ Select parent class in tree
-  selectParentClassInTree(parentClass);
-
-  // Select parent class with literals tab active
-  handleSelectClass(parentClass.id, parentModelId, parentProfileId, "item-literals");
+  selectParentClassInTree({ id: parentClassId, modelId, profileId });
+  await handleSelectClass(parentClassId, modelId, profileId, "item-literals");
 }
 
 // ============================================================
@@ -2022,33 +2232,53 @@ function handleItemDetailsClick(e) {
   // Add buttons
   const addAttrBtn = target.closest("#add-attribute-btn");
   if (addAttrBtn) {
-    handleAddAttribute(addAttrBtn.getAttribute("data-class-id"));
+    handleAddAttribute({
+      classId: addAttrBtn.getAttribute("data-class-id") || "",
+      modelId: addAttrBtn.getAttribute("data-model-id") || "",
+      profileId: addAttrBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 
   const addLinkBtn = target.closest("#add-link-btn");
   if (addLinkBtn) {
-    handleAddLink(addLinkBtn.getAttribute("data-class-id"))
+    handleAddLink({
+      classId: addLinkBtn.getAttribute("data-class-id") || "",
+      modelId: addLinkBtn.getAttribute("data-model-id") || "",
+      profileId: addLinkBtn.getAttribute("data-profile-id") || "",
+    })
       .catch((err) => console.error("[handleAddLink] failed", err));
     return;
   }
 
   const addLiteralBtn = target.closest("#add-literal-btn");
   if (addLiteralBtn) {
-    handleAddLiteral(addLiteralBtn.getAttribute("data-class-id"));
+    handleAddLiteral({
+      classId: addLiteralBtn.getAttribute("data-class-id") || "",
+      modelId: addLiteralBtn.getAttribute("data-model-id") || "",
+      profileId: addLiteralBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 
   // Edit/Delete buttons
   const editAttrBtn = target.closest("[data-action='edit-attribute']");
   if (editAttrBtn) {
-    handleEditAttribute(editAttrBtn.getAttribute("data-attr-id"));
+    handleEditAttribute(editAttrBtn.getAttribute("data-attr-id"), {
+      classId: editAttrBtn.getAttribute("data-class-id") || "",
+      modelId: editAttrBtn.getAttribute("data-model-id") || "",
+      profileId: editAttrBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 
   const deleteAttrBtn = target.closest("[data-action='delete-attribute']");
   if (deleteAttrBtn) {
-    handleDeleteAttribute(deleteAttrBtn.getAttribute("data-attr-id"));
+    handleDeleteAttribute(deleteAttrBtn.getAttribute("data-attr-id"), {
+      classId: deleteAttrBtn.getAttribute("data-class-id") || "",
+      modelId: deleteAttrBtn.getAttribute("data-model-id") || "",
+      profileId: deleteAttrBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 
@@ -2056,7 +2286,12 @@ function handleItemDetailsClick(e) {
   if (editGeneralizationLinkBtn) {
     handleEditGeneralizationLink(
       editGeneralizationLinkBtn.getAttribute("data-link-id"),
-      editGeneralizationLinkBtn.getAttribute("data-class-id")
+      {
+        classId: editGeneralizationLinkBtn.getAttribute("data-class-id") || "",
+        modelId: editGeneralizationLinkBtn.getAttribute("data-model-id") || "",
+        profileId: editGeneralizationLinkBtn.getAttribute("data-profile-id") || "",
+        relationKind: editGeneralizationLinkBtn.getAttribute("data-relation-kind") || "",
+      }
     );
     return;
   }
@@ -2065,7 +2300,12 @@ function handleItemDetailsClick(e) {
   if (editAssociationLinkBtn) {
     handleEditAssociationLink(
       editAssociationLinkBtn.getAttribute("data-link-id"),
-      editAssociationLinkBtn.getAttribute("data-class-id")
+      {
+        classId: editAssociationLinkBtn.getAttribute("data-class-id") || "",
+        modelId: editAssociationLinkBtn.getAttribute("data-model-id") || "",
+        profileId: editAssociationLinkBtn.getAttribute("data-profile-id") || "",
+        relationKind: editAssociationLinkBtn.getAttribute("data-relation-kind") || "",
+      }
     );
     return;
   }
@@ -2074,20 +2314,33 @@ function handleItemDetailsClick(e) {
   if (deleteLinkBtn) {
     handleDeleteLink(
       deleteLinkBtn.getAttribute("data-link-id"),
-      deleteLinkBtn.getAttribute("data-class-id")
+      {
+        classId: deleteLinkBtn.getAttribute("data-class-id") || "",
+        modelId: deleteLinkBtn.getAttribute("data-model-id") || "",
+        profileId: deleteLinkBtn.getAttribute("data-profile-id") || "",
+        relationKind: deleteLinkBtn.getAttribute("data-relation-kind") || "",
+      }
     );
     return;
   }
 
   const editLiteralBtn = target.closest("[data-action='edit-literal']");
   if (editLiteralBtn) {
-    handleEditLiteral(editLiteralBtn.getAttribute("data-literal-id"));
+    handleEditLiteral(editLiteralBtn.getAttribute("data-literal-id"), {
+      classId: editLiteralBtn.getAttribute("data-class-id") || "",
+      modelId: editLiteralBtn.getAttribute("data-model-id") || "",
+      profileId: editLiteralBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 
   const deleteLiteralBtn = target.closest("[data-action='delete-literal']");
   if (deleteLiteralBtn) {
-    handleDeleteLiteral(deleteLiteralBtn.getAttribute("data-literal-id"));
+    handleDeleteLiteral(deleteLiteralBtn.getAttribute("data-literal-id"), {
+      classId: deleteLiteralBtn.getAttribute("data-class-id") || "",
+      modelId: deleteLiteralBtn.getAttribute("data-model-id") || "",
+      profileId: deleteLiteralBtn.getAttribute("data-profile-id") || "",
+    });
     return;
   }
 }
@@ -2149,6 +2402,125 @@ function restoreClassTab(tabName) {
 // ============================================================
 // NAVIGATION
 // ============================================================
+/**
+ * Ensure the current project node is marked as expanded.
+ *
+ * This affects the tree renderer (which reads localStorage) and also makes
+ * expand operations persist across re-renders.
+ */
+function ensureCurrentProjectExpandedInTree() {
+  const expandedProjects = JSON.parse(localStorage.getItem("cim.expandedProjects") || "{}");
+  expandedProjects[currentProjectId] = true;
+  localStorage.setItem("cim.expandedProjects", JSON.stringify(expandedProjects));
+}
+
+function getTreePackageSelector({ packageId, modelId = "", profileId = "", context }) {
+  if (!packageId) return null;
+  if (context === "model") {
+    if (!modelId) return null;
+    return `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-model-id="${cssEscape(modelId)}"]`;
+  }
+  if (context === "profile") {
+    if (!profileId) return null;
+    return `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+  }
+  return null;
+}
+
+function getTreeClassSelector({ classId, modelId = "", profileId = "", context }) {
+  if (!classId) return null;
+  if (context === "model") {
+    if (!modelId) return null;
+    return `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`;
+  }
+  if (context === "profile") {
+    if (!profileId) return null;
+    return `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+  }
+  return null;
+}
+
+function getTreeDiagramSelector({ diagramId, modelId = "", profileId = "", context }) {
+  if (!diagramId) return null;
+  if (context === "model") {
+    if (!modelId) return null;
+    return `.tree-structure-name[data-type="diagram"][data-diagram-id="${cssEscape(diagramId)}"][data-model-id="${cssEscape(modelId)}"]`;
+  }
+  if (context === "profile") {
+    if (!profileId) return null;
+    return `.tree-structure-name[data-type="diagram"][data-diagram-id="${cssEscape(diagramId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+  }
+  return null;
+}
+
+/**
+ * Expand all ancestor tree items that are needed to reveal `el`.
+ *
+ * Uses DOM hierarchy + `data-item-id` on toggle buttons (no exported-tree traversal).
+ * Updates localStorage expansion state so the next render preserves the same expansion.
+ */
+function expandTreeToRevealElement(el) {
+  if (!(el instanceof HTMLElement)) return;
+
+  ensureCurrentProjectExpandedInTree();
+
+  const itemIds = [];
+  let treeItem = el.closest(".tree-structure-item, .project-tree-item");
+
+  while (treeItem) {
+    const toggleBtn = treeItem.querySelector(
+      ':scope > .tree-structure-header [data-action="toggle-tree-item"][data-item-id]'
+    );
+    const itemId = toggleBtn?.getAttribute("data-item-id") || "";
+    if (itemId) itemIds.push(itemId);
+
+    treeItem = treeItem.parentElement?.closest(".tree-structure-item, .project-tree-item") || null;
+  }
+
+  if (itemIds.length === 0) return;
+
+  const expandedItems = JSON.parse(localStorage.getItem("cim.expandedTreeItems") || "{}");
+  // Expand from root → leaf
+  [...itemIds].reverse().forEach((itemId) => {
+    expandedItems[itemId] = true;
+    expandTreeItem(itemId);
+  });
+  localStorage.setItem("cim.expandedTreeItems", JSON.stringify(expandedItems));
+}
+
+function revealPackageInTree({ packageId, modelId = "", profileId = "", context }) {
+  const selector = getTreePackageSelector({ packageId, modelId, profileId, context });
+  if (!selector) return null;
+  const el = document.querySelector(selector);
+  if (el) expandTreeToRevealElement(el);
+  return el;
+}
+
+function revealClassInTree({ classId, modelId = "", profileId = "", context }) {
+  const selector = getTreeClassSelector({ classId, modelId, profileId, context });
+  if (!selector) return null;
+  const classEl = document.querySelector(selector);
+  if (!classEl) return null;
+
+  // Prefer `packageId` coming from DOM attribute set by the tree renderer.
+  const packageId = String(classEl.getAttribute("data-package-id") || "");
+  if (packageId) revealPackageInTree({ packageId, modelId, profileId, context });
+  expandTreeToRevealElement(classEl);
+  return classEl;
+}
+
+function revealDiagramInTree({ diagramId, modelId = "", profileId = "", context }) {
+  const selector = getTreeDiagramSelector({ diagramId, modelId, profileId, context });
+  if (!selector) return null;
+  const diagramEl = document.querySelector(selector);
+  if (!diagramEl) return null;
+
+  const packageId = String(diagramEl.getAttribute("data-package-id") || "");
+  if (packageId) revealPackageInTree({ packageId, modelId, profileId, context });
+  expandTreeToRevealElement(diagramEl);
+  return diagramEl;
+}
+
 async function handleNavigateToPackage(packageId, modelId = "", profileId = "") {
   const context =
     modelId && modelId !== ""
@@ -2158,27 +2530,8 @@ async function handleNavigateToPackage(packageId, modelId = "", profileId = "") 
       : null;
   if (!context) return;
 
-  const project = await getProjectById(currentProjectId);
-  if (!project) return;
-
-  const parentChain = findPackageParentChain(
-    project,
-    packageId,
-    modelId,
-    profileId,
-    context
-  );
-  if (!parentChain || parentChain.length === 0) return;
-
-  expandTreePath(parentChain);
-
   requestAnimationFrame(async () => {
-    const selector =
-      context === "model"
-        ? `[data-type="package"][data-package-id="${packageId}"][data-model-id="${modelId}"]`
-        : `[data-type="package"][data-package-id="${packageId}"][data-profile-id="${profileId}"]`;
-
-    const packageEl = document.querySelector(selector);
+    const packageEl = revealPackageInTree({ packageId, modelId, profileId, context });
     if (packageEl) {
       setSelectedTreeItem(packageEl);
       packageEl.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -2209,34 +2562,8 @@ async function handleNavigateToClass(
     return;
   }
 
-  const project = await getProjectById(currentProjectId);
-  if (!project) return;
-
-  const parentChain = findClassParentChain(
-    project,
-    classId,
-    modelId,
-    profileId,
-    context
-  );
-  if (!parentChain || parentChain.length === 0) {
-    if (showAlertOnNotFound) {
-      alert(
-        "Класс не найден в дереве в пределах текущей модели/профиля (по targetClassId)."
-      );
-    }
-    return;
-  }
-
-  expandTreePath(parentChain);
-
   requestAnimationFrame(async () => {
-    const selector =
-      context === "model"
-        ? `[data-type="class"][data-class-id="${classId}"][data-model-id="${modelId}"]`
-        : `[data-type="class"][data-class-id="${classId}"][data-profile-id="${profileId}"]`;
-
-    const classEl = document.querySelector(selector);
+    const classEl = revealClassInTree({ classId, modelId, profileId, context });
     if (classEl) {
       setSelectedTreeItem(classEl);
       classEl.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -2249,27 +2576,6 @@ async function handleNavigateToClass(
       );
     }
   });
-}
-
-function expandTreePath(parentChain) {
-  const expandedProjects = JSON.parse(
-    localStorage.getItem("cim.expandedProjects") || "{}"
-  );
-  expandedProjects[currentProjectId] = true;
-  localStorage.setItem(
-    "cim.expandedProjects",
-    JSON.stringify(expandedProjects)
-  );
-
-  const expandedItems = JSON.parse(
-    localStorage.getItem("cim.expandedTreeItems") || "{}"
-  );
-  parentChain.forEach((itemId) => {
-    expandedItems[itemId] = true;
-  });
-  localStorage.setItem("cim.expandedTreeItems", JSON.stringify(expandedItems));
-
-  parentChain.forEach((itemId) => expandTreeItem(itemId));
 }
 
 function expandTreeItem(itemId) {
@@ -2295,210 +2601,6 @@ function expandTreeItem(itemId) {
       break;
     }
   }
-}
-
-// ============================================================
-// FIND PARENT CHAIN
-// ============================================================
-function findPackageParentChain(
-  project,
-  packageId,
-  modelId,
-  profileId,
-  context
-) {
-  const searchInPackages = (packages, currentPath, isSubPackage = false) => {
-    for (let idx = 0; idx < packages.length; idx++) {
-      const pkg = packages[idx];
-      const prefix = isSubPackage ? "sub" : "pkg";
-      const pkgPath = [...currentPath, `${prefix}-${idx}`];
-
-      if (pkg.id === packageId) return pkgPath;
-
-      if (pkg.subPackages && pkg.subPackages.length > 0) {
-        const found = searchInPackages(pkg.subPackages, [...pkgPath], true);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  if (context === "model" && modelId && modelId !== "") {
-    const model = project.models?.find((m) => m.id === modelId);
-    if (!model) return [];
-
-    const modelItemId = `model-${currentProjectId}-${modelId}`;
-    if (model.rootPackages?.[0]?.packages) {
-      const found = searchInPackages(
-        model.rootPackages[0].packages,
-        [modelItemId],
-        false
-      );
-      if (found) {
-        return found.reduce((acc, part, i) => {
-          if (i === 0) return [part];
-          return [...acc, acc[acc.length - 1] + "-" + part];
-        }, []);
-      }
-    }
-  }
-
-  if (context === "profile" && profileId && profileId !== "") {
-    const profile = project.profiles?.find((p) => p.id === profileId);
-    if (!profile) return [];
-
-    const profileItemId = `profile-${currentProjectId}-${profileId}`;
-    if (profile.rootPackages?.[0]?.packages) {
-      const found = searchInPackages(
-        profile.rootPackages[0].packages,
-        [profileItemId],
-        false
-      );
-      if (found) {
-        return found.reduce((acc, part, i) => {
-          if (i === 0) return [part];
-          return [...acc, acc[acc.length - 1] + "-" + part];
-        }, []);
-      }
-    }
-  }
-
-  return [];
-}
-
-function findClassParentChain(project, classId, modelId, profileId, context) {
-  const searchInPackages = (packages, currentPath, isSubPackage = false) => {
-    for (let idx = 0; idx < packages.length; idx++) {
-      const pkg = packages[idx];
-      const prefix = isSubPackage ? "sub" : "pkg";
-      const pkgPath = [...currentPath, `${prefix}-${idx}`];
-
-      if (pkg.classes) {
-        const classIdx = pkg.classes.findIndex((c) => c.id === classId);
-        if (classIdx !== -1) return pkgPath;
-      }
-
-      if (pkg.subPackages && pkg.subPackages.length > 0) {
-        const found = searchInPackages(pkg.subPackages, [...pkgPath], true);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  if (context === "model" && modelId && modelId !== "") {
-    const model = project.models?.find((m) => m.id === modelId);
-    if (!model) return [];
-
-    const modelItemId = `model-${currentProjectId}-${modelId}`;
-    if (model.rootPackages?.[0]?.packages) {
-      const found = searchInPackages(
-        model.rootPackages[0].packages,
-        [modelItemId],
-        false
-      );
-      if (found) {
-        return found.reduce((acc, part, i) => {
-          if (i === 0) return [part];
-          return [...acc, acc[acc.length - 1] + "-" + part];
-        }, []);
-      }
-    }
-  }
-
-  if (context === "profile" && profileId && profileId !== "") {
-    const profile = project.profiles?.find((p) => p.id === profileId);
-    if (!profile) return [];
-
-    const profileItemId = `profile-${currentProjectId}-${profileId}`;
-    if (profile.rootPackages?.[0]?.packages) {
-      const found = searchInPackages(
-        profile.rootPackages[0].packages,
-        [profileItemId],
-        false
-      );
-      if (found) {
-        return found.reduce((acc, part, i) => {
-          if (i === 0) return [part];
-          return [...acc, acc[acc.length - 1] + "-" + part];
-        }, []);
-      }
-    }
-  }
-
-  return [];
-}
-
-/**
- * Find the parent chain (tree itemIds) that contains a diagram.
- *
- * Used after creating/selecting a diagram to ensure all ancestor nodes are expanded
- * in the sidebar tree.
- *
- * @param {object} project Exported project payload
- * @param {string} diagramId Diagram id
- * @param {string} modelId Model id (if context is model)
- * @param {string} profileId Profile id (if context is profile)
- * @param {'model'|'profile'} context
- * @returns {string[]} Array of tree itemIds to expand (from model/profile root to package)
- */
-function findDiagramParentChain(project, diagramId, modelId, profileId, context) {
-  const searchInPackages = (packages, currentPath, isSubPackage = false) => {
-    for (let idx = 0; idx < packages.length; idx++) {
-      const pkg = packages[idx];
-      const prefix = isSubPackage ? "sub" : "pkg";
-      const pkgPath = [...currentPath, `${prefix}-${idx}`];
-
-      if (pkg.diagrams) {
-        const diagramIdx = pkg.diagrams.findIndex((d) => d.id === diagramId);
-        if (diagramIdx !== -1) return pkgPath;
-      }
-
-      if (pkg.subPackages && pkg.subPackages.length > 0) {
-        const found = searchInPackages(pkg.subPackages, [...pkgPath], true);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  if (context === "model" && modelId && modelId !== "") {
-    const model = project.models?.find((m) => m.id === modelId);
-    if (!model) return [];
-
-    const modelItemId = `model-${currentProjectId}-${modelId}`;
-    if (model.rootPackages?.[0]?.packages) {
-      const found = searchInPackages(model.rootPackages[0].packages, [modelItemId], false);
-      if (found) {
-        return found.reduce((acc, part, i) => {
-          if (i === 0) return [part];
-          return [...acc, acc[acc.length - 1] + "-" + part];
-        }, []);
-      }
-    }
-  }
-
-  if (context === "profile" && profileId && profileId !== "") {
-    const profile = project.profiles?.find((p) => p.id === profileId);
-    if (!profile) return [];
-
-    const profileItemId = `profile-${currentProjectId}-${profileId}`;
-    if (profile.rootPackages?.[0]?.packages) {
-      const found = searchInPackages(
-        profile.rootPackages[0].packages,
-        [profileItemId],
-        false
-      );
-      if (found) {
-        return found.reduce((acc, part, i) => {
-          if (i === 0) return [part];
-          return [...acc, acc[acc.length - 1] + "-" + part];
-        }, []);
-      }
-    }
-  }
-
-  return [];
 }
 
 // ============================================================
@@ -2559,15 +2661,7 @@ async function handleSavePackage(form) {
     };
 
     await renderProjectTreeSidebar(updatedProject);
-
-    const chain = findPackageParentChain(
-      updatedProject,
-      packageId,
-      modelId,
-      profileId,
-      context
-    );
-    expandTreePath(chain);
+    revealPackageInTree({ packageId, modelId, profileId, context });
     restoreSelectedTreeItemInTree();
 
     const updatedPkg = findPackageById(
@@ -2612,10 +2706,19 @@ async function handleSavePackage(form) {
 }
 
 /**
- * Delete a package and refresh tree + show its parent container.
- * If the package contains nested items, shows an extra warning.
+ * Deletes a package from model/profile context and refreshes the tree.
  *
- * @param {{ packageId?: string, modelId?: string, profileId?: string }} ctx
+ * UI responsibilities:
+ * - Confirm destructive action (and extra warning for nested content)
+ * - Call backend through service layer
+ * - Re-render tree and re-select a sensible item (prefer parent package)
+ *
+ * Data/Context rules:
+ * - `modelId` OR `profileId` must be provided (mutually exclusive in normal flow)
+ * - `parentPackageId` should come from DOM (`data-parent-package-id`) or payload
+ *   to avoid extra tree traversal.
+ *
+ * @param {{ packageId?: string, parentPackageId?: (string|null), modelId?: string, profileId?: string }} ctx
  */
 async function handleDeletePackage(ctx = {}) {
   const packageId = String(ctx?.packageId || "");
@@ -2625,17 +2728,18 @@ async function handleDeletePackage(ctx = {}) {
     const project = await getProjectById(currentProjectId);
     if (!project) return;
 
-    const context = ctx?.modelId ? "model" : ctx?.profileId ? "profile" : null;
-    const modelId = ctx?.modelId || "";
-    const profileId = ctx?.profileId || "";
+    const modelId = String(ctx?.modelId || "");
+    const profileId = String(ctx?.profileId || "");
+    const context = modelId ? "model" : profileId ? "profile" : null;
+    if (!context) return;
 
-    const found = findPackageWithContext(project, packageId, modelId, profileId, context);
-    if (!found?.pkg) return;
+    const pkg = findPackageById(project, packageId, modelId, profileId, context);
+    if (!pkg) return;
 
     const ok = confirm("Удалить пакет?");
     if (!ok) return;
 
-    const hasContent = packageHasContents(found.pkg);
+    const hasContent = packageHasContents(pkg);
     if (hasContent) {
       const okNested = confirm(
         "Пакет содержит вложенные элементы. Будут удалены все пакеты, классы и диаграммы внутри. Продолжить?"
@@ -2644,73 +2748,67 @@ async function handleDeletePackage(ctx = {}) {
     }
 
     const updatedProject =
-      found.context === "model"
-        ? await deleteModelPackageInBackend(currentProjectId, found.modelId, packageId)
-        : await deleteProfilePackageInBackend(currentProjectId, found.profileId, packageId);
+      context === "model"
+        ? await deleteModelPackageInBackend(currentProjectId, modelId, packageId)
+        : await deleteProfilePackageInBackend(currentProjectId, profileId, packageId);
 
     if (!updatedProject) {
       throw new Error("Backend did not return updated project");
     }
 
-    const parentPackageId = String(found.parentPackageId || "");
+    const parentPackageId = String(
+      ctx?.parentPackageId || pkg?.parentPackageId || pkg?.parentId || ""
+    );
 
     selectedTreeSnapshot = parentPackageId
       ? {
           type: "package",
           packageId: parentPackageId,
-          modelId: found.context === "model" ? found.modelId : null,
-          profileId: found.context === "profile" ? found.profileId : null,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
           classId: null,
           diagramId: null,
         }
       : {
-          type: found.context,
-          modelId: found.context === "model" ? found.modelId : null,
-          profileId: found.context === "profile" ? found.profileId : null,
+          type: context,
+          modelId: context === "model" ? modelId : null,
+          profileId: context === "profile" ? profileId : null,
         };
 
     await renderProjectTreeSidebar(updatedProject);
 
     if (parentPackageId) {
-      const chain = findPackageParentChain(
-        updatedProject,
-        parentPackageId,
-        found.modelId,
-        found.profileId,
-        found.context
-      );
-      expandTreePath(chain);
-
       requestAnimationFrame(async () => {
+        revealPackageInTree({ packageId: parentPackageId, modelId, profileId, context });
         const selector =
-          found.context === "model"
-            ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-model-id="${cssEscape(found.modelId)}"]`
-            : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-profile-id="${cssEscape(found.profileId)}"]`;
+          context === "model"
+            ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-model-id="${cssEscape(modelId)}"]`
+            : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(parentPackageId)}"][data-profile-id="${cssEscape(profileId)}"]`;
 
         const pkgEl = document.querySelector(selector);
         if (pkgEl) {
           setSelectedTreeItem(pkgEl);
           pkgEl.scrollIntoView({ behavior: "smooth", block: "center" });
-          await handleSelectPackage(parentPackageId, found.modelId, found.profileId);
+          await handleSelectPackage(parentPackageId, modelId, profileId);
         }
       });
     } else {
       requestAnimationFrame(async () => {
-        if (found.context === "model") {
-          const selector = `.tree-structure-name[data-type="model"][data-model-id="${cssEscape(found.modelId)}"]`;
+        if (context === "model") {
+          const selector = `.tree-structure-name[data-type="model"][data-model-id="${cssEscape(modelId)}"]`;
           const modelEl = document.querySelector(selector);
           if (modelEl) {
             setSelectedTreeItem(modelEl);
             modelEl.scrollIntoView({ behavior: "smooth", block: "center" });
-            await selectModel(found.modelId);
+            await selectModel(modelId);
           }
-        } else if (found.context === "profile") {
-          const selector = `.tree-structure-name[data-type="profile"][data-profile-id="${cssEscape(found.profileId)}"]`;
+        } else if (context === "profile") {
+          const selector = `.tree-structure-name[data-type="profile"][data-profile-id="${cssEscape(profileId)}"]`;
           const profileEl = document.querySelector(selector);
           if (profileEl) {
             setSelectedTreeItem(profileEl);
             profileEl.scrollIntoView({ behavior: "smooth", block: "center" });
-            await selectProfile(found.profileId);
+            await selectProfile(profileId);
           }
         }
       });
@@ -2795,15 +2893,7 @@ async function handleSaveClass(form) {
     };
 
     await renderProjectTreeSidebar(updatedProject);
-
-    const chain = findClassParentChain(
-      updatedProject,
-      classId,
-      modelId,
-      profileId,
-      context
-    );
-    expandTreePath(chain);
+    revealClassInTree({ classId, modelId, profileId, context });
     restoreSelectedTreeItemInTree();
 
     const updatedCls = findClassById(
@@ -2854,11 +2944,22 @@ async function handleSaveClass(form) {
 }
 
 /**
- * Delete a class and refresh tree + show its parent package.
+ * Deletes a class and refreshes the tree.
  *
- * @param {string} classId - Class ID to delete
+ * UI responsibilities:
+ * - Confirm destructive action
+ * - Call backend through service layer
+ * - Re-render tree and re-select the class's parent package
+ *
+ * Data/Context rules:
+ * - `modelId` OR `profileId` must be provided
+ * - `packageId` should come from DOM (`data-package-id`) to avoid tree traversal
+ *   (source of truth: Prisma ClassModel/ClassProfile.packageId → export payload).
+ *
+ * @param {{ classId?: string, packageId?: (string|null), modelId?: string, profileId?: string }} ctx
  */
-async function handleDeleteClass(classId) {
+async function handleDeleteClass(ctx = {}) {
+  const classId = String(ctx?.classId || "");
   if (!classId) return;
   if (!confirm("Удалить класс?")) return;
 
@@ -2866,13 +2967,17 @@ async function handleDeleteClass(classId) {
     const project = await getProjectById(currentProjectId);
     if (!project) return;
 
-    const found = findClassWithContext(project, String(classId));
-    if (!found?.cls) return;
+    const modelId = String(ctx?.modelId || "");
+    const profileId = String(ctx?.profileId || "");
+    const context = modelId ? "model" : profileId ? "profile" : null;
+    if (!context) return;
 
-    const context = found.context;
-    const modelId = found.modelId || "";
-    const profileId = found.profileId || "";
-    const packageId = String(found.packageId || found.cls?.packageId || "");
+    // Prefer DOM-provided `packageId` (data-package-id). Fallback to payload lookup.
+    let packageId = String(ctx?.packageId || "");
+    if (!packageId) {
+      const cls = findClassById(project, classId, modelId, profileId, context);
+      packageId = String(cls?.packageId || "");
+    }
 
     if (!packageId) {
       showToast("Не удалось определить пакет класса", { type: "error" });
@@ -2898,16 +3003,8 @@ async function handleDeleteClass(classId) {
     };
 
     await renderProjectTreeSidebar(updatedProject);
-    const chain = findPackageParentChain(
-      updatedProject,
-      packageId,
-      modelId,
-      profileId,
-      context
-    );
-    expandTreePath(chain);
-
     requestAnimationFrame(async () => {
+      revealPackageInTree({ packageId, modelId, profileId, context });
       const selector =
         context === "model"
           ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -2947,68 +3044,126 @@ function handleCancelClassEdit() {
 // ============================================================
 // ATTRIBUTE HANDLERS
 // ============================================================
-function handleAddAttribute(classId) {
-  if (!classId) return;
+function handleAddAttribute(arg) {
+  const ctx = typeof arg === "string" ? { classId: arg } : arg || {};
+  const classId = String(ctx?.classId || "");
+  const modelId = String(ctx?.modelId || "");
+  const profileId = String(ctx?.profileId || "");
+  const context = modelId ? "model" : profileId ? "profile" : null;
+
+  if (!classId || !context) {
+    console.error("[handleAddAttribute] Missing context (classId/modelId/profileId)", ctx);
+    showToast("Не хватает контекста для добавления атрибута", { type: "error" });
+    return;
+  }
+
+  // Prefer current class details snapshot.
+  if (originalItemData?.id && String(originalItemData.id) === classId) {
+    const existingNames = (originalItemData.attributes || []).map((a) => a?.name).filter(Boolean);
+    openCreateAttributeModal({ classId, modelId, profileId, existingNames });
+    return;
+  }
 
   getProjectById(currentProjectId).then((project) => {
     if (!project) return;
 
-    const found = findClassWithContext(project, String(classId));
-    if (!found) return;
+    const cls = findClassById(project, classId, modelId, profileId, context);
+    if (!cls) return;
 
-    const existingNames = (found.cls?.attributes || [])
-      .map((a) => a?.name)
-      .filter(Boolean);
-
-    openCreateAttributeModal({
-      classId: String(classId),
-      modelId: found.modelId || "",
-      profileId: found.profileId || "",
-      existingNames,
-    });
+    const existingNames = (cls.attributes || []).map((a) => a?.name).filter(Boolean);
+    openCreateAttributeModal({ classId, modelId, profileId, existingNames });
   });
 }
 
-async function handleEditAttribute(attrId) {
+/**
+ * Open the attribute edit modal.
+ *
+ * UI contract:
+ * - Prefer DOM-provided context (`data-class-id`, `data-model-id`, `data-profile-id`).
+ * - When invoked from class details view, `originalItemData` is the most accurate local source.
+ * - Fall back to project traversal only when necessary (legacy callers).
+ */
+async function handleEditAttribute(attrId, ctx = {}) {
+  const id = String(attrId || "");
+  if (!id) return;
+
+  const classId = String(ctx?.classId || "");
+  const modelId = String(ctx?.modelId || "");
+  const profileId = String(ctx?.profileId || "");
+  const graphContext = modelId ? "model" : profileId ? "profile" : null;
+  if (!classId || !graphContext) {
+    console.error("[handleEditAttribute] Missing context (classId/modelId/profileId)", {
+      attrId: id,
+      ctx,
+    });
+    showToast("Не хватает контекста для редактирования атрибута", { type: "error" });
+    return;
+  }
+
+  // Fast path: editing from an opened class view.
+  if (originalItemData?.id && Array.isArray(originalItemData?.attributes)) {
+    const currentAttr = originalItemData.attributes.find((a) => String(a?.id) === id) || null;
+    if (currentAttr) {
+      const existingNames = (originalItemData.attributes || [])
+        .filter((a) => String(a?.id) !== id)
+        .map((a) => a?.name)
+        .filter(Boolean);
+      openEditAttributeModal(currentAttr, { existingNames });
+      return;
+    }
+  }
+
   const project = await getProjectById(currentProjectId);
   if (!project) return;
 
-  const found = findAttributeWithParent(project, attrId);
-  if (!found) return;
+  const cls = findClassById(project, classId, modelId, profileId, graphContext);
+  if (!cls) return;
 
-  const existingNames = (found.cls?.attributes || [])
-    .filter((a) => String(a?.id) !== String(attrId))
+  const currentAttr = (cls.attributes || []).find((a) => String(a?.id) === id) || null;
+  if (!currentAttr) return;
+
+  const existingNames = (cls.attributes || [])
+    .filter((a) => String(a?.id) !== id)
     .map((a) => a?.name)
     .filter(Boolean);
 
-  openEditAttributeModal(found.attr, { existingNames });
+  openEditAttributeModal(currentAttr, { existingNames });
 }
 
 /**
  * Delete an attribute and refresh tree + selected class view.
  *
+ * Data/UI contract:
+ * - Attribute export includes `classId` (source of truth: Prisma Attribute*.classId).
+ * - Tree/details DOM should carry `data-class-id` so UI can avoid inferring the parent class.
+ *
  * @param {string} attrId - Attribute ID to delete
+ * @param {{classId?: string, modelId?: string, profileId?: string}} [ctx]
  */
-async function handleDeleteAttribute(attrId) {
+async function handleDeleteAttribute(attrId, ctx = {}) {
   if (!confirm("Удалить атрибут?")) return;
 
+  const id = String(attrId || "");
+  const classId = String(ctx?.classId || "");
+  const modelId = String(ctx?.modelId || "");
+  const profileId = String(ctx?.profileId || "");
+  const context = modelId ? "model" : profileId ? "profile" : null;
+  if (!id || !classId || !context) {
+    console.error("[handleDeleteAttribute] Missing context (attrId/classId/modelId/profileId)", {
+      attrId: id,
+      ctx,
+    });
+    showToast("Не хватает контекста для удаления атрибута", { type: "error" });
+    return;
+  }
+
   try {
-    const project = await getProjectById(currentProjectId);
-    if (!project) return;
-
-    const found = findAttributeWithParent(project, attrId);
-    if (!found) return;
-
-    const { cls, context, modelId, profileId } = found;
-    const classId = String(cls?.id || "");
-    if (!classId) return;
-
     const tabToRestore = "item-attributes";
 
     const updatedProject =
       context === "model"
-        ? await deleteModelAttributeInBackend(currentProjectId, modelId, attrId)
-        : await deleteProfileAttributeInBackend(currentProjectId, profileId, attrId);
+        ? await deleteModelAttributeInBackend(currentProjectId, modelId, id)
+        : await deleteProfileAttributeInBackend(currentProjectId, profileId, id);
 
     if (!updatedProject) {
       throw new Error("Backend did not return updated project");
@@ -3023,16 +3178,8 @@ async function handleDeleteAttribute(attrId) {
     };
 
     await renderProjectTreeSidebar(updatedProject);
-    const chain = findClassParentChain(
-      updatedProject,
-      classId,
-      modelId,
-      profileId,
-      context
-    );
-    expandTreePath(chain);
-
     requestAnimationFrame(async () => {
+      revealClassInTree({ classId, modelId, profileId, context });
       const selector =
         context === "model"
           ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -3057,44 +3204,57 @@ async function handleDeleteAttribute(attrId) {
 // ============================================================
 // LINK HANDLERS
 // ============================================================
-async function handleAddLink(classId) {
-  if (!classId) return;
-
-  const project = await getProjectById(currentProjectId);
-  if (!project) return;
-
-  const found = findClassWithContext(project, String(classId));
-  if (!found) {
-    showToast("Класс не найден для добавления связи", { type: "error" });
+async function handleAddLink(meta = {}) {
+  const classId = String(meta?.classId || "");
+  const modelId = String(meta?.modelId || "");
+  const profileId = String(meta?.profileId || "");
+  const context = modelId ? "model" : profileId ? "profile" : null;
+  if (!classId || !context) {
+    console.error("[handleAddLink] Missing context (classId/modelId/profileId)", meta);
+    showToast("Не хватает контекста для добавления связи", { type: "error" });
     return;
   }
 
-  const ctx = {
-    modelId: found.modelId || "",
-    profileId: found.profileId || "",
-    editingClassName: found.cls?.name || "",
-  };
+  let editingClassName = "";
+  if (originalItemData?.id && String(originalItemData.id) === classId) {
+    editingClassName = String(originalItemData?.name || "");
+  } else {
+    const project = await getProjectById(currentProjectId);
+    if (!project) return;
+    const cls = findClassById(project, classId, modelId, profileId, context);
+    if (!cls) return;
+    editingClassName = String(cls?.name || "");
+  }
 
-  pendingAddLinkContext = { classId: String(classId), ctx };
+  const ctx = { modelId, profileId, editingClassName };
+  pendingAddLinkContext = { classId, ctx };
   openLinkTypeModal({ defaultType: "Generalization" });
 }
 
-async function handleEditGeneralizationLink(linkId, classId) {
+async function handleEditGeneralizationLink(linkId, meta = {}) {
   const project = await getProjectById(currentProjectId);
   if (!project) return;
 
-  const found = findLinkWithParent(project, classId, linkId);
-  if (!found) return;
+  const classId = String(meta?.classId || "");
+  const modelId = String(meta?.modelId || "");
+  const profileId = String(meta?.profileId || "");
+  const relationKind = String(meta?.relationKind || "Generalization");
+  const context = modelId ? "model" : profileId ? "profile" : null;
+  if (!classId || !context) {
+    console.error("[handleEditGeneralizationLink] Missing context", { linkId, meta });
+    showToast("Не хватает контекста для редактирования связи", { type: "error" });
+    return;
+  }
 
-  if (String(found?.link?.relationKind || "") !== "Generalization") {
+  if (relationKind !== "Generalization") {
     showToast("Редактирование поддерживается только для Generalization", { type: "error" });
     return;
   }
 
   const generalizationLink = findGeneralizationLinkInProject(project, {
-    context: found.context,
-    modelId: found.modelId,
-    profileId: found.profileId,
+    context,
+    modelId,
+    profileId,
     linkId,
   });
 
@@ -3103,28 +3263,36 @@ async function handleEditGeneralizationLink(linkId, classId) {
     return;
   }
 
-  openEditGeneralizationLinkModal(generalizationLink, found.cls.id, {
-    modelId: found.modelId || "",
-    profileId: found.profileId || "",
+  openEditGeneralizationLinkModal(generalizationLink, classId, {
+    modelId,
+    profileId,
   });
 }
 
-async function handleEditAssociationLink(linkId, classId) {
+async function handleEditAssociationLink(linkId, meta = {}) {
   const project = await getProjectById(currentProjectId);
   if (!project) return;
 
-  const found = findLinkWithParent(project, classId, linkId);
-  if (!found) return;
+  const classId = String(meta?.classId || "");
+  const modelId = String(meta?.modelId || "");
+  const profileId = String(meta?.profileId || "");
+  const relationKind = String(meta?.relationKind || "Association");
+  const context = modelId ? "model" : profileId ? "profile" : null;
+  if (!classId || !context) {
+    console.error("[handleEditAssociationLink] Missing context", { linkId, meta });
+    showToast("Не хватает контекста для редактирования связи", { type: "error" });
+    return;
+  }
 
-  if (String(found?.link?.relationKind || "") !== "Association") {
+  if (relationKind !== "Association") {
     showToast("Это не Association-связь", { type: "error" });
     return;
   }
 
   const associationLink = findAssociationLinkInProject(project, {
-    context: found.context,
-    modelId: found.modelId,
-    profileId: found.profileId,
+    context,
+    modelId,
+    profileId,
     linkId,
   });
 
@@ -3133,10 +3301,12 @@ async function handleEditAssociationLink(linkId, classId) {
     return;
   }
 
-  await openEditAssociationLinkModal(associationLink, found.cls.id, {
-    modelId: found.modelId || "",
-    profileId: found.profileId || "",
-    editingClassName: found.cls.name || "",
+  const cls = findClassById(project, classId, modelId, profileId, context);
+
+  await openEditAssociationLinkModal(associationLink, classId, {
+    modelId,
+    profileId,
+    editingClassName: cls?.name || "",
   });
 }
 
@@ -3146,22 +3316,25 @@ async function handleEditAssociationLink(linkId, classId) {
  * @param {string} linkId - Link ID to delete
  * @param {string} classId - Current class ID (for selection restore)
  */
-async function handleDeleteLink(linkId, classId) {
+async function handleDeleteLink(linkId, meta = {}) {
   if (!confirm("Удалить связь?")) return;
 
+  const classId = String(meta?.classId || "");
+  const modelId = String(meta?.modelId || "");
+  const profileId = String(meta?.profileId || "");
+  const relationKind = String(meta?.relationKind || "");
+  const context = modelId ? "model" : profileId ? "profile" : null;
+  if (!linkId || !classId || !context || !relationKind) {
+    console.error("[handleDeleteLink] Missing context (linkId/classId/modelId/profileId/relationKind)", {
+      linkId,
+      meta,
+    });
+    showToast("Не хватает контекста для удаления связи", { type: "error" });
+    return;
+  }
+
   try {
-    const project = await getProjectById(currentProjectId);
-    if (!project) return;
-
     const tabToRestore = "item-links";
-
-    const found = findLinkWithParent(project, classId, linkId);
-    if (!found) return;
-
-    const context = found.context;
-    const modelId = found.modelId || "";
-    const profileId = found.profileId || "";
-    const relationKind = String(found?.link?.relationKind || "");
 
     const updatedProject =
       relationKind === "Generalization"
@@ -3191,16 +3364,8 @@ async function handleDeleteLink(linkId, classId) {
     };
 
     await renderProjectTreeSidebar(updatedProject);
-    const chain = findClassParentChain(
-      updatedProject,
-      classId,
-      modelId,
-      profileId,
-      context
-    );
-    expandTreePath(chain);
-
     requestAnimationFrame(async () => {
+      revealClassInTree({ classId, modelId, profileId, context });
       const selector =
         context === "model"
           ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
@@ -3225,17 +3390,140 @@ async function handleDeleteLink(linkId, classId) {
 // ============================================================
 // LITERAL HANDLERS
 // ============================================================
-function handleAddLiteral(classId) {
-  alert("Функция добавления значения в разработке");
+function handleAddLiteral(ctx = {}) {
+  const classId = String(ctx?.classId || "");
+  const modelId = String(ctx?.modelId || "");
+  const profileId = String(ctx?.profileId || "");
+  if (!classId) return;
+
+  // Prefer current class details snapshot (no traversal)
+  if (originalItemData?.id && String(originalItemData.id) === classId) {
+    const existingNames = (originalItemData.literals || []).map((l) => l?.name).filter(Boolean);
+    openCreateLiteralModal({ classId, modelId, profileId, existingNames });
+    return;
+  }
+
+  // Fallback: use project payload, but keep context explicit (no parent inference)
+  getProjectById(currentProjectId).then((project) => {
+    if (!project) return;
+    const context = modelId ? "model" : profileId ? "profile" : null;
+    if (!context) return;
+    const cls = findClassById(project, classId, modelId, profileId, context);
+    if (!cls) return;
+    const existingNames = (cls.literals || []).map((l) => l?.name).filter(Boolean);
+    openCreateLiteralModal({ classId, modelId, profileId, existingNames });
+  });
 }
 
-function handleEditLiteral(literalId) {
-  alert("Функция редактирования значения в разработке");
+function handleEditLiteral(literalId, ctx = {}) {
+  const id = String(literalId || "");
+  if (!id) return;
+
+  const classId = String(ctx?.classId || "");
+  const modelId = String(ctx?.modelId || "");
+  const profileId = String(ctx?.profileId || "");
+  if (!classId) return;
+
+  // Fast path: current class view snapshot
+  if (originalItemData?.id && String(originalItemData.id) === classId) {
+    const currentLit = (originalItemData.literals || []).find((l) => String(l?.id) === id) || null;
+    if (currentLit) {
+      const existingNames = (originalItemData.literals || [])
+        .filter((l) => String(l?.id) !== id)
+        .map((l) => l?.name)
+        .filter(Boolean);
+      openEditLiteralModal(
+        {
+          ...currentLit,
+          modelId,
+          profileId,
+        },
+        { existingNames }
+      );
+      return;
+    }
+  }
+
+  // Fallback: use project payload scoped by explicit classId
+  getProjectById(currentProjectId).then((project) => {
+    if (!project) return;
+    const context = modelId ? "model" : profileId ? "profile" : null;
+    if (!context) return;
+    const cls = findClassById(project, classId, modelId, profileId, context);
+    if (!cls) return;
+    const currentLit = (cls.literals || []).find((l) => String(l?.id) === id) || null;
+    if (!currentLit) return;
+
+    const existingNames = (cls.literals || [])
+      .filter((l) => String(l?.id) !== id)
+      .map((l) => l?.name)
+      .filter(Boolean);
+
+    openEditLiteralModal(
+      {
+        ...currentLit,
+        modelId,
+        profileId,
+      },
+      { existingNames }
+    );
+  });
 }
 
-function handleDeleteLiteral(literalId) {
+async function handleDeleteLiteral(literalId, ctx = {}) {
+  const id = String(literalId || "");
+  if (!id) return;
   if (!confirm("Удалить значение?")) return;
-  alert("Функция удаления значения в разработке");
+
+  const classId = String(ctx?.classId || "");
+  const modelId = String(ctx?.modelId || "");
+  const profileId = String(ctx?.profileId || "");
+  const context = modelId ? "model" : profileId ? "profile" : null;
+  if (!context || !classId) return;
+
+  const tabToRestore = "item-literals";
+  lastClassTabName = tabToRestore;
+
+  try {
+    const updatedProject =
+      context === "model"
+        ? await deleteModelLiteralInBackend(currentProjectId, modelId, id)
+        : await deleteProfileLiteralInBackend(currentProjectId, profileId, id);
+
+    if (!updatedProject) {
+      throw new Error("Backend did not return updated project");
+    }
+
+    selectedTreeSnapshot = {
+      type: "class",
+      classId,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
+      packageId: null,
+    };
+
+    await renderProjectTreeSidebar(updatedProject);
+    requestAnimationFrame(async () => {
+      revealClassInTree({ classId, modelId, profileId, context });
+      const selector =
+        context === "model"
+          ? `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-model-id="${cssEscape(modelId)}"]`
+          : `.tree-structure-name[data-type="class"][data-class-id="${cssEscape(classId)}"][data-profile-id="${cssEscape(profileId)}"]`;
+
+      const classEl = document.querySelector(selector);
+      if (classEl) {
+        setSelectedTreeItem(classEl);
+        classEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        await handleSelectClass(classId, modelId, profileId, tabToRestore);
+      }
+    });
+
+    showToast("Литерал удалён", { type: "success" });
+  } catch (error) {
+    console.error("[handleDeleteLiteral] Failed:", error);
+    const msg = error?.message ? String(error.message) : "Ошибка удаления";
+    showToast(`Ошибка удаления литерала: ${msg}`, { type: "error" });
+  }
 }
 
 // ============================================================
@@ -3252,26 +3540,25 @@ async function handleDeleteDiagram(diagramId, ctx = {}) {
   if (!confirm("Удалить диаграмму?")) return;
 
   try {
-    const project = await getProjectById(currentProjectId);
-    if (!project) return;
-
-    const context = ctx?.modelId ? "model" : ctx?.profileId ? "profile" : null;
-    const modelId = ctx?.modelId || "";
-    const profileId = ctx?.profileId || "";
-
-    const found = findDiagramWithContext(project, String(diagramId), modelId, profileId, context);
-    if (!found?.diagram) return;
-
-    const packageId = String(found.packageId || "");
-    if (!packageId) {
-      showToast("Не удалось определить пакет диаграммы", { type: "error" });
+    const modelId = String(ctx?.modelId || "");
+    const profileId = String(ctx?.profileId || "");
+    const context = modelId ? "model" : profileId ? "profile" : null;
+    const packageId = String(ctx?.packageId || "");
+    if (!context || !packageId) {
+      console.error("[handleDeleteDiagram] Missing context (modelId/profileId) or packageId", {
+        diagramId,
+        ctx,
+      });
+      showToast("Не хватает контекста (packageId/modelId/profileId) для удаления диаграммы", {
+        type: "error",
+      });
       return;
     }
 
     const updatedProject =
-      found.context === "model"
-        ? await deleteModelDiagramInBackend(currentProjectId, found.modelId, diagramId)
-        : await deleteProfileDiagramInBackend(currentProjectId, found.profileId, diagramId);
+      context === "model"
+        ? await deleteModelDiagramInBackend(currentProjectId, modelId, diagramId)
+        : await deleteProfileDiagramInBackend(currentProjectId, profileId, diagramId);
 
     if (!updatedProject) {
       throw new Error("Backend did not return updated project");
@@ -3280,33 +3567,25 @@ async function handleDeleteDiagram(diagramId, ctx = {}) {
     selectedTreeSnapshot = {
       type: "package",
       packageId,
-      modelId: found.context === "model" ? found.modelId : null,
-      profileId: found.context === "profile" ? found.profileId : null,
+      modelId: context === "model" ? modelId : null,
+      profileId: context === "profile" ? profileId : null,
       classId: null,
       diagramId: null,
     };
 
     await renderProjectTreeSidebar(updatedProject);
-    const chain = findPackageParentChain(
-      updatedProject,
-      packageId,
-      found.modelId,
-      found.profileId,
-      found.context
-    );
-    expandTreePath(chain);
-
     requestAnimationFrame(async () => {
+      revealPackageInTree({ packageId, modelId, profileId, context });
       const selector =
-        found.context === "model"
-          ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-model-id="${cssEscape(found.modelId)}"]`
-          : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-profile-id="${cssEscape(found.profileId)}"]`;
+        context === "model"
+          ? `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-model-id="${cssEscape(modelId)}"]`
+          : `.tree-structure-name[data-type="package"][data-package-id="${cssEscape(packageId)}"][data-profile-id="${cssEscape(profileId)}"]`;
 
       const pkgEl = document.querySelector(selector);
       if (pkgEl) {
         setSelectedTreeItem(pkgEl);
         pkgEl.scrollIntoView({ behavior: "smooth", block: "center" });
-        await handleSelectPackage(packageId, found.modelId, found.profileId);
+        await handleSelectPackage(packageId, modelId, profileId);
       }
     });
 
@@ -3411,136 +3690,32 @@ function findDiagramById(
   profileId = "",
   context = null
 ) {
+  const id = String(diagramId || "");
+  if (!id) return null;
+
   const searchInPackages = (packages) => {
-    for (const pkg of packages) {
-      const d = pkg.diagrams?.find((x) => x.id === diagramId);
+    for (const pkg of packages || []) {
+      const d = (pkg?.diagrams || []).find((x) => String(x?.id || "") === id) || null;
       if (d) return d;
 
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages);
-        if (found) return found;
-      }
+      const found = pkg?.subPackages ? searchInPackages(pkg.subPackages) : null;
+      if (found) return found;
     }
     return null;
   };
 
-  if (context === "model" && modelId && modelId !== "") {
-    const model = project.models?.find((m) => m.id === modelId);
-    if (model?.rootPackages?.[0]?.packages) {
-      return searchInPackages(model.rootPackages[0].packages);
-    }
+  if (context === "model") {
+    const mId = String(modelId || "");
+    const model = (project?.models || []).find((m) => String(m?.id || "") === mId) || null;
+    const packages = model?.rootPackages?.[0]?.packages || [];
+    return searchInPackages(packages);
   }
 
-  if (context === "profile" && profileId && profileId !== "") {
-    const profile = project.profiles?.find((p) => p.id === profileId);
-    if (profile?.rootPackages?.[0]?.packages) {
-      return searchInPackages(profile.rootPackages[0].packages);
-    }
-  }
-
-  return null;
-}
-
-/**
- * Find a diagram in the project tree and return its context and parent package.
- *
- * @param {object} project - Full project object
- * @param {string} diagramId - Diagram ID to find
- * @param {string} [modelId]
- * @param {string} [profileId]
- * @param {'model'|'profile'|null} [context]
- * @returns {null|{diagram: object, context: 'model'|'profile', modelId: string|null, profileId: string|null, packageId: string|null}}
- */
-function findDiagramWithContext(
-  project,
-  diagramId,
-  modelId = "",
-  profileId = "",
-  context = null
-) {
-  const searchInPackages = (packages) => {
-    for (const pkg of packages) {
-      const diagram = pkg.diagrams?.find((x) => x.id === diagramId);
-      if (diagram) return { diagram, packageId: pkg.id || null };
-
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  const useModel = context === "model" || (modelId && modelId !== "");
-  const useProfile = context === "profile" || (profileId && profileId !== "");
-
-  if (useModel && project.models) {
-    const model = project.models.find((m) => m.id === modelId) || null;
-    if (model?.rootPackages?.[0]?.packages) {
-      const found = searchInPackages(model.rootPackages[0].packages);
-      if (found?.diagram) {
-        return {
-          diagram: found.diagram,
-          context: "model",
-          modelId: model.id,
-          profileId: null,
-          packageId: found.packageId ?? null,
-        };
-      }
-    }
-  }
-
-  if (useProfile && project.profiles) {
-    const profile = project.profiles.find((p) => p.id === profileId) || null;
-    if (profile?.rootPackages?.[0]?.packages) {
-      const found = searchInPackages(profile.rootPackages[0].packages);
-      if (found?.diagram) {
-        return {
-          diagram: found.diagram,
-          context: "profile",
-          modelId: null,
-          profileId: profile.id,
-          packageId: found.packageId ?? null,
-        };
-      }
-    }
-  }
-
-  // Fallback: search all models/profiles if context not provided.
-  if (!useModel && !useProfile) {
-    if (project.models) {
-      for (const model of project.models) {
-        if (model.rootPackages?.[0]?.packages) {
-          const found = searchInPackages(model.rootPackages[0].packages);
-          if (found?.diagram) {
-            return {
-              diagram: found.diagram,
-              context: "model",
-              modelId: model.id,
-              profileId: null,
-              packageId: found.packageId ?? null,
-            };
-          }
-        }
-      }
-    }
-
-    if (project.profiles) {
-      for (const profile of project.profiles) {
-        if (profile.rootPackages?.[0]?.packages) {
-          const found = searchInPackages(profile.rootPackages[0].packages);
-          if (found?.diagram) {
-            return {
-              diagram: found.diagram,
-              context: "profile",
-              modelId: null,
-              profileId: profile.id,
-              packageId: found.packageId ?? null,
-            };
-          }
-        }
-      }
-    }
+  if (context === "profile") {
+    const pId = String(profileId || "");
+    const profile = (project?.profiles || []).find((p) => String(p?.id || "") === pId) || null;
+    const packages = profile?.rootPackages?.[0]?.packages || [];
+    return searchInPackages(packages);
   }
 
   return null;
@@ -3558,277 +3733,6 @@ function packageHasContents(pkg) {
   if (Array.isArray(pkg.classes) && pkg.classes.length > 0) return true;
   if (Array.isArray(pkg.diagrams) && pkg.diagrams.length > 0) return true;
   return false;
-}
-
-/**
- * Find a package in the project tree and return its context and parent package.
- *
- * @param {object} project - Full project object
- * @param {string} packageId - Package ID to find
- * @param {string} [modelId]
- * @param {string} [profileId]
- * @param {'model'|'profile'|null} [context]
- * @returns {null|{pkg: object, context: 'model'|'profile', modelId: string|null, profileId: string|null, parentPackageId: string|null}}
- */
-function findPackageWithContext(
-  project,
-  packageId,
-  modelId = "",
-  profileId = "",
-  context = null
-) {
-  const searchInPackages = (packages, parentId = null) => {
-    for (const pkg of packages) {
-      if (pkg.id === packageId) return { pkg, parentPackageId: parentId };
-
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages, pkg.id || null);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  const useModel = context === "model" || (modelId && modelId !== "");
-  const useProfile = context === "profile" || (profileId && profileId !== "");
-
-  if (useModel && project.models) {
-    const model = project.models.find((m) => m.id === modelId) || null;
-    if (model?.rootPackages?.[0]?.packages) {
-      const found = searchInPackages(model.rootPackages[0].packages);
-      if (found?.pkg) {
-        return {
-          pkg: found.pkg,
-          context: "model",
-          modelId: model.id,
-          profileId: null,
-          parentPackageId: found.parentPackageId ?? null,
-        };
-      }
-    }
-  }
-
-  if (useProfile && project.profiles) {
-    const profile = project.profiles.find((p) => p.id === profileId) || null;
-    if (profile?.rootPackages?.[0]?.packages) {
-      const found = searchInPackages(profile.rootPackages[0].packages);
-      if (found?.pkg) {
-        return {
-          pkg: found.pkg,
-          context: "profile",
-          modelId: null,
-          profileId: profile.id,
-          parentPackageId: found.parentPackageId ?? null,
-        };
-      }
-    }
-  }
-
-  if (!useModel && !useProfile) {
-    if (project.models) {
-      for (const model of project.models) {
-        if (model.rootPackages?.[0]?.packages) {
-          const found = searchInPackages(model.rootPackages[0].packages);
-          if (found?.pkg) {
-            return {
-              pkg: found.pkg,
-              context: "model",
-              modelId: model.id,
-              profileId: null,
-              parentPackageId: found.parentPackageId ?? null,
-            };
-          }
-        }
-      }
-    }
-
-    if (project.profiles) {
-      for (const profile of project.profiles) {
-        if (profile.rootPackages?.[0]?.packages) {
-          const found = searchInPackages(profile.rootPackages[0].packages);
-          if (found?.pkg) {
-            return {
-              pkg: found.pkg,
-              context: "profile",
-              modelId: null,
-              profileId: profile.id,
-              parentPackageId: found.parentPackageId ?? null,
-            };
-          }
-        }
-      }
-    }
-  }
-
-  return null;
-}
-
-/**
- * Find a class in the project tree and return its context and parent package.
- *
- * @param {object} project - Full project object
- * @param {string} classId - Class ID to find
- * @returns {null|{cls: object, context: 'model'|'profile', modelId: string|null, profileId: string|null, packageId: string|null}}
- */
-function findClassWithContext(project, classId) {
-  const searchInPackages = (packages) => {
-    for (const pkg of packages) {
-      if (pkg.classes) {
-        const cls = pkg.classes.find((c) => c.id === classId);
-        if (cls) return { cls, packageId: pkg.id || null };
-      }
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  if (project.models) {
-    for (const model of project.models) {
-      if (model.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(model.rootPackages[0].packages);
-        if (found?.cls) {
-          return {
-            cls: found.cls,
-            context: "model",
-            modelId: model.id,
-            profileId: null,
-            packageId: found.packageId ?? null,
-          };
-        }
-      }
-    }
-  }
-
-  if (project.profiles) {
-    for (const profile of project.profiles) {
-      if (profile.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found?.cls) {
-          return {
-            cls: found.cls,
-            context: "profile",
-            modelId: null,
-            profileId: profile.id,
-            packageId: found.packageId ?? null,
-          };
-        }
-      }
-    }
-  }
-
-  return null;
-}
-
-function findAttributeWithParent(project, attrId) {
-  const searchInPackages = (packages) => {
-    for (const pkg of packages) {
-      if (pkg.classes) {
-        for (const cls of pkg.classes) {
-          if (cls.attributes) {
-            const attr = cls.attributes.find((a) => a.id === attrId);
-            if (attr) return { attr, cls };
-          }
-        }
-      }
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  if (project.models) {
-    for (const model of project.models) {
-      if (model.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(model.rootPackages[0].packages);
-        if (found) {
-          return {
-            ...found,
-            context: "model",
-            modelId: model.id,
-            profileId: null,
-          };
-        }
-      }
-    }
-  }
-
-  if (project.profiles) {
-    for (const profile of project.profiles) {
-      if (profile.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found) {
-          return {
-            ...found,
-            context: "profile",
-            modelId: null,
-            profileId: profile.id,
-          };
-        }
-      }
-    }
-  }
-
-  return null;
-}
-
-function findLinkWithParent(project, classId, linkId) {
-  if (!classId || !linkId) return null;
-
-  const searchInPackages = (packages) => {
-    for (const pkg of packages) {
-      if (pkg.classes) {
-        const cls = pkg.classes.find((c) => c.id === classId);
-        if (cls) {
-          const link = cls.links?.find((l) => l.linkId === linkId);
-          if (link) return { link, cls };
-        }
-      }
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  if (project.models) {
-    for (const model of project.models) {
-      if (model.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(model.rootPackages[0].packages);
-        if (found) {
-          return {
-            ...found,
-            context: "model",
-            modelId: model.id,
-            profileId: null,
-          };
-        }
-      }
-    }
-  }
-
-  if (project.profiles) {
-    for (const profile of project.profiles) {
-      if (profile.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(profile.rootPackages[0].packages);
-        if (found) {
-          return {
-            ...found,
-            context: "profile",
-            modelId: null,
-            profileId: profile.id,
-          };
-        }
-      }
-    }
-  }
-
-  return null;
 }
 
 /**
@@ -4103,203 +4007,6 @@ async function handleDeleteProfile(profileId) {
     selectedProfileId = null;
   }
 }
-
-// ============================================================
-// FIND PARENT CLASS HELPERS
-// ============================================================
-
-/**
- * Find class that contains the attribute
- * ✅ FIXED: Returns class WITH context (modelId/profileId)
- * @param {Object} project - Project object
- * @param {string} attrId - Attribute ID
- * @returns {Object|null} Parent class object with modelId/profileId or null
- */
-function findClassByAttributeId(project, attrId) {
-  const searchInPackages = (packages, modelId = "", profileId = "") => {
-    for (const pkg of packages) {
-      if (pkg.classes) {
-        for (const cls of pkg.classes) {
-          if (cls.attributes) {
-            const hasAttribute = cls.attributes.some(a => a.id === attrId);
-            if (hasAttribute) {
-              // ✅ Return class with context
-              return {
-                ...cls,
-                modelId: cls.modelId || modelId,
-                profileId: cls.profileId || profileId
-              };
-            }
-          }
-        }
-      }
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages, modelId, profileId);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  // Search in models
-  if (project.models) {
-    for (const model of project.models) {
-      if (model.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(
-          model.rootPackages[0].packages,
-          model.id,  // ✅ Pass modelId
-          ""         // ✅ profileId is empty for models
-        );
-        if (found) return found;
-      }
-    }
-  }
-
-  // Search in profiles
-  if (project.profiles) {
-    for (const profile of project.profiles) {
-      if (profile.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(
-          profile.rootPackages[0].packages,
-          "",          // ✅ modelId is empty for profiles
-          profile.id   // ✅ Pass profileId
-        );
-        if (found) return found;
-      }
-    }
-  }
-
-  return null;
-}
-
-/**
- * Find class that contains the link
- * ✅ FIXED: Returns class WITH context (modelId/profileId)
- * @param {Object} project - Project object
- * @param {string} linkId - Link ID
- * @returns {Object|null} Parent class object with modelId/profileId or null
- */
-function findClassByLinkId(project, linkId) {
-  const searchInPackages = (packages, modelId = "", profileId = "") => {
-    for (const pkg of packages) {
-      if (pkg.classes) {
-        for (const cls of pkg.classes) {
-          if (cls.links) {
-            const hasLink = cls.links.some(l => l.linkId === linkId);
-            if (hasLink) {
-              // ✅ Return class with context
-              return {
-                ...cls,
-                modelId: cls.modelId || modelId,
-                profileId: cls.profileId || profileId
-              };
-            }
-          }
-        }
-      }
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages, modelId, profileId);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  // Search in models
-  if (project.models) {
-    for (const model of project.models) {
-      if (model.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(
-          model.rootPackages[0].packages,
-          model.id,  // ✅ Pass modelId
-          ""         // ✅ profileId is empty
-        );
-        if (found) return found;
-      }
-    }
-  }
-
-  // Search in profiles
-  if (project.profiles) {
-    for (const profile of project.profiles) {
-      if (profile.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(
-          profile.rootPackages[0].packages,
-          "",          // ✅ modelId is empty
-          profile.id   // ✅ Pass profileId
-        );
-        if (found) return found;
-      }
-    }
-  }
-
-  return null;
-}
-
-/**
- * Find class that contains the literal
- * ✅ FIXED: Returns class WITH context (modelId/profileId)
- * @param {Object} project - Project object
- * @param {string} literalId - Literal ID
- * @returns {Object|null} Parent class object with modelId/profileId or null
- */
-function findClassByLiteralId(project, literalId) {
-  const searchInPackages = (packages, modelId = "", profileId = "") => {
-    for (const pkg of packages) {
-      if (pkg.classes) {
-        for (const cls of pkg.classes) {
-          if (cls.literals) {
-            const hasLiteral = cls.literals.some(l => l.id === literalId);
-            if (hasLiteral) {
-              // ✅ Return class with context
-              return {
-                ...cls,
-                modelId: cls.modelId || modelId,
-                profileId: cls.profileId || profileId
-              };
-            }
-          }
-        }
-      }
-      if (pkg.subPackages) {
-        const found = searchInPackages(pkg.subPackages, modelId, profileId);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  // Search in models
-  if (project.models) {
-    for (const model of project.models) {
-      if (model.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(
-          model.rootPackages[0].packages,
-          model.id,  // ✅ Pass modelId
-          ""         // ✅ profileId is empty
-        );
-        if (found) return found;
-      }
-    }
-  }
-
-  // Search in profiles
-  if (project.profiles) {
-    for (const profile of project.profiles) {
-      if (profile.rootPackages?.[0]?.packages) {
-        const found = searchInPackages(
-          profile.rootPackages[0].packages,
-          "",          // ✅ modelId is empty
-          profile.id   // ✅ Pass profileId
-        );
-        if (found) return found;
-      }
-    }
-  }
-
-  return null;
-}
-
 
 /**
  * Select parent class element in tree

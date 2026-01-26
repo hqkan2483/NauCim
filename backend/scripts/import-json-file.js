@@ -63,7 +63,6 @@ function wrapModelDataAsProject(modelData, filePath) {
     id: String(p?.id ?? `pkg_${randomUUID()}`),
     name: String(p?.name ?? ""),
     type: p?.type ?? "Package",
-    parentPackage: p?.parentPackage ?? null,
     documentation: p?.documentation ?? null,
     documentationRu: p?.documentationRu ?? null,
     details: p?.details ?? null,

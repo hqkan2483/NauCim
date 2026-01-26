@@ -48,9 +48,11 @@ export async function exportProject(projectId) {
     orderBy: { name: "asc" },
   });
 
+  const profileNameById = new Map((profiles || []).map((p) => [String(p.id), String(p.name ?? "")]));
+
   const exportedModels = [];
   for (const m of models) {
-    const rootPackages = await exportRootPackagesFor({ modelId: m.id });
+    const rootPackages = await exportRootPackagesFor({ modelId: m.id, profileNameById });
     exportedModels.push({
       ...m,
       relatedProfiles: [],
@@ -60,7 +62,7 @@ export async function exportProject(projectId) {
 
   const exportedProfiles = [];
   for (const p of profiles) {
-    const rootPackages = await exportRootPackagesFor({ profileId: p.id });
+    const rootPackages = await exportRootPackagesFor({ profileId: p.id, profileNameById });
     exportedProfiles.push({
       ...p,
       relatedModels: [],
@@ -75,14 +77,14 @@ export async function exportProject(projectId) {
   };
 }
 
-async function exportRootPackagesFor({ modelId = null, profileId = null }) {
+async function exportRootPackagesFor({ modelId = null, profileId = null, profileNameById = null }) {
   if (!modelId && !profileId) return [];
 
   const isModel = Boolean(modelId);
   const id = String(isModel ? modelId : profileId);
 
   const [packages, classNameById, generalizationsList, associationList] = await Promise.all([
-    isModel ? exportPackagesTreeModel(id) : exportPackagesTreeProfile(id),
+    isModel ? exportPackagesTreeModel(id, { profileNameById }) : exportPackagesTreeProfile(id),
     isModel
       ? prisma.classModel
           .findMany({ where: { modelId: id }, select: { id: true, name: true } })
@@ -173,8 +175,8 @@ function sortClassLinks(list) {
   return arr;
 }
 
-async function exportPackagesTreeModel(modelId) {
-  const [packages, classes, attributes, literals, diagrams, generalizationLinks, associationLinks] = await Promise.all([
+async function exportPackagesTreeModel(modelId, { profileNameById = null } = {}) {
+  const [packages, classes, attributes, literals, diagrams, generalizationLinks, associationLinks, profileClassRefs] = await Promise.all([
     prisma.packageModel.findMany({
       where: { modelId },
       select: {
@@ -182,7 +184,6 @@ async function exportPackagesTreeModel(modelId) {
         parentId: true,
         name: true,
         type: true,
-        parentPackage: true,
         documentation: true,
         documentationRu: true,
         details: true,
@@ -277,7 +278,43 @@ async function exportPackagesTreeModel(modelId) {
         },
       },
     }),
+    prisma.classProfile
+      .findMany({
+        where: { refModelId: modelId },
+        select: { id: true, profileId: true, refModelItemId: true },
+      })
+      .catch(() => []),
   ]);
+
+  const profileRelationsByModelClassId = new Map();
+  for (const r of profileClassRefs || []) {
+    const modelClassId = r?.refModelItemId;
+    if (!modelClassId) continue;
+    const list = profileRelationsByModelClassId.get(modelClassId) || [];
+    list.push({
+      profileId: r.profileId,
+      profileName:
+        profileNameById && typeof profileNameById.get === "function"
+          ? profileNameById.get(String(r.profileId)) ?? ""
+          : "",
+      // id of the class object inside the profile (ClassProfile.id)
+      profileClassId: r.id,
+    });
+    profileRelationsByModelClassId.set(modelClassId, list);
+  }
+  for (const [k, list] of profileRelationsByModelClassId.entries()) {
+    list.sort((a, b) => {
+      const aName = String(a?.profileName ?? "");
+      const bName = String(b?.profileName ?? "");
+      const nameCmp = aName.localeCompare(bName, undefined, { sensitivity: "base" });
+      if (nameCmp !== 0) return nameCmp;
+
+      return String(a?.profileId ?? "").localeCompare(String(b?.profileId ?? ""), undefined, {
+        sensitivity: "base",
+      });
+    });
+    profileRelationsByModelClassId.set(k, list);
+  }
 
   const classesByPackage = new Map();
   for (const c of classes) {
@@ -355,7 +392,7 @@ async function exportPackagesTreeModel(modelId) {
       id: p.id,
       name: p.name,
       type: p.type ?? "Package",
-      parentPackage: p.parentPackage ?? null,
+      parentPackageId: p.parentId ?? null,
       documentation: p.documentation ?? null,
       documentationRu: p.documentationRu ?? null,
       details: p.details ?? null,
@@ -379,6 +416,9 @@ async function exportPackagesTreeModel(modelId) {
 
     pkgNode.classes = clsList.map((c) => ({
       id: c.id,
+      // `packageId` is part of the canonical export contract; it matches Prisma ClassModel/ClassProfile.packageId.
+      // UI uses it to determine parent package context without tree traversal.
+      packageId: c.packageId ?? null,
       name: c.name,
       type: c.type ?? "Class",
       stereotype: c.stereotype ?? null,
@@ -396,7 +436,7 @@ async function exportPackagesTreeModel(modelId) {
         ...(associationLinksByClassId.get(c.id) || []),
       ]),
       literals: (litsByClass.get(c.id) || []).map(mapLiteral),
-      profileRelations: [],
+      profileRelations: profileRelationsByModelClassId.get(c.id) || [],
       modelId,
       profileId: null,
       refModelId: c.refModelId ?? null,
@@ -431,7 +471,6 @@ async function exportPackagesTreeProfile(profileId) {
         parentId: true,
         name: true,
         type: true,
-        parentPackage: true,
         documentation: true,
         documentationRu: true,
         details: true,
@@ -604,7 +643,7 @@ async function exportPackagesTreeProfile(profileId) {
       id: p.id,
       name: p.name,
       type: p.type ?? "Package",
-      parentPackage: p.parentPackage ?? null,
+      parentPackageId: p.parentId ?? null,
       documentation: p.documentation ?? null,
       documentationRu: p.documentationRu ?? null,
       details: p.details ?? null,
@@ -628,6 +667,7 @@ async function exportPackagesTreeProfile(profileId) {
 
     pkgNode.classes = clsList.map((c) => ({
       id: c.id,
+      packageId: c.packageId ?? null,
       name: c.name,
       type: c.type ?? "Class",
       stereotype: c.stereotype ?? null,
@@ -688,6 +728,9 @@ function mapAttr(a, { classNameById = null } = {}) {
 
   return {
     id: a.id,
+    // `classId` is part of the canonical export contract for Attribute; it matches Prisma AttributeModel/AttributeProfile.classId.
+    // UI uses it to identify the parent class without traversing the exported tree.
+    classId: a.classId,
     name: a.name,
     dataType,
     dataTypeId,
@@ -707,8 +750,11 @@ function mapAttr(a, { classNameById = null } = {}) {
 function mapLiteral(lit) {
   return {
     id: lit.id,
+    // `classId` is part of the canonical export contract for Literal; it matches Prisma LiteralModel/LiteralProfile.classId.
+    // UI uses it to identify the parent class without traversing the exported tree.
+    classId: lit.classId,
     name: lit.name,
-    value: lit.value ?? null,
+    initialValue: lit.value ?? null,
     documentation: lit.documentation ?? null,
     documentationRu: lit.documentationRu ?? null,
   };
@@ -717,6 +763,9 @@ function mapLiteral(lit) {
 function mapDiagram(d) {
   return {
     id: d.id,
+    // `packageId` is part of the canonical export contract; it allows UI to locate the parent package
+    // without tree traversal. Source of truth: DiagramModel/DiagramProfile.packageId in Prisma.
+    packageId: d.packageId ?? null,
     diagramType: d.diagramType ?? "",
     diagramName: d.diagramName ?? "",
     documentation: d.documentation ?? null,

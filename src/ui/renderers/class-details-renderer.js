@@ -10,12 +10,12 @@
  * @param {('standard'|'diagram')} [options.viewMode]
  * @returns {string} HTML string
  */
-function renderClassDetails(cls, { viewMode = 'standard' } = {}) {
+function renderClassDetails(cls, { viewMode = "standard" } = {}) {
   if (!cls) {
     return '<div class="text-center">Выберите класс для просмотра деталей</div>';
   }
 
-  if (viewMode === 'diagram') {
+  if (viewMode === "diagram") {
     let html = ``;
     html += `<div class="item-section class-contents">`;
     html += renderClassTabs(cls, { viewMode });
@@ -41,10 +41,38 @@ function renderClassDetails(cls, { viewMode = 'standard' } = {}) {
  * @returns {string} HTML string
  */
 function renderClassForm(cls) {
+  /**
+   * Render "used in profiles" list based on backend export field `profileRelations`.
+   *
+   * Backend currently exports relations as objects like:
+   * - { profileId, profileObjectId }
+   * Some flows may additionally enrich with `profileName`/`name`.
+   *
+   * @param {Object} classObj
+   * @returns {string} HTML
+   */
+  function renderUsedInProfiles(classObj) {
+    const relations = Array.isArray(classObj?.profileRelations)
+      ? classObj.profileRelations
+      : [];
+
+    if (relations.length === 0) {
+      return '<span class="text-muted">Не используется </span>';
+    }
+
+    return relations
+      .map((p) => {
+        const name = p?.profileName || "Без имени";
+
+        return `<span class="form-multiselect-item">${name}</span>`;
+      })
+      .join("");
+  }
+
   return `
     <form class="item-form" id="class-form" data-class-id="${cls.id}"
-          data-model-id="${cls.modelId || ''}"
-          data-profile-id="${cls.profileId || ''}">
+          data-model-id="${cls.modelId || ""}"
+          data-profile-id="${cls.profileId || ""}">
       <div class="form-section">
         <div class="form-section-title">
           <div class="form-row">
@@ -52,7 +80,7 @@ function renderClassForm(cls) {
               <div class="form-group form-group__line">
                 <label class="form-label form-label__title" for="cls-name">Класс *</label>
                 <input type="text" id="cls-name" class="form-input form-input__short"
-                       value="${cls.name || ''}" required />
+                       value="${cls.name || ""}" required />
               </div>
             </div>
             <div class="form-cell form-cell__line">
@@ -60,13 +88,13 @@ function renderClassForm(cls) {
                 <label class="form-checkbox-label">
                   <span>Абстрактный класс</span>
                   <input type="checkbox" id="cls-isAbstract" class="form-checkbox"
-                         ${cls.isAbstract ? 'checked' : ''} />
+                         ${cls.isAbstract ? "checked" : ""} />
                 </label>
               </div>
               <div class="form-group form-group__line">
                 <label class="form-label" for="cls-stereotype">Стереотип</label>
                 <input type="text" id="cls-stereotype" class="form-input"
-                       value="${cls.stereotype || ''}" placeholder="Например: rs, rf" />
+                       value="${cls.stereotype || ""}" placeholder="Например: rs, rf" />
               </div>
             </div>
           </div>
@@ -76,22 +104,29 @@ function renderClassForm(cls) {
           <div class="form-cell">
             <div class="form-group">
               <label class="form-label" for="cls-documentation">Описание</label>
-              <textarea id="cls-documentation" class="form-textarea" rows="3">${cls.documentation || ''}</textarea>
+              <textarea id="cls-documentation" class="form-textarea" rows="3">${cls.documentation || ""}</textarea>
             </div>
           </div>
           <div class="form-cell">
             <div class="form-group">
               <label class="form-label" for="cls-documentationRu">Описание (RU)</label>
-              <textarea id="cls-documentationRu" class="form-textarea" rows="3">${cls.documentationRu || ''}</textarea>
+              <textarea id="cls-documentationRu" class="form-textarea" rows="3">${cls.documentationRu || ""}</textarea>
             </div>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-cell">
+            <div class="form-multiselect" id="cls-used-in-profiles">
+              <span class="form-label">Используется в  профилях:  </span>
+              ${renderUsedInProfiles(cls)}
+            </div>
+          
+          </div>
+          <div class="form-cell">
             <div class="form-group">
               <label class="form-label" for="cls-details">Детали</label>
-              <textarea id="cls-details" class="form-textarea" rows="4">${cls.details || ''}</textarea>
+              <textarea id="cls-details" class="form-textarea" rows="4">${cls.details || ""}</textarea>
             </div>
           </div>
         </div>
@@ -108,10 +143,10 @@ function renderClassForm(cls) {
 /**
  * Render class tabs header with buttons
  */
-function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
-  const isEnumeration = cls.type === 'Enumeration';
-  const includeGeneralInfo = viewMode === 'diagram';
-  const generalTabName = 'item-general';
+function renderClassTabs(cls, { viewMode = "standard" } = {}) {
+  const isEnumeration = cls.type === "Enumeration";
+  const includeGeneralInfo = viewMode === "diagram";
+  const generalTabName = "item-general";
   const shouldGeneralBeActive = includeGeneralInfo;
 
   let html = `
@@ -121,7 +156,7 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
 
   if (includeGeneralInfo) {
     html += `
-      <div class="section-title tab ${shouldGeneralBeActive ? 'active' : ''}"
+      <div class="section-title tab ${shouldGeneralBeActive ? "active" : ""}"
            data-section-tab="${generalTabName}"
            data-class-id="${cls.id}">
         Общая информация
@@ -132,10 +167,10 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
   // ✅ Для обычного класса:  Атрибуты и Связи
   if (!isEnumeration) {
     html += `
-      <div class="section-title tab ${shouldGeneralBeActive ? '' : 'active'}"
+      <div class="section-title tab ${shouldGeneralBeActive ? "" : "active"}"
            data-section-tab="item-attributes"
            data-class-id="${cls.id}">
-        Атрибуты (${cls.attributes ?  cls.attributes.length : 0})
+        Атрибуты (${cls.attributes ? cls.attributes.length : 0})
       </div>
       <div class="section-title tab "
            data-section-tab="item-links"
@@ -148,7 +183,7 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
   // ✅ Для Enumeration: только Значения перечисления
   if (isEnumeration) {
     html += `
-      <div class="section-title tab ${shouldGeneralBeActive ? '' : 'active'}"
+      <div class="section-title tab ${shouldGeneralBeActive ? "" : "active"}"
            data-section-tab="item-literals"
            data-class-id="${cls.id}">
         Значения перечисления (${cls.literals ? cls.literals.length : 0})
@@ -167,12 +202,16 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
       <button class="btn btn-primary tab-action-btn btn--class-details"
               id="add-attribute-btn"
               data-class-id="${cls.id}"
+              data-model-id="${cls.modelId || ""}"
+              data-profile-id="${cls.profileId || ""}"
               data-tab="item-attributes">
         ✚ Добавить атрибут
       </button>
       <button class="btn btn-primary tab-action-btn btn--class-details"
               id="add-link-btn"
               data-class-id="${cls.id}"
+              data-model-id="${cls.modelId || ""}"
+              data-profile-id="${cls.profileId || ""}"
               data-tab="item-links">
         ✚ Добавить связь
       </button>
@@ -185,6 +224,8 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
       <button class="btn btn-primary tab-action-btn btn--class-details"
               id="add-literal-btn"
               data-class-id="${cls.id}"
+              data-model-id="${cls.modelId || ""}"
+              data-profile-id="${cls.profileId || ""}"
               data-tab="item-literals">
         ✚ Добавить значение
       </button>
@@ -200,17 +241,17 @@ function renderClassTabs(cls, { viewMode = 'standard' } = {}) {
 /**
  * Render tab content (all tabs, visibility controlled by CSS)
  */
-function renderTabContent(cls, { viewMode = 'standard' } = {}) {
-  const isEnumeration = cls.type === 'Enumeration';
-  const includeGeneralInfo = viewMode === 'diagram';
-  const generalTabName = 'item-general';
+function renderTabContent(cls, { viewMode = "standard" } = {}) {
+  const isEnumeration = cls.type === "Enumeration";
+  const includeGeneralInfo = viewMode === "diagram";
+  const generalTabName = "item-general";
   const shouldGeneralBeActive = includeGeneralInfo;
 
-  let html = '';
+  let html = "";
 
   if (includeGeneralInfo) {
     html += `
-      <div class="tab-content ${shouldGeneralBeActive ? 'active' : ''}" data-tab-content="${generalTabName}">
+      <div class="tab-content ${shouldGeneralBeActive ? "active" : ""}" data-tab-content="${generalTabName}">
         ${renderClassForm(cls)}
       </div>
     `;
@@ -219,7 +260,7 @@ function renderTabContent(cls, { viewMode = 'standard' } = {}) {
   // ✅ Для обычного класса:  Атрибуты и Связи
   if (!isEnumeration) {
     html += `
-      <div class="tab-content ${shouldGeneralBeActive ? '' : 'active'}" data-tab-content="item-attributes">
+      <div class="tab-content ${shouldGeneralBeActive ? "" : "active"}" data-tab-content="item-attributes">
         ${renderClassAttributes(cls)}
       </div>
       <div class="tab-content" data-tab-content="item-links">
@@ -231,7 +272,7 @@ function renderTabContent(cls, { viewMode = 'standard' } = {}) {
   // ✅ Для Enumeration: только Литералы
   if (isEnumeration) {
     html += `
-      <div class="tab-content ${shouldGeneralBeActive ? '' : 'active'}" data-tab-content="item-literals">
+      <div class="tab-content ${shouldGeneralBeActive ? "" : "active"}" data-tab-content="item-literals">
         ${renderClassLiterals(cls)}
       </div>
     `;
@@ -247,7 +288,7 @@ function renderClassAttributes(cls) {
   // let html = `<div class="tab-content" data-tab-content="item-attributes">`;
   let html = ``;
 
-  if (! cls.attributes || cls.attributes.length === 0) {
+  if (!cls.attributes || cls.attributes.length === 0) {
     html += `
       <div class="no-content">
         <p>Нет атрибутов.  Нажмите "Добавить атрибут" для создания. </p>
@@ -277,25 +318,31 @@ function renderClassAttributes(cls) {
         <tbody>
     `;
 
-    cls.attributes.forEach(attr => {
+    cls.attributes.forEach((attr) => {
       html += `
         <tr data-attr-id="${attr.id}">
-          <td><strong>${attr.name || '—'}</strong></td>
-          <td>${attr.dataType || '—'}</td>
-          <td>${attr.multiplicity || '—'}</td>
-          <td>${attr.stereotype ?  `«${attr.stereotype}»` : '—'}</td>
-          <td>${attr.documentation || '—'}</td>
+          <td><strong>${attr.name || "—"}</strong></td>
+          <td>${attr.dataType || "—"}</td>
+          <td>${attr.multiplicity || "—"}</td>
+          <td>${attr.stereotype ? `«${attr.stereotype}»` : "—"}</td>
+          <td>${attr.documentation || "—"}</td>
           <td>
             <div class="table-actions">
               <button class="btn-icon"
                       data-action="edit-attribute"
                       data-attr-id="${attr.id}"
+                      data-class-id="${cls.id || ""}"
+                      data-model-id="${cls.modelId || ""}"
+                      data-profile-id="${cls.profileId || ""}"
                       title="Редактировать">
                 ✏️
               </button>
               <button class="btn-icon btn-icon-danger"
                       data-action="delete-attribute"
                       data-attr-id="${attr.id}"
+                      data-class-id="${cls.id || ""}"
+                      data-model-id="${cls.modelId || ""}"
+                      data-profile-id="${cls.profileId || ""}"
                       title="Удалить">
                 🗑️
               </button>
@@ -314,7 +361,6 @@ function renderClassAttributes(cls) {
   // html += `</div>`;
   return html;
 }
-
 
 /**
  * Render class links section with management buttons
@@ -356,31 +402,44 @@ function renderClassLinks(cls) {
         <tbody>
     `;
 
-    cls.links.forEach(link => {
-      const linkIcon = link.relationKind === 'Generalization' ? '⬆️' : '↔️';
-      const roleLabel = link.role === 'child' ? '(потомок от)' : (link.role === 'parent' ? '(родитель для)' : (link.role === 'unspecified' ? '' : link.role || ''));
-      const editAction = link.relationKind === 'Generalization' ? 'edit-generalization-link' : 'edit-association-link';
+    cls.links.forEach((link) => {
+      const linkIcon = link.relationKind === "Generalization" ? "⬆️" : "↔️";
+      const roleLabel =
+        link.role === "child"
+          ? "(потомок от)"
+          : link.role === "parent"
+            ? "(родитель для)"
+            : link.role === "unspecified"
+              ? ""
+              : link.role || "";
+      const editAction =
+        link.relationKind === "Generalization"
+          ? "edit-generalization-link"
+          : "edit-association-link";
 
       html += `
         <tr data-link-id="${link.linkId}">
-          <td><strong>${link.targetClassRoleName || '—'}</strong></td>
-          <td>${linkIcon} ${link.relationKind || '—'} <br> ${roleLabel}</td>
+          <td><strong>${link.targetClassRoleName || "—"}</strong></td>
+          <td>${linkIcon} ${link.relationKind || "—"} <br> ${roleLabel}</td>
           <td class="target-class-name"
               data-action="navigate-to-target-class"
-              data-target-class-id="${link.targetClassId || ''}"
-              data-model-id="${cls.modelId || ''}"
-              data-profile-id="${cls.profileId || ''}"
-              data-ref-model-id="${cls.refModelId || ''}">
-            ${link.targetClassName || '—'}
+              data-target-class-id="${link.targetClassId || ""}"
+              data-model-id="${cls.modelId || ""}"
+              data-profile-id="${cls.profileId || ""}"
+              data-ref-model-id="${cls.refModelId || ""}">
+            ${link.targetClassName || "—"}
           </td>
-          <td>${link.multiplicity || '—'}</td>
-          <td>${link.targetDescription || '—'}</td>
+          <td>${link.multiplicity || "—"}</td>
+          <td>${link.targetDescription || "—"}</td>
           <td>
             <div class="table-actions">
               <button class="btn-icon"
                       data-action="${editAction}"
                       data-class-id="${cls.id}"
                       data-link-id="${link.linkId}"
+                      data-model-id="${cls.modelId || ""}"
+                      data-profile-id="${cls.profileId || ""}"
+                      data-relation-kind="${link.relationKind || ""}"
                       title="Редактировать">
                 ✏️
               </button>
@@ -388,6 +447,9 @@ function renderClassLinks(cls) {
                       data-action="delete-link"
                       data-class-id="${cls.id}"
                       data-link-id="${link.linkId}"
+                      data-model-id="${cls.modelId || ""}"
+                      data-profile-id="${cls.profileId || ""}"
+                      data-relation-kind="${link.relationKind || ""}"
                       title="Удалить">
                 🗑️
               </button>
@@ -434,23 +496,29 @@ function renderClassLiterals(cls) {
         <tbody>
     `;
 
-    cls.literals.forEach(lit => {
+    cls.literals.forEach((lit) => {
       html += `
         <tr data-literal-id="${lit.id}">
-          <td><strong>${lit.name || '—'}</strong></td>
-          <td>${lit.documentation || '—'}</td>
-          <td>${lit.initialValue || '—'}</td>
+          <td><strong>${lit.name || "—"}</strong></td>
+          <td>${lit.documentation || "—"}</td>
+          <td>${lit.initialValue || "—"}</td>
           <td>
             <div class="table-actions">
               <button class="btn-icon"
                       data-action="edit-literal"
                       data-literal-id="${lit.id}"
+                      data-class-id="${cls.id || ""}"
+                      data-model-id="${cls.modelId || ""}"
+                      data-profile-id="${cls.profileId || ""}"
                       title="Редактировать">
                 ✏️
               </button>
               <button class="btn-icon btn-icon-danger"
                       data-action="delete-literal"
                       data-literal-id="${lit.id}"
+                      data-class-id="${cls.id || ""}"
+                      data-model-id="${cls.modelId || ""}"
+                      data-profile-id="${cls.profileId || ""}"
                       title="Удалить">
                 🗑️
               </button>

@@ -3,6 +3,8 @@
  * Manages tree interactions (expand/collapse, select, drag-drop)
  */
 
+import { escapeAttrSelectorValue } from "../../utils/text-utils.js";
+
 /**
  * Initialize tree component
  * @param {string} containerId - Container element ID
@@ -15,7 +17,6 @@ function initEditorTree(containerId, options = {}) {
     console.error(`Container #${containerId} not found`);
     return null;
   }
-
   const instance = {
     container,
     options: {
@@ -25,6 +26,208 @@ function initEditorTree(containerId, options = {}) {
       onDragStart: options.onDragStart || (() => {}),
       onDrop: options.onDrop || (() => {}),
       allowDragDrop: options.allowDragDrop !== false,
+    },
+
+    /**
+     * Get tree item element by itemKey.
+     * @param {string} itemKey - Node key.
+     * @returns {HTMLElement|null} Element.
+     */
+    getTreeItemEl(itemKey) {
+      if (!itemKey) return null;
+      const key = escapeAttrSelectorValue(itemKey);
+      return container.querySelector(`[data-item-key="${key}"]`);
+    },
+
+    /**
+     * Get children container element for node.
+     * @param {string} itemKey - Node key.
+     * @returns {HTMLElement|null} Children container.
+     */
+    getChildrenContainerEl(itemKey) {
+      if (!itemKey) return null;
+      const key = escapeAttrSelectorValue(itemKey);
+      return container.querySelector(`[data-parent="${key}"]`);
+    },
+
+    /**
+     * Get checkbox element for node.
+     * @param {string} itemKey - Node key.
+     * @returns {HTMLInputElement|null} Checkbox.
+     */
+    getCheckboxEl(itemKey) {
+      const treeItem = this.getTreeItemEl(itemKey);
+      const checkbox = treeItem?.querySelector(".tree-item-checkbox") || null;
+      return checkbox instanceof HTMLInputElement ? checkbox : null;
+    },
+
+    /**
+     * Get direct child node keys for a parent key.
+     * Direct children are the first-level tree-item elements inside the children container.
+     * @param {string} parentKey - Parent node key.
+     * @returns {string[]} Array of child keys.
+     */
+    getDirectChildKeys(parentKey) {
+      const childrenContainer = this.getChildrenContainerEl(parentKey);
+      if (!childrenContainer) return [];
+
+      return Array.from(childrenContainer.children)
+        .filter((el) => el instanceof HTMLElement && el.hasAttribute("data-item-key"))
+        .map((el) => el.getAttribute("data-item-key") || "")
+        .filter(Boolean);
+    },
+
+    /**
+     * Set checkbox state for a node and optionally emit onCheck when "checked" changes.
+     * @param {string} itemKey - Node key.
+     * @param {{checked?: boolean, indeterminate?: boolean, emitCheck?: boolean}} state - Desired state.
+     */
+    setCheckboxState(itemKey, state = {}) {
+      const checkbox = this.getCheckboxEl(itemKey);
+      if (!checkbox) return;
+
+      const nextChecked = state.checked ?? checkbox.checked;
+      const nextIndeterminate = state.indeterminate ?? checkbox.indeterminate;
+      const emitCheck = state.emitCheck === true;
+
+      const prevChecked = checkbox.checked;
+
+      checkbox.checked = Boolean(nextChecked);
+      checkbox.indeterminate = Boolean(nextIndeterminate);
+
+      if (emitCheck && prevChecked !== checkbox.checked) {
+        this.options.onCheck(itemKey, checkbox.checked);
+      }
+    },
+
+    /**
+     * Apply checked state to all descendant nodes (and optionally to self).
+     * @param {string} itemKey - Root node key.
+     * @param {boolean} checked - Target checked state.
+     * @param {{includeSelf?: boolean}} opts - Options.
+     */
+    setSubtreeChecked(itemKey, checked, opts = {}) {
+      const includeSelf = opts.includeSelf !== false;
+
+      if (includeSelf) {
+        this.setCheckboxState(itemKey, {
+          checked,
+          indeterminate: false,
+          emitCheck: true,
+        });
+      }
+
+      const childrenContainer = this.getChildrenContainerEl(itemKey);
+      if (!childrenContainer) return;
+
+      childrenContainer
+        .querySelectorAll("[data-item-key]")
+        .forEach((childTreeItem) => {
+          const key = childTreeItem.getAttribute("data-item-key") || "";
+          if (!key) return;
+
+          this.setCheckboxState(key, {
+            checked,
+            indeterminate: false,
+            emitCheck: true,
+          });
+        });
+    },
+
+    /**
+     * Recompute checkbox state (checked/indeterminate) for a node based on direct children.
+     * - checked=true when ALL direct children are checked
+     * - indeterminate=true when SOME direct children are checked or indeterminate
+     * @param {string} itemKey - Node key.
+     */
+    refreshStateForItem(itemKey) {
+      const checkbox = this.getCheckboxEl(itemKey);
+      if (!checkbox) return;
+
+      const childKeys = this.getDirectChildKeys(itemKey);
+      if (childKeys.length === 0) {
+        // Leaf
+        this.setCheckboxState(itemKey, { indeterminate: false });
+        return;
+      }
+
+      const childCheckboxes = childKeys
+        .map((k) => this.getCheckboxEl(k))
+        .filter(Boolean);
+
+      if (childCheckboxes.length === 0) {
+        this.setCheckboxState(itemKey, { indeterminate: false });
+        return;
+      }
+
+      const allChecked = childCheckboxes.every((cb) => cb.checked);
+      const anyMarked = childCheckboxes.some((cb) => cb.checked || cb.indeterminate);
+
+      if (allChecked) {
+        this.setCheckboxState(itemKey, {
+          checked: true,
+          indeterminate: false,
+          emitCheck: true,
+        });
+        return;
+      }
+
+      if (anyMarked) {
+        this.setCheckboxState(itemKey, {
+          checked: false,
+          indeterminate: true,
+          emitCheck: true,
+        });
+        return;
+      }
+
+      this.setCheckboxState(itemKey, {
+        checked: false,
+        indeterminate: false,
+        emitCheck: true,
+      });
+    },
+
+    /**
+     * Refresh state for this node and all its ancestors up to the root.
+     * @param {string} itemKey - Start node key.
+     */
+    refreshIndicatorsUpToRoot(itemKey) {
+      let currentKey = itemKey;
+      const visited = new Set();
+
+      while (currentKey && !visited.has(currentKey)) {
+        visited.add(currentKey);
+        this.refreshStateForItem(currentKey);
+
+        const treeItem = this.getTreeItemEl(currentKey);
+        if (!treeItem) break;
+
+        const parentChildrenContainer = treeItem.closest(".tree-children[data-parent]");
+        const parentKey = parentChildrenContainer?.getAttribute("data-parent") || "";
+        if (!parentKey) break;
+
+        currentKey = parentKey;
+      }
+    },
+
+    /**
+     * Recompute checkbox state (checked/indeterminate) for the whole tree.
+     * Useful after external re-render (innerHTML replacement).
+     */
+    refreshAllIndicators() {
+      // Walk all nodes bottom-up (deepest first) so parents compute after children.
+      const nodes = Array.from(container.querySelectorAll("[data-item-key]"));
+      nodes
+        .sort((a, b) => {
+          const aDepth = String(a.getAttribute("data-item-key") || "").split("-pkg-").length;
+          const bDepth = String(b.getAttribute("data-item-key") || "").split("-pkg-").length;
+          return bDepth - aDepth;
+        })
+        .forEach((el) => {
+          const key = el.getAttribute("data-item-key") || "";
+          if (key) this.refreshStateForItem(key);
+        });
     },
 
     /**
@@ -68,6 +271,12 @@ function initEditorTree(containerId, options = {}) {
 
           // ✅ Call callback but DON'T re-render
           this.options.onCheck(itemKey, isChecked);
+
+          // ✅ If node has children: toggle all descendants to match
+          this.setSubtreeChecked(itemKey, isChecked, { includeSelf: false });
+
+          // ✅ Recompute parent states up to root
+          this.refreshIndicatorsUpToRoot(itemKey);
         }
         e.stopPropagation();
         return;
@@ -230,6 +439,7 @@ function initEditorTree(containerId, options = {}) {
     clearSelection() {
       container.querySelectorAll(".tree-item-checkbox").forEach((checkbox) => {
         checkbox.checked = false;
+        checkbox.indeterminate = false;
       });
     },
 

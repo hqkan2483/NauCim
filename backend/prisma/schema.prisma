@@ -88,7 +88,6 @@ model PackageModel {
 
   name            String
   type            String?
-  parentPackage   String?
   documentation   String?
   documentationRu String?
   details         String?
@@ -114,7 +113,6 @@ model PackageProfile {
 
   name            String
   type            String?
-  parentPackage   String?
   documentation   String?
   documentationRu String?
   details         String?
@@ -196,6 +194,8 @@ model ClassModel {
   model Model        @relation(fields: [modelId], references: [id], onDelete: Cascade)
   pkg   PackageModel @relation(fields: [packageId, modelId], references: [id, modelId], onDelete: Cascade)
 
+  profileClasses ClassProfile[] @relation("ModelClassToProfileClasses")
+
   attributes            AttributeModel[] @relation("AttributeModelOwner")
   dataTypeForAttributes AttributeModel[] @relation("AttributeModelDataType")
   literals              LiteralModel[]
@@ -220,19 +220,23 @@ model ClassProfile {
   details         String?
   isAbstract      Boolean?
 
-  refModelId     String?
-  refModelItemId String?
+  refModelId     String
+  refModelItemId String
 
   profile Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
   pkg     PackageProfile @relation(fields: [packageId, profileId], references: [id, profileId], onDelete: Cascade)
+
+  refModelClass ClassModel @relation("ModelClassToProfileClasses", fields: [refModelItemId, refModelId], references: [id, modelId], onDelete: Cascade)
 
   attributes            AttributeProfile[] @relation("AttributeProfileOwner")
   dataTypeForAttributes AttributeProfile[] @relation("AttributeProfileDataType")
   literals              LiteralProfile[]
 
   @@unique([id, profileId])
+  @@unique([profileId, refModelItemId, refModelId])
   @@index([profileId])
   @@index([packageId, profileId])
+  @@index([refModelId, refModelItemId])
   @@index([name])
 }
 

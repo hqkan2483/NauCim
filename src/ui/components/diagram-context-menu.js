@@ -10,9 +10,33 @@
 /**
  * @typedef {object} DiagramContext
  * @property {string} diagramId
+ * @property {string|null} [packageId] - Parent package id from DOM (`data-package-id`).
  * @property {string} modelId
  * @property {string} profileId
  */
+
+/**
+ * Extracts diagram context from a rendered project-tree DOM node.
+ *
+ * UI-layer helper only: it reads `data-*` attributes emitted by renderers.
+ * Business logic should be implemented in the page/controller via callbacks.
+ *
+ * @param {HTMLElement} node - `.tree-structure-name[data-type="diagram"]` element.
+ * @returns {DiagramContext|null}
+ */
+function getDiagramContextFromTreeNode(node) {
+  if (!(node instanceof HTMLElement)) return null;
+  const diagramId = node.getAttribute("data-diagram-id") || "";
+  if (!diagramId) return null;
+
+  const modelId = node.getAttribute("data-model-id") || "";
+  const profileId = node.getAttribute("data-profile-id") || "";
+
+  const packageIdRaw = node.getAttribute("data-package-id") || "";
+  const packageId = packageIdRaw ? packageIdRaw : null;
+
+  return { diagramId, packageId, modelId, profileId };
+}
 
 function clampToViewport({ x, y, width, height, padding = 8 }) {
   const vw = window.innerWidth;
@@ -78,16 +102,13 @@ export function initDiagramTreeContextMenu(containerEl, { onDeleteDiagram } = {}
     const node = target.closest('.tree-structure-name[data-type="diagram"]');
     if (!node) return;
 
-    const diagramId = node.getAttribute("data-diagram-id") || "";
-    const modelId = node.getAttribute("data-model-id") || "";
-    const profileId = node.getAttribute("data-profile-id") || "";
-
-    if (!diagramId) return;
+    const ctx = getDiagramContextFromTreeNode(node);
+    if (!ctx) return;
 
     e.preventDefault();
     e.stopPropagation();
 
-    openAt(e.clientX, e.clientY, { diagramId, modelId, profileId });
+    openAt(e.clientX, e.clientY, ctx);
   };
 
   const onDocMouseDown = (e) => {

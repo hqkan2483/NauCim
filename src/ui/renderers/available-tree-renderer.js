@@ -3,14 +3,17 @@
  * Renders the left panel tree (available models and profiles)
  */
 
+import {
+  buildContextDataAttrs,
+  buildPackageContractAttrs,
+  buildClassContractAttrs,
+  buildDiagramContractAttrs,
+} from "./tree-contract-attrs.js";
+
 function buildItemDataAttrs(item) {
   return `
     data-item-id="${item?.id || ""}"
     data-item-type="${item?.type || ""}"
-    data-model-id="${item?.modelId || ""}"
-    data-profile-id="${item?.profileId || ""}"
-    data-ref-model-id="${item?.refModelId || ""}"
-    data-ref-model-item-id="${item?.refModelItemId || ""}"
   `;
 }
 
@@ -22,10 +25,16 @@ function renderRootItem(item, selectedItems, expandedItems, activeItem) {
   const icon = item.type === "model" ? "📋" : "⚙️";
   const hasChildren = item.children && item.children.length > 0;
 
+  const ctx =
+    item.type === "model"
+      ? { modelId: item.id, profileId: "" }
+      : { modelId: "", profileId: item.id };
+
   return `
     <div class="tree-item-with-checkbox ${isActive ? "tree-item-selected" : ""}"
          data-item-key="${itemKey}"
-         ${buildItemDataAttrs(item)}>
+         ${buildItemDataAttrs(item)}
+         ${buildContextDataAttrs(ctx)}>
       <span class="tree-toggle" data-action="toggle-expand">
         ${hasChildren ? (isExpanded ? "▼" : "▶") : " "}
       </span>
@@ -45,7 +54,8 @@ function renderRootItem(item, selectedItems, expandedItems, activeItem) {
               "left",
               selectedItems,
               expandedItems,
-              activeItem
+              activeItem,
+              { ...ctx, parentPackageId: "" }
             )}
           </div>`
         : ""
@@ -81,7 +91,15 @@ export function renderAvailableTree(availableData, selectedItems, expandedItems,
  * @param {string} activeItem - Active item key
  * @returns {string} HTML string
  */
-export function renderTreeChildren(items, parentKey, side, selectedItems, expandedItems, activeItem) {
+export function renderTreeChildren(
+  items,
+  parentKey,
+  side,
+  selectedItems,
+  expandedItems,
+  activeItem,
+  context = {}
+) {
   let html = "";
 
   if (! items || ! Array.isArray(items)) {
@@ -94,16 +112,26 @@ export function renderTreeChildren(items, parentKey, side, selectedItems, expand
     const isExpanded = expandedItems.has(itemKey);
     const isActive = activeItem === itemKey;
 
+    const ctx = {
+      modelId: context?.modelId ?? item?.modelId ?? "",
+      profileId: context?.profileId ?? item?.profileId ?? "",
+      parentPackageId: context?.parentPackageId ?? "",
+      includeDiagrams: context?.includeDiagrams === true,
+    };
+
     // ✅ Support both "classes" (from data) and "elements" (legacy)
     const classes = item.classes || [];
     const subPackages = item.subPackages || [];
-    const hasChildren = classes.length > 0 || subPackages.length > 0;
+    const includeDiagrams = ctx.includeDiagrams === true;
+    const diagrams = includeDiagrams ? item.diagrams || [] : [];
+    const hasChildren = classes.length > 0 || subPackages.length > 0 || diagrams.length > 0;
 
     html += `
       <div class="tree-item-with-checkbox ${isActive ? "tree-item-selected" : ""}"
            data-item-key="${itemKey}"
            data-side="${side}"
-           ${buildItemDataAttrs(item)}>
+           ${buildItemDataAttrs(item)}
+           ${buildPackageContractAttrs(item, ctx)}>
         <span class="tree-toggle" data-action="toggle-expand">
           ${hasChildren ? (isExpanded ? "▼" : "▶") : " "}
         </span>
@@ -134,7 +162,8 @@ export function renderTreeChildren(items, parentKey, side, selectedItems, expand
             <div class="tree-item-with-checkbox ${clsActive ?  "tree-item-selected" :  ""}"
                  data-item-key="${clsKey}"
                  data-side="${side}"
-               ${buildItemDataAttrs(cls)}>
+               ${buildItemDataAttrs(cls)}
+               ${buildClassContractAttrs(cls, { ...ctx, packageId: item?.id ?? "" })}>
               <span class="tree-toggle"> </span>
               <input type="checkbox" class="tree-item-checkbox"
                      ${clsChecked ? "checked" :  ""}
@@ -147,9 +176,46 @@ export function renderTreeChildren(items, parentKey, side, selectedItems, expand
         });
       }
 
+      // ✅ Render diagrams (optional)
+      if (diagrams.length > 0) {
+        diagrams.forEach((diagram, dIndex) => {
+          const diaKey = `${itemKey}-dia-${dIndex}`;
+          const diaChecked = selectedItems.has(diaKey);
+          const diaActive = activeItem === diaKey;
+
+          const name = diagram?.diagramName || "Диаграмма";
+          const type = diagram?.diagramType || "";
+          const label = type ? `📐 ${name} (${type})` : `📐 ${name}`;
+
+          html += `
+            <div class="tree-item-with-checkbox ${diaActive ? "tree-item-selected" : ""}"
+                 data-item-key="${diaKey}"
+                 data-side="${side}"
+                 ${buildItemDataAttrs(diagram)}
+                 ${buildDiagramContractAttrs(diagram, { ...ctx, packageId: item?.id ?? "" })}>
+              <span class="tree-toggle"> </span>
+              <input type="checkbox" class="tree-item-checkbox"
+                     ${diaChecked ? "checked" : ""}
+                     data-action="toggle-select">
+              <span class="tree-item-label" draggable="true">
+                ${label}
+              </span>
+            </div>
+          `;
+        });
+      }
+
       // Render sub-packages recursively
       if (subPackages.length > 0) {
-        html += renderTreeChildren(subPackages, itemKey, side, selectedItems, expandedItems, activeItem);
+        html += renderTreeChildren(
+          subPackages,
+          itemKey,
+          side,
+          selectedItems,
+          expandedItems,
+          activeItem,
+          { ...ctx, parentPackageId: item?.id ?? "" }
+        );
       }
 
       html += `</div>`;

@@ -25,8 +25,33 @@
   flex: 1;
   font-size: 14px;
   line-height: 1.35;
-  white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.toast__message {
+  white-space: pre-wrap;
+}
+
+.toast__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.toast__action {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font: inherit;
+  opacity: 0.9;
+}
+
+.toast__action:hover {
+  opacity: 1;
 }
 
 .toast__close {

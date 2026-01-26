@@ -10,9 +10,34 @@
 /**
  * @typedef {object} ClassContext
  * @property {string} classId
+ * @property {string|null} [packageId] - Parent package id from DOM (`data-package-id`).
  * @property {string} modelId
  * @property {string} profileId
  */
+
+/**
+ * Extracts class context from a rendered project-tree DOM node.
+ *
+ * UI-layer helper only: it reads `data-*` attributes emitted by renderers.
+ * Business logic should be implemented in the page/controller via callbacks.
+ *
+ * @param {HTMLElement} node - `.tree-structure-name[data-type="class"]` element.
+ * @returns {ClassContext|null}
+ */
+function getClassContextFromTreeNode(node) {
+  if (!(node instanceof HTMLElement)) return null;
+  const classId = node.getAttribute("data-class-id") || "";
+  if (!classId) return null;
+
+  const modelId = node.getAttribute("data-model-id") || "";
+  const profileId = node.getAttribute("data-profile-id") || "";
+
+  // `data-package-id` is rendered by the tree renderer. Empty string means "unknown/not provided".
+  const packageIdRaw = node.getAttribute("data-package-id") || "";
+  const packageId = packageIdRaw ? packageIdRaw : null;
+
+  return { classId, packageId, modelId, profileId };
+}
 
 function clampToViewport({ x, y, width, height, padding = 8 }) {
   const vw = window.innerWidth;
@@ -83,16 +108,13 @@ export function initClassTreeContextMenu(
     const node = target.closest('.tree-structure-name[data-type="class"]');
     if (!node) return;
 
-    const classId = node.getAttribute("data-class-id") || "";
-    const modelId = node.getAttribute("data-model-id") || "";
-    const profileId = node.getAttribute("data-profile-id") || "";
-
-    if (!classId) return;
+    const ctx = getClassContextFromTreeNode(node);
+    if (!ctx) return;
 
     e.preventDefault();
     e.stopPropagation();
 
-    openAt(e.clientX, e.clientY, { classId, modelId, profileId });
+    openAt(e.clientX, e.clientY, ctx);
   };
 
   const onDocMouseDown = (e) => {

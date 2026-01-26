@@ -365,7 +365,7 @@ function handleSaveAttributeEdit() {
   }
 
   if (onUpdateCallback && attrId) {
-    onUpdateCallback(attrId, updates);
+    onUpdateCallback(attrId, updates, { classId, context });
   }
 }
 

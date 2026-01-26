@@ -10,9 +10,34 @@
 /**
  * @typedef {object} PackageContext
  * @property {string} packageId
+ * @property {string|null} [parentPackageId] - Parent package id from DOM dataset (preferred for UI context).
  * @property {string} modelId
  * @property {string} profileId
  */
+
+/**
+ * Extracts package context from a rendered project-tree DOM node.
+ *
+ * UI-layer helper only: it reads `data-*` attributes that are emitted by renderers.
+ * Business logic should be implemented in the page/controller via callbacks.
+ *
+ * @param {HTMLElement} node - `.tree-structure-name[data-type="package"]` element.
+ * @returns {PackageContext|null}
+ */
+function getPackageContextFromTreeNode(node) {
+  if (!(node instanceof HTMLElement)) return null;
+  const packageId = node.getAttribute("data-package-id") || "";
+  if (!packageId) return null;
+
+  const modelId = node.getAttribute("data-model-id") || "";
+  const profileId = node.getAttribute("data-profile-id") || "";
+
+  // `data-parent-package-id` is rendered by the tree renderer. Empty string means "no parent".
+  const parentPackageIdRaw = node.getAttribute("data-parent-package-id") || "";
+  const parentPackageId = parentPackageIdRaw ? parentPackageIdRaw : null;
+
+  return { packageId, parentPackageId, modelId, profileId };
+}
 
 function clampToViewport({ x, y, width, height, padding = 8 }) {
   const vw = window.innerWidth;
@@ -29,6 +54,7 @@ function buildMenuEl() {
   el.innerHTML = `
     <button type="button" class="context-menu__item" data-action="create-package" role="menuitem">Создать пакет</button>
     <button type="button" class="context-menu__item" data-action="create-class" role="menuitem">Создать класс</button>
+    <button type="button" class="context-menu__item" data-action="create-enumeration" role="menuitem">Создать перечисление</button>
     <button type="button" class="context-menu__item" data-action="create-diagram" role="menuitem">Создать диаграмму</button>
     <div class="context-menu__sep" role="separator"></div>
     <button type="button" class="context-menu__item context-menu__item--danger" data-action="delete-package" role="menuitem">Удалить пакет</button>
@@ -44,6 +70,7 @@ function buildMenuEl() {
  * @param {object} callbacks
  * @param {(ctx: PackageContext) => void|Promise<void>} [callbacks.onCreatePackage]
  * @param {(ctx: PackageContext) => void|Promise<void>} [callbacks.onCreateClass]
+ * @param {(ctx: PackageContext) => void|Promise<void>} [callbacks.onCreateEnumeration]
  * @param {(ctx: PackageContext) => void|Promise<void>} [callbacks.onCreateDiagram]
  * @param {(ctx: PackageContext) => void|Promise<void>} [callbacks.onDeletePackage]
  * @returns {{ destroy: () => void }}
@@ -53,6 +80,7 @@ export function initPackageTreeContextMenu(
   {
     onCreatePackage,
     onCreateClass,
+    onCreateEnumeration,
     onCreateDiagram,
     onDeletePackage,
   } = {}
@@ -93,16 +121,13 @@ export function initPackageTreeContextMenu(
     const node = target.closest('.tree-structure-name[data-type="package"]');
     if (!node) return;
 
-    const packageId = node.getAttribute("data-package-id") || "";
-    const modelId = node.getAttribute("data-model-id") || "";
-    const profileId = node.getAttribute("data-profile-id") || "";
-
-    if (!packageId) return;
+    const ctx = getPackageContextFromTreeNode(node);
+    if (!ctx) return;
 
     e.preventDefault();
     e.stopPropagation();
 
-    openAt(e.clientX, e.clientY, { packageId, modelId, profileId });
+    openAt(e.clientX, e.clientY, ctx);
   };
 
   const onDocMouseDown = (e) => {
@@ -137,6 +162,8 @@ export function initPackageTreeContextMenu(
       await onCreatePackage(ctx);
     } else if (action === "create-class" && typeof onCreateClass === "function") {
       await onCreateClass(ctx);
+    } else if (action === "create-enumeration" && typeof onCreateEnumeration === "function") {
+      await onCreateEnumeration(ctx);
     } else if (action === "create-diagram" && typeof onCreateDiagram === "function") {
       await onCreateDiagram(ctx);
     } else if (action === "delete-package" && typeof onDeletePackage === "function") {

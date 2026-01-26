@@ -5,6 +5,15 @@
 > All code, documentation, and development must follow the data structures defined in this document.  
 > When in doubt about data structure definitions, always refer to this document as the source of truth.
 
+## Contract-first requirement (mandatory)
+
+If a feature requires data that does not exist in the current structures:
+
+1. **First update the data contract** (this document) and the corresponding data structures (export/import/persistence as needed).
+2. **Only then** implement the UI/service functionality that depends on that data.
+
+No “guessing”, tree traversal fallbacks, or ad-hoc derived fields in UI code to compensate for missing contract fields.
+
 Этот документ описывает все структуры данных, используемые в приложении.
 
 ---
@@ -164,7 +173,7 @@ interface RootPackage {
         "documentationRu": null,
         "details": null,
         "elementCount": 1,
-       "classes": [
+        "classes": [
             {
               "id": "EAID_9A4F1243_5579_4da3_9DAD_D4CBAB29CC65",
               "name": "BusArrangement",
@@ -201,7 +210,7 @@ interface Package {
   id: string; // Уникальный идентификатор
   name: string; // Название пакета (например, "Wires")
   type: string; // Фиксированное значение: Package
-  parentPackage?: string; // Имя родительского пакета (для вложенности)
+  parentPackageId?: string | null; // ID родительского пакета (для вложенности). В экспортируемых данных облегчает навигацию по дереву.
   documentation?: string; // Описание пакета
   documentationRu?: string; // Дополнительное описание на русском языке
   details?: string; // Справочная и поясняющая информация
@@ -277,7 +286,7 @@ interface Class {
   name: string; // Название класса (например, "ACLineSegment")
   type: string; // тип: Class, Enumeration
   stereotype: string; // Стереотип. Может иметь значение, назначенное  пользователем, например "rs"
-  packageName?: string; // Имя пакета, к которому принадлежит класс
+  packageId?: string | null; // ID пакета, к которому принадлежит класс (source of truth: Prisma ClassModel/ClassProfile.packageId)
   documentation?: string; // Описание класса
   documentationRu?: string; // Дополнительное описание на русском языке
   details?: string; // Справочная и поясняющая информация
@@ -285,11 +294,11 @@ interface Class {
   attributes: Attribute[]; // Атрибуты класса
   links: ClassLink[]; // ⚠️ производные данные (см. ClassLink); источник правды: GeneralizationLink/AssociationLink
   literals: Literal[]; // Значения в перечислении. заполняется только при типе Enumeration
-  profileRelations: ProfileItemRef[]; //массив ссылок на объекты профиля, которые основаны на данной модели. Может быть заполнен только в классе в составе модели
+  profileRelations: ProfileItemRef[]; // массив ссылок на объекты профиля, которые основаны на данной модели (экспортируется для классов в составе модели)
   modelId?: string; //идентификатор модели,  которой принадлежит класс (заполняется, если класс принадлежит модели)
   profileId?: string; // идентификатор профиля, которому принадлежит класс (заполняется, если класс принадлежит профилю)
-  refModelId?: string; //Идентификатор родительской модели.  Может быть заполнен только в классе в составе профиля
-  refModelItemId?: string; // Идентификатор родительского класса. Может быть заполнен только в классе в составе профиля
+  refModelId?: string; // Идентификатор родительской модели. Для классов в составе профиля — обязателен (FK на Model.id)
+  refModelItemId?: string; // Идентификатор родительского класса. Для классов в составе профиля — обязателен (FK на ClassModel.id в рамках refModelId)
 }
 ```
 
@@ -364,6 +373,7 @@ interface Class {
 ```typescript
 interface Attribute {
   id: string; // Уникальный идентификатор
+  classId: string; // ID родительского класса (source of truth: Prisma AttributeModel/AttributeProfile.classId)
   name: string; // Название атрибута (например, "r")
   dataType: string; // Тип данных (например, "Float", "String", "Integer"). Может быть назначен пользовательский тип данных
   dataTypeId?: string; //идентификатор типа данных в модели или профиле
@@ -406,7 +416,6 @@ interface Attribute {
 > - `AssociationLink` + `AssociationLinkEnd[]` (ассоциации)
 >
 > `ClassLink` может быть дополнительно обогащён бизнес-логикой (роль, имена ролей, описания концов и т.п.).
-> 
 
 Связи класса. справочная информация.
 
@@ -451,6 +460,7 @@ interface ClassLink {
 ```typescript
 interface Diagram {
   id: string; // Уникальный идентификатор
+  packageId?: string | null; // ID пакета, к которому принадлежит диаграмма (source of truth: Prisma DiagramModel/DiagramProfile.packageId)
   diagramType: string; // тип диаграммы - ClassDiagram,
   diagramName: string; // название диаграммы
   documentation?: string; // Описание диаграммы
@@ -468,7 +478,7 @@ interface Diagram {
   "diagramName": "Диаграмма связей пакета Asset",
   "documentation": "Описание назначения диаграммы",
   "details": null,
-  "diagramBody": null,  
+  "diagramBody": null
 }
 ```
 
@@ -679,6 +689,7 @@ interface ModelRef {
 interface Literal {
   name: string; //значение литерала
   id: string; // Уникальный идентификатор
+  classId: string; // ID родительского класса (source of truth: Prisma LiteralModel/LiteralProfile.classId)
   documentation?: string; // Описание значения
   initialValue?: string; // Значение по умолчанию
 }
@@ -697,6 +708,27 @@ interface Literal {
 ```
 
 ---
+
+## ProfileItemRef
+
+Ссылка на объект в профиле
+
+```typescript
+interface ProfileItemRef {
+  profileId: string; //идентификатор профиля
+  profileObjectId: string; // Уникальный идентификатор объекта в профиле
+}
+```
+
+### Пример:
+
+```json
+
+  {
+    "profileId": "EAID_8AD35949_9281_4c08_9F00_D16F95C75B3F",
+    "profileObjectId": "EAID_D396E6CF_BA6C_4c5c_84C4_058B7E88C5DC",
+  },
+```
 
 ## Enums
 
