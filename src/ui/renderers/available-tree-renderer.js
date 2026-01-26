@@ -7,6 +7,7 @@ import {
   buildContextDataAttrs,
   buildPackageContractAttrs,
   buildClassContractAttrs,
+  buildDiagramContractAttrs,
 } from "./tree-contract-attrs.js";
 
 function buildItemDataAttrs(item) {
@@ -115,12 +116,15 @@ export function renderTreeChildren(
       modelId: context?.modelId ?? item?.modelId ?? "",
       profileId: context?.profileId ?? item?.profileId ?? "",
       parentPackageId: context?.parentPackageId ?? "",
+      includeDiagrams: context?.includeDiagrams === true,
     };
 
     // ✅ Support both "classes" (from data) and "elements" (legacy)
     const classes = item.classes || [];
     const subPackages = item.subPackages || [];
-    const hasChildren = classes.length > 0 || subPackages.length > 0;
+    const includeDiagrams = ctx.includeDiagrams === true;
+    const diagrams = includeDiagrams ? item.diagrams || [] : [];
+    const hasChildren = classes.length > 0 || subPackages.length > 0 || diagrams.length > 0;
 
     html += `
       <div class="tree-item-with-checkbox ${isActive ? "tree-item-selected" : ""}"
@@ -166,6 +170,35 @@ export function renderTreeChildren(
                      data-action="toggle-select">
               <span class="tree-item-label" draggable="true">
                 📄 ${classLabel || "Класс"}
+              </span>
+            </div>
+          `;
+        });
+      }
+
+      // ✅ Render diagrams (optional)
+      if (diagrams.length > 0) {
+        diagrams.forEach((diagram, dIndex) => {
+          const diaKey = `${itemKey}-dia-${dIndex}`;
+          const diaChecked = selectedItems.has(diaKey);
+          const diaActive = activeItem === diaKey;
+
+          const name = diagram?.diagramName || "Диаграмма";
+          const type = diagram?.diagramType || "";
+          const label = type ? `📐 ${name} (${type})` : `📐 ${name}`;
+
+          html += `
+            <div class="tree-item-with-checkbox ${diaActive ? "tree-item-selected" : ""}"
+                 data-item-key="${diaKey}"
+                 data-side="${side}"
+                 ${buildItemDataAttrs(diagram)}
+                 ${buildDiagramContractAttrs(diagram, { ...ctx, packageId: item?.id ?? "" })}>
+              <span class="tree-toggle"> </span>
+              <input type="checkbox" class="tree-item-checkbox"
+                     ${diaChecked ? "checked" : ""}
+                     data-action="toggle-select">
+              <span class="tree-item-label" draggable="true">
+                ${label}
               </span>
             </div>
           `;

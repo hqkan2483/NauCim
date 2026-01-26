@@ -569,9 +569,21 @@ function navigateToChild(children, pathParts) {
       }
       return cls || null;
 
+    } else if (nextType === "dia") {
+      const diaIndex = parseInt(rest[1]);
+      const diagrams = pkg.diagrams || [];
+      const dia = diagrams[diaIndex];
+      if (!dia) {
+        console.warn(`  ⚠️ Diagram not found at index ${diaIndex}`);
+      }
+      return dia || null;
+
     } else if (nextType === "pkg") {
       const subPackages = pkg.subPackages || pkg.children || [];
       return navigateToChild(subPackages, rest);
+    } else {
+      console.warn("  ⚠️ Unexpected child path type in package:", nextType);
+      return null;
     }
   }
 

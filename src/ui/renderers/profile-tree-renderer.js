@@ -29,6 +29,11 @@ export function renderProfileTree(profileData, selectedItems, expandedItems, act
     selectedItems,
     expandedItems,
     activeItem,
-    { modelId: "", profileId: profileData?.id ?? "", parentPackageId: "" }
+    {
+      modelId: "",
+      profileId: profileData?.id ?? "",
+      parentPackageId: "",
+      includeDiagrams: true,
+    }
   );
 }

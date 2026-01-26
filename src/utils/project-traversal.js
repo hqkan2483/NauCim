@@ -209,3 +209,19 @@ export function findDiagramIdByName(project, { context, modelId = "", profileId 
 
   return foundId;
 }
+
+/**
+ * Returns true if a package contains any subpackages, classes or diagrams.
+ *
+ * Used to show an extra confirmation prompt before deleting a package.
+ *
+ * @param {object} pkg
+ * @returns {boolean}
+ */
+export function packageHasContents(pkg) {
+  if (!pkg) return false;
+  if (Array.isArray(pkg.subPackages) && pkg.subPackages.length > 0) return true;
+  if (Array.isArray(pkg.classes) && pkg.classes.length > 0) return true;
+  if (Array.isArray(pkg.diagrams) && pkg.diagrams.length > 0) return true;
+  return false;
+}
