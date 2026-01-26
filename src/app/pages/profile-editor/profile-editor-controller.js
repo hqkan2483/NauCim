@@ -12,14 +12,11 @@ import { getQueryParam } from "../../../utils/url-helper.js";
 import { renderAvailableTree as renderAvailableTreeHTML } from "../../../ui/renderers/available-tree-renderer.js";
 import { renderProfileTree as renderProfileTreeHTML } from "../../../ui/renderers/profile-tree-renderer.js";
 import {
-  transferItemsToProfile,
-  removeItemsFromProfile,
   validateProfile,
   prepareProfileForSave,
   getItemDetailsByKey,
 } from "../../../services/profile-editor-service.js";
 import { createProfileClass, deleteProfileClass } from "../../../services/class-service.js";
-import { formatTransferReport } from "../../../services/profile-editor-transfer-report.js";
 import { initEditorTree } from "../../../ui/components/editor-tree.js";
 import {
   initDetailsPanel,
@@ -38,6 +35,7 @@ import {
   openCreateDiagramModal,
 } from "../../../ui/components/create-diagram-modal.js";
 import { showToast } from "../../../ui/components/toast.js";
+import { openReportModal } from "../../../ui/components/report-modal.js";
 import { initEditorTreeContextMenu } from "../../../ui/components/editor-tree-context-menu.js";
 import {
   createProfileSubpackage as createProfileSubpackageInBackend,
@@ -150,7 +148,7 @@ export async function initProfileEditorPage() {
   currentProjectId = projectId;
 
   // Load modal templates that this page needs.
-  await loadModals(["create-package-modal", "create-diagram-modal"]);
+  await loadModals(["create-package-modal", "create-diagram-modal", "report-modal"]);
   initModalSystem();
   bindModalTriggers(document);
 
@@ -213,6 +211,40 @@ function isProfileClassItem(item) {
   const refModelId = String(item?.refModelId ?? "").trim();
   const refModelItemId = String(item?.refModelItemId ?? "").trim();
   return Boolean(id && name && refModelId && refModelItemId);
+}
+
+/**
+ * Render a short preview of item names suitable for a toast.
+ *
+ * @param {string[]} names
+ * @param {number} max
+ * @returns {string}
+ */
+function formatNamePreview(names, max = 4) {
+  const list = Array.isArray(names) ? names.map((x) => String(x || "").trim()).filter(Boolean) : [];
+  if (!list.length) return "";
+  const shown = list.slice(0, max);
+  const rest = list.length - shown.length;
+  return rest > 0 ? `${shown.join(", ")} (+${rest})` : shown.join(", ");
+}
+
+/**
+ * Render a short preview for skipped/failed lists.
+ *
+ * @param {{name: string, reason: string}[]} items
+ * @param {number} max
+ * @returns {string}
+ */
+function formatIssuePreview(items, max = 3) {
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) return "";
+  const shown = list.slice(0, max).map((x) => {
+    const n = String(x?.name ?? "").trim();
+    const r = String(x?.reason ?? "").trim();
+    return r ? `${n} (${r})` : n;
+  });
+  const rest = list.length - shown.length;
+  return rest > 0 ? `${shown.join("; ")}; (+${rest})` : shown.join("; ");
 }
 
 /**
@@ -1067,18 +1099,18 @@ function bindEvents() {
 
 async function transferToProfile() {
   if (selectedLeftItems.size === 0) {
-    alert("Выберите классы для переноса");
+    showToast("Выберите классы для переноса", { type: "error" });
     return;
   }
 
   if (!currentProjectId || !currentProfileId) {
-    alert("Не удалось определить текущий проект/профиль");
+    showToast("Не удалось определить текущий проект/профиль", { type: "error" });
     return;
   }
 
   const targetPackageId = resolveTargetProfilePackageId();
   if (!targetPackageId) {
-    alert("Не найден целевой пакет профиля (корневой пакет отсутствует)");
+    showToast("Не найден целевой пакет профиля (корневой пакет отсутствует)", { type: "error" });
     return;
   }
 
@@ -1098,7 +1130,7 @@ async function transferToProfile() {
   const modelClassKeys = selectedKeys.filter((k) => String(k).startsWith("left-model-") && String(k).includes("-cls-"));
 
   if (modelClassKeys.length === 0) {
-    alert("Выберите хотя бы один класс модели (в левом дереве)");
+    showToast("Выберите хотя бы один класс модели (в левом дереве)", { type: "error" });
     return;
   }
 
@@ -1176,30 +1208,49 @@ async function transferToProfile() {
   selectedLeftItems.clear();
   leftTreeComponent?.clearSelection?.();
 
-  const lines = [];
-  if (transferred.length) lines.push(`Перенесено в профиль: ${transferred.join(", ")}`);
-  if (skipped.length) lines.push(`Не перенесено: ${skipped.map((x) => `${x.name} (${x.reason})`).join("; ")}`);
-  if (failed.length) lines.push(`Ошибки: ${failed.map((x) => `${x.name} (${x.reason})`).join("; ")}`);
-
-  if (lines.length) {
-    alert(lines.join("\n"));
-  }
-}
-
-function showTransferReport(report) {
-  const message = formatTransferReport(report);
-  if (!message) return;
-  alert(message);
+  // Report via toasts
+  const summary = `Перенос завершён: добавлено ${transferred.length}, пропущено ${skipped.length}, ошибок ${failed.length}`;
+  showToast(summary, {
+    type: failed.length ? "error" : skipped.length ? "info" : "success",
+    timeoutMs: 7000,
+    actions: [
+      {
+        label: "Подробнее",
+        onClick: () => {
+          openReportModal({
+            title: "Отчёт: перенос классов в профиль",
+            summaryLines: [
+              summary,
+              `Добавлено: ${transferred.length}${transferred.length ? ` (${formatNamePreview(transferred, 8)})` : ""}`,
+              `Пропущено: ${skipped.length}${skipped.length ? ` (${formatIssuePreview(skipped, 8)})` : ""}`,
+              `Ошибки: ${failed.length}${failed.length ? ` (${formatIssuePreview(failed, 8)})` : ""}`,
+            ],
+            sections: [
+              { title: `Добавлено (${transferred.length})`, items: transferred.map((name) => ({ text: name, kind: "success" })) },
+              {
+                title: `Пропущено (${skipped.length})`,
+                items: skipped.map((x) => ({ text: `${x.name}${x.reason ? ` — ${x.reason}` : ""}`, kind: "info" })),
+              },
+              {
+                title: `Ошибки (${failed.length})`,
+                items: failed.map((x) => ({ text: `${x.name}${x.reason ? ` — ${x.reason}` : ""}`, kind: "error" })),
+              },
+            ],
+          });
+        },
+      },
+    ],
+  });
 }
 
 async function removeFromProfile() {
   if (selectedRightItems.size === 0) {
-    alert("Выберите классы для исключения из профиля");
+    showToast("Выберите классы для исключения из профиля", { type: "error" });
     return;
   }
 
   if (!currentProjectId || !currentProfileId) {
-    alert("Не удалось определить текущий проект/профиль");
+    showToast("Не удалось определить текущий проект/профиль", { type: "error" });
     return;
   }
 
@@ -1208,7 +1259,7 @@ async function removeFromProfile() {
   const classKeys = selectedKeys.filter((k) => String(k).includes("-cls-"));
 
   if (classKeys.length === 0) {
-    alert("Выберите хотя бы один класс в правом дереве");
+    showToast("Выберите хотя бы один класс в правом дереве", { type: "error" });
     return;
   }
 
@@ -1267,11 +1318,39 @@ async function removeFromProfile() {
   selectedRightItems.clear();
   rightTreeComponent?.clearSelection?.();
 
-  const lines = [];
-  if (removed.length) lines.push(`Исключены из профиля: ${removed.join(", ")}`);
-  if (skipped.length) lines.push(`Не исключены: ${skipped.map((x) => `${x.name} (${x.reason})`).join("; ")}`);
-  if (failed.length) lines.push(`Ошибки: ${failed.map((x) => `${x.name} (${x.reason})`).join("; ")}`);
-  if (lines.length) alert(lines.join("\n"));
+  // Report via toasts
+  const summary = `Исключение завершено: удалено ${removed.length}, пропущено ${skipped.length}, ошибок ${failed.length}`;
+  showToast(summary, {
+    type: failed.length ? "error" : skipped.length ? "info" : "success",
+    timeoutMs: 7000,
+    actions: [
+      {
+        label: "Подробнее",
+        onClick: () => {
+          openReportModal({
+            title: "Отчёт: исключение классов из профиля",
+            summaryLines: [
+              summary,
+              `Удалено: ${removed.length}${removed.length ? ` (${formatNamePreview(removed, 8)})` : ""}`,
+              `Пропущено: ${skipped.length}${skipped.length ? ` (${formatIssuePreview(skipped, 8)})` : ""}`,
+              `Ошибки: ${failed.length}${failed.length ? ` (${formatIssuePreview(failed, 8)})` : ""}`,
+            ],
+            sections: [
+              { title: `Удалено (${removed.length})`, items: removed.map((name) => ({ text: name, kind: "success" })) },
+              {
+                title: `Пропущено (${skipped.length})`,
+                items: skipped.map((x) => ({ text: `${x.name}${x.reason ? ` — ${x.reason}` : ""}`, kind: "info" })),
+              },
+              {
+                title: `Ошибки (${failed.length})`,
+                items: failed.map((x) => ({ text: `${x.name}${x.reason ? ` — ${x.reason}` : ""}`, kind: "error" })),
+              },
+            ],
+          });
+        },
+      },
+    ],
+  });
 }
 
 /**
@@ -1282,7 +1361,11 @@ async function handleSaveProfile() {
   const validation = validateProfile(profileData);
 
   if (!validation.valid) {
-    alert("Ошибки валидации:\n" + validation.errors.join("\n"));
+    const errors = Array.isArray(validation.errors) ? validation.errors : [];
+    const shown = errors.slice(0, 4);
+    const rest = errors.length - shown.length;
+    const preview = rest > 0 ? `${shown.join("; ")} (+${rest})` : shown.join("; ");
+    showToast(`Ошибки валидации: ${preview || "(подробности в консоли)"}`, { type: "error", timeoutMs: 10000 });
     console.error("❌ Validation errors:", validation.errors);
     return;
   }
@@ -1304,7 +1387,7 @@ async function handleSaveProfile() {
         throw new Error("Не удалось обновить профиль");
       }
 
-      alert("Профиль успешно обновлён!");
+      showToast("Профиль успешно обновлён", { type: "success" });
     } else {
       // Create new profile
       const newProfile = await createProfile(currentProjectId, preparedProfile);
@@ -1314,14 +1397,14 @@ async function handleSaveProfile() {
 
       profileData.id = newProfile.id;
 
-      alert("Профиль успешно создан!");
+      showToast("Профиль успешно создан", { type: "success" });
     }
 
     // Redirect back to project details
     // window.location.href = `project-details.html?id=${currentProjectId}`;
   } catch (error) {
     console.error("❌ Error saving profile:", error);
-    alert("Ошибка при сохранении профиля: " + error.message);
+    showToast(`Ошибка при сохранении профиля: ${error.message}`, { type: "error", timeoutMs: 10000 });
   }
 }
 
