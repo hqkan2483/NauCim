@@ -79,12 +79,19 @@ function initEditorTree(containerId, options = {}) {
 
     /**
      * Set checkbox state for a node and optionally emit onCheck when "checked" changes.
+      *
+      * Note: disabled checkboxes are treated as non-interactive and are not mutated
+      * by this component (including parent subtree toggles).
      * @param {string} itemKey - Node key.
      * @param {{checked?: boolean, indeterminate?: boolean, emitCheck?: boolean}} state - Desired state.
      */
     setCheckboxState(itemKey, state = {}) {
       const checkbox = this.getCheckboxEl(itemKey);
       if (!checkbox) return;
+
+      // Disabled nodes are not user-selectable and should not be mutated by
+      // parent selection toggles. This keeps "blocked" classes stable.
+      if (checkbox.disabled) return;
 
       const nextChecked = state.checked ?? checkbox.checked;
       const nextIndeterminate = state.indeterminate ?? checkbox.indeterminate;
@@ -138,6 +145,8 @@ function initEditorTree(containerId, options = {}) {
      * Recompute checkbox state (checked/indeterminate) for a node based on direct children.
      * - checked=true when ALL direct children are checked
      * - indeterminate=true when SOME direct children are checked or indeterminate
+      *
+      * Disabled child checkboxes are ignored (they do not affect parent indicators).
      * @param {string} itemKey - Node key.
      */
     refreshStateForItem(itemKey) {
@@ -153,7 +162,7 @@ function initEditorTree(containerId, options = {}) {
 
       const childCheckboxes = childKeys
         .map((k) => this.getCheckboxEl(k))
-        .filter(Boolean);
+        .filter((cb) => cb && !cb.disabled);
 
       if (childCheckboxes.length === 0) {
         this.setCheckboxState(itemKey, { indeterminate: false });
@@ -267,6 +276,10 @@ function initEditorTree(containerId, options = {}) {
         if (treeItem) {
           const itemKey = treeItem.getAttribute("data-item-key");
           const checkbox = treeItem.querySelector(".tree-item-checkbox");
+          if (checkbox instanceof HTMLInputElement && checkbox.disabled) {
+            e.stopPropagation();
+            return;
+          }
           const isChecked = checkbox?.checked || false;
 
           // ✅ Call callback but DON'T re-render

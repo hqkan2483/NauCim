@@ -934,7 +934,12 @@ function showNoProjectWarning() {
 // ============================================================
 
 /**
- * Render available models/profiles tree
+ * Render available models/profiles tree.
+ *
+ * While rendering the left tree, we compare class names against the current
+ * profile's class set. If a class name is already present in the profile,
+ * the corresponding checkbox in the left tree becomes disabled to prevent
+ * duplicate transfers.
  */
 function renderAvailableTree() {
   const container = document.getElementById("available-tree");
@@ -943,11 +948,17 @@ function renderAvailableTree() {
     return;
   }
 
+  // Profile-wide set of normalized class names that are already in the profile.
+  // Used only for UI (disabling checkboxes); business rules are still enforced
+  // in the transfer operation as well.
+  const disabledClassNames = collectProfileClassNames(profileData.items);
+
   const html = renderAvailableTreeHTML(
     availableData,
     selectedLeftItems,
     expandedLeftItems,
-    activeLeftItem
+    activeLeftItem,
+    { disabledClassNames }
   );
 
   container.innerHTML = html;

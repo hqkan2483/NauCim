@@ -10,6 +10,28 @@ import {
   buildDiagramContractAttrs,
 } from "./tree-contract-attrs.js";
 
+/**
+ * Normalize a class name for safe comparisons.
+ *
+ * This is intentionally small and renderer-local: the controller/service layer
+ * provides the canonical set of already-in-profile names, while the renderer
+ * normalizes current node labels for lookup.
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+function normalizeClassName(name) {
+  return String(name ?? "").trim().toLowerCase();
+}
+
+/**
+ * Tooltip message shown for disabled class checkboxes.
+ * @returns {string}
+ */
+function getDisabledClassTooltip() {
+  return "Класс уже включён в профиль";
+}
+
 function buildItemDataAttrs(item) {
   return `
     data-item-id="${item?.id || ""}"
@@ -17,7 +39,7 @@ function buildItemDataAttrs(item) {
   `;
 }
 
-function renderRootItem(item, selectedItems, expandedItems, activeItem) {
+function renderRootItem(item, selectedItems, expandedItems, activeItem, options = {}) {
   const itemKey = `left-${item.type}-${item.id}`;
   const isChecked = selectedItems.has(itemKey);
   const isExpanded = expandedItems.has(itemKey);
@@ -55,7 +77,8 @@ function renderRootItem(item, selectedItems, expandedItems, activeItem) {
               selectedItems,
               expandedItems,
               activeItem,
-              { ...ctx, parentPackageId: "" }
+              { ...ctx, parentPackageId: "" },
+              options
             )}
           </div>`
         : ""
@@ -69,15 +92,22 @@ function renderRootItem(item, selectedItems, expandedItems, activeItem) {
  * @param {Set} selectedItems - Selected items
  * @param {Set} expandedItems - Expanded items
  * @param {string} activeItem - Active item key
+ * @param {{ disabledClassNames?: Set<string> }} [options]
  * @returns {string} HTML string
  */
-export function renderAvailableTree(availableData, selectedItems, expandedItems, activeItem) {
+export function renderAvailableTree(
+  availableData,
+  selectedItems,
+  expandedItems,
+  activeItem,
+  options = {}
+) {
   if (! availableData || availableData.length === 0) {
     return '<div class="text-center text-muted">Нет доступных данных</div>';
   }
 
   return availableData
-    .map((item) => renderRootItem(item, selectedItems, expandedItems, activeItem))
+    .map((item) => renderRootItem(item, selectedItems, expandedItems, activeItem, options))
     .join("");
 }
 
@@ -89,6 +119,8 @@ export function renderAvailableTree(availableData, selectedItems, expandedItems,
  * @param {Set} selectedItems - Selected items
  * @param {Set} expandedItems - Expanded items
  * @param {string} activeItem - Active item key
+ * @param {object} context - Rendering context (model/profile ids, parent ids, flags)
+ * @param {{ disabledClassNames?: Set<string> }} [options] - Extra rendering options.
  * @returns {string} HTML string
  */
 export function renderTreeChildren(
@@ -98,7 +130,8 @@ export function renderTreeChildren(
   selectedItems,
   expandedItems,
   activeItem,
-  context = {}
+  context = {},
+  options = {}
 ) {
   let html = "";
 
@@ -151,7 +184,16 @@ export function renderTreeChildren(
       if (classes.length > 0) {
         classes.forEach((cls, clsIndex) => {
           const clsKey = `${itemKey}-cls-${clsIndex}`; // ✅ Use "cls"
-          const clsChecked = selectedItems.has(clsKey);
+          const disabledClassNames = options?.disabledClassNames;
+          const isDisabled =
+            side === "left" &&
+            disabledClassNames instanceof Set &&
+            disabledClassNames.has(normalizeClassName(cls?.name));
+
+          const disabledTooltip = isDisabled ? getDisabledClassTooltip() : "";
+
+          // Disabled nodes are explicitly not selectable.
+          const clsChecked = !isDisabled && selectedItems.has(clsKey);
           const clsActive = activeItem === clsKey;
 
           const classLabel = cls.stereotype
@@ -159,14 +201,17 @@ export function renderTreeChildren(
             : cls.name;
 
           html += `
-            <div class="tree-item-with-checkbox ${clsActive ?  "tree-item-selected" :  ""}"
+            <div class="tree-item-with-checkbox ${clsActive ?  "tree-item-selected" :  ""} ${isDisabled ? "tree-item-with-checkbox--disabled" : ""}"
                  data-item-key="${clsKey}"
                  data-side="${side}"
+                 ${disabledTooltip ? `title="${disabledTooltip}"` : ""}
                ${buildItemDataAttrs(cls)}
                ${buildClassContractAttrs(cls, { ...ctx, packageId: item?.id ?? "" })}>
               <span class="tree-toggle"> </span>
               <input type="checkbox" class="tree-item-checkbox"
                      ${clsChecked ? "checked" :  ""}
+                     ${isDisabled ? "disabled" : ""}
+                     ${disabledTooltip ? `title="${disabledTooltip}"` : ""}
                      data-action="toggle-select">
               <span class="tree-item-label" draggable="true">
                 📄 ${classLabel || "Класс"}
@@ -214,7 +259,8 @@ export function renderTreeChildren(
           selectedItems,
           expandedItems,
           activeItem,
-          { ...ctx, parentPackageId: item?.id ?? "" }
+          { ...ctx, parentPackageId: item?.id ?? "" },
+          options
         );
       }
 
