@@ -57,7 +57,7 @@ function renderClassForm(cls) {
       : [];
 
     if (relations.length === 0) {
-      return '<span class="text-muted">Не используется </span>';
+      return '<span class="text-muted no-content">Не используется </span>';
     }
 
     return relations
@@ -117,7 +117,7 @@ function renderClassForm(cls) {
 
         <div class="form-row">
           <div class="form-cell">
-            <div class="form-multiselect" id="cls-used-in-profiles">
+            <div class="form-multiselect form-group" id="cls-used-in-profiles">
               <span class="form-label">Используется в  профилях:  </span>
               ${renderUsedInProfiles(cls)}
             </div>
