@@ -787,8 +787,9 @@ function initComponents() {
 
       "model-item-general": (item) => detailsPanelComponent?.renderModelDetails(item),
       "model-item-attributes": (item) =>
-        detailsPanelComponent?.renderModelAttributes(item),
-      "model-item-links": (item) => detailsPanelComponent?.renderModelLinks(item),
+        detailsPanelComponent?.renderModelAttributes(item, getModelTabRenderOptions("model-item-attributes")),
+      "model-item-links": (item) =>
+        detailsPanelComponent?.renderModelLinks(item, getModelTabRenderOptions("model-item-links")),
       "model-item-enumeration": (item) =>
         detailsPanelComponent?.renderModelEnumeration(item),
     };
@@ -809,6 +810,10 @@ function initComponents() {
       const item = getItemDetailsByKey(activeKey, availableData, profileData);
       const render = TAB_DISPATCH[tabName];
       if (render) render(item);
+
+      if (side === SIDE_LEFT) {
+        updateAvailableDetailsFooter();
+      }
     };
 
     detailsPanelComponent = initDetailsPanel("details-panel", {
@@ -819,6 +824,135 @@ function initComponents() {
       defaultTab: "model-item-general",
     });
   }
+}
+
+/**
+ * Get the `data-profile-class-state` of the currently active LEFT tree node.
+ *
+ * Returns null if there is no active node or the active node is not a class.
+ *
+ * @returns {"not-in-profile"|"in-profile"|"in-profile-other-model"|null}
+ */
+function getActiveLeftProfileClassState() {
+  const key = String(activeLeftItem ?? "").trim();
+  if (!key) return null;
+
+  const el = leftTreeComponent?.getTreeItemEl?.(key);
+  if (!(el instanceof HTMLElement)) return null;
+
+  const state = String(el.getAttribute("data-profile-class-state") || "").trim();
+  if (state === "not-in-profile" || state === "in-profile" || state === "in-profile-other-model") {
+    return state;
+  }
+
+  return null;
+}
+
+/**
+ * Render options for model-item tabs depending on current left selection.
+ *
+ * Requirement: when a class is NOT in the profile, per-attribute/per-link
+ * selection and transfer must be unavailable.
+ *
+ * @param {string} tabName
+ * @returns {{ selectable?: boolean }}
+ */
+function getModelTabRenderOptions(tabName) {
+  const state = getActiveLeftProfileClassState();
+  const forbidPerItemSelection = state === "not-in-profile" || state === "in-profile-other-model";
+  const isAttrOrLinks = tabName === "model-item-attributes" || tabName === "model-item-links";
+  return forbidPerItemSelection && isAttrOrLinks ? { selectable: false } : {};
+}
+
+/**
+ * Render/update available-item-details footer according to:
+ * - selected class `data-profile-class-state`
+ * - active tab inside available-item-details
+ */
+function updateAvailableDetailsFooter() {
+  const footer = document.getElementById("details-panel-footer");
+  if (!(footer instanceof HTMLElement)) return;
+
+  const activeTab = getActiveDetailsTabName("available-item-details");
+  const state = getActiveLeftProfileClassState();
+
+  if (!state) {
+    footer.innerHTML = "";
+    return;
+  }
+
+  const isAttributesTab = activeTab === "model-item-attributes";
+  const isLinksTab = activeTab === "model-item-links";
+  const isGeneralTab = activeTab === "model-item-general";
+
+  // When class is absent from profile:
+  // - General tab: allow "transfer class" + "edit in model"
+  // - Attributes/Links/Enumeration: only "edit in model"
+  if (state === "not-in-profile") {
+    const showTransfer = isGeneralTab;
+    footer.innerHTML = `
+      ${showTransfer ? `<button type="button" class="btn btn-primary btn--class-details" id="transfer-to-profile-btn">→ Перенести в профиль</button>` : ""}
+      <button type="button" class="btn btn-primary btn--class-details" id="edit-profile-btn"> Редактировать в модели </button>
+    `;
+    return;
+  }
+
+  // When class is already present in the profile but refs do not match:
+  // transfer is blocked; provide quick navigation to profile + edit in model.
+  if (state === "in-profile-other-model") {
+    footer.innerHTML = `
+      <button type="button" class="btn btn-primary btn--class-details" id="edit-profile-btn"> Редактировать в модели </button>
+      <button type="button" class="btn btn-primary btn--class-details" id="show-in-profile-btn"> Показать в профиле </button>
+    `;
+    return;
+  }
+
+  // When class is already present in the profile and belongs to this model:
+  // - General: Edit + Show
+  // - Attributes/Links: Transfer selected items + Edit + Show
+  if (state === "in-profile") {
+    const showTransfer = isAttributesTab || isLinksTab;
+    footer.innerHTML = `
+      ${showTransfer ? `<button type="button" class="btn btn-primary btn--class-details" id="transfer-to-profile-btn">→ Перенести в профиль</button>` : ""}
+      <button type="button" class="btn btn-primary btn--class-details" id="edit-profile-btn"> Редактировать в модели </button>
+      <button type="button" class="btn btn-primary btn--class-details" id="show-in-profile-btn"> Показать в профиле </button>
+    `;
+    return;
+  }
+
+  footer.innerHTML = "";
+}
+
+/**
+ * Stub: transfer selected attributes from model class to profile class.
+ * Frontend-only per current requirement.
+ */
+function transferSelectedAttributesToProfileStub() {
+  const scope = document.getElementById("available-item-details");
+  if (!(scope instanceof HTMLElement)) return;
+  const checked = Array.from(scope.querySelectorAll('input.attribute-checkbox[type="checkbox"]:checked'));
+  const ids = checked.map((el) => String(el.getAttribute("data-attr-id") || "").trim()).filter(Boolean);
+  if (!ids.length) {
+    showToast("Выберите хотя бы один атрибут", { type: "error" });
+    return;
+  }
+  showToast(`(Заглушка) Перенос атрибутов в профиль: ${ids.length}`, { type: "info", timeoutMs: 5000 });
+}
+
+/**
+ * Stub: transfer selected links from model class to profile class.
+ * Frontend-only per current requirement.
+ */
+function transferSelectedLinksToProfileStub() {
+  const scope = document.getElementById("available-item-details");
+  if (!(scope instanceof HTMLElement)) return;
+  const checked = Array.from(scope.querySelectorAll('input.link-checkbox[type="checkbox"]:checked'));
+  const ids = checked.map((el) => String(el.getAttribute("data-link-id") || "").trim()).filter(Boolean);
+  if (!ids.length) {
+    showToast("Выберите хотя бы одну связь", { type: "error" });
+    return;
+  }
+  showToast(`(Заглушка) Перенос связей в профиль: ${ids.length}`, { type: "info", timeoutMs: 5000 });
 }
 
 /**
@@ -1320,10 +1454,13 @@ function loadItemDetails(itemKey, side) {
 
   if (side === SIDE_LEFT) {
     detailsPanelComponent.renderModelDetails(item);
-    detailsPanelComponent.renderModelAttributes(item);
-    detailsPanelComponent.renderModelLinks(item);
+    detailsPanelComponent.renderModelAttributes(item, getModelTabRenderOptions("model-item-attributes"));
+    detailsPanelComponent.renderModelLinks(item, getModelTabRenderOptions("model-item-links"));
     detailsPanelComponent.renderModelEnumeration(item);
     updateDetailsTabsForSide(SIDE_LEFT, item);
+
+    // Tabs may change during updateDetailsTabsForSide -> update footer afterwards.
+    updateAvailableDetailsFooter();
     return;
   }
 
@@ -1603,10 +1740,8 @@ function bindEvents() {
   }
 
   // Transfer buttons
-  const transferBtn = document.getElementById("transfer-to-profile-btn");
-  if (transferBtn) {
-    transferBtn.addEventListener("click", transferToProfile);
-  }
+  // NOTE: transfer button lives in details panel footer and can be re-rendered,
+  // so its click is handled by delegated listener on #details-panel.
 
   const removeBtn = document.getElementById("remove-from-profile-btn");
   if (removeBtn) {
@@ -1691,6 +1826,30 @@ function bindEvents() {
     detailsPanel.addEventListener("click", (e) => {
       const target = e.target instanceof HTMLElement ? e.target : null;
       if (!target) return;
+
+      const transferBtn = target.closest("#transfer-to-profile-btn");
+      if (transferBtn) {
+        const tab = getActiveDetailsTabName("available-item-details");
+        const state = getActiveLeftProfileClassState();
+
+        if (state === "not-in-profile" && tab === "model-item-general") {
+          transferToProfile();
+          return;
+        }
+
+        if (state === "in-profile" && tab === "model-item-attributes") {
+          transferSelectedAttributesToProfileStub();
+          return;
+        }
+
+        if (state === "in-profile" && tab === "model-item-links") {
+          transferSelectedLinksToProfileStub();
+          return;
+        }
+
+        showToast("Перенос недоступен для текущего состояния/вкладки", { type: "info" });
+        return;
+      }
 
       const showInProfileBtn = target.closest("#show-in-profile-btn");
       if (showInProfileBtn) {

@@ -5,15 +5,24 @@
 
 import { esc } from "../../utils/text-utils.js";
 
-export function renderAttributesTable(attributes) {
+/**
+ * Render attributes table.
+ *
+ * @param {Array} attributes
+ * @param {{ selectable?: boolean }} [options]
+ * @returns {string}
+ */
+export function renderAttributesTable(attributes, options = {}) {
   if (!Array.isArray(attributes) || attributes.length === 0) {
     return `<div class="attributes-table-empty">Нет атрибутов</div>`;
   }
 
+  const selectable = options?.selectable !== false;
+
   let html = `
     <div class="attributes-table">
       <div class="attributes-table-header">
-        <div>☑️</div>
+        <div>${selectable ? "☑️" : ""}</div>
         <div>Имя</div>
         <div>Тип</div>
         <div>Мн.</div>
@@ -30,7 +39,7 @@ export function renderAttributesTable(attributes) {
     html += `
       <div class="attributes-table-row">
         <div class="attributes-table-cell-checkbox">
-          <input type="checkbox" class="attribute-checkbox" data-attr-id="${id}">
+          ${selectable ? `<input type="checkbox" class="attribute-checkbox" data-attr-id="${id}">` : ""}
         </div>
         <div class="attributes-table-cell">
           <strong>${name}</strong>
@@ -53,7 +62,14 @@ export function renderAttributesTable(attributes) {
 }
 
 
-export function renderLinksTable(links) {
+/**
+ * Render links table.
+ *
+ * @param {Array} links
+ * @param {{ selectable?: boolean }} [options]
+ * @returns {string}
+ */
+export function renderLinksTable(links, options = {}) {
   if (!Array.isArray(links) || links.length === 0) {
     return `
       <div class="attributes-table-empty">
@@ -62,10 +78,12 @@ export function renderLinksTable(links) {
     `;
   }
 
+  const selectable = options?.selectable !== false;
+
   let html = `
     <div class="links-table">
       <div class="links-table-header">
-        <div>☑️</div>
+        <div>${selectable ? "☑️" : ""}</div>
         <div>Роль</div>
         <div>Тип</div>
         <div>Целевой класс</div>
@@ -87,7 +105,7 @@ export function renderLinksTable(links) {
     html += `
       <div class="links-table-row">
         <div class="links-table-cell-checkbox">
-          <input type="checkbox" class="link-checkbox" data-link-id="${linkId}">
+          ${selectable ? `<input type="checkbox" class="link-checkbox" data-link-id="${linkId}">` : ""}
         </div>
         <div class="links-table-cell">
           <strong>${targetClassRoleName || "—"}</strong>

@@ -30,7 +30,7 @@ function renderEmpty(text) {
  * @returns {Object} Details panel instance
  */
 
-// todo - не проверял
+
 export function initDetailsPanel(containerId, options = {}) {
   const container = document.getElementById(containerId);
   if (!container) {
@@ -44,14 +44,14 @@ export function initDetailsPanel(containerId, options = {}) {
         ? renderModelItemDetailsForm(item)
         : renderEmpty("Выберите элемент в дереве для просмотра информации."),
 
-    "model-item-attributes": (item) =>
+    "model-item-attributes": (item, renderOptions = {}) =>
       item
-        ? renderAttributesTable(item.attributes)
+        ? renderAttributesTable(item.attributes, renderOptions)
         : renderEmpty("Выберите элемент в дереве для просмотра атрибутов."),
 
-    "model-item-links": (item) =>
+    "model-item-links": (item, renderOptions = {}) =>
       item
-        ? renderLinksTable(item.links)
+        ? renderLinksTable(item.links, renderOptions)
         : renderEmpty("Выберите элемент в дереве для просмотра связей."),
 
     "model-item-enumeration": (item) => {
@@ -75,16 +75,16 @@ export function initDetailsPanel(containerId, options = {}) {
             'Данный объект не найден в редактируемом профиле. Вы можете добавить его, используя кнопку "→ Перенести в профиль".'
           ),
 
-    "profile-item-attributes": (item) =>
+    "profile-item-attributes": (item, renderOptions = {}) =>
       item
-        ? renderAttributesTable(item.attributes)
+        ? renderAttributesTable(item.attributes, renderOptions)
         : renderEmpty(
             "Объект отсутствует в профиле. Перенесите объект в профиль, чтобы работать с его атрибутами."
           ),
 
-    "profile-item-links": (item) =>
+    "profile-item-links": (item, renderOptions = {}) =>
       item
-        ? renderLinksTable(item.links)
+        ? renderLinksTable(item.links, renderOptions)
         : renderEmpty(
             "Объект отсутствует в профиле. Перенесите объект в профиль, чтобы работать с его связями."
           ),
@@ -180,7 +180,14 @@ export function initDetailsPanel(containerId, options = {}) {
       this.options.onTabSwitch(tabName);
     },
 
-    renderTabContent(tabName, item) {
+    /**
+     * Render a tab content.
+     *
+     * @param {string} tabName
+     * @param {any} item
+     * @param {object} [renderOptions]
+     */
+    renderTabContent(tabName, item, renderOptions = {}) {
       const content = container.querySelector(`[data-tab-content="${tabName}"]`);
       if (!content) return;
 
@@ -190,7 +197,7 @@ export function initDetailsPanel(containerId, options = {}) {
         return;
       }
 
-      content.innerHTML = renderer(item);
+      content.innerHTML = renderer(item, renderOptions);
     },
 
     /**
@@ -200,12 +207,24 @@ export function initDetailsPanel(containerId, options = {}) {
       this.renderTabContent("model-item-general", item);
     },
 
-    renderModelAttributes(item) {
-      this.renderTabContent("model-item-attributes", item);
+    /**
+     * Render model item attributes.
+     *
+     * @param {any} item
+     * @param {object} [renderOptions]
+     */
+    renderModelAttributes(item, renderOptions = {}) {
+      this.renderTabContent("model-item-attributes", item, renderOptions);
     },
 
-    renderModelLinks(item) {
-      this.renderTabContent("model-item-links", item);
+    /**
+     * Render model item links.
+     *
+     * @param {any} item
+     * @param {object} [renderOptions]
+     */
+    renderModelLinks(item, renderOptions = {}) {
+      this.renderTabContent("model-item-links", item, renderOptions);
     },
 
     renderModelEnumeration(item) {
@@ -219,12 +238,24 @@ export function initDetailsPanel(containerId, options = {}) {
       this.renderTabContent("profile-item-general", item);
     },
 
-    renderProfileAttributes(item) {
-      this.renderTabContent("profile-item-attributes", item);
+    /**
+     * Render profile item attributes.
+     *
+     * @param {any} item
+     * @param {object} [renderOptions]
+     */
+    renderProfileAttributes(item, renderOptions = {}) {
+      this.renderTabContent("profile-item-attributes", item, renderOptions);
     },
 
-    renderProfileLinks(item) {
-      this.renderTabContent("profile-item-links", item);
+    /**
+     * Render profile item links.
+     *
+     * @param {any} item
+     * @param {object} [renderOptions]
+     */
+    renderProfileLinks(item, renderOptions = {}) {
+      this.renderTabContent("profile-item-links", item, renderOptions);
 },
 
 renderProfileEnumeration(item) {
@@ -300,21 +331,13 @@ export function renderDetailsPanelSection({
         )
         .join("")}
 
-        ${sectionId === "available-item-details" ? `
-          <div class="details-panel-footer">
-
-            <button type="button" class="btn btn-primary btn--class-details" id="transfer-to-profile-btn">→ Перенести в профиль</button>
-            <button type="button" class="btn btn-primary btn--class-details" id="edit-profile-btn"> Редактировать в модели </button>
-
-            <button type="button" class="btn btn-primary btn--class-details" id="show-in-profile-btn"> Показать в профиле </button>
-            </div>
-
-          </div>
-        ` : `<div class="details-panel-footer">
-
-             <button type="button" class="btn btn-primary btn--class-details" id="show-in-model-btn"> Показать в модели </button>
-
-          </div>`}
+      ${
+        sectionId === "available-item-details"
+          ? `<div class="details-panel-footer" id="details-panel-footer"></div>`
+          : `<div class="details-panel-footer" id="profile-details-panel-footer">
+              <button type="button" class="btn btn-primary btn--class-details" id="show-in-model-btn"> Показать в модели </button>
+            </div>`
+      }
 
     </div>
   `;
