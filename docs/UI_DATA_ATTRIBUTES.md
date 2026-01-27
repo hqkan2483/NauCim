@@ -146,6 +146,10 @@ Compare/profile-editor specific:
 
 - `data-key`, `data-side`, `data-role`
 - `data-children-for`
+- `data-profile-class-state` — left-tree class inclusion status relative to current profile:
+   - `not-in-profile` — class name not present in profile
+   - `in-profile` — class present and matches by `refModelId/refModelItemId`
+   - `in-profile-other-model` — class name present, but ref ids do not match (name collision)
 
 If introducing new attributes here, document them in this section.
 

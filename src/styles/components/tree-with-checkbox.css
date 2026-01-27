@@ -62,6 +62,18 @@
   color: #8a8a8a;
 }
 
+/*
+ * Left tree: class name exists in profile but ref ids do not match.
+ * Keep disabled behavior, but highlight with a soft info background.
+ */
+.tree-item-with-checkbox:not(.tree-item-selected)[data-profile-class-state="in-profile-other-model"] {
+  background-color: var(--warning-block);
+}
+
+.tree-item-with-checkbox:not(.tree-item-selected)[data-profile-class-state="in-profile-other-model"]:hover {
+  background-color: var(--info-block);
+}
+
 /* Draw a grey "X" inside the checkbox for disabled nodes. */
 .tree-item-checkbox:disabled {
   opacity: 1;

@@ -303,6 +303,54 @@ function collectProfileClassNames(packages) {
 }
 
 /**
+ * Collect profile classes as a lookup index by normalized name.
+ *
+ * Used by the left tree to decide whether a class is:
+ * - absent from profile
+ * - included (name + ref ids match)
+ * - name-colliding (same name exists, but refs differ)
+ *
+ * @param {Array} packages
+ * @returns {Map<string, Array<{ refModelId: string, refModelItemId: string }>>}
+ */
+function collectProfileClassRefIndex(packages) {
+  const index = new Map();
+
+  const add = (nameKey, refModelId, refModelItemId) => {
+    if (!nameKey) return;
+    if (!index.has(nameKey)) index.set(nameKey, []);
+    index.get(nameKey).push({ refModelId, refModelItemId });
+  };
+
+  const walk = (pkgs) => {
+    if (!Array.isArray(pkgs)) return;
+    for (const pkg of pkgs) {
+      const classes = Array.isArray(pkg?.classes) ? pkg.classes : [];
+      for (const cls of classes) {
+        const nameKey = normalizeClassName(cls?.name);
+        if (!nameKey) continue;
+
+        if (isProfileClassItem(cls)) {
+          add(
+            nameKey,
+            String(cls?.refModelId ?? "").trim(),
+            String(cls?.refModelItemId ?? "").trim()
+          );
+        } else {
+          // Fallback: if an item looks like a class name but has no ref ids,
+          // keep an entry to still treat it as "present by name".
+          add(nameKey, "", "");
+        }
+      }
+      walk(pkg?.subPackages);
+    }
+  };
+
+  walk(packages);
+  return index;
+}
+
+/**
  * Find root profile package id (a package with no parentPackageId).
  *
  * @param {Array} packages
@@ -1482,17 +1530,17 @@ function renderAvailableTree() {
     return;
   }
 
-  // Profile-wide set of normalized class names that are already in the profile.
+  // Profile-wide index of classes by name -> ref ids.
   // Used only for UI (disabling checkboxes); business rules are still enforced
   // in the transfer operation as well.
-  const disabledClassNames = collectProfileClassNames(profileData.items);
+  const profileClassRefIndex = collectProfileClassRefIndex(profileData.items);
 
   const html = renderAvailableTreeHTML(
     availableData,
     selectedLeftItems,
     expandedLeftItems,
     activeLeftItem,
-    { disabledClassNames }
+    { profileClassRefIndex }
   );
 
   container.innerHTML = html;

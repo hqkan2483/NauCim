@@ -25,11 +25,67 @@ function normalizeClassName(name) {
 }
 
 /**
+ * Profile inclusion state of a left-tree class relative to the current profile.
+ *
+ * @typedef {"not-in-profile" | "in-profile" | "in-profile-other-model"} LeftClassProfileState
+ */
+
+/**
  * Tooltip message shown for disabled class checkboxes.
+ *
+ * @param {LeftClassProfileState} state
  * @returns {string}
  */
-function getDisabledClassTooltip() {
-  return "Класс уже включён в профиль";
+function getDisabledClassTooltip(state) {
+  if (state === "in-profile") return "Класс уже включён в профиль";
+  if (state === "in-profile-other-model") {
+    return "В профиле уже есть класс с таким именем (из другой модели)";
+  }
+  return "";
+}
+
+/**
+ * Resolve profile inclusion state for a class node rendered in the LEFT tree.
+ *
+ * A class is:
+ * - not-in-profile: no class with that name exists in the profile
+ * - in-profile: profile contains a class with the same name AND matching refModelId/refModelItemId
+ * - in-profile-other-model: profile contains a class with the same name, but ref ids do not match
+ *
+ * @param {any} cls
+ * @param {{ modelId?: string }} ctx
+ * @param {{
+ *   profileClassRefIndex?: Map<string, Array<{ refModelId: string, refModelItemId: string }>>,
+ *   disabledClassNames?: Set<string>
+ * }} options
+ * @returns {LeftClassProfileState}
+ */
+function resolveLeftClassProfileState(cls, ctx, options = {}) {
+  const nameKey = normalizeClassName(cls?.name);
+  if (!nameKey) return "not-in-profile";
+
+  const index = options?.profileClassRefIndex;
+  if (index instanceof Map && index.has(nameKey)) {
+    const entries = Array.isArray(index.get(nameKey)) ? index.get(nameKey) : [];
+    const leftModelId = String(ctx?.modelId ?? "").trim();
+    const leftItemId = String(cls?.id ?? "").trim();
+
+    const exactMatch = entries.some((e) => {
+      const refModelId = String(e?.refModelId ?? "").trim();
+      const refModelItemId = String(e?.refModelItemId ?? "").trim();
+      return Boolean(refModelId && refModelItemId && refModelId === leftModelId && refModelItemId === leftItemId);
+    });
+
+    return exactMatch ? "in-profile" : "in-profile-other-model";
+  }
+
+  // Backward compatible fallback: if we only have a name set, treat as included.
+  const disabledNames = options?.disabledClassNames;
+  if (disabledNames instanceof Set && disabledNames.has(nameKey)) {
+    return "in-profile";
+  }
+
+  return "not-in-profile";
 }
 
 function buildItemDataAttrs(item) {
@@ -92,7 +148,10 @@ function renderRootItem(item, selectedItems, expandedItems, activeItem, options 
  * @param {Set} selectedItems - Selected items
  * @param {Set} expandedItems - Expanded items
  * @param {string} activeItem - Active item key
- * @param {{ disabledClassNames?: Set<string> }} [options]
+ * @param {{
+ *  disabledClassNames?: Set<string>,
+ *  profileClassRefIndex?: Map<string, Array<{ refModelId: string, refModelItemId: string }>>
+ * }} [options]
  * @returns {string} HTML string
  */
 export function renderAvailableTree(
@@ -120,7 +179,10 @@ export function renderAvailableTree(
  * @param {Set} expandedItems - Expanded items
  * @param {string} activeItem - Active item key
  * @param {object} context - Rendering context (model/profile ids, parent ids, flags)
- * @param {{ disabledClassNames?: Set<string> }} [options] - Extra rendering options.
+ * @param {{
+ *   disabledClassNames?: Set<string>,
+ *   profileClassRefIndex?: Map<string, Array<{ refModelId: string, refModelItemId: string }>>
+ * }} [options] - Extra rendering options.
  * @returns {string} HTML string
  */
 export function renderTreeChildren(
@@ -184,13 +246,13 @@ export function renderTreeChildren(
       if (classes.length > 0) {
         classes.forEach((cls, clsIndex) => {
           const clsKey = `${itemKey}-cls-${clsIndex}`; // ✅ Use "cls"
-          const disabledClassNames = options?.disabledClassNames;
-          const isDisabled =
-            side === "left" &&
-            disabledClassNames instanceof Set &&
-            disabledClassNames.has(normalizeClassName(cls?.name));
+          /** @type {LeftClassProfileState} */
+          const profileState =
+            side === "left" ? resolveLeftClassProfileState(cls, ctx, options) : "not-in-profile";
 
-          const disabledTooltip = isDisabled ? getDisabledClassTooltip() : "";
+          // Checkboxes are enabled only for classes fully absent in the profile.
+          const isDisabled = side === "left" && profileState !== "not-in-profile";
+          const disabledTooltip = isDisabled ? getDisabledClassTooltip(profileState) : "";
 
           // Disabled nodes are explicitly not selectable.
           const clsChecked = !isDisabled && selectedItems.has(clsKey);
@@ -204,6 +266,7 @@ export function renderTreeChildren(
             <div class="tree-item-with-checkbox ${clsActive ?  "tree-item-selected" :  ""} ${isDisabled ? "tree-item-with-checkbox--disabled" : ""}"
                  data-item-key="${clsKey}"
                  data-side="${side}"
+                 ${side === "left" ? `data-profile-class-state="${profileState}"` : ""}
                  ${disabledTooltip ? `title="${disabledTooltip}"` : ""}
                ${buildItemDataAttrs(cls)}
                ${buildClassContractAttrs(cls, { ...ctx, packageId: item?.id ?? "" })}>
