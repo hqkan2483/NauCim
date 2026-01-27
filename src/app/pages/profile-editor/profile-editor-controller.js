@@ -52,6 +52,13 @@ import {
   findDiagramIdByName,
   packageHasContents,
 } from "../../../utils/project-traversal.js";
+import {
+  findModelNameById,
+  findAvailablePackageCandidatesByName,
+  findProfileClassByName,
+  findProfilePackageByName,
+} from "../../../utils/profile-editor-lookup.js";
+import { openSelectLocationModal } from "../../../ui/components/select-location-modal.js";
 
 // ============================================================
 // STATE
@@ -79,6 +86,13 @@ let rightTreeComponent = null;
 let detailsPanelComponent = null;
 
 let rightTreeContextMenu = null;
+
+/**
+ * Optional one-shot subtitle override for the profile details panel.
+ * Used by actions like "Показать в профиле" to explain context (e.g. different model).
+ * @type {{ itemKey: string, message: string } | null}
+ */
+let profileDetailsSubtitleOverride = null;
 
 const SIDE_LEFT = "left";
 const SIDE_RIGHT = "right";
@@ -148,7 +162,12 @@ export async function initProfileEditorPage() {
   currentProjectId = projectId;
 
   // Load modal templates that this page needs.
-  await loadModals(["create-package-modal", "create-diagram-modal", "report-modal"]);
+  await loadModals([
+    "create-package-modal",
+    "create-diagram-modal",
+    "report-modal",
+    "select-location-modal",
+  ]);
   initModalSystem();
   bindModalTriggers(document);
 
@@ -654,6 +673,22 @@ function initComponents() {
       onSelect: (itemKey) => {
         setActiveItemKey(side, itemKey);
         loadItemDetails(itemKey, side);
+
+        // Apply/clear the profile subtitle override based on the selection.
+        if (side === SIDE_RIGHT) {
+          if (
+            profileDetailsSubtitleOverride &&
+            profileDetailsSubtitleOverride.itemKey === itemKey
+          ) {
+            setDetailsPanelSubtitle(
+              "profile-item-details",
+              profileDetailsSubtitleOverride.message
+            );
+          } else {
+            setDetailsPanelSubtitle("profile-item-details", "");
+            profileDetailsSubtitleOverride = null;
+          }
+        }
       },
       onExpand: (itemKey, isExpanded) => {
         toggleInSet(getExpandedSet(side), itemKey, isExpanded);
@@ -722,6 +757,375 @@ function initComponents() {
       defaultTab: "model-item-general",
     });
   }
+}
+
+/**
+ * Set details-panel subtitle text for a section.
+ *
+ * @param {"available-item-details"|"profile-item-details"|string} sectionId
+ * @param {string} text
+ */
+function setDetailsPanelSubtitle(sectionId, text) {
+  const el = document.getElementById(`${sectionId}-subtitle`);
+  if (!(el instanceof HTMLElement)) return;
+  const msg = String(text ?? "").trim();
+  el.textContent = msg;
+}
+
+/**
+ * Render a custom empty-state message inside the profile details panel.
+ *
+ * This intentionally targets the profile "general" tab, because the message is
+ * user guidance (not a data view).
+ *
+ * @param {string} message
+ */
+function renderProfileDetailsEmptyState(message) {
+  if (!detailsPanelComponent) return;
+  const sectionId = "profile-item-details";
+
+  // Ensure the general tab exists and is active.
+  detailsPanelComponent?.switchTab?.("profile-item-general", sectionId);
+
+  const sectionEl = document.getElementById(sectionId);
+  if (!sectionEl) return;
+
+  const content = sectionEl.querySelector('[data-tab-content="profile-item-general"]');
+  if (!(content instanceof HTMLElement)) return;
+
+  content.innerHTML = `<div class="empty-state">${String(message)}</div>`;
+}
+
+/**
+ * Expand profile tree parents so the given node becomes visible.
+ *
+ * @param {HTMLElement} nodeEl A node inside #profile-tree.
+ */
+function expandProfileTreeToNode(nodeEl) {
+  if (!(nodeEl instanceof HTMLElement)) return;
+
+  // Walk up through nested children containers; each container references its parent node key.
+  let container = nodeEl.closest('.tree-children[data-parent]');
+  while (container instanceof HTMLElement) {
+    const parentKey = container.getAttribute('data-parent') || "";
+    if (parentKey) {
+      ensureRightNodeExpanded(parentKey);
+      const parentEl = rightTreeComponent?.getTreeItemEl?.(parentKey);
+      container = parentEl?.closest('.tree-children[data-parent]') || null;
+    } else {
+      break;
+    }
+  }
+}
+
+/**
+ * Focus and select a profile tree node by its DOM element.
+ *
+ * @param {HTMLElement} nodeEl
+ */
+function focusProfileTreeNode(nodeEl) {
+  if (!(nodeEl instanceof HTMLElement)) return;
+  const itemKey = nodeEl.getAttribute("data-item-key") || "";
+  if (!itemKey) return;
+
+  expandProfileTreeToNode(nodeEl);
+  rightTreeComponent?.selectItem?.(itemKey);
+  nodeEl.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/**
+ * Expand available (left) tree parents so the given node becomes visible.
+ *
+ * @param {HTMLElement} nodeEl A node inside #available-tree.
+ */
+function expandAvailableTreeToNode(nodeEl) {
+  if (!(nodeEl instanceof HTMLElement)) return;
+
+  let container = nodeEl.closest('.tree-children[data-parent]');
+  while (container instanceof HTMLElement) {
+    const parentKey = container.getAttribute('data-parent') || "";
+    if (parentKey) {
+      const children = leftTreeComponent?.getChildrenContainerEl?.(parentKey);
+      if (children && children.classList.contains("collapsed")) {
+        leftTreeComponent?.toggleExpand?.(parentKey);
+      }
+      const parentEl = leftTreeComponent?.getTreeItemEl?.(parentKey);
+      container = parentEl?.closest('.tree-children[data-parent]') || null;
+    } else {
+      break;
+    }
+  }
+}
+
+/**
+ * Focus and select an available-tree node by its DOM element.
+ *
+ * @param {HTMLElement} nodeEl
+ */
+function focusAvailableTreeNode(nodeEl) {
+  if (!(nodeEl instanceof HTMLElement)) return;
+  const itemKey = nodeEl.getAttribute("data-item-key") || "";
+  if (!itemKey) return;
+
+  expandAvailableTreeToNode(nodeEl);
+  leftTreeComponent?.selectItem?.(itemKey);
+  nodeEl.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/**
+ * Resolve model/profile context info for the currently active right-tree node.
+ *
+ * @returns {{ type: string, modelId: string, profileId: string } | null}
+ */
+function getActiveRightNodeContext() {
+  const key = String(activeRightItem ?? "").trim();
+  if (!key) return null;
+
+  const el = rightTreeComponent?.getTreeItemEl?.(key);
+  if (!(el instanceof HTMLElement)) return null;
+
+  return {
+    type: String(el.getAttribute("data-type") || "").trim(),
+    modelId: String(el.getAttribute("data-model-id") || "").trim(),
+    profileId: String(el.getAttribute("data-profile-id") || "").trim(),
+  };
+}
+
+/**
+ * Handler for "Показать в модели".
+ *
+ * Requirements:
+ * - For classes: strict lookup by refModelId/refModelItemId.
+ * - For packages: lookup by name across all available roots; if ambiguous, show modal
+ *   with "package — model/profile" choices.
+ */
+function handleShowInModel() {
+  if (!currentProjectId || !currentProfileId) {
+    showToast("Не удалось определить текущий проект/профиль", { type: "error" });
+    return;
+  }
+
+  const ctx = getActiveRightNodeContext();
+  if (!ctx) {
+    showToast("Выберите класс или пакет в дереве профиля", { type: "info" });
+    return;
+  }
+
+  const item = getItemDetailsByKey(activeRightItem, availableData, profileData);
+  const name = String(item?.name ?? "").trim();
+  if (!name) {
+    showToast("Не удалось определить имя выбранного объекта", { type: "error" });
+    return;
+  }
+
+  const availableTree = document.getElementById("available-tree");
+  if (!availableTree) return;
+
+  if (ctx.type === "class") {
+    const refModelId = String(item?.refModelId ?? "").trim();
+    const refModelItemId = String(item?.refModelItemId ?? "").trim();
+    if (!refModelId || !refModelItemId) {
+      showToast("Для этого класса не указаны refModelId/refModelItemId", { type: "error" });
+      return;
+    }
+
+    const selector = `.tree-item-with-checkbox[data-type="class"][data-model-id="${cssEscape(
+      refModelId
+    )}"][data-class-id="${cssEscape(refModelItemId)}"]`;
+
+    const nodeEl = availableTree.querySelector(selector);
+    if (!(nodeEl instanceof HTMLElement)) {
+      const modelName = findModelNameById(availableData, refModelId);
+      const extra = modelName ? ` (${modelName})` : "";
+      showToast(`Класс не найден в доступных моделях${extra}`, { type: "error" });
+      return;
+    }
+
+    focusAvailableTreeNode(nodeEl);
+    return;
+  }
+
+  if (ctx.type === "package") {
+    const candidates = findAvailablePackageCandidatesByName(availableData, name);
+
+    if (candidates.length === 0) {
+      showToast("Пакет не найден среди доступных моделей/профилей", { type: "info" });
+      return;
+    }
+
+    /**
+     * Navigate to a specific package candidate in the available (left) tree.
+     *
+     * @param {{ contextType: "model"|"profile", contextId: string, packageId: string }} c
+     * @returns {boolean} True when the node was found and focused.
+     */
+    const goToCandidate = (c) => {
+      const selector = c.contextType === "model"
+        ? `.tree-item-with-checkbox[data-type="package"][data-model-id="${cssEscape(c.contextId)}"][data-package-id="${cssEscape(c.packageId)}"]`
+        : `.tree-item-with-checkbox[data-type="package"][data-profile-id="${cssEscape(c.contextId)}"][data-package-id="${cssEscape(c.packageId)}"]`;
+
+      const nodeEl = availableTree.querySelector(selector);
+      if (!(nodeEl instanceof HTMLElement)) {
+        return false;
+      }
+
+      focusAvailableTreeNode(nodeEl);
+      return true;
+    };
+
+    if (candidates.length === 1) {
+      goToCandidate(candidates[0]);
+      return;
+    }
+
+    // Ambiguous: ask the user to pick which model/profile package to show.
+    const items = candidates.map((c, idx) => {
+      const suffix = c.contextType === "model" ? "(Модель)" : "(Профиль)";
+      return {
+        id: String(idx),
+        title: `${c.packageName}`,
+        subtitle: `${c.contextName} ${suffix}`,
+      };
+    });
+
+    openSelectLocationModal({
+      title: "Выберите, где показать пакет",
+      hint: `Найдено несколько пакетов с именем: ${name}`,
+      items,
+      onSelect: (id) => {
+        const i = Number.parseInt(String(id), 10);
+        if (!Number.isFinite(i)) return false;
+        const chosen = candidates[i];
+        if (!chosen) return false;
+
+        const ok = goToCandidate(chosen);
+        if (!ok) {
+          showToast(
+            "Переход не выполнен: пакет не найден в дереве (возможна рассинхронизация)",
+            { type: "error", timeoutMs: 6000 }
+          );
+        }
+        return ok;
+      },
+    });
+
+    return;
+  }
+
+  showToast("Поддерживается только показ классов и пакетов", { type: "info" });
+}
+
+/**
+ * Resolve model/profile context info for the currently active left-tree node.
+ *
+ * @returns {{ type: string, modelId: string, profileId: string } | null}
+ */
+function getActiveLeftNodeContext() {
+  const key = String(activeLeftItem ?? "").trim();
+  if (!key) return null;
+
+  const el = leftTreeComponent?.getTreeItemEl?.(key);
+  if (!(el instanceof HTMLElement)) return null;
+
+  return {
+    type: String(el.getAttribute("data-type") || "").trim(),
+    modelId: String(el.getAttribute("data-model-id") || "").trim(),
+    profileId: String(el.getAttribute("data-profile-id") || "").trim(),
+  };
+}
+
+/**
+ * Handler for "Показать в профиле".
+ *
+ * Uses the currently selected model item (left details) and tries to locate
+ * the matching object in the profile tree by name.
+ */
+function handleShowInProfile() {
+  profileDetailsSubtitleOverride = null;
+  setDetailsPanelSubtitle("profile-item-details", "");
+
+  if (!currentProfileId) {
+    showToast("Не удалось определить текущий профиль", { type: "error" });
+    return;
+  }
+
+  const ctx = getActiveLeftNodeContext();
+  if (!ctx) {
+    showToast("Выберите класс или пакет в левом дереве", { type: "info" });
+    return;
+  }
+
+  const item = getItemDetailsByKey(activeLeftItem, availableData, profileData);
+  const name = String(item?.name ?? "").trim();
+  if (!name) {
+    showToast("Не удалось определить имя выбранного объекта", { type: "error" });
+    return;
+  }
+
+  const profileTree = document.getElementById("profile-tree");
+  if (!profileTree) return;
+
+  if (ctx.type === "class") {
+    const found = findProfileClassByName(profileData.items, name);
+    if (!found) {
+      renderProfileDetailsEmptyState(
+        'Данный класс не найден в текущем профиле.  Вы можете добавить его, используя кнопку "→ Перенести в профиль".'
+      );
+      return;
+    }
+
+    const selector = `.tree-item-with-checkbox[data-type="class"][data-class-id="${cssEscape(
+      found.id
+    )}"][data-profile-id="${cssEscape(currentProfileId)}"]`;
+
+    const nodeEl = profileTree.querySelector(selector);
+    if (!(nodeEl instanceof HTMLElement)) {
+      // Data says it's present, but the tree node wasn't found.
+      showToast("Не удалось найти класс в дереве профиля", { type: "error" });
+      return;
+    }
+
+    // If class exists but comes from another model, show a contextual subtitle.
+    const sourceModelId = String(ctx.modelId || "").trim();
+    const refModelId = String(found?.refModelId || "").trim();
+    if (sourceModelId && refModelId && sourceModelId !== refModelId) {
+      const modelName = findModelNameById(availableData, refModelId);
+      const extra = modelName ? modelName : refModelId;
+      const itemKey = nodeEl.getAttribute("data-item-key") || "";
+      if (itemKey) {
+        profileDetailsSubtitleOverride = {
+          itemKey,
+          message: `Класс профиля импортирован из другой модели: ${extra}`,
+        };
+      }
+    }
+
+    focusProfileTreeNode(nodeEl);
+    return;
+  }
+
+  if (ctx.type === "package") {
+    const found = findProfilePackageByName(profileData.items, name);
+    if (!found) {
+      renderProfileDetailsEmptyState("Пакет не найден в текущем профиле.");
+      return;
+    }
+
+    const selector = `.tree-item-with-checkbox[data-type="package"][data-package-id="${cssEscape(
+      found.id
+    )}"][data-profile-id="${cssEscape(currentProfileId)}"]`;
+
+    const nodeEl = profileTree.querySelector(selector);
+    if (!(nodeEl instanceof HTMLElement)) {
+      showToast("Не удалось найти пакет в дереве профиля", { type: "error" });
+      return;
+    }
+
+    focusProfileTreeNode(nodeEl);
+    return;
+  }
+
+  showToast("Поддерживается только поиск классов и пакетов", { type: "info" });
 }
 
 // ============================================================
@@ -1100,6 +1504,25 @@ function bindEvents() {
       onDeleteDiagram: async (ctx) => {
         await handleDeleteProfileDiagram(ctx);
       },
+    });
+  }
+
+  // Details panel buttons (event delegation because the panel HTML is re-rendered).
+  const detailsPanel = document.getElementById("details-panel");
+  if (detailsPanel) {
+    detailsPanel.addEventListener("click", (e) => {
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      if (!target) return;
+
+      const showInProfileBtn = target.closest("#show-in-profile-btn");
+      if (showInProfileBtn) {
+        handleShowInProfile();
+      }
+
+      const showInModelBtn = target.closest("#show-in-model-btn");
+      if (showInModelBtn) {
+        handleShowInModel();
+      }
     });
   }
 }

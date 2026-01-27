@@ -274,11 +274,14 @@ export function renderDetailsPanelSection({
   return `
     <div class="details-panel-content ${sectionClass}" id="${sectionId}">
       <div class="details-panel-header">
+        <div class="details-panel-title">
         ${
           sectionId === "available-item-details"
             ? "Исходный объект"
             : "Редактируемый профиль"
         }
+        </div>
+        <div class="details-panel-subtitle" id="${sectionId}-subtitle"></div>
       </div>
 
       <div class="tabs" id="${tabsId}">
@@ -355,7 +358,7 @@ export function renderProfileEditorDetailsPanelLayout({
       emptyText: "Выберите элемент в дереве для просмотра информации.",
       tabContentNames: leftTabContentNames,
     })}
-    <div class="divider divider--details-panel mb-20"></div>
+    <div class="divider divider--details-panel mb-10"></div>
     ${renderDetailsPanelSection({
       sectionId: "profile-item-details",
       sectionClass: "profile-item-details",

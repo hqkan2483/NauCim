@@ -1,0 +1,40 @@
+/*
+ * Select Location Modal styles
+ * Keeps visuals lightweight and consistent with existing modal components.
+ */
+
+.select-location-modal__hint {
+  margin-bottom: 10px;
+  color: #666;
+  font-size: 13px;
+}
+
+.select-location-modal__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.select-location-modal__item {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid #e3e3e3;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.select-location-modal__item:hover {
+  background: #f7f7f7;
+}
+
+.select-location-modal__item-title {
+  font-weight: 600;
+}
+
+.select-location-modal__item-subtitle {
+  margin-top: 2px;
+  color: #666;
+  font-size: 12px;
+}
