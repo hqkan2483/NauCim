@@ -94,6 +94,17 @@ let rightTreeContextMenu = null;
  */
 let profileDetailsSubtitleOverride = null;
 
+/**
+ * Pending details-tab sync request.
+ *
+ * Used by "Показать в профиле" / "Показать в модели": we capture the active tab
+ * in the source panel and switch to the equivalent tab in the target panel after
+ * the target item is selected (tabs are rebuilt depending on selected item type).
+ *
+ * @type {{ targetSide: "left"|"right", tabName: string } | null}
+ */
+let pendingDetailsTabSync = null;
+
 const SIDE_LEFT = "left";
 const SIDE_RIGHT = "right";
 
@@ -674,6 +685,9 @@ function initComponents() {
         setActiveItemKey(side, itemKey);
         loadItemDetails(itemKey, side);
 
+        // Apply a one-shot tab sync if requested by navigation actions.
+        applyPendingDetailsTabSync(side);
+
         // Apply/clear the profile subtitle override based on the selection.
         if (side === SIDE_RIGHT) {
           if (
@@ -773,6 +787,69 @@ function setDetailsPanelSubtitle(sectionId, text) {
 }
 
 /**
+ * Get currently active tab name inside a details section.
+ *
+ * @param {"available-item-details"|"profile-item-details"|string} sectionId
+ * @returns {string|null}
+ */
+function getActiveDetailsTabName(sectionId) {
+  const sectionEl = document.getElementById(sectionId);
+  if (!sectionEl) return null;
+
+  const active = sectionEl.querySelector(".tabs .tab.active");
+  const tab = active?.getAttribute?.("data-tab") || "";
+  return tab ? String(tab) : null;
+}
+
+/**
+ * Map a details tab name to the equivalent tab name in the opposite panel.
+ *
+ * @param {string|null} tabName
+ * @returns {string|null}
+ */
+function mapDetailsTabToOtherPanel(tabName) {
+  const name = String(tabName ?? "").trim();
+  if (!name) return null;
+
+  if (name.startsWith("model-item-")) {
+    return name.replace(/^model-item-/, "profile-item-");
+  }
+
+  if (name.startsWith("profile-item-")) {
+    return name.replace(/^profile-item-/, "model-item-");
+  }
+
+  return null;
+}
+
+/**
+ * Apply pending details-tab sync for the given side.
+ *
+ * Must be executed after `loadItemDetails`, because tabs are rebuilt based on
+ * the selected item type. If the desired tab doesn't exist (e.g. package has no
+ * attributes/links), we keep the default tab.
+ *
+ * @param {"left"|"right"} side
+ */
+function applyPendingDetailsTabSync(side) {
+  if (!pendingDetailsTabSync) return;
+  if (pendingDetailsTabSync.targetSide !== side) return;
+
+  const sectionId = side === SIDE_LEFT ? "available-item-details" : "profile-item-details";
+  const sectionEl = document.getElementById(sectionId);
+  const desired = String(pendingDetailsTabSync.tabName || "").trim();
+
+  pendingDetailsTabSync = null;
+
+  if (!sectionEl || !desired) return;
+
+  const exists = sectionEl.querySelector(`.tabs .tab[data-tab="${desired}"]`);
+  if (exists) {
+    detailsPanelComponent?.switchTab?.(desired, sectionId);
+  }
+}
+
+/**
  * Render a custom empty-state message inside the profile details panel.
  *
  * This intentionally targets the profile "general" tab, because the message is
@@ -794,6 +871,45 @@ function renderProfileDetailsEmptyState(message) {
   if (!(content instanceof HTMLElement)) return;
 
   content.innerHTML = `<div class="empty-state">${String(message)}</div>`;
+}
+
+/**
+ * Render the "class not found" state in the profile details panel with tab sync.
+ *
+ * Rules:
+ * - If requested tab is "profile-item-attributes" or "profile-item-links", keep it active
+ *   and show the standard guidance message for that tab.
+ * - Otherwise keep the general tab active and show the class-not-found message.
+ *
+ * @param {{ preferredTabName?: string|null }} params
+ */
+function renderProfileClassNotFoundState({ preferredTabName = null } = {}) {
+  if (!detailsPanelComponent) return;
+
+  // Clear any pending sync from the click action; we handle tab selection directly here.
+  pendingDetailsTabSync = null;
+
+  // Ensure the profile panel has the full set of tabs (item=null => "unknown" => class-like tabs).
+  updateDetailsTabsForSide(SIDE_RIGHT, null);
+
+  // Always keep the general tab content meaningful.
+  renderProfileDetailsEmptyState(
+    'Данный класс не найден в текущем профиле.  Вы можете добавить его, используя кнопку "→ Перенести в профиль".'
+  );
+
+  const tab = String(preferredTabName ?? "").trim();
+
+  if (tab === "profile-item-attributes") {
+    detailsPanelComponent.renderProfileAttributes(null);
+    detailsPanelComponent?.switchTab?.("profile-item-attributes", "profile-item-details");
+    return;
+  }
+
+  if (tab === "profile-item-links") {
+    detailsPanelComponent.renderProfileLinks(null);
+    detailsPanelComponent?.switchTab?.("profile-item-links", "profile-item-details");
+    return;
+  }
 }
 
 /**
@@ -903,6 +1019,13 @@ function handleShowInModel() {
   if (!currentProjectId || !currentProfileId) {
     showToast("Не удалось определить текущий проект/профиль", { type: "error" });
     return;
+  }
+
+  // Sync target (available) active tab with source (profile) active tab.
+  const sourceTab = getActiveDetailsTabName("profile-item-details");
+  const targetTab = mapDetailsTabToOtherPanel(sourceTab);
+  if (targetTab) {
+    pendingDetailsTabSync = { targetSide: SIDE_LEFT, tabName: targetTab };
   }
 
   const ctx = getActiveRightNodeContext();
@@ -1044,6 +1167,10 @@ function handleShowInProfile() {
   profileDetailsSubtitleOverride = null;
   setDetailsPanelSubtitle("profile-item-details", "");
 
+  // Capture source tab so we can sync on success / not-found.
+  const sourceTab = getActiveDetailsTabName("available-item-details");
+  const mappedTargetTab = mapDetailsTabToOtherPanel(sourceTab);
+
   if (!currentProfileId) {
     showToast("Не удалось определить текущий профиль", { type: "error" });
     return;
@@ -1068,10 +1195,13 @@ function handleShowInProfile() {
   if (ctx.type === "class") {
     const found = findProfileClassByName(profileData.items, name);
     if (!found) {
-      renderProfileDetailsEmptyState(
-        'Данный класс не найден в текущем профиле.  Вы можете добавить его, используя кнопку "→ Перенести в профиль".'
-      );
+      renderProfileClassNotFoundState({ preferredTabName: mappedTargetTab });
       return;
+    }
+
+    // Sync tabs only when we are about to navigate/select a real profile item.
+    if (mappedTargetTab) {
+      pendingDetailsTabSync = { targetSide: SIDE_RIGHT, tabName: mappedTargetTab };
     }
 
     const selector = `.tree-item-with-checkbox[data-type="class"][data-class-id="${cssEscape(
